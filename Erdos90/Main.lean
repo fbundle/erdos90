@@ -1,7 +1,7 @@
 import Mathlib
-import Erd46.Defs
-import Erd46.Arithmetic
-import Erd46.Geometric
+import Erdos90.Defs
+import Erdos90.Arithmetic
+import Erdos90.Geometric
 
 /-!
 # Theorem 1.1: The Erdős unit-distance conjecture is false (for human verification)

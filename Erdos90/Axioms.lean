@@ -1,5 +1,5 @@
-import Erd46.Arithmetic
-import Erd46.Geometric
+import Erdos90.Arithmetic
+import Erdos90.Geometric
 
 /-!
 # Axioms (for human verification)
@@ -25,7 +25,7 @@ noncomputable section
 /-!
 ## Axiom 1: Existence of the admissible tower (Proposition 3.8 of the paper)
 
-**Location**: `Erd46/Arithmetic.lean`, declared as `axiom exists_admissible_family`.
+**Location**: `Erdos90/Arithmetic.lean`, declared as `axiom exists_admissible_family`.
 
 **Statement**: There exist absolute constants γ > 0 and D > 0 such that,
 for arbitrarily large f, there is an admissible family with those γ and D.
@@ -48,7 +48,7 @@ split primes and H is the class-number bound.
 /-!
 ## Axiom 2: Behaviour of the disc-overlap ratio ρ(R) (elementary calculus)
 
-**Location**: `Erd46/Geometric.lean`, declared as `axiom exists_R_log_rho_gt`.
+**Location**: `Erdos90/Geometric.lean`, declared as `axiom exists_R_log_rho_gt`.
 
 Let b(R) = πR² be the area of a radius-R disc in ℂ ≅ ℝ².
 Let a(R) be the overlap area of two such discs at distance 1.
@@ -70,7 +70,7 @@ taking R sufficiently large.
 /-!
 ## Axiom 3: Coset averaging (Lemma 2.4)
 
-**Location**: `Erd46/Geometric.lean`, declared as `def exists_good_coset`
+**Location**: `Erdos90/Geometric.lean`, declared as `def exists_good_coset`
 (proof currently `sorry`).
 
 Using Haar probability measure on the torus ℂ^f / Λ, the expected size
@@ -94,7 +94,7 @@ average value yields the inequality.
 /-!
 ## Axiom 4: Packing / size bound (Lemma 2.6)
 
-**Location**: `Erd46/Geometric.lean`, declared as `lemma size_bound`
+**Location**: `Erdos90/Geometric.lean`, declared as `lemma size_bound`
 (proof currently `sorry`).
 
 **Statement**: In the sup-norm polydisc of radius R, distinct points of a
@@ -112,7 +112,7 @@ the stated bound.
 /-!
 ## Axiom 5: First-coordinate separation
 
-**Location**: `Erd46/Geometric.lean`, declared as `axiom first_coordinate_separation`.
+**Location**: `Erdos90/Geometric.lean`, declared as `axiom first_coordinate_separation`.
 
 **Statement**: For every non-zero v ∈ A.Λ, the modulus of its first
 coordinate is at least D⁻¹.

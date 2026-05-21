@@ -1,6 +1,6 @@
 import Mathlib
-import Erd46.Defs
-import Erd46.Arithmetic
+import Erdos90.Defs
+import Erdos90.Arithmetic
 
 open Complex
 open Real

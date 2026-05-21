@@ -12,12 +12,12 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 
 | File | Purpose |
 |------|---------|
-| `Erd46/Defs.lean` | Core definitions: `distSq`, `unitDistPairs`, `maxUnitDists` |
-| `Erd46/Arithmetic.lean` | `AdmissibleFamily` structure + Axiom 1 (tower existence) |
-| `Erd46/Geometric.lean` | Axioms 2–5, `GoodCoset`, Theorems 2.3a/b (planar set from family) |
-| `Erd46/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erd46/Axioms.lean` | Human-readable index of all 5 axioms with mathematical context |
-| `Erd46.lean` | Root import (imports all modules) |
+| `Erdos90/Defs.lean` | Core definitions: `distSq`, `unitDistPairs`, `maxUnitDists` |
+| `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure + Axiom 1 (tower existence) |
+| `Erdos90/Geometric.lean` | Axioms 2–5, `GoodCoset`, Theorems 2.3a/b (planar set from family) |
+| `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
+| `Erdos90/Axioms.lean` | Human-readable index of all 5 axioms with mathematical context |
+| `Erdos90.lean` | Root import (imports all modules) |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
