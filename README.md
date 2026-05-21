@@ -19,3 +19,9 @@ as of commit `101a3ecc08d74757d0ac246664a8d72c80f8756b`
 - all necessary definitions for the main theorem must be put in `Erd46/Defs.lean`
 
 - all proven facts that put as axioms must be put in `Erd46/Axioms.lean`
+
+- your model name is `DeepSeek-V4-Pro with Claude Code`, please end your commit message with 
+
+```
+Co-Authored-By: [model name]
+```
