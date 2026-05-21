@@ -191,9 +191,40 @@ lemma polydisc_overlap_ratio_real (f : ℕ) (R : ℝ) (hR : R > 1/2) (u : Fin f 
     (hu : ∀ r : Fin f, ‖u r‖ = 1) :
     (volume (polydisc f R ∩ {x | x + u ∈ polydisc f R})).toReal =
     (volume (polydisc f R)).toReal * (rho R) ^ (f : ℕ) := by
-  -- Fubini: the polydisc is a product of f discs; the intersection is the product
-  -- of per-coordinate intersections, each contributing ρ(R) by disc_overlap_ratio_real.
-  sorry
+  have hRnn : 0 ≤ R := by linarith
+  -- Step 1: Rewrite polydisc and intersection as pi sets
+  have hpoly_pi : polydisc f R =
+      Set.pi Set.univ (fun _ : Fin f => Metric.closedBall (0 : ℂ) R) := by
+    ext x; simp [polydisc, Set.mem_pi, Metric.mem_closedBall, dist_zero_right]
+  have hint_pi : polydisc f R ∩ {x | x + u ∈ polydisc f R} =
+      Set.pi Set.univ (fun r : Fin f => {z : ℂ | ‖z‖ ≤ R ∧ ‖z + u r‖ ≤ R}) := by
+    ext x
+    simp only [Set.mem_inter_iff, Set.mem_setOf_eq, polydisc, Set.mem_pi, Set.mem_univ,
+               true_implies, Pi.add_apply]
+    constructor
+    · intro ⟨h1, h2⟩ r; exact ⟨h1 r, h2 r⟩
+    · intro h; exact ⟨fun r => (h r).1, fun r => (h r).2⟩
+  rw [hint_pi, hpoly_pi]
+  -- Step 2: Expand volumes via the product formula (volume_pi_pi)
+  have h_int : volume (Set.pi Set.univ (fun r : Fin f =>
+        {z : ℂ | ‖z‖ ≤ R ∧ ‖z + u r‖ ≤ R})) =
+      ∏ r : Fin f, volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + u r‖ ≤ R} := volume_pi_pi _
+  have h_poly : volume (Set.pi Set.univ (fun _ : Fin f =>
+        Metric.closedBall (0 : ℂ) R)) =
+      ∏ _ : Fin f, volume (Metric.closedBall (0 : ℂ) R) := volume_pi_pi _
+  rw [h_int, h_poly, ENNReal.toReal_prod, ENNReal.toReal_prod]
+  -- Step 3: per-coordinate intersection volume (from disc_overlap_ratio_real)
+  have hint_r : ∀ r : Fin f,
+      (volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + u r‖ ≤ R}).toReal = π * R ^ 2 * rho R :=
+    fun r => disc_overlap_ratio_real R hR (u r) (hu r)
+  -- Step 4: per-coordinate polydisc volume (from Complex.volume_closedBall)
+  have hpoly_r : (volume (Metric.closedBall (0 : ℂ) R)).toReal = π * R ^ 2 := by
+    simp only [Complex.volume_closedBall, ENNReal.toReal_mul, ENNReal.toReal_pow,
+               ENNReal.coe_toReal, NNReal.coe_real_pi, ENNReal.toReal_ofReal hRnn]
+    ring
+  simp_rw [hint_r, hpoly_r]
+  simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+  rw [mul_pow]
 
 /-- **Lemma 2.4 (coset averaging).**  Given the norm-one set U with |U| ≥ exp(γf),
     a lattice Λ ⊂ ℂ^f (discrete, with fundamental domain F of finite covolume),
