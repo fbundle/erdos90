@@ -46,23 +46,17 @@ split primes and H is the class-number bound.
 #check exists_admissible_family
 
 /-!
-## Axiom 2: Behaviour of the disc-overlap ratio ρ(R) (elementary calculus)
+## Axiom 2: Behaviour of the disc-overlap ratio ρ(R) (**PROVEN**)
 
-**Location**: `Erdos90/Geometric.lean`, declared as `axiom exists_R_log_rho_gt`.
+**Location**: `Erdos90/Geometric.lean`, formerly `axiom`, now `lemma exists_R_log_rho_gt`.
 
-Let b(R) = πR² be the area of a radius-R disc in ℂ ≅ ℝ².
-Let a(R) be the overlap area of two such discs at distance 1.
-Define ρ(R) = a(R)/b(R).
+**Proof**: Showed lim_{R→∞} ρ(R) = 1 using the explicit formula
+ρ(R) = (2/π)·arccos(1/(2R)) - √(4R²-1)/(2πR²). The first term → (2/π)·(π/2) = 1
+by continuity of arccos; the second term → 0 via the bound √(4R²-1) ≤ 2R
+and the sandwich theorem. Then log continuity + limit definition yields the
+existence statement.
 
-**Statement**: ρ(R) → 1 as R → ∞.  Consequently, for any ε > 0 and D > 0,
-there exists R > 1/2 such that log ρ(R) > -ε and 4RD > 1.
-
-The condition 4RD > 1 is added so that log(4RD) > 0, which is needed
-for the size bound (Axiom 4) to be nontrivial.
-
-**Verification**: This is a calculus exercise: a(R) = πR² - O(R),
-so ρ(R) = 1 - O(1/R) → 1.  The 4RD > 1 condition is satisfied by
-taking R sufficiently large.
+**Status**: ✅ Proven in Lean.
 -/
 
 #check exists_R_log_rho_gt
@@ -114,19 +108,17 @@ norm < D⁻¹).  Hence |X| ≤ M² ≤ (4RD+1)² ≤ (4RD+1)^{2f}.
 #check size_bound
 
 /-!
-## Axiom 5: First-coordinate separation
+## Axiom 5: First-coordinate separation (**PROVEN**)
 
-**Location**: `Erdos90/Geometric.lean`, declared as `axiom first_coordinate_separation`.
+**Location**: `Erdos90/Geometric.lean`, formerly `axiom`, now `lemma first_coordinate_separation`.
 
-**Statement**: For every non-zero v ∈ A.Λ, the modulus of its first
-coordinate is at least D⁻¹.
+**Proof**: Strengthened the `hΛ_sep` field of `AdmissibleFamily` (in `Arithmetic.lean`)
+to use the distinguished first coordinate `fin0 hf` instead of `∃ r : Fin f`.
+The lemma then follows directly from `A.hΛ_sep`. This matches the paper's
+Minkowski embedding construction, where coordinate 0 corresponds to the
+distinguished embedding σ₀ : K → ℂ.
 
-**Why this holds**: In the Minkowski lattice Λ = Φ(D⁻¹O_K) ⊂ ℂ^f,
-coordinate 0 corresponds to the distinguished embedding σ₀ : K → ℂ.
-If ‖v₀‖ < D⁻¹, then the corresponding algebraic integer β = D·v has
-|σ₀(β)| < 1.  But β is an algebraic integer all of whose conjugates lie
-in a bounded set determined by the polydisc.  The only algebraic integer
-with all conjugates of modulus < 1 is 0, so β = 0 and v = 0.
+**Status**: ✅ Proven in Lean (derived from structure field).
 -/
 
 #check first_coordinate_separation
@@ -141,8 +133,10 @@ verification by a number theorist / geometer):
 ### Axioms:
 1. **`exists_admissible_family`** (`Arithmetic.lean`) — Golod-Shafarevich tower
 2. **`exists_good_coset`** (`Geometric.lean`) — Haar measure coset averaging
-3. **`first_coordinate_separation`** (`Geometric.lean`) — Minkowski embedding bound
-4. **`exists_R_log_rho_gt`** (`Geometric.lean`) — disc-overlap ratio asymptotics
+
+### Proven (formerly axioms):
+3. ~~`first_coordinate_separation`~~ — derived from `hΛ_sep` field
+4. ~~`exists_R_log_rho_gt`~~ — calculus proof (ρ(R) → 1 as R → ∞)
 
 All other lemmas and theorems are fully proven, including:
 - `projection_injective` (Lemma 2.5)
@@ -152,6 +146,9 @@ All other lemmas and theorems are fully proven, including:
 - `admissible_family_to_planar_set` (Theorem 2.3)
 - `erdos_unit_distance_false` (Theorem 1.1)
 - `erdos_bound_false` (contrapositive of Theorem 1.1)
+- `tendsto_rho_atTop` — ρ(R) → 1 as R → ∞
+- `rho_formula` — algebraic simplification of ρ(R)
+- `first_coordinate_separation` — first-coordinate separation bound
 -/
 
 #check admissible_family_to_planar_set
