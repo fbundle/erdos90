@@ -1,4 +1,4 @@
-# ERD46
+# ERDOS90
 
 A lean formalization of [Erdős Problem 90](https://www.erdosproblems.com/90) *Planar Point Sets with Many Unit Distances* from OpenAI.
 
@@ -10,19 +10,19 @@ A lean template can be found [here](https://github.com/google-deepmind/formal-co
 
 as of commit `101a3ecc08d74757d0ac246664a8d72c80f8756b`
 
-- [x] `Erd46/Defs.lean`
-- [ ] `Erd46/Axioms.lean`
-- [x] main theorem `erdos_unit_distance_false` in `Erd46/Main.lean`
+- [x] `Erdos90/Defs.lean`
+- [ ] `Erdos90/Axioms.lean`
+- [x] main theorem `erdos_unit_distance_false` in `Erdos90/Main.lean`
 
 ## INSTRUCTION FOR AI
 
 - this file is strictly for human: DO NOT EDIT, DO NOT COMMIT
 
-- the main theorem must be put in `Erd46/Main.lean`
+- the main theorem must be put in `Erdos90/Main.lean`
 
-- all necessary definitions for the main theorem must be put in `Erd46/Defs.lean`
+- all necessary definitions for the main theorem must be put in `Erdos90/Defs.lean`
 
-- all proven facts that put as axioms must be put in `Erd46/Axioms.lean`
+- all proven facts that put as axioms must be put in `Erdos90/Axioms.lean`
 
 - you can find some useful resources in `assets`
 
