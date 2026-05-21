@@ -27,7 +27,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - DO NOT COMMIT, DO NOT PUSH without permission
 
-- your model name is `DeepSeek-V4-Pro with Claude Code`, please end your commit message with 
+- your model name is `Claude Sonnet 4.6`, please end your commit message with 
 
 ```
 Co-Authored-By: [model name]
