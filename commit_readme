@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+git reset
+git add README.md
+git commit -m "updated_README"
+git push
