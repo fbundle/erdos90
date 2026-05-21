@@ -5,6 +5,8 @@ import Erdos90.Arithmetic
 open Complex
 open Real
 open Set
+open Filter
+open scoped Topology
 
 /-!
 # Geometric lemmas (Section 2 of the paper)
@@ -43,25 +45,118 @@ def rho (R : ℝ) : ℝ :=
     a / (π * R ^ 2)
   else 0
 
-/-- Axiom 2: For any ε > 0 and D > 0, there exists R > 1/2 with log ρ(R) > -ε
-    and 4RD > 1.  Follows from ρ(R) → 1 as R → ∞ (calculus). -/
-axiom exists_R_log_rho_gt (ε : ℝ) (εpos : ε > 0) (D : ℝ) (hD : D > 0) :
-    ∃ R > (1/2 : ℝ), Real.log (rho R) > -ε ∧ 4 * R * D > 1
+lemma rho_formula {R : ℝ} (hR : R > 1/2) : rho R = (2/π) * Real.arccos (1/(2*R)) - Real.sqrt (4*R^2 - 1) / (2*π*R^2) := by
+  unfold rho
+  split_ifs with h
+  · have hRpos : R ≠ 0 := by linarith
+    field_simp [hRpos]
+  · exfalso; linarith
 
-/-- First element of `Fin f` when `f ≥ 1`. -/
-def fin0 {f : ℕ} (hf : f ≥ 1) : Fin f := ⟨0, by omega⟩
+lemma tendsto_rho_atTop : Tendsto rho atTop (𝓝 1) := by
+  -- eventually R > 1/2, so we can use rho_formula
+  have h_ev_gt_half : ∀ᶠ (R : ℝ) in atTop, R > 1/2 := by
+    filter_upwards [eventually_gt_atTop (1/2)] with R hR; exact hR
+  -- First term: (2/π) * arccos(1/(2R)) → (2/π) * (π/2) = 1
+  have h_first : Tendsto (fun (R : ℝ) => (2/π) * Real.arccos (1/(2*R))) atTop (𝓝 1) := by
+    have h_arg_tendsto : Tendsto (fun (R : ℝ) => 1/(2*R)) atTop (𝓝 0) := by
+      have h_ev : (fun (R : ℝ) => 1/(2*R)) =ᶠ[atTop] (fun (R : ℝ) => (1/2 : ℝ) * R⁻¹) := by
+        filter_upwards [eventually_gt_atTop (0 : ℝ)] with R hR
+        field_simp [ne_of_gt hR]
+      have h_tendsto_inv : Tendsto (fun (R : ℝ) => (1/2 : ℝ) * R⁻¹) atTop (𝓝 0) := by
+        simpa using (tendsto_inv_atTop_zero (𝕜 := ℝ)).const_mul (1/2 : ℝ)
+      exact h_tendsto_inv.congr' h_ev.symm
+    have h_arccos_cont : ContinuousAt Real.arccos (0 : ℝ) :=
+      Real.continuous_arccos.continuousAt
+    have h_arccos_tendsto : Tendsto (Real.arccos ∘ (fun (R : ℝ) => 1/(2*R))) atTop (𝓝 (π/2)) := by
+      have h := h_arccos_cont.tendsto.comp h_arg_tendsto
+      simpa [Real.arccos_zero] using h
+    have h_mul : Tendsto (fun (R : ℝ) => (2/π) * Real.arccos (1/(2*R))) atTop (𝓝 ((2/π) * (π/2))) :=
+      (tendsto_const_nhds : Tendsto (fun _ => (2/π)) atTop _).mul h_arccos_tendsto
+    simpa [mul_comm π, mul_div_cancel_left₀ _ (by norm_num : π ≠ 0)] using h_mul
+  -- Second term: sqrt(4R²-1) / (2πR²) → 0
+  have h_second : Tendsto (fun (R : ℝ) => Real.sqrt (4*R^2 - 1) / (2*π*R^2)) atTop (𝓝 0) := by
+    have h_nonneg : ∀ᶠ (R : ℝ) in atTop, (0 : ℝ) ≤ Real.sqrt (4*R^2 - 1) / (2*π*R^2) := by
+      filter_upwards [eventually_gt_atTop (1/2)] with R hR
+      positivity
+    have h_bound : ∀ᶠ (R : ℝ) in atTop, Real.sqrt (4*R^2 - 1) / (2*π*R^2) ≤ 1 / (π * R) := by
+      filter_upwards [eventually_gt_atTop (1/2)] with R hR
+      have h_sqrt_le : Real.sqrt (4*R^2 - 1) ≤ 2*R := by
+        calc
+          Real.sqrt (4*R^2 - 1) ≤ Real.sqrt (4*R^2) := Real.sqrt_le_sqrt (by nlinarith)
+          _ = |2*R| := by
+            rw [show (4 : ℝ)*R^2 = ((2 : ℝ)*R)^2 by ring, Real.sqrt_sq_eq_abs]
+          _ = 2*R := abs_of_pos (by nlinarith)
+      calc
+        Real.sqrt (4*R^2 - 1) / (2*π*R^2) ≤ (2*R) / (2*π*R^2) := by gcongr
+        _ = 1 / (π * R) := by
+          field_simp [show R ≠ 0 from by linarith]
+    have h_tendsto_bound : Tendsto (fun (R : ℝ) => 1 / (π * R)) atTop (𝓝 0) := by
+      have h_ev : (fun (R : ℝ) => 1 / (π * R)) =ᶠ[atTop] (fun (R : ℝ) => (1/π) * R⁻¹) := by
+        filter_upwards [eventually_gt_atTop (0 : ℝ)] with R hR
+        field_simp [ne_of_gt hR]
+      have h_tendsto : Tendsto (fun (R : ℝ) => (1/π) * R⁻¹) atTop (𝓝 0) := by
+        simpa using (tendsto_inv_atTop_zero (𝕜 := ℝ)).const_mul (1/π)
+      exact h_tendsto.congr' h_ev.symm
+    have h_tendsto_zero : Tendsto (fun (_ : ℝ) => (0 : ℝ)) atTop (𝓝 0) := tendsto_const_nhds
+    exact Filter.Tendsto.squeeze' h_tendsto_zero h_tendsto_bound h_nonneg h_bound
+  -- Combine: rho(R) = first - second → 1 - 0 = 1
+  have h_formula_ev : (fun (R : ℝ) => (2/π) * Real.arccos (1/(2*R)) - Real.sqrt (4*R^2 - 1) / (2*π*R^2))
+      =ᶠ[atTop] rho := by
+    filter_upwards [h_ev_gt_half] with R hR
+    rw [rho_formula hR]
+  have h_combined : Tendsto (fun (R : ℝ) => (2/π) * Real.arccos (1/(2*R)) - Real.sqrt (4*R^2 - 1) / (2*π*R^2))
+      atTop (𝓝 (1 - 0)) := Filter.Tendsto.sub h_first h_second
+  simpa [sub_zero] using h_combined.congr' h_formula_ev
+
+/-- **Lemma (replaces Axiom 2).** For any ε > 0 and D > 0, there exists R > 1/2 with
+    log ρ(R) > -ε and 4RD > 1.  Follows from ρ(R) → 1 as R → ∞. -/
+lemma exists_R_log_rho_gt (ε : ℝ) (εpos : ε > 0) (D : ℝ) (hD : D > 0) :
+    ∃ R > (1/2 : ℝ), Real.log (rho R) > -ε ∧ 4 * R * D > 1 := by
+  have h_exp_lt_one : Real.exp (-ε) < 1 := by
+    calc
+      Real.exp (-ε) < Real.exp 0 := Real.exp_lt_exp.mpr (by linarith)
+      _ = 1 := Real.exp_zero
+  -- Eventually rho R > exp(-ε)
+  have h_ev_rho : ∀ᶠ (R : ℝ) in atTop, rho R > Real.exp (-ε) := by
+    have h_set : Set.Ioi (Real.exp (-ε)) ∈ 𝓝 (1 : ℝ) :=
+      isOpen_Ioi.mem_nhds h_exp_lt_one
+    have h_mem : ∀ᶠ (R : ℝ) in atTop, rho R ∈ Set.Ioi (Real.exp (-ε)) :=
+      tendsto_rho_atTop.eventually h_set
+    exact h_mem.mono fun R hR => hR
+  -- Eventually 4*R*D > 1
+  have h_ev_RD : ∀ᶠ (R : ℝ) in atTop, 4 * R * D > 1 := by
+    filter_upwards [eventually_gt_atTop (1/(4*D))] with R hR
+    have hpos : 4*D > 0 := by positivity
+    calc
+      4 * R * D = (4*D) * R := by ring
+      _ > (4*D) * (1/(4*D)) := mul_lt_mul_of_pos_left hR hpos
+      _ = 1 := by field_simp [ne_of_gt hpos]
+  -- Eventually R > 1/2
+  have h_ev_gt_half : ∀ᶠ (R : ℝ) in atTop, R > 1/2 :=
+    eventually_gt_atTop (1/2)
+  -- Combine all three conditions
+  have h_ev_all : ∀ᶠ (R : ℝ) in atTop, R > 1/2 ∧ Real.log (rho R) > -ε ∧ 4 * R * D > 1 := by
+    filter_upwards [h_ev_gt_half, h_ev_rho, h_ev_RD] with R hR1 hR2 hR3
+    have h_log_gt : Real.log (rho R) > -ε := by
+      calc
+        Real.log (rho R) > Real.log (Real.exp (-ε)) := Real.log_lt_log (Real.exp_pos _) hR2
+        _ = -ε := Real.log_exp (-ε)
+    exact ⟨hR1, h_log_gt, hR3⟩
+  rcases Filter.Eventually.exists h_ev_all with ⟨R, hR⟩
+  exact ⟨R, hR.1, hR.2.1, hR.2.2⟩
 
 /-!
-### Axiom 5: First-coordinate separation
+### First-coordinate separation
 
+This follows directly from the strengthened `hΛ_sep` field of `AdmissibleFamily`.
 In the Minkowski lattice Λ = Φ(D⁻¹O_K), coordinate 0 corresponds to the
-distinguished embedding σ₀ : K → ℂ.  Since σ₀ is a field embedding, a
-non-zero lattice element has non-zero image, and the D⁻¹ scaling gives
-the quantitative bound.
+distinguished embedding σ₀ : K → ℂ, so the first coordinate inherits the
+separation bound.
 -/
 
-axiom first_coordinate_separation (A : AdmissibleFamily) (v : Fin A.f → ℂ)
-    (hvΛ : v ∈ A.Λ) (hv_ne : v ≠ 0) : ‖v (fin0 A.hf)‖ ≥ A.D⁻¹
+lemma first_coordinate_separation (A : AdmissibleFamily) (v : Fin A.f → ℂ)
+    (hvΛ : v ∈ A.Λ) (hv_ne : v ≠ 0) : ‖v (fin0 A.hf)‖ ≥ A.D⁻¹ :=
+  A.hΛ_sep v hvΛ hv_ne
 
 /-!
 ### Lemma 2.5: Projection injectivity

@@ -11,6 +11,9 @@ We package the conclusion as an explicit `AdmissibleFamily` structure
 and an axiom asserting its existence.
 -/
 
+/-- First element of `Fin f` when `f ≥ 1`. -/
+def fin0 {f : ℕ} (hf : f ≥ 1) : Fin f := ⟨0, by omega⟩
+
 /-- A level of the admissible tower: degree f, denominator D,
     Minkowski lattice Λ ⊂ ℂ^f, and a set U ⊂ Λ of norm-one elements.
 
@@ -33,8 +36,8 @@ structure AdmissibleFamily where
   hU_in_Λ  : ∀ u ∈ U, D • u ∈ Λ
   -- |U| ≥ e^{γ f}
   hU_size  : (U.card : ℝ) ≥ Real.exp (γ * (f : ℝ))
-  -- Separation: nonzero lattice elements have some coordinate ≥ D⁻¹ in modulus
-  hΛ_sep   : ∀ v ∈ Λ, v ≠ 0 → ∃ r : Fin f, ‖v r‖ ≥ D⁻¹
+  -- Separation: nonzero lattice elements have first coordinate ≥ D⁻¹ in modulus
+  hΛ_sep   : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf)‖ ≥ D⁻¹
 
 /-- **Axiom (Proposition 3.8).**
     There exists an absolute constant γ > 0, a uniform denominator D > 0,
