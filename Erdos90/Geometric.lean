@@ -247,13 +247,41 @@ structure GoodCoset (A : AdmissibleFamily) (R : ℝ) where
                         (λ (p : (Fin A.f → ℂ) × (Fin A.f → ℂ)) => p.2 - p.1 ∈ A.U)).card
             (E : ℝ) ≥ Real.exp (A.γ / 2 * (A.f : ℝ)) * (N : ℝ)
 
-/-- The existence of a good coset is Axiom 3, relying on Haar measure
-    on the torus ℂ^f/Λ.  Declared as `def` (not `lemma`) because
-    it returns a `GoodCoset` structure, not a `Prop`. -/
-def exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
-    (hρ : Real.log (rho R) > -(A.γ / 2)) : GoodCoset A R := by
-  -- The full proof requires Haar measure on the torus.
-  sorry
+/-- **Axiom 3: Existence of a good coset (Lemma 2.4).**
+
+    Given an admissible family A and a radius R > 1/2 satisfying
+    `log ρ(R) > -γ/2`, there exists a coset `a + Λ` whose intersection X
+    with the polydisc B_R satisfies the counting estimate:
+      `E ≥ exp(γf/2) · |X|`
+    where E is the number of ordered pairs (x, y) ∈ X² with y - x ∈ U.
+
+    **Mathematical proof (Haar measure averaging):**
+    1. The quotient ℂ^f / Λ is a compact abelian group (torus of dimension 2f).
+       Equip it with the Haar probability measure μ.
+    2. For a coset c = a + Λ, define N(c) = |c ∩ B_R| and E(c) = number of
+       ordered U-pairs in c ∩ B_R.
+    3. By Fubini's theorem on the fundamental domain:
+       - ∫ N(c) dμ(c) = vol(B_R) / covol(Λ) = (πR²)^f / covol(Λ)
+       - ∫ E(c) dμ(c) = |U| · a(R)^f / covol(Λ)
+         where a(R) is the overlap area of two radius-R discs at distance 1.
+    4. Since ρ(R) = a(R)/b(R) = a(R)/(πR²), the condition log ρ(R) > -γ/2 gives
+       a(R) > (πR²) · exp(-γ/2), hence a(R)^f > (πR²)^f · exp(-γf/2).
+    5. From the admissible family: |U| ≥ exp(γf) (by `hU_size`).
+    6. Combining: ∫ E(c) ≥ exp(γf) · (πR²)^f · exp(-γf/2) / covol(Λ)
+                     = exp(γf/2) · (πR²)^f / covol(Λ)
+                     = exp(γf/2) · ∫ N(c).
+    7. By the mean value theorem for integrals, there exists a coset c₀ with
+       E(c₀) ≥ exp(γf/2) · N(c₀).  Moreover, N(c₀) > 0 (the polydisc contains
+       lattice points).  Take X = c₀ ∩ B_R.
+
+    **Formalization note:** This axiom subsumes the existence of the Haar measure
+    on the quotient ℂ^f / Λ and the Fubini/averaging argument.  A fully formal
+    proof would require several hundred lines of measure theory (discrete
+    subgroups, fundamental domains, quotient Haar measure, integrals of counting
+    functions).  It is declared as an `axiom` at the same level as
+    `exists_admissible_family` (Axiom 1). -/
+axiom exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
+    (hρ : Real.log (rho R) > -(A.γ / 2)) : GoodCoset A R
 
 /-!
 ### Lemma 2.6: Size bound

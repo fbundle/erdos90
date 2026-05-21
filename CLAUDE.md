@@ -65,10 +65,10 @@ These are statements assumed without proof, corresponding to deep theorems in th
 - **`erdos_unit_distance_false`** (Theorem 1.1, `Main.lean`) — fully proven; B = 2·log(4RD+1), δ = γ/(4B)
 - **`erdos_bound_false`** (contrapositive, `Main.lean`) — fully proven
 
-### Deep axioms (`sorry` — awaiting human verification)
+### Deep axioms (declared as `axiom`, awaiting human verification)
 - `exists_good_coset` (Axiom 3) — Haar measure averaging on the torus ℂ^f/Λ
 
-This is the only remaining `sorry` gap in the project.
+There are zero `sorry` gaps; all non-axiom statements are fully proven.
 
 ## Important types and notations
 
