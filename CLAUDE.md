@@ -20,14 +20,13 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erd46.lean` | Root import (imports all modules) |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
-## Rules (READ THE README)
+## Rules
 
-The `README.md` is **strictly for humans** — never edit it, never commit changes to it.  Other constraints from README:
+**Read `README.md` before doing anything.**  It contains project constraints and conventions set by the human maintainer.  Do not duplicate its content here — read it directly.
 
-- The main theorem lives in `Erd46/Main.lean`
-- All definitions for the main theorem live in `Erd46/Defs.lean`
-- All axioms live in `Erd46/Axioms.lean`
-- Use `Co-Authored-By: DeepSeek-V4-Pro with Claude Code` at the end of every commit message
+In particular: never edit or commit `README.md` itself.
+
+Commit messages must end with `Co-Authored-By: DeepSeek-V4-Pro with Claude Code`.
 
 ## Build
 
