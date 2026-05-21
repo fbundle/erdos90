@@ -23,7 +23,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - you can find some useful resources in `assets`
 
-- if `lake build` is ok, you can commit and push with your updates
+- if `lake build` is ok, you can commit and push
 
 - please end your commit message with 
 
