@@ -170,21 +170,49 @@ theorem erdos_unit_distance_false :
     n > exp(exp(C/δ)) this inequality is reversed, a contradiction. -/
 theorem erdos_bound_false :
     ¬ ∃ (C : ℝ) (N : ℕ), C > 0 ∧ (∀ n ≥ N, (maxUnitDists n : ℝ) ≤ (n : ℝ) ^ (1 + C / Real.log (Real.log (n : ℝ)))) := by
-  -- Suppose the Erdős bound holds for some C > 0, N
   rintro ⟨C, N, hC_pos, h_bound⟩
-  -- From Theorem 1.1, we have δ > 0 with ν(n) ≥ n^{1+δ} for infinitely many n
   obtain ⟨δ, hδ_pos, h_inf⟩ := erdos_unit_distance_false
-  -- We need n large enough that:
-  -- (a) n ≥ N (to apply the Erdős bound)
-  -- (b) log(log n) > C/δ (to derive a contradiction)
-  -- Since log log n → ∞, both hold for sufficiently large n.
-  -- Let n be from Theorem 1.1 with n ≥ max(N, ceil(exp(exp(C/δ))) + 1).
-  --
-  -- Then: n^{1+δ} ≤ ν(n) ≤ n^{1 + C/log log n}
-  -- Taking log: (1+δ)·log n ≤ (1 + C/log log n)·log n
-  -- So δ ≤ C/log log n, i.e., log log n ≤ C/δ
-  -- But by construction log(log n) > C/δ, contradiction.
-  --
-  -- Formalizing this requires the real log/exp monotonicity and the
-  -- asymptotic of log log n → ∞.  Left as `sorry` for now.
-  sorry
+  -- Choose threshold so that any n ≥ threshold satisfies n > exp(exp(C/δ)),
+  -- which implies log log n > C/δ.
+  let threshold := max N (⌈Real.exp (Real.exp (C / δ))⌉₊ + 1)
+  obtain ⟨n, hn_ge, h_nu_lower⟩ := h_inf threshold
+  have hn_ge_N : n ≥ N := le_trans (Nat.le_max_left _ _) hn_ge
+  -- n > exp(exp(C/δ))
+  have hn_gt : (n : ℝ) > Real.exp (Real.exp (C / δ)) := by
+    have hge : n ≥ ⌈Real.exp (Real.exp (C / δ))⌉₊ + 1 :=
+      le_trans (Nat.le_max_right _ _) hn_ge
+    calc (n : ℝ) ≥ ⌈Real.exp (Real.exp (C / δ))⌉₊ + 1 := by exact_mod_cast hge
+      _ > Real.exp (Real.exp (C / δ)) := by
+          calc (⌈Real.exp (Real.exp (C / δ))⌉₊ : ℝ) + 1
+              > ⌈Real.exp (Real.exp (C / δ))⌉₊ := by norm_cast; omega
+            _ ≥ Real.exp (Real.exp (C / δ)) := Nat.le_ceil _
+  -- log n > exp(C/δ) > 1 and log log n > C/δ
+  have h_logn_gt : Real.log n > Real.exp (C / δ) := by
+    have h := Real.log_lt_log (Real.exp_pos _) hn_gt
+    rwa [Real.log_exp] at h
+  have h_logn_gt1 : Real.log n > 1 :=
+    calc Real.log n > Real.exp (C / δ) := h_logn_gt
+      _ ≥ 1 := le_of_lt (one_lt_exp_iff.mpr (by positivity))
+  have h_loglogn_pos : Real.log (Real.log n) > 0 := Real.log_pos h_logn_gt1
+  have h_loglogn_gt : Real.log (Real.log n) > C / δ := by
+    rw [show C / δ = Real.log (Real.exp (C / δ)) from (Real.log_exp _).symm]
+    exact Real.log_lt_log (Real.exp_pos _) h_logn_gt
+  -- Apply both bounds to n
+  have h_nu_upper : (maxUnitDists n : ℝ) ≤ (n : ℝ) ^ (1 + C / Real.log (Real.log n)) :=
+    h_bound n hn_ge_N
+  have hn_gt1 : (n : ℝ) > 1 :=
+    calc (n : ℝ) > Real.exp (Real.exp (C / δ)) := hn_gt
+      _ > 1 := one_lt_exp_iff.mpr (by positivity)
+  -- n^{1+δ} ≤ ν(n) ≤ n^{1 + C/log log n} implies 1+δ ≤ 1 + C/log log n (since n > 1)
+  have h_exponent : (1 : ℝ) + δ ≤ 1 + C / Real.log (Real.log n) := by
+    apply (Real.rpow_le_rpow_left_iff hn_gt1).mp; linarith
+  -- So δ ≤ C/log log n, giving δ·log log n ≤ C
+  have h_prod_le : δ * Real.log (Real.log n) ≤ C := by
+    have h := mul_le_mul_of_nonneg_right (by linarith : δ ≤ C / Real.log (Real.log n))
+      (le_of_lt h_loglogn_pos)
+    rw [div_mul_cancel₀ C (ne_of_gt h_loglogn_pos)] at h; linarith
+  -- But log log n > C/δ implies δ·log log n > C — contradiction
+  have h_prod_gt : C < δ * Real.log (Real.log n) := by
+    have h := mul_lt_mul_of_pos_left h_loglogn_gt hδ_pos
+    rw [mul_div_cancel₀ C (ne_of_gt hδ_pos)] at h; linarith
+  linarith
