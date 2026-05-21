@@ -1,4 +1,4 @@
-# ERDOS90
+# ERDOS90 [WIP]
 
 A lean formalization of [Erdős Problem 90](https://www.erdosproblems.com/90): *Planar Point Sets with Many Unit Distances* from OpenAI.
 
