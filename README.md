@@ -25,10 +25,10 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - if `lake build` is ok, you can commit and push with your updates
 
-- your model name is `DeepSeek-V4-Pro with Claude Code`, please end your commit message with 
+- please end your commit message with 
 
 ```
-Co-Authored-By: [model name]
+Co-Authored-By: DeepSeek-V4-Pro with Claude Code
 ```
 
 ## DISCLAIMER FOR AI USE
