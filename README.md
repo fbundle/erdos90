@@ -31,3 +31,11 @@ as of commit `101a3ecc08d74757d0ac246664a8d72c80f8756b`
 ```
 Co-Authored-By: [model name]
 ```
+
+## DISCLAIMER FOR AI USE
+
+This work is completed totally by AI with human verification
+
+- `DeepSeek-V4-Pro with Claude Code`
+
+- `Claude Sonnet 4.6`
