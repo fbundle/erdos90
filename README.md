@@ -11,7 +11,6 @@ A lean template can be found [here](https://github.com/google-deepmind/formal-co
 as of commit `101a3ecc08d74757d0ac246664a8d72c80f8756b`
 
 - [x] `Erdos90/Defs.lean`
-- [ ] `Erdos90/Axioms.lean`
 - [x] main theorem `erdos_unit_distance_false` in `Erdos90/Main.lean`
 
 ## INSTRUCTION FOR AI
