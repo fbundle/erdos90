@@ -12,11 +12,11 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 
 | File | Purpose |
 |------|---------|
-| `Erdos90/Defs.lean` | Core definitions: `distSq`, `unitDistPairs`, `maxUnitDists` |
-| `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure + Axiom 1 (tower existence) |
-| `Erdos90/Geometric.lean` | Axioms 2–5, `GoodCoset`, Theorems 2.3a/b (planar set from family) |
+| `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
+| `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure + Axiom 1 (`exists_admissible_family`) |
+| `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erdos90/Axioms.lean` | Human-readable index of all 5 axioms with mathematical context |
+| `Erdos90/Axioms.lean` | Human-readable index of the single remaining axiom |
 | `Erdos90.lean` | Root import (imports all modules) |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
@@ -32,56 +32,55 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds — remaining gaps are `sorry` warnings, not compilation errors.
+Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps and zero axiom gaps beyond `exists_admissible_family`.
 
-## The 5 axioms
+## The 1 remaining axiom
 
-These are statements assumed without proof, corresponding to deep theorems in the literature.  They are declared in the source files and documented together in `Axioms.lean`.
+There is a **single** remaining axiom, down from the original 5:
 
-1. **`exists_admissible_family`** (`Arithmetic.lean`) — Golod-Shafarevich tower: ∃ γ>0, D>0, ∀ large M, ∃ A with A.f ≥ M, A.γ = γ, A.D = D
+**`exists_admissible_family`** (`Arithmetic.lean`) — packages both:
+- **Golod–Shafarevich tower** (Proposition 3.8): ∃ γ>0, D>0, ∀ large M, ∃ A : AdmissibleFamily with A.f ≥ M, A.γ = γ, A.D = D
+- **Haar measure coset averaging** (Lemma 2.4): encoded in the `h_coset_avg` field of `AdmissibleFamily` — for any R > ½ with log ρ(R) > −γ/2, returns a `CosetAvgWitness` with E ≥ exp(γf/2)·|X|
 
-2. **`exists_R_log_rho_gt`** (`Geometric.lean`) — disc-overlap ratio ρ(R) → 1: ∀ ε>0, D>0, ∃ R>½, log ρ(R) > -ε ∧ 4RD > 1
+All other statements are proven in Lean.
 
-3. **`exists_good_coset`** (`Geometric.lean`, `def` not `lemma` — returns `GoodCoset` structure) — Haar measure coset averaging
+## Current proof state (everything is proven)
 
-4. **`size_bound`** (`Geometric.lean`) — sup-norm packing: |X| ≤ exp(2f·log(4RD+1)) (proven via grid discretization; the +1 is a proof artifact, not in the paper)
-
-5. **`first_coordinate_separation`** (`Geometric.lean`) — for nonzero v ∈ Λ, ‖v(fin0 A.hf)‖ ≥ D⁻¹
-
-## Current proof state (what's done, what's `sorry`)
-
-### Done (proven in Lean)
+### Fully proven
 - `projection_injective` — first-coordinate projection injective on a Λ-coset (Lemma 2.5)
-- `card_ordered_unit_pairs_eq_two_mul_unitDistPairs` — swap involution + strong induction (cardinality even)
+- `card_ordered_unit_pairs_eq_two_mul_unitDistPairs` — swap involution + strong induction
 - `distSq_symm` — symmetry of Euclidean distance
-- `unitDistPairs_le_maxUnitDists` — any finite planar set achieves ≤ maxUnitDists (`Main.lean`)
-- **`h_card_le`** (inside both `planar_set_from_datum` and `admissible_family_to_planar_set`) — injection φ(x,y) = (re_im(π₁ x), re_im(π₁ y)) from U-pairs into ordered unit-distance pairs; key: `‖z‖^2 = normSq z` via `simp [Complex.norm_def, Real.sq_sqrt (normSq_nonneg _)]`
-- **`h_P_lower`** (inside `planar_set_from_datum`) — |P| ≥ exp(γ/2·f), proved from E ≤ N² and E ≥ exp·N
-- **`h_exp_bound`** (inside both theorems) — exp(γ/2·f) ≥ |P|^{2δ} via `Real.rpow_def_of_pos` + log monotonicity
-- **rpow identity** — (P.card)^(2δ)·P.card = (P.card)^(1+2δ), via `Real.rpow_add` + `Real.rpow_one`
-- **`size_bound`** (Axiom 4, `Geometric.lean`) — proven via grid discretization; bound is |X| ≤ exp(2f·log(4RD+1))
-- **`planar_set_from_datum`** (Theorem 2.3 parametric, `Geometric.lean`) — fully proven, uses size_bound
-- **`admissible_family_to_planar_set`** (Theorem 2.3, `Geometric.lean`) — fully proven
-- **`erdos_unit_distance_false`** (Theorem 1.1, `Main.lean`) — fully proven; B = 2·log(4RD+1), δ = γ/(4B)
-- **`erdos_bound_false`** (contrapositive, `Main.lean`) — fully proven
+- `unitDistPairs_le_maxUnitDists` — any finite planar set achieves ≤ maxUnitDists
+- `size_bound` — sup-norm packing: |X| ≤ exp(2f·log(4RD+1)), proven via grid discretization
+- `first_coordinate_separation` — for nonzero v ∈ Λ, ‖v(fin0 A.hf)‖ ≥ D⁻¹
+- `exists_R_log_rho_gt` — ∀ ε>0, D>0, ∃ R>½, log ρ(R) > −ε ∧ 4RD > 1 (from ρ(R) → 1)
+- `tendsto_rho_atTop` — ρ(R) → 1 as R → ∞
+- `rho_formula` — algebraic simplification of ρ(R)
+- **`exists_good_coset`** — now a `def` (not `axiom`): unpacks `A.h_coset_avg` into a `GoodCoset`
+- `planar_set_from_datum` (Theorem 2.3 parametric) — fully proven
+- `admissible_family_to_planar_set` (Theorem 2.3) — fully proven
+- `erdos_unit_distance_false` (Theorem 1.1) — fully proven; B = 2·log(4RD+1), δ = γ/(4B)
+- `erdos_bound_false` (contrapositive) — fully proven
 
-### Deep axioms (declared as `axiom`, awaiting human verification)
-- `exists_good_coset` (Axiom 3) — Haar measure averaging on the torus ℂ^f/Λ
+### Deep axiom (declared as `axiom`, awaiting human verification)
+- `exists_admissible_family` — Golod–Shafarevich tower + Haar measure averaging
 
-There are zero `sorry` gaps; all non-axiom statements are fully proven.
+There are zero `sorry` gaps and zero axioms beyond `exists_admissible_family`.
 
 ## Important types and notations
 
-- `AdmissibleFamily` has fields: `f`, `hf`, `D`, `hD`, `γ`, `hγ`, `Λ` (AddSubgroup), `U` (Finset), `hU_mod`, `hU_in_Λ`, `hU_size`, `hΛ_sep`
+- `AdmissibleFamily` has fields: `f`, `hf`, `D`, `hD`, `γ`, `hγ`, `Λ` (AddSubgroup), `U` (Finset), `hU_mod`, `hU_in_Λ`, `hU_size`, `hΛ_sep`, `h_coset_avg`
+- `h_coset_avg` field: `∀ R, R > 1/2 → log(rho R) > −γ/2 → CosetAvgWitness f Λ U R γ`
+- `CosetAvgWitness f Λ U R γ` — structure in `Defs.lean` packaging coset averaging data (fields: `a`, `X`, `hX_sub`, `hX_fin`, `hX_ne`, `h_count`)
 - `fin0 hf` is the first element of `Fin f` (guards f ≥ 1)
-- `polydisc f R` is the sup-norm polydisc in ℂ^f
-- `shift a S` is translation of set S by vector a
-- `distSq` is squared Euclidean distance on ℝ×ℝ
-- `unitDistPairs P` counts *unordered* unit-distance pairs (filtered offDiag / 2)
-- `GoodCoset A R` packages the coset averaging result
-- `rho R` is the disc-overlap ratio a(R)/b(R)
-- `planar_set_from_datum A R hR hρ h_4RD` — parametric form of Theorem 2.3; outputs |P| ≥ 1, |P| ≥ exp(γ/2·f), |P| ≤ exp(2·log(4RD+1)·f), and ν(P) ≥ ½·exp·|P|
-- `admissible_family_to_planar_set A` — corollary that picks R internally and outputs ν(P) ≥ ½·|P|^{1+2δ}
+- `polydisc f R` — sup-norm polydisc in ℂ^f (defined in `Defs.lean`)
+- `shift a S` — translation of set S by vector a (defined in `Defs.lean`)
+- `rho R` — disc-overlap ratio a(R)/b(R) (defined in `Defs.lean`)
+- `distSq` — squared Euclidean distance on ℝ×ℝ
+- `unitDistPairs P` — counts *unordered* unit-distance pairs (filtered offDiag / 2)
+- `GoodCoset A R` — packages the coset averaging result; constructed by `exists_good_coset` from `A.h_coset_avg`
+- `planar_set_from_datum A R hR hρ h_4RD` — parametric Theorem 2.3; outputs |P| ≥ 1, |P| ≥ exp(γ/2·f), |P| ≤ exp(2·log(4RD+1)·f), ν(P) ≥ ½·exp·|P|
+- `admissible_family_to_planar_set A` — picks R internally, outputs ν(P) ≥ ½·|P|^{1+2δ}
 
 ## Key Mathlib API facts (non-obvious)
 
@@ -95,6 +94,7 @@ There are zero `sorry` gaps; all non-axiom statements are fully proven.
 - `abs_re_le_norm` / `abs_im_le_norm` — `|z.re| ≤ ‖z‖` and `|z.im| ≤ ‖z‖` for `z : ℂ`
 - Local `let` bindings are NOT unfolded by `simp only` or `dsimp only` — use `.mp` / `.mpr` directly
 - `positivity` can't prove `R > 0` from `4*R*A.D > 1` and `A.D > 0` — use explicit `by_contra` + `nlinarith`
+- `GoodCoset A R` is a `Type` not `Prop` — use `def` not `theorem/lemma` when returning it; can't use `obtain`/tactic `cases` to eliminate into it
 
 ## Tips for continuing
 
@@ -102,13 +102,11 @@ There are zero `sorry` gaps; all non-axiom statements are fully proven.
 
 2. The `swap` involution proof for even cardinality used `Finset.strongInductionOn` with a generalized induction hypothesis (`revert` trick).  This pattern works for similar combinatorial arguments.
 
-3. For `erdos_unit_distance_false`: choose M = max(⌈log N / (γ/2)⌉₊, ⌈log 2 / (γ/2·δ)⌉₊), get A from the tower with A.f ≥ M, then rewrite A.γ = γ and A.D = D before calling `planar_set_from_datum`. Use `Real.log_lt_log` for monotonicity. The `Nat.cast_le.mp` typeclass can get stuck — use `have h : (N : ℝ) ≤ (P.card : ℝ) := ?_; exact_mod_cast h` instead.
+3. The `Nat.cast_le.mp` typeclass can get stuck — use `have h : (N : ℝ) ≤ (P.card : ℝ) := ?_; exact_mod_cast h` instead.
 
-4. For `erdos_bound_false`: choose threshold = max N (⌈exp(exp(C/δ))⌉₊ + 1) to get n with log log n > C/δ. The contradiction is: n^{1+δ} ≤ ν(n) ≤ n^{1+C/log log n} forces δ ≤ C/log log n, but log log n > C/δ means δ·log log n > C.
+4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
-
-6. Commit often with descriptive messages.  Always end commits with the co-author line.
+5. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Memory
 
