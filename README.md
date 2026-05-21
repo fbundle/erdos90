@@ -25,7 +25,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - you can find some useful resources in `assets`
 
-- DO NOT COMMIT, DO NOT PUSH without permission
+- if `lake build` is ok, you can commit and push with your updates
 
 - your model name is `Claude Sonnet 4.6`, please end your commit message with 
 
