@@ -165,9 +165,65 @@ the argument is standard and unambiguous.
 lemma prop_p6 (C : ℝ) (hC : C > 0) :
     ∀ᶠ (ℓ : ℕ) in atTop,
       (((ℓ - 1)^2 : ℕ) : ℝ) / 200 * Real.log 2 > C * (ℓ : ℝ) * Real.log (ℓ : ℝ) := by
-  -- Analytic argument: ℓ² / (ℓ log ℓ) = ℓ/log ℓ → ∞.
-  -- This uses Real.isLittleO_log_id_atTop and standard filter arithmetic.
-  sorry
+  -- Use log = o(id): for large x, |log x| ≤ ε * |x|, where ε = log 2 / (1600 * C)
+  set ε := Real.log 2 / (1600 * C) with hε_def
+  have hε_pos : ε > 0 := by
+    apply div_pos (Real.log_pos (by norm_num))
+    positivity
+  -- Get x₀ such that for x ≥ x₀, ‖log x‖ ≤ ε * ‖id x‖
+  have hbound := Real.isLittleO_log_id_atTop.bound hε_pos
+  rw [Filter.eventually_atTop] at hbound
+  obtain ⟨x₀, hx₀⟩ := hbound
+  -- Transfer to ℕ threshold: N = max 1 (max 2 ⌈x₀⌉₊)
+  set N := max (max 2 (Nat.ceil x₀)) 2 with hN_def
+  rw [Filter.eventually_atTop]
+  refine ⟨N + 1, fun ℓ hℓ => ?_⟩
+  have hℓ_ge_2 : ℓ ≥ 2 := by omega
+  have hℓ_ge_ceil : (Nat.ceil x₀ : ℕ) ≤ ℓ := by
+    have : Nat.ceil x₀ ≤ N := le_trans (Nat.le_max_right _ _) (Nat.le_max_left _ _)
+    omega
+  -- For ℓ ≥ x₀, we have |log ℓ| ≤ ε * |ℓ|
+  have hℓ_ge_x₀ : x₀ ≤ (ℓ : ℝ) := by
+    calc x₀ ≤ Nat.ceil x₀ := Nat.le_ceil x₀
+    _ ≤ (ℓ : ℕ) := by exact_mod_cast hℓ_ge_ceil
+    _ = (ℓ : ℝ) := by norm_cast
+  have hlog_bound := hx₀ (ℓ : ℝ) hℓ_ge_x₀
+  have hℓ_pos : (0 : ℝ) < ℓ := by exact_mod_cast Nat.pos_of_ne_zero (by omega)
+  have hlog_nonneg : 0 ≤ Real.log ℓ := by
+    apply Real.log_nonneg
+    have : (ℓ : ℝ) ≥ 2 := by exact_mod_cast hℓ_ge_2
+    linarith
+  simp only [Real.norm_eq_abs, id] at hlog_bound
+  rw [abs_of_nonneg hlog_nonneg, abs_of_pos hℓ_pos] at hlog_bound
+  -- (ℓ-1)^2 ≥ ℓ^2 / 4 since 2*(ℓ-1) ≥ ℓ for ℓ ≥ 2
+  have hℓ1_sq : (((ℓ - 1)^2 : ℕ) : ℝ) ≥ (ℓ : ℝ)^2 / 4 := by
+    have hℓ_real : (ℓ : ℝ) ≥ 2 := by exact_mod_cast hℓ_ge_2
+    have hℓ1_nat : ℓ - 1 ≥ 1 := by omega
+    have hℓ1_real : ((ℓ - 1 : ℕ) : ℝ) = (ℓ : ℝ) - 1 := by
+      have h1 : (1 : ℕ) ≤ ℓ := by omega
+      rw [Nat.cast_sub h1]
+      simp
+    have hcast : (((ℓ - 1)^2 : ℕ) : ℝ) = ((ℓ : ℝ) - 1)^2 := by
+      rw [Nat.cast_pow, hℓ1_real]
+    rw [hcast]
+    nlinarith
+  -- LHS ≥ ℓ^2 * log 2 / 800
+  have hLHS : (((ℓ - 1)^2 : ℕ) : ℝ) / 200 * Real.log 2 ≥ (ℓ : ℝ)^2 * Real.log 2 / 800 := by
+    have hlog2_pos : Real.log 2 > 0 := Real.log_pos (by norm_num)
+    nlinarith
+  -- RHS = C * ℓ * log ℓ ≤ C * ℓ * (ε * ℓ) = ℓ^2 * log 2 / 1600
+  have hRHS : C * (ℓ : ℝ) * Real.log (ℓ : ℝ) ≤ (ℓ : ℝ)^2 * Real.log 2 / 1600 := by
+    have hlog2_pos : Real.log 2 > 0 := Real.log_pos (by norm_num)
+    -- log ℓ ≤ ε * ℓ = (log 2 / (1600 * C)) * ℓ
+    -- so C * ℓ * log ℓ ≤ C * ℓ * ε * ℓ = ℓ^2 * log 2 / 1600
+    have hε_eq : ε * (1600 * C) = Real.log 2 := by
+      rw [hε_def]; field_simp
+    have hClogℓ : C * (ℓ : ℝ) * Real.log (ℓ : ℝ) ≤ C * (ℓ : ℝ) * (ε * (ℓ : ℝ)) :=
+      mul_le_mul_of_nonneg_left hlog_bound (mul_nonneg (le_of_lt hC) (le_of_lt hℓ_pos))
+    nlinarith [mul_pos hC hℓ_pos, sq_nonneg (ℓ : ℝ)]
+  have hlog2_pos : Real.log 2 > 0 := Real.log_pos (by norm_num)
+  have hℓ_sq_pos : (ℓ : ℝ)^2 > 0 := by positivity
+  nlinarith
 
 /-! ## Main theorem -/
 
@@ -201,7 +257,25 @@ theorem exists_admissible_family :
   obtain ⟨ℓ₀, hℓ₀⟩ := Filter.eventually_atTop.mp (prop_p6 (4 * C_class * C_rd) hC_P6)
   -- Auxiliary: eventually log 2 ≤ C_rd * k * log k  (since k * log k → ∞ and C_rd > 0)
   have hlog2_event : ∀ᶠ (k : ℕ) in atTop, Real.log 2 ≤ C_rd * (k : ℝ) * Real.log (k : ℝ) := by
-    sorry -- analytic: C_rd * k * log k → ∞, so eventually ≥ log 2 (Real.isLittleO_log_id_atTop)
+    rw [Filter.eventually_atTop]
+    set N := max 2 (Nat.ceil (1 / C_rd) + 1)
+    refine ⟨N, fun k hk => ?_⟩
+    have hk_ge_2 : k ≥ 2 := le_trans (Nat.le_max_left _ _) hk
+    have hk_pos : (0 : ℝ) < k := by exact_mod_cast Nat.pos_of_ne_zero (by omega)
+    have hlogk_ge_log2 : Real.log 2 ≤ Real.log k := by
+      apply Real.log_le_log (by norm_num)
+      exact_mod_cast hk_ge_2
+    have hlogk_pos : Real.log k > 0 := lt_of_lt_of_le (Real.log_pos (by norm_num)) hlogk_ge_log2
+    have hk_ge_inv : 1 / C_rd ≤ k := by
+      have hceil_le : Nat.ceil (1 / C_rd) + 1 ≤ N := Nat.le_max_right _ _
+      have : Nat.ceil (1 / C_rd) + 1 ≤ k := le_trans hceil_le hk
+      have : (1 / C_rd : ℝ) ≤ Nat.ceil (1 / C_rd) := Nat.le_ceil _
+      exact_mod_cast le_trans this (by exact_mod_cast Nat.le_of_succ_le ‹_›)
+    have hCrd_k_ge_1 : C_rd * k ≥ 1 := by
+      have hk_real : (k : ℝ) ≥ 1 / C_rd := hk_ge_inv
+      have : C_rd * (1 / C_rd) = 1 := by field_simp
+      nlinarith
+    nlinarith
   obtain ⟨ℓ₁, hℓ₁⟩ := Filter.eventually_atTop.mp hlog2_event
   -- Step 3: Pick ℓ ≥ max(max(ℓ₀, ℓ₁), 2)
   let ℓ := max (max ℓ₀ ℓ₁) 2

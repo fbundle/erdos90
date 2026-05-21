@@ -2,6 +2,7 @@ import Mathlib
 import Erdos90.Defs
 import Erdos90.Arithmetic
 import Erdos90.Geometric
+import Erdos90.NumberField
 
 /-!
 # Theorem 1.1: The Erdős unit-distance conjecture is false (for human verification)
@@ -216,3 +217,5 @@ theorem erdos_bound_false :
     have h := mul_lt_mul_of_pos_left h_loglogn_gt hδ_pos
     rw [mul_div_cancel₀ C (ne_of_gt hδ_pos)] at h; linarith
   linarith
+
+#print axioms erdos_unit_distance_false
