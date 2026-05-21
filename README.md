@@ -13,3 +13,9 @@ as of commit `101a3ecc08d74757d0ac246664a8d72c80f8756b`
 ## INSTRUCTION FOR AI
 
 - this file is strictly for human: DO NOT EDIT, DO NOT COMMIT
+
+- the main theorem must be put in `Erd46/Main.lean`
+
+- all necessary definitions for the main theorem must be put in `Erd46/Defs.lean`
+
+- all proven facts that put as axioms must be put in `Erd46/Axioms.lean`
