@@ -14,10 +14,10 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 |------|---------|
 | `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
 | `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure (no axioms — `exists_admissible_family` is a theorem in NumberField) |
-| `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` proved from 3 sub-axioms + analytic lemmas |
+| `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` proved from 2 sub-axioms + analytic lemmas |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erdos90/Axioms.lean` | Human-readable documentation of the 3 remaining sub-axioms |
+| `Erdos90/Axioms.lean` | Human-readable documentation of the 2 remaining sub-axioms |
 | `Erdos90.lean` | Root import (imports all modules, including NumberField) |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
