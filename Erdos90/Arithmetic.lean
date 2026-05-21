@@ -45,21 +45,5 @@ structure AdmissibleFamily where
   h_coset_avg : ∀ (R : ℝ), R > 1/2 → Real.log (rho R) > -(γ / 2) →
       CosetAvgWitness f Λ U R γ
 
-/-- **Axiom (Proposition 3.8).**
-    There exists an absolute constant γ > 0, a uniform denominator D > 0,
-    and, for arbitrarily large f, an admissible family with those γ and D.
-
-    In the paper's construction (Section 3), D is fixed for the entire tower
-    (it's the denominator of the base CM field).  This uniformity ensures that
-    the geometric δ = γ/(8·log(4RD)) is independent of f.
-
-    This is the output of:
-    - Proposition 3.2: Cyclotomic base field F (cyclic cubic, totally real)
-    - Proposition 3.4: Golod-Shafarevich inequality
-    - Proposition 3.5: Shafarevich relation-rank estimate
-    - Proposition 3.6: Chebotarev density theorem
-    - Proposition 3.7: Minkowski ideal-class bound → h(K) ≤ H^f
-    - Proposition 2.2: Class-group pigeonhole → |U| ≥ e^{(t log 2 - log H)f} -/
-axiom exists_admissible_family :
-    ∃ (γ : ℝ) (_hγ : γ > 0) (D : ℝ) (_hD : D > 0),
-      ∀ (M : ℕ), ∃ (A : AdmissibleFamily), A.f ≥ M ∧ A.γ = γ ∧ A.D = D
+/-! `exists_admissible_family` is a **theorem** proved in `Erdos90/NumberField.lean`
+    from sub-axioms corresponding to Propositions 2.2 and 3.2–3.8 of the paper. -/
