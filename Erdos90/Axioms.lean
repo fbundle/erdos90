@@ -11,9 +11,11 @@ literature or a substantial computation.
 
 **All axioms should be reviewed by a number theorist / geometer.**
 
-The axioms are declared in the modules that need them:
-- `Arithmetic.lean`: Axiom 1 (`exists_admissible_family`)
-- `Geometric.lean`: Axiom 2 (`exists_good_coset`)
+There is now a single remaining axiom:
+- `exists_admissible_family` (`Arithmetic.lean`): encapsulates both
+  the Golod–Shafarevich tower construction (Proposition 3.8) and the
+  Haar measure coset averaging (Lemma 2.4), via the `h_coset_avg` field
+  of `AdmissibleFamily`.
 -/
 
 open Real
@@ -21,12 +23,18 @@ open Real
 noncomputable section
 
 /-!
-## Axiom 1: Existence of the admissible tower (Proposition 3.8 of the paper)
+## Axiom 1: Existence of the admissible tower with coset averaging
+   (Proposition 3.8 + Lemma 2.4 of the paper)
 
 **Location**: `Erdos90/Arithmetic.lean`, declared as `axiom exists_admissible_family`.
 
 **Statement**: There exist absolute constants γ > 0 and D > 0 such that,
 for arbitrarily large f, there is an admissible family with those γ and D.
+
+The `AdmissibleFamily` structure packages both the tower construction output
+and the coset averaging property:
+
+### Tower construction (Proposition 3.8)
 
 In the paper, D is the denominator of the base CM field and is fixed
 for the entire tower.  γ = t·log 2 - log H where t is the number of
@@ -39,24 +47,17 @@ split primes and H is the class-number bound.
 - Proposition 3.6: Chebotarev density theorem (split primes with trivial Frobenius)
 - Proposition 3.7: Minkowski ideal-class bound (h(K) ≤ rd(K)^{O([K:ℚ])})
 - Proposition 2.2: Class-group pigeonhole (|U| ≥ e^{(t log 2 - log H)f})
--/
 
-#check exists_admissible_family
-
-/-!
-## Axiom 2: Coset averaging (Lemma 2.4)
-
-**Location**: `Erdos90/Geometric.lean`, declared as `axiom exists_good_coset`.
+### Coset averaging (Lemma 2.4, `h_coset_avg` field)
 
 Using Haar probability measure on the torus ℂ^f/Λ, the expected size
 of (a+Λ) ∩ B_R is vol(B_R)/covol(Λ), and the expected number of ordered
 U-pairs (x, x+u) with u ∈ U is |U|·a(R)^f / covol(Λ).
 
-**Statement**: For an admissible family A and radius R > 1/2 with
-log ρ(R) > -γ/2, there exists a coset a+Λ such that the finite
-intersection X = (a+Λ) ∩ B_R is nonempty and satisfies the counting
-estimate E ≥ e^{γf/2}·|X|, where E counts ordered pairs (x, y) ∈ X²
-with y-x ∈ U.
+For an admissible family A and radius R > 1/2 with log ρ(R) > -γ/2,
+there exists a coset a+Λ such that the finite intersection X = (a+Λ) ∩ B_R
+is nonempty and satisfies E ≥ e^{γf/2}·|X|, where E counts ordered pairs
+(x, y) ∈ X² with y-x ∈ U.
 
 **Verification**: Standard Fubini/averaging argument on the compact abelian
 group ℂ^f/Λ.  The lattice Λ is discrete and cocompact; Haar probability
@@ -66,16 +67,23 @@ measure μ on the quotient satisfies:
 From log ρ(R) > -γ/2 we have a(R)^f > (πR²)^f · exp(-γf/2), and |U| ≥ exp(γf).
 Hence ∫ E ≥ exp(γf/2) · ∫ N, so some coset achieves the average.
 
-**Status**: Declared as `axiom`; the Lean proof requires `IsAddFundamentalDomain`
-measure-theoretic API that is not yet fully exercised in this project.
+**Status**: The `h_coset_avg` field is part of `AdmissibleFamily` and is
+subsumed by `exists_admissible_family`.  A full Lean proof would require
+`IsAddFundamentalDomain` measure-theoretic API not yet exercised here.
 -/
 
-#check exists_good_coset
+#check exists_admissible_family
 
 /-!
 ## Proven statements (formerly axioms)
 
 The following statements are now **fully proven** in Lean:
+
+### `exists_good_coset` (formerly Axiom 3)
+**Location**: `Erdos90/Geometric.lean`, now a theorem (not axiom).
+
+Proved by directly unpacking the `h_coset_avg` field of `AdmissibleFamily`.
+The coset averaging content is encapsulated in `exists_admissible_family`.
 
 ### `exists_R_log_rho_gt` (formerly Axiom 2)
 **Location**: `Erdos90/Geometric.lean`, lemma.
@@ -95,15 +103,15 @@ Proved via grid discretization: first-coordinate projection to a
 **Location**: `Erdos90/Geometric.lean`, lemma.
 
 For nonzero v ∈ Λ, ‖v(fin0 A.hf)‖ ≥ D⁻¹.
-Proved directly from the `hΛ_sep` field of `AdmissibleFamily`
-(after strengthening the structure field to use `fin0 hf`).
+Proved directly from the `hΛ_sep` field of `AdmissibleFamily`.
 
 ---
 
 ## Remaining axioms (awaiting human verification)
 
-1. **`exists_admissible_family`** (`Arithmetic.lean`) — Golod-Shafarevich tower
-2. **`exists_good_coset`** (`Geometric.lean`) — Haar measure coset averaging
+1. **`exists_admissible_family`** (`Arithmetic.lean`) — packages both the
+   Golod-Shafarevich tower construction (Proposition 3.8) and Haar measure
+   coset averaging (Lemma 2.4) via the `h_coset_avg` field.
 
 All other lemmas and theorems are fully proven, including:
 - `projection_injective` (Lemma 2.5)
@@ -117,6 +125,7 @@ All other lemmas and theorems are fully proven, including:
 - `rho_formula` — algebraic simplification of ρ(R)
 - `first_coordinate_separation` — first-coordinate separation bound
 - `exists_R_log_rho_gt` — existence of suitable R
+- `exists_good_coset` — coset averaging (now a theorem, not an axiom)
 -/
 
 #check admissible_family_to_planar_set

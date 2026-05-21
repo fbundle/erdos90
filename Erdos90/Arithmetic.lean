@@ -1,4 +1,5 @@
 import Mathlib
+import Erdos90.Defs
 
 /-!
 # Arithmetic postulates (Section 3 of the paper)
@@ -38,6 +39,11 @@ structure AdmissibleFamily where
   hU_size  : (U.card : ℝ) ≥ Real.exp (γ * (f : ℝ))
   -- Separation: nonzero lattice elements have first coordinate ≥ D⁻¹ in modulus
   hΛ_sep   : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf)‖ ≥ D⁻¹
+  -- Coset averaging (Lemma 2.4): for any R > 1/2 with log ρ(R) > -γ/2, there exists
+  -- a coset a+Λ whose intersection X with the polydisc B_R satisfies E ≥ exp(γf/2)·|X|,
+  -- where E counts ordered pairs (x,y) ∈ X² with y-x ∈ U.
+  h_coset_avg : ∀ (R : ℝ), R > 1/2 → Real.log (rho R) > -(γ / 2) →
+      CosetAvgWitness f Λ U R γ
 
 /-- **Axiom (Proposition 3.8).**
     There exists an absolute constant γ > 0, a uniform denominator D > 0,

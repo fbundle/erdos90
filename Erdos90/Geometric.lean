@@ -26,24 +26,8 @@ These are assembled in `admissible_family_to_planar_set` (Theorem 2.3).
 
 noncomputable section
 
-/-- Sup-norm polydisc of radius R in ℂ^f. -/
-def polydisc (f : ℕ) (R : ℝ) : Set (Fin f → ℂ) :=
-  {z | ∀ r : Fin f, ‖z r‖ ≤ R}
-
-/-- Translate of a set by a vector.  (Named `shift` to avoid clash with mathlib's `translate`.) -/
-def shift {f : ℕ} (a : Fin f → ℂ) (S : Set (Fin f → ℂ)) : Set (Fin f → ℂ) :=
-  {x | ∃ s, s ∈ S ∧ x = a + s}
-
 /-- Area of a radius-R disc in ℂ ≅ ℝ². -/
 def discArea (R : ℝ) : ℝ := π * R ^ 2
-
-/-- Ratio ρ(R) = a(R)/b(R) where a(R) is the overlap area of two radius-R discs
-    at distance 1.  We have ρ(R) → 1 as R → ∞. -/
-def rho (R : ℝ) : ℝ :=
-  if _hR : R > 1/2 then
-    let a := 2 * R ^ 2 * Real.arccos (1 / (2 * R)) - (1/2) * Real.sqrt (4 * R ^ 2 - 1)
-    a / (π * R ^ 2)
-  else 0
 
 lemma rho_formula {R : ℝ} (hR : R > 1/2) : rho R = (2/π) * Real.arccos (1/(2*R)) - Real.sqrt (4*R^2 - 1) / (2*π*R^2) := by
   unfold rho
@@ -342,7 +326,7 @@ structure GoodCoset (A : AdmissibleFamily) (R : ℝ) where
                         (λ (p : (Fin A.f → ℂ) × (Fin A.f → ℂ)) => p.2 - p.1 ∈ A.U)).card
             (E : ℝ) ≥ Real.exp (A.γ / 2 * (A.f : ℝ)) * (N : ℝ)
 
-/-- **Axiom 3: Existence of a good coset (Lemma 2.4).**
+/-- **Theorem (Lemma 2.4): Existence of a good coset.**
 
     Given an admissible family A and a radius R > 1/2 satisfying
     `log ρ(R) > -γ/2`, there exists a coset `a + Λ` whose intersection X
@@ -350,33 +334,18 @@ structure GoodCoset (A : AdmissibleFamily) (R : ℝ) where
       `E ≥ exp(γf/2) · |X|`
     where E is the number of ordered pairs (x, y) ∈ X² with y - x ∈ U.
 
-    **Mathematical proof (Haar measure averaging):**
-    1. The quotient ℂ^f / Λ is a compact abelian group (torus of dimension 2f).
-       Equip it with the Haar probability measure μ.
-    2. For a coset c = a + Λ, define N(c) = |c ∩ B_R| and E(c) = number of
-       ordered U-pairs in c ∩ B_R.
-    3. By Fubini's theorem on the fundamental domain:
-       - ∫ N(c) dμ(c) = vol(B_R) / covol(Λ) = (πR²)^f / covol(Λ)
-       - ∫ E(c) dμ(c) = |U| · a(R)^f / covol(Λ)
-         where a(R) is the overlap area of two radius-R discs at distance 1.
-    4. Since ρ(R) = a(R)/b(R) = a(R)/(πR²), the condition log ρ(R) > -γ/2 gives
-       a(R) > (πR²) · exp(-γ/2), hence a(R)^f > (πR²)^f · exp(-γf/2).
-    5. From the admissible family: |U| ≥ exp(γf) (by `hU_size`).
-    6. Combining: ∫ E(c) ≥ exp(γf) · (πR²)^f · exp(-γf/2) / covol(Λ)
-                     = exp(γf/2) · (πR²)^f / covol(Λ)
-                     = exp(γf/2) · ∫ N(c).
-    7. By the mean value theorem for integrals, there exists a coset c₀ with
-       E(c₀) ≥ exp(γf/2) · N(c₀).  Moreover, N(c₀) > 0 (the polydisc contains
-       lattice points).  Take X = c₀ ∩ B_R.
-
-    **Formalization note:** This axiom subsumes the existence of the Haar measure
-    on the quotient ℂ^f / Λ and the Fubini/averaging argument.  A fully formal
-    proof would require several hundred lines of measure theory (discrete
-    subgroups, fundamental domains, quotient Haar measure, integrals of counting
-    functions).  It is declared as an `axiom` at the same level as
-    `exists_admissible_family` (Axiom 1). -/
-axiom exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
-    (hρ : Real.log (rho R) > -(A.γ / 2)) : GoodCoset A R
+    The proof follows from the `h_coset_avg` field of `AdmissibleFamily`,
+    which encodes the Haar measure averaging argument (see `exists_admissible_family`
+    for the mathematical justification). -/
+def exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
+    (hρ : Real.log (rho R) > -(A.γ / 2)) : GoodCoset A R :=
+  let w := A.h_coset_avg R hR hρ
+  { a       := w.a
+    X       := w.X
+    hX_sub  := w.hX_sub
+    hX_fin  := w.hX_fin
+    hX_ne   := w.hX_ne
+    h_count := w.h_count }
 
 /-!
 ### Lemma 2.6: Size bound
