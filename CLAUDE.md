@@ -14,7 +14,7 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 |------|---------|
 | `Erd46/Defs.lean` | Core definitions: `distSq`, `unitDistPairs`, `maxUnitDists` |
 | `Erd46/Arithmetic.lean` | `AdmissibleFamily` structure + Axiom 1 (tower existence) |
-| `Erd46/Geometric.lean` | Axioms 2–5, `GoodCoset`, Theorem 2.3 (planar set from family) |
+| `Erd46/Geometric.lean` | Axioms 2–5, `GoodCoset`, Theorems 2.3a/b (planar set from family) |
 | `Erd46/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
 | `Erd46/Axioms.lean` | Human-readable index of all 5 axioms with mathematical context |
 | `Erd46.lean` | Root import (imports all modules) |
@@ -54,22 +54,28 @@ These are statements assumed without proof, corresponding to deep theorems in th
 - `projection_injective` — first-coordinate projection injective on a Λ-coset (Lemma 2.5)
 - `card_ordered_unit_pairs_eq_two_mul_unitDistPairs` — swap involution + strong induction (cardinality even)
 - `distSq_symm` — symmetry of Euclidean distance
+- **`h_P_lower`** (inside `planar_set_from_datum`) — |P| ≥ exp(γ/2·f), proved from E ≤ N² and E ≥ exp·N
+- **rpow identity** (inside `admissible_family_to_planar_set`) — (P.card)^(2δ)·P.card = (P.card)^(1+2δ), proved via `Real.rpow_add` + `Real.rpow_one`
 
 ### Deep axioms (`sorry` — awaiting human verification)
 - `exists_admissible_family` (Axiom 1)
 - `exists_good_coset` (Axiom 3)
 - `size_bound` (Axiom 4)
 
-### Arithmetic / combinatorial gaps (`sorry` — routine but tedious)
-These are inside `admissible_family_to_planar_set` (`Geometric.lean` ~lines 290–385):
+### Combinatorial gap (`sorry` — routine but tedious)
 
-- **`h_card_le`**: the projection φ(x,y) = (re_im(π₁ x), re_im(π₁ y)) injects the set of U-pairs in X into the set of ordered unit-distance pairs in P.  Needs `Finset.card_le_card_of_injOn` or similar.  The map is injective because π₁ is injective on X and re_im is injective on ℂ.  Distance preservation: ‖u(fin0)‖ = 1 for u ∈ U.
+- **`h_card_le`** (inside both `planar_set_from_datum` and `admissible_family_to_planar_set`): the map φ(x,y) = (re_im(π₁ x), re_im(π₁ y)) injects U-pairs in X into ordered unit-distance pairs in P.
+  - Distance: y - x ∈ U ⇒ ‖u(fin0)‖ = 1 ⇒ distSq(re_im(π₁ x), re_im(π₁ y)) = 1
+  - Injectivity: π₁ injective on X (proven), re_im injective on ℂ (proven); product is injective
+  - Use `Finset.card_le_card_of_injOn` or `card_image_of_injOn` + `card_le_card_of_subset`
 
-- **`h_exp_bound`**: from `|P| ≤ exp(B·f)` and `γ/2 = 2δB`, derive `exp(γf/2) ≥ |P|^{2δ}`.  Uses `Real.log` monotonicity and the identity `exp(a·log x) = x^a`.  Also needs the final `rpow` step: `|P|^{2δ}·|P| = |P|^{1+2δ}`.
+- **`h_exp_bound`** (inside `admissible_family_to_planar_set`): from `|P| ≤ exp(B·f)` and `γ/2 = 2δB`, derive `exp(γf/2) ≥ |P|^{2δ}`.
+  - Chain: `log|P| ≤ B·f` → multiply by `2δ` → `2δ·log|P| ≤ γ/2·f` → exponentiate → `|P|^{2δ} ≤ exp(γf/2)`
+  - Key: `Real.rpow_def_of_pos`, `Real.log_le_log`, `Real.exp_le_exp`, `Real.exp_log`
 
 ### Final theorem gaps (`sorry` in `Main.lean`)
 
-- **`erdos_unit_distance_false`**: needs to extract the lower bound `|P| ≥ exp(γf/2)` from the counting estimate (E ≤ |P|² and E ≥ exp(γf/2)·|P| ⇒ |P| ≥ exp(γf/2)), then pick f large enough that `|P|^δ ≥ 2` so `½·|P|^{1+2δ} ≥ |P|^{1+δ}`.
+- **`erdos_unit_distance_false`**: structure is in place (fixed global R, defined δ = γ/(4B)).  Missing: pick f large enough that exp(γ/2·f) ≥ N and |P|^δ ≥ 2; use `planar_set_from_datum` with rewritten hypotheses (A.γ = γ, A.D = D); combine bounds to get ν(P) ≥ |P|^{1+δ} and |P| ≥ N.
 
 - **`erdos_bound_false`**: asymptotics — pick n large enough that `log log n > C/δ`, then `n^{1+δ} ≤ ν(n) ≤ n^{1 + C/log log n}` gives contradiction.
 
@@ -83,6 +89,8 @@ These are inside `admissible_family_to_planar_set` (`Geometric.lean` ~lines 290�
 - `unitDistPairs P` counts *unordered* unit-distance pairs (filtered offDiag / 2)
 - `GoodCoset A R` packages the coset averaging result
 - `rho R` is the disc-overlap ratio a(R)/b(R)
+- `planar_set_from_datum A R hR hρ h_4RD` — parametric form of Theorem 2.3 (R explicit, outputs |P| ≥ exp(γ/2·f) and ν(P) ≥ ½·exp·|P|)
+- `admissible_family_to_planar_set A` — corollary that picks R internally and outputs ν(P) ≥ ½·|P|^{1+2δ}
 
 ## Tips for continuing
 
@@ -90,13 +98,15 @@ These are inside `admissible_family_to_planar_set` (`Geometric.lean` ~lines 290�
 
 2. The `swap` involution proof for even cardinality used `Finset.strongInductionOn` with a generalized induction hypothesis (`revert` trick).  This pattern works for similar combinatorial arguments.
 
-3. For the `h_card_le` gap (injection on pairs), define φ(x,y) = (re_im(π₁ x), re_im(π₁ y)), prove it maps E_finset into E_ord, and use `Finset.card_le_card_of_injOn` or `card_image_of_injOn` + `card_le_card_of_subset`.
+3. For `h_card_le`: define φ as a function `(Fin A.f → ℂ) × (Fin A.f → ℂ) → (ℝ × ℝ) × (ℝ × ℝ)` by φ(x,y) = (re_im(π₁ x), re_im(π₁ y)).  Prove `φ '' E_finset.toSet ⊆ E_ord.toSet` (membership check: offDiag + distSq = 1), then `InjOn φ E_finset.toSet` (product of injections), then use `Finset.card_le_card_of_injOn` or image cardinality.
 
-4. For `h_exp_bound`, the chain is: `log|P| ≤ B·f` (from size_bound), multiply by `2δ` to get `2δ·log|P| ≤ 2δ·B·f = γ/2·f` (using `h_γ_over_2_eq_2δB`), then exponentiate.
+4. For `h_exp_bound`: the chain is `log(P.card) ≤ B·f` (from `h_size` via `Real.log_le_log`), then `2δ · log(P.card) ≤ γ/2 · f` (using `h_γ_over_2_eq_2δB`), then `Real.rpow_def_of_pos` rewrites `|P|^{2δ} = exp(2δ · log|P|)`, and `Real.exp_le_exp` closes the goal.
 
-5. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
+5. For `erdos_unit_distance_false`: after obtaining A with A.γ = γ and A.D = D, rewrite `hρ_global` and `h_4RD_gt_one` using these equalities before calling `planar_set_from_datum`.  For the choice of M: use `Nat.ceil` or `⌈(2/γ) * Real.log (max N 1)⌉ + 1` and prove `exp(γ/2 · M) ≥ N` using `Real.add_one_le_exp` or monotonicity.
 
-6. Commit often with descriptive messages.  Always end commits with the co-author line.
+6. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
+
+7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Memory
 
