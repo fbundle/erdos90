@@ -44,7 +44,7 @@ These are statements assumed without proof, corresponding to deep theorems in th
 
 3. **`exists_good_coset`** (`Geometric.lean`, `def` not `lemma` — returns `GoodCoset` structure) — Haar measure coset averaging
 
-4. **`size_bound`** (`Geometric.lean`) — sup-norm packing: |X| ≤ exp(2f·log(4RD))
+4. **`size_bound`** (`Geometric.lean`) — sup-norm packing: |X| ≤ exp(2f·log(4RD+1)) (proven via grid discretization; the +1 is a proof artifact, not in the paper)
 
 5. **`first_coordinate_separation`** (`Geometric.lean`) — for nonzero v ∈ Λ, ‖v(fin0 A.hf)‖ ≥ D⁻¹
 
@@ -59,14 +59,16 @@ These are statements assumed without proof, corresponding to deep theorems in th
 - **`h_P_lower`** (inside `planar_set_from_datum`) — |P| ≥ exp(γ/2·f), proved from E ≤ N² and E ≥ exp·N
 - **`h_exp_bound`** (inside both theorems) — exp(γ/2·f) ≥ |P|^{2δ} via `Real.rpow_def_of_pos` + log monotonicity
 - **rpow identity** — (P.card)^(2δ)·P.card = (P.card)^(1+2δ), via `Real.rpow_add` + `Real.rpow_one`
-- **`erdos_unit_distance_false`** (Theorem 1.1, `Main.lean`) — fully proven
+- **`size_bound`** (Axiom 4, `Geometric.lean`) — proven via grid discretization; bound is |X| ≤ exp(2f·log(4RD+1))
+- **`planar_set_from_datum`** (Theorem 2.3 parametric, `Geometric.lean`) — fully proven, uses size_bound
+- **`admissible_family_to_planar_set`** (Theorem 2.3, `Geometric.lean`) — fully proven
+- **`erdos_unit_distance_false`** (Theorem 1.1, `Main.lean`) — fully proven; B = 2·log(4RD+1), δ = γ/(4B)
 - **`erdos_bound_false`** (contrapositive, `Main.lean`) — fully proven
 
 ### Deep axioms (`sorry` — awaiting human verification)
 - `exists_good_coset` (Axiom 3) — Haar measure averaging on the torus ℂ^f/Λ
-- `size_bound` (Axiom 4) — sup-norm packing: |X| ≤ exp(2f·log(4RD))
 
-These are the only remaining `sorry` gaps in the project.
+This is the only remaining `sorry` gap in the project.
 
 ## Important types and notations
 
@@ -78,7 +80,7 @@ These are the only remaining `sorry` gaps in the project.
 - `unitDistPairs P` counts *unordered* unit-distance pairs (filtered offDiag / 2)
 - `GoodCoset A R` packages the coset averaging result
 - `rho R` is the disc-overlap ratio a(R)/b(R)
-- `planar_set_from_datum A R hR hρ h_4RD` — parametric form of Theorem 2.3; outputs |P| ≥ 1, |P| ≥ exp(γ/2·f), |P| ≤ exp(B·f), and ν(P) ≥ ½·exp·|P|
+- `planar_set_from_datum A R hR hρ h_4RD` — parametric form of Theorem 2.3; outputs |P| ≥ 1, |P| ≥ exp(γ/2·f), |P| ≤ exp(2·log(4RD+1)·f), and ν(P) ≥ ½·exp·|P|
 - `admissible_family_to_planar_set A` — corollary that picks R internally and outputs ν(P) ≥ ½·|P|^{1+2δ}
 
 ## Key Mathlib API facts (non-obvious)
@@ -88,7 +90,11 @@ These are the only remaining `sorry` gaps in the project.
 - `Real.rpow_le_rpow_left_iff (h : 1 < b) : b^x ≤ b^y ↔ x ≤ y`
 - `one_lt_exp_iff.mpr hx : exp x > 1` when `x > 0` — **`Real.one_lt_exp` does NOT exist**
 - `Nat.le_ceil x : x ≤ ⌈x⌉₊` (for ceiling)
+- `Int.card_Ico` — cardinality of `Finset.Ico (a : ℤ) (b : ℤ)` = `(b - a).toNat`
+- `abs_le.mp` — splits `|a| ≤ b` into `-b ≤ a ∧ a ≤ b`
+- `abs_re_le_norm` / `abs_im_le_norm` — `|z.re| ≤ ‖z‖` and `|z.im| ≤ ‖z‖` for `z : ℂ`
 - Local `let` bindings are NOT unfolded by `simp only` or `dsimp only` — use `.mp` / `.mpr` directly
+- `positivity` can't prove `R > 0` from `4*R*A.D > 1` and `A.D > 0` — use explicit `by_contra` + `nlinarith`
 
 ## Tips for continuing
 

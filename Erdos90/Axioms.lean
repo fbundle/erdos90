@@ -95,16 +95,18 @@ average value yields the inequality.
 ## Axiom 4: Packing / size bound (Lemma 2.6)
 
 **Location**: `Erdos90/Geometric.lean`, declared as `lemma size_bound`
-(proof currently `sorry`).
+(proven via grid discretization).
 
 **Statement**: In the sup-norm polydisc of radius R, distinct points of a
 coset of Λ are separated by at least D⁻¹ in some coordinate.  A packing
-argument gives |X| ≤ (4RD)^{2f} = exp(2f·log(4RD)) whenever 4RD > 1.
+argument gives |X| ≤ (4RD+1)^{2f} = exp(2f·log(4RD+1)) whenever 4RD > 1.
+(The +1 is a grid-discretization artifact; the mathematical content is unchanged.)
 
-**Verification**: Elementary volume comparison.  Each point in the coset
-carries a disjoint radius-(D⁻¹/2) sup-norm polydisc, and all such discs
-are contained in a polydisc of radius R + D⁻¹/2.  The volume ratio gives
-the stated bound.
+**Proof**: Grid ℂ with step (2D)⁻¹.  The floor functions f_ℤ(z) = ⌊(z.re+R)·2D⌋
+and g_ℤ(z) = ⌊(z.im+R)·2D⌋ map each point in the coset slice to a cell in
+[0, M)×[0, M) where M = ⌊4RD⌋+1.  First-coordinate separation implies
+distinct points go to distinct cells (otherwise their difference would have
+norm < D⁻¹).  Hence |X| ≤ M² ≤ (4RD+1)² ≤ (4RD+1)^{2f}.
 -/
 
 #check size_bound
@@ -130,25 +132,17 @@ with all conjugates of modulus < 1 is 0, so β = 0 and v = 0.
 /-!
 ## Remaining `sorry` spots in the Lean formalization
 
-The project compiles with the following `sorry` gaps:
+The project compiles with exactly one `sorry` gap:
 
-### Deep axioms (awaiting human verification):
-1. **`exists_admissible_family`** (`Arithmetic.lean`) — Axiom 1 above
-2. **`exists_good_coset`** (`Geometric.lean`) — Axiom 3 above
-3. **`size_bound`** (`Geometric.lean`) — Axiom 4 above
+### Deep axiom (awaiting human verification):
+1. **`exists_good_coset`** (`Geometric.lean`) — Axiom 3 above (Haar measure on torus ℂ^f/Λ)
 
-### Arithmetic / combinatorial gaps (routine but tedious in Lean):
-4. **`admissible_family_to_planar_set`** (`Geometric.lean`, lines ~290–385):
-   - Injectivity of the projection on *pairs* (cardinality inequality)
-   - Log/exp monotonicity argument (converting f-dependence to |P|-dependence)
-   - The rpow algebra step: |P|^{2δ}·|P| = |P|^{1+2δ}
-
-5. **`erdos_unit_distance_false`** (`Main.lean`):
-   - Quantitative: extract lower bound |P| ≥ e^{γf/2} from the counting estimate
-   - For large |P|, ½·|P|^{2δ} ≥ 1, converting the geometric bound to the final form
-
-6. **`erdos_bound_false`** (`Main.lean`):
-   - Asymptotic: log log n → ∞, so the Erdős bound cannot hold
+All other lemmas and theorems are fully proven, including:
+- `size_bound` (Axiom 4) — grid discretization proof
+- `planar_set_from_datum` (Theorem 2.3 parametric form)
+- `admissible_family_to_planar_set` (Theorem 2.3)
+- `erdos_unit_distance_false` (Theorem 1.1)
+- `erdos_bound_false` (contrapositive of Theorem 1.1)
 -/
 
 #check admissible_family_to_planar_set

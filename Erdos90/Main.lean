@@ -61,10 +61,10 @@ theorem erdos_unit_distance_false :
   -- Step 2: fix R > 1/2 via the ρ-axiom; log ρ(R) > -γ/2 and 4RD > 1
   have hγ2_pos : γ / 2 > 0 := half_pos hγ_pos
   obtain ⟨R, hR, hρ_global, h_4RD_gt_one⟩ := exists_R_log_rho_gt (γ / 2) hγ2_pos D hD_pos
-  -- Step 3: define δ = γ/(4B) where B = 2·log(4RD); this is independent of f
-  set B := 2 * Real.log (4 * R * D) with hB_def
+  -- Step 3: define δ = γ/(4B) where B = 2·log(4RD+1); this is independent of f
+  set B := 2 * Real.log (4 * R * D + 1) with hB_def
   have hB_pos : B > 0 := by
-    have hlog : Real.log (4 * R * D) > 0 := Real.log_pos h_4RD_gt_one
+    have hlog : Real.log (4 * R * D + 1) > 0 := Real.log_pos (by linarith)
     positivity
   set δ := γ / (4 * B) with hδ_def
   have hδ_pos : δ > 0 := div_pos hγ_pos (by positivity)
@@ -83,7 +83,7 @@ theorem erdos_unit_distance_false :
     planar_set_from_datum A R hR hρ_A h4RD_A
   -- Rewrite A.γ and A.D using the tower equalities
   have hAγ_eq : A.γ / 2 * (A.f : ℝ) = γ / 2 * (A.f : ℝ) := by rw [hAγ]
-  have hAD_eq : 2 * Real.log (4 * R * A.D) = B := by rw [hAD, hB_def]
+  have hAD_eq : 2 * Real.log (4 * R * A.D + 1) = B := by rw [hAD, hB_def]
   have h_P_lower' : (P.card : ℝ) ≥ Real.exp (γ / 2 * (A.f : ℝ)) := by rwa [← hAγ_eq]
   have h_P_upper' : (P.card : ℝ) ≤ Real.exp (B * (A.f : ℝ)) := by
     have h := h_P_upper; rwa [hAD_eq] at h
