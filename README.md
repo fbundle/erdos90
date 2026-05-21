@@ -10,3 +10,6 @@ as of commit `101a3ecc08d74757d0ac246664a8d72c80f8756b`
 - [ ] `Erd46/Axioms.lean`
 - [x] main theorem `erdos_unit_distance_false` in `Erd46/Main.lean`
 
+## INSTRUCTION FOR AI
+
+- this file is strictly for human: DO NOT EDIT, DO NOT COMMIT
