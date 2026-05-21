@@ -3,12 +3,13 @@ import Mathlib
 open Real
 
 /-!
-# Definitions
+# Definitions (for human verification)
 
 ν(P) = number of unordered unit-distance pairs in a finite planar set P ⊂ ℝ²,
 ν(n) = max_{|P|=n} ν(P).
 
-These are the core objects of the unit-distance problem.
+These are the core objects of the unit-distance problem, as defined in
+"Planar Point Sets with Many Unit Distances" (OpenAI, 2026).
 -/
 
 /-- Squared Euclidean distance in ℝ².  |x-y| = 1 ↔ distSq x y = 1. -/

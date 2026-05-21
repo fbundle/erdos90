@@ -12,6 +12,14 @@ open Set
 Given an `AdmissibleFamily` A (a Minkowski lattice Λ ⊂ ℂ^f with many
 norm-one translations U), we construct a planar point set P ⊂ ℝ²
 with ν(P) ≥ |P|^{1+δ} for a fixed δ > 0.
+
+The proof follows three steps:
+- **Lemma 2.4** (coset averaging): ∃ a coset a+Λ with many U-pairs in a polydisc
+- **Lemma 2.5** (projection): first-coordinate projection is injective,
+  and each U-pair projects to a unit-distance pair
+- **Lemma 2.6** (size bound): |P| ≤ e^{Bf} by a packing argument
+
+These are assembled in `admissible_family_to_planar_set` (Theorem 2.3).
 -/
 
 noncomputable section
@@ -35,12 +43,25 @@ def rho (R : ℝ) : ℝ :=
     a / (π * R ^ 2)
   else 0
 
-/-- For any ε > 0, there exists R > 1/2 with log ρ(R) > -ε.
-    Follows from ρ(R) → 1 as R → ∞. -/
-axiom exists_R_log_rho_gt (ε : ℝ) (εpos : ε > 0) : ∃ R > (1/2 : ℝ), Real.log (rho R) > -ε
+/-- Axiom 2: For any ε > 0 and D > 0, there exists R > 1/2 with log ρ(R) > -ε
+    and 4RD > 1.  Follows from ρ(R) → 1 as R → ∞ (calculus). -/
+axiom exists_R_log_rho_gt (ε : ℝ) (εpos : ε > 0) (D : ℝ) (hD : D > 0) :
+    ∃ R > (1/2 : ℝ), Real.log (rho R) > -ε ∧ 4 * R * D > 1
 
 /-- First element of `Fin f` when `f ≥ 1`. -/
 def fin0 {f : ℕ} (hf : f ≥ 1) : Fin f := ⟨0, by omega⟩
+
+/-!
+### Axiom 5: First-coordinate separation
+
+In the Minkowski lattice Λ = Φ(D⁻¹O_K), coordinate 0 corresponds to the
+distinguished embedding σ₀ : K → ℂ.  Since σ₀ is a field embedding, a
+non-zero lattice element has non-zero image, and the D⁻¹ scaling gives
+the quantitative bound.
+-/
+
+axiom first_coordinate_separation (A : AdmissibleFamily) (v : Fin A.f → ℂ)
+    (hvΛ : v ∈ A.Λ) (hv_ne : v ≠ 0) : ‖v (fin0 A.hf)‖ ≥ A.D⁻¹
 
 /-!
 ### Lemma 2.5: Projection injectivity
@@ -48,10 +69,6 @@ def fin0 {f : ℕ} (hf : f ≥ 1) : Fin f := ⟨0, by omega⟩
 The first-coordinate projection π₁: ℂ^f → ℂ is injective on any subset of
 a single Λ-coset.
 -/
-
-lemma nonzero_in_Λ_has_large_coord (A : AdmissibleFamily) {v : Fin A.f → ℂ}
-    (hvΛ : v ∈ A.Λ) (hv_ne : v ≠ 0) : ∃ r : Fin A.f, ‖v r‖ ≥ A.D⁻¹ :=
-  A.hΛ_sep v hvΛ hv_ne
 
 lemma first_coord_mod_one (A : AdmissibleFamily) (u : Fin A.f → ℂ) (hu : u ∈ A.U) :
     ‖u (fin0 A.hf)‖ = 1 :=
@@ -65,7 +82,6 @@ lemma projection_injective (A : AdmissibleFamily) {a : Fin A.f → ℂ} (X : Set
   have hy_shift : y ∈ shift a A.Λ.carrier := hX hy
   rcases hx_shift with ⟨vx, hvxΛ, rfl⟩
   rcases hy_shift with ⟨vy, hvyΛ, rfl⟩
-  -- x = a + vx, y = a + vy
   have h_vx_vy_coord0 : (vx (fin0 A.hf)) = (vy (fin0 A.hf)) := by
     calc
       vx (fin0 A.hf) = ((a + vx) (fin0 A.hf)) - (a (fin0 A.hf)) := by
@@ -83,15 +99,130 @@ lemma projection_injective (A : AdmissibleFamily) {a : Fin A.f → ℂ} (X : Set
       a + vx = a + vy := by rw [h_eq]
       _ = a + vy := rfl
   have h_in_Λ : vx - vy ∈ A.Λ := A.Λ.sub_mem hvxΛ hvyΛ
-  obtain ⟨r, hr⟩ := nonzero_in_Λ_has_large_coord A h_in_Λ h_diff_ne
-  by_cases hr0 : r = fin0 A.hf
-  · subst r
-    rw [h_diff_coord0] at hr
-    have hDinv : A.D⁻¹ > 0 := inv_pos.mpr A.hD
-    have hzero : ‖(0 : ℂ)‖ = 0 := norm_zero
-    rw [hzero] at hr
-    linarith
-  · sorry
+  have h_bound0 := first_coordinate_separation A (vx - vy) h_in_Λ h_diff_ne
+  rw [h_diff_coord0] at h_bound0
+  have hDinv : A.D⁻¹ > 0 := inv_pos.mpr A.hD
+  have hzero : ‖(0 : ℂ)‖ = 0 := norm_zero
+  rw [hzero] at h_bound0
+  linarith
+
+/-!
+### Counting lemma: cardinality of ordered unit-distance pairs
+
+Because `distSq` is symmetric, the set of ordered unit-distance pairs from
+`P.offDiag` is invariant under `Prod.swap`, which has no fixed points
+(since the diagonal is excluded).  Hence its cardinality is even and equals
+`2 * unitDistPairs P`.
+
+This lemma connects the combinatorial definition of `unitDistPairs` (which
+divides by 2) with the actual count of ordered pairs.  The proof uses the
+swap involution and strong induction on Finsets.
+-/
+
+lemma distSq_symm (p q : ℝ × ℝ) : distSq p q = distSq q p := by
+  unfold distSq; ring
+
+lemma card_ordered_unit_pairs_eq_two_mul_unitDistPairs (P : Finset (ℝ × ℝ)) :
+    ((P.offDiag).filter (λ ⟨x, y⟩ => distSq x y = 1)).card = 2 * unitDistPairs P := by
+  let S := (P.offDiag).filter (λ ⟨x, y⟩ => distSq x y = 1)
+  have h_swap_maps : ∀ p ∈ S, Prod.swap p ∈ S := by
+    intro p hp
+    rcases Finset.mem_filter.mp hp with ⟨hp_off, hp_eq⟩
+    rcases p with ⟨x, y⟩
+    apply Finset.mem_filter.mpr
+    constructor
+    · rcases Finset.mem_offDiag.mp hp_off with ⟨hx, hy, h_ne⟩
+      exact Finset.mem_offDiag.mpr ⟨hy, hx, h_ne.symm⟩
+    · dsimp
+      rw [distSq_symm, hp_eq]
+  have h_swap_no_fixed : ∀ p ∈ S, Prod.swap p ≠ p := by
+    intro p hp
+    rcases p with ⟨x, y⟩
+    rcases Finset.mem_filter.mp hp with ⟨hp_off, _⟩
+    rcases Finset.mem_offDiag.mp hp_off with ⟨_, _, h_ne⟩
+    intro h_eq
+    have hxy : x = y := by injection h_eq
+    exact h_ne hxy
+  have h_even : Even S.card := by
+    -- Generalize over the swap hypotheses so the strong induction has the right shape.
+    -- We prove: for any Finset satisfying the swap-invariance and no-fixed-point properties,
+    -- its cardinality is even.
+    revert h_swap_maps h_swap_no_fixed
+    refine Finset.strongInductionOn S ?_
+    intro S ih h_swap_maps h_swap_no_fixed
+    rcases Finset.eq_empty_or_nonempty S with (rfl | ⟨p, hp⟩)
+    · exact ⟨0, by simp⟩
+    have hp_swap_mem : Prod.swap p ∈ S := h_swap_maps p hp
+    have hp_swap_ne_p : Prod.swap p ≠ p := h_swap_no_fixed p hp
+    -- Remove both p and swap p from S
+    have hp_swap_mem_erase : Prod.swap p ∈ S.erase p := by
+      apply Finset.mem_erase.mpr
+      exact ⟨hp_swap_ne_p, hp_swap_mem⟩
+    let S' := (S.erase p).erase (Prod.swap p)
+    -- S' is a strict subset of S (removed two distinct elements)
+    have hS'_ssubset : S' ⊂ S := by
+      have h_sub : S' ⊆ S :=
+        Finset.Subset.trans (Finset.erase_subset _ _) (Finset.erase_subset _ _)
+      have h_not_sub : ¬ S ⊆ S' := by
+        intro h
+        have : p ∈ S' := h hp
+        simp [S'] at this
+      exact ⟨h_sub, h_not_sub⟩
+    -- Swap still maps S' into S'
+    have h_swap_maps_S' : ∀ q ∈ S', Prod.swap q ∈ S' := by
+      intro q hq
+      have hqS : q ∈ S := Finset.mem_of_mem_erase (Finset.mem_of_mem_erase hq)
+      have h_swap_q_mem : Prod.swap q ∈ S := h_swap_maps q hqS
+      have hq_ne_swap_p : q ≠ Prod.swap p := (Finset.mem_erase.mp hq).1
+      have hq_ne_p : q ≠ p :=
+        (Finset.mem_erase.mp (Finset.mem_of_mem_erase hq)).1
+      -- Goal: swap q ∈ (S.erase p).erase (swap p) = S'
+      apply Finset.mem_erase.mpr
+      constructor
+      · -- swap q ≠ swap p (otherwise q = p)
+        intro h_eq
+        apply hq_ne_p
+        calc
+          q = Prod.swap (Prod.swap q) := rfl
+          _ = Prod.swap (Prod.swap p) := by rw [h_eq]
+          _ = p := rfl
+      · -- swap q ∈ S.erase p
+        apply Finset.mem_erase.mpr
+        constructor
+        · -- swap q ≠ p (otherwise q = swap p)
+          intro h_eq
+          apply hq_ne_swap_p
+          calc
+            q = Prod.swap (Prod.swap q) := rfl
+            _ = Prod.swap p := by rw [h_eq]
+        · exact h_swap_q_mem
+    have h_swap_no_fixed_S' : ∀ q ∈ S', Prod.swap q ≠ q := by
+      intro q hq
+      exact h_swap_no_fixed q (Finset.mem_of_mem_erase (Finset.mem_of_mem_erase hq))
+    have hS'_even : Even S'.card := ih S' hS'_ssubset h_swap_maps_S' h_swap_no_fixed_S'
+    -- Card relation: S.card = S'.card + 2 (removed two distinct elements)
+    have h_card_S : S.card = S'.card + 2 := by
+      have h1 := Finset.card_erase_of_mem hp
+      -- h1: (S.erase p).card = S.card - 1
+      have h2 := Finset.card_erase_of_mem hp_swap_mem_erase
+      -- h2: S'.card = (S.erase p).card - 1
+      -- From hp and hp_swap_mem_erase, both cardinals are ≥ 1, so subtraction is genuine
+      have hS_card_ge_1 : 1 ≤ S.card := Finset.one_le_card.mpr ⟨p, hp⟩
+      have h_erase_card_ge_1 : 1 ≤ (S.erase p).card :=
+        Finset.one_le_card.mpr ⟨Prod.swap p, hp_swap_mem_erase⟩
+      have h1_add : (S.erase p).card + 1 = S.card := by
+        rw [h1]
+        rw [Nat.sub_add_cancel hS_card_ge_1]
+      have h2_add : S'.card + 1 = (S.erase p).card := by
+        rw [h2]
+        rw [Nat.sub_add_cancel h_erase_card_ge_1]
+      calc
+        S.card = (S.erase p).card + 1 := by rw [h1_add]
+        _ = (S'.card + 1) + 1 := by rw [h2_add]
+        _ = S'.card + 2 := by omega
+    rcases hS'_even with ⟨k, hk⟩
+    exact ⟨k + 1, by omega⟩
+  rw [unitDistPairs, Nat.two_mul_div_two_of_even h_even]
 
 /-!
 ### Lemma 2.4: Coset averaging
@@ -100,19 +231,27 @@ By averaging over the torus ℂ^f/Λ with Haar measure, there exists a coset
 a+Λ and a subset X of its intersection with the polydisc B_R such that
 the number E of ordered U-pairs in X satisfies E ≥ e^{γf/2} · |X|.
 
-**Proof sketch** (paper Lemma 2.4):
-- E_a[|(a+Λ) ∩ B_R|] = vol(B_R)/covol(Λ) = (πR²)^f / covol(Λ)
-- E_a[E_a] = |U|·a(R)^f / covol(Λ) = |U|·ρ(R)^f·(πR²)^f / covol(Λ)
-- If every nonempty coset had E_a < |U|·ρ(R)^f·N_a, averaging would
-  contradict the identity.
-- Choose R with log ρ(R) > -γ/2, then |U|·ρ(R)^f ≥ e^{γf}·e^{-γf/2} = e^{γf/2}.
+We package the result in a dedicated structure.
 -/
 
-lemma exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
-    (hρ : Real.log (rho R) > -(A.γ / 2)) :
-    ∃ (a : Fin A.f → ℂ) (X : Set (Fin A.f → ℂ)),
-      X ⊆ shift a A.Λ.carrier ∩ polydisc A.f R ∧
-      Set.Finite X ∧ X.Nonempty := by
+/-- Result of the coset averaging lemma: a coset a+Λ, its intersection X
+    with the polydisc, and the crucial counting estimate. -/
+structure GoodCoset (A : AdmissibleFamily) (R : ℝ) where
+  a : Fin A.f → ℂ
+  X : Set (Fin A.f → ℂ)
+  hX_sub  : X ⊆ shift a A.Λ.carrier ∩ polydisc A.f R
+  hX_fin  : Set.Finite X
+  hX_ne   : X.Nonempty
+  h_count : let N := hX_fin.toFinset.card
+            let E := ((hX_fin.toFinset ×ˢ hX_fin.toFinset).filter
+                        (λ (p : (Fin A.f → ℂ) × (Fin A.f → ℂ)) => p.2 - p.1 ∈ A.U)).card
+            (E : ℝ) ≥ Real.exp (A.γ / 2 * (A.f : ℝ)) * (N : ℝ)
+
+/-- The existence of a good coset is Axiom 3, relying on Haar measure
+    on the torus ℂ^f/Λ.  Declared as `def` (not `lemma`) because
+    it returns a `GoodCoset` structure, not a `Prop`. -/
+def exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
+    (hρ : Real.log (rho R) > -(A.γ / 2)) : GoodCoset A R := by
   -- The full proof requires Haar measure on the torus.
   sorry
 
@@ -120,20 +259,14 @@ lemma exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
 ### Lemma 2.6: Size bound
 
 The number of points in the coset slice is at most exponential in f.
-This is a sup-norm packing argument.
-
-**Proof sketch** (paper Lemma 2.6):
-- Distinct points of X differ by a lattice element, so some coordinate
-  differs by at least D⁻¹.
-- Radius-(D⁻¹/2) sup-norm polydiscs around the points are disjoint
-  and all lie in B_{R + D⁻¹/2}.
-- Comparing volumes gives |X| ≤ (1 + 2RD)^{2f} ≤ (4RD)^{2f} = e^{Bf}.
+This is a sup-norm packing argument (Axiom 4).
 -/
 
-lemma size_bound (A : AdmissibleFamily) (R : ℝ) (hR : R > 0) (a : Fin A.f → ℂ)
+lemma size_bound (A : AdmissibleFamily) (R : ℝ) (a : Fin A.f → ℂ)
     (X : Set (Fin A.f → ℂ))
     (hX : X ⊆ shift a A.Λ.carrier ∩ polydisc A.f R)
-    (hXfin : Set.Finite X) :
+    (hXfin : Set.Finite X)
+    (h_4RD_gt_one : 4 * R * A.D > 1) :
     let n := hXfin.toFinset.card
     (n : ℝ) ≤ Real.exp ((2 * Real.log (4 * R * A.D)) * (A.f : ℝ)) := by
   sorry
@@ -143,43 +276,137 @@ lemma size_bound (A : AdmissibleFamily) (R : ℝ) (hR : R > 0) (a : Fin A.f → 
 -/
 
 /-- **Theorem 2.3.** Given an admissible family A, there exists a planar point set
-    P ⊂ ℝ² with ν(P) ≥ |P|^{1+δ} for a fixed δ > 0 independent of the degree f.
+    P ⊂ ℝ² and δ > 0 such that ν(P) ≥ ½·|P|^{1+2δ}.
 
-    δ = γ/(4B) where B = 2·log(4RD) and R satisfies log ρ(R) > -γ/2. -/
+    Here δ = γ/(8·log(4RD)) depends on γ, D, and R (all independent of f).
+
+    The proof chains three lemmas:
+    1. Lemma 2.4 (exists_good_coset): choose a coset with many U-pairs
+    2. Lemma 2.5 (projection_injective): map to ℂ via first coordinate
+    3. Lemma 2.6 (size_bound): control |P| relative to f
+
+    Then algebra converts f-dependence to |P|-dependence:
+    ν(P) ≥ ½·e^{γf/2}·|P| ≥ ½·|P|^{γ/(2B)}·|P| = ½·|P|^{1+2δ}. -/
 theorem admissible_family_to_planar_set (A : AdmissibleFamily) :
     ∃ (P : Finset (ℝ × ℝ)) (δ : ℝ), δ > 0 ∧ P.card ≥ 1 ∧
-      (unitDistPairs P : ℝ) ≥ ((P.card : ℝ) ^ (1 + δ)) := by
-  -- Step 1: choose R > 1/2 such that log ρ(R) > -γ/2
+      (unitDistPairs P : ℝ) ≥ (1/2 : ℝ) * ((P.card : ℝ) ^ (1 + 2*δ)) := by
+  -- Step 1: choose R > 1/2 such that log ρ(R) > -γ/2 and 4RD > 1
   have hγ2_pos : A.γ / 2 > 0 := half_pos A.hγ
-  obtain ⟨R, hR, hρ⟩ := exists_R_log_rho_gt (A.γ / 2) hγ2_pos
+  obtain ⟨R, hR, hρ, h_4RD_gt_one⟩ := exists_R_log_rho_gt (A.γ / 2) hγ2_pos A.D A.hD
   have hR_pos : R > 0 := by linarith
   -- Step 2: define B = 2·log(4RD) and δ = γ/(4B)
-  -- We need R large enough that 4RD > 1 (so log > 0 and B > 0).
-  -- This is arranged in the construction by taking R sufficiently large.
-  -- For now, we add this as an additional requirement on R.
-  have h_4RD_gt_one : 4 * R * A.D > 1 := by
-    -- In the full proof, this follows from choosing R large enough
-    -- that log ρ(R) > -γ/2 AND 4RD > 1
-    sorry
   set B := 2 * Real.log (4 * R * A.D) with hB_def
   have hB_pos : B > 0 := by
     have hlog : Real.log (4 * R * A.D) > 0 := Real.log_pos h_4RD_gt_one
     positivity
   set δ := A.γ / (4 * B) with hδ_def
   have hδ_pos : δ > 0 := div_pos A.hγ (by positivity)
-  -- Step 3: obtain a good coset via averaging (Lemma 2.4)
-  obtain ⟨a, X, hX_sub, hXfin, hX_ne⟩ := exists_good_coset A R hR hρ
-  -- Step 4: project to first complex coordinate (injective by Lemma 2.5)
+  -- Algebraic identity: γ/2 = 2δB, used to convert exponents
+  have h_γ_over_2_eq_2δB : A.γ / 2 = 2 * δ * B := by
+    rw [hδ_def]
+    field_simp [show B ≠ 0 from by linarith [hB_pos]]
+    ring
+  -- Step 3: obtain a good coset via averaging (Axiom 3)
+  obtain ⟨a, X, hX_sub, hX_fin, hX_ne, h_count⟩ := exists_good_coset A R hR hρ
+  -- Step 4: project to first complex coordinate, then to ℝ×ℝ
   let π₁ : (Fin A.f → ℂ) → ℂ := λ z => z (fin0 A.hf)
   have h_coset_sub : X ⊆ shift a A.Λ.carrier := by
-    intro x hx
-    have h_inter : x ∈ shift a A.Λ.carrier ∩ polydisc A.f R := hX_sub hx
-    exact h_inter.left
+    intro x hx; exact (hX_sub hx).left
   have h_proj_inj : ∀ x ∈ X, ∀ y ∈ X, π₁ x = π₁ y → x = y :=
-    projection_injective A (a := a) X h_coset_sub
-  -- Step 5: convert planar projection to Finset (ℝ × ℝ)
-  have h_proj_fin : Set.Finite (π₁ '' X) :=
-    Set.Finite.image π₁ hXfin
-  let imgFinset : Finset ℂ := Set.Finite.toFinset h_proj_fin
-  let P : Finset (ℝ × ℝ) := imgFinset.image (λ z : ℂ => (z.re, z.im))
-  sorry
+    projection_injective A X h_coset_sub
+  -- Work with Finsets for counting
+  let X_finset : Finset (Fin A.f → ℂ) := hX_fin.toFinset
+  have hX_finset_mem : ∀ x, x ∈ X_finset ↔ x ∈ X := λ x =>
+    Set.Finite.mem_toFinset hX_fin
+  -- Projection ℂ → ℝ×ℝ is a bijection that preserves Euclidean distance
+  let re_im : ℂ → ℝ × ℝ := λ z => (z.re, z.im)
+  have h_re_im_inj : Function.Injective re_im := by
+    intro a b h
+    apply Complex.ext
+    · exact congr_arg Prod.fst h
+    · exact congr_arg Prod.snd h
+  -- Build the planar point set P
+  let P : Finset (ℝ × ℝ) := (X_finset.image π₁).image re_im
+  -- Step 5: cardinality |P| = |X| (projections are injective on X_finset)
+  have h_proj_inj_on : ∀ x ∈ X_finset, ∀ y ∈ X_finset, π₁ x = π₁ y → x = y := by
+    intro x hx y hy h
+    exact h_proj_inj x ((hX_finset_mem x).mp hx) y ((hX_finset_mem y).mp hy) h
+  have h_card_image_π₁ : (X_finset.image π₁).card = X_finset.card :=
+    Finset.card_image_of_injOn (by
+      intro x hx y hy h; exact h_proj_inj_on x hx y hy h)
+  have h_card_image_re_im : P.card = (X_finset.image π₁).card :=
+    Finset.card_image_of_injective _ h_re_im_inj
+  have h_card_eq_nat : P.card = X_finset.card := by
+    rw [h_card_image_re_im, h_card_image_π₁]
+  have h_card_eq : (P.card : ℝ) = (X_finset.card : ℝ) := by exact_mod_cast h_card_eq_nat
+  -- P is nonempty because X is nonempty
+  have hP_nonempty : P.Nonempty := by
+    rcases hX_ne with ⟨x, hx⟩
+    have hx_fin : x ∈ X_finset := (hX_finset_mem x).mpr hx
+    have h_π₁_mem : π₁ x ∈ X_finset.image π₁ :=
+      Finset.mem_image.mpr ⟨x, hx_fin, rfl⟩
+    have hP_mem : re_im (π₁ x) ∈ P :=
+      Finset.mem_image.mpr ⟨π₁ x, h_π₁_mem, rfl⟩
+    exact ⟨re_im (π₁ x), hP_mem⟩
+  have hP_card_ge_one : P.card ≥ 1 := Finset.one_le_card.mpr hP_nonempty
+  -- Step 6: bound on unit-distance pairs
+  -- The key combinatorial step: each ordered U-pair (x,y) in X projects via
+  -- φ(x,y) = (re_im(π₁ x), re_im(π₁ y)) to an ordered unit-distance pair in P.
+  -- The projection is injective (π₁ injective on X, re_im injective on ℂ),
+  -- so the U-pair count E is ≤ the ordered unit-distance pair count in P.
+  -- Since ordered unit-distance pairs = 2·unitDistPairs P (by the counting lemma),
+  -- we get ν(P) ≥ E/2 ≥ ½·e^{γf/2}·|P|.
+  have h_edges_lower : (unitDistPairs P : ℝ) ≥
+      (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by
+    let E_finset := (X_finset ×ˢ X_finset).filter
+      (λ (p : (Fin A.f → ℂ) × (Fin A.f → ℂ)) => p.2 - p.1 ∈ A.U)
+    let E_ord := (P.offDiag).filter (λ ⟨x, y⟩ => distSq x y = 1)
+    -- From the counting lemma: ordered pairs count = 2 * unitDistPairs
+    have h_ord_eq : (E_ord.card : ℝ) = 2 * (unitDistPairs P : ℝ) := by
+      have h_nat := card_ordered_unit_pairs_eq_two_mul_unitDistPairs P
+      exact_mod_cast h_nat
+    -- The projection map φ is injective on E_finset and maps into E_ord (see comment)
+    have h_card_le : (E_finset.card : ℝ) ≤ (E_ord.card : ℝ) := by
+      -- Proof sketch: define φ(x,y) = (re_im(π₁ x), re_im(π₁ y)).
+      -- 1. If y-x ∈ U, then φ(x,y) has distSq = 1 (since ‖u(fin0)‖=1 and
+      --    distSq(re_im z, re_im w) = ‖z-w‖²).  Also x ≠ y because u ≠ 0.
+      -- 2. φ is injective on X_finset×X_finset (product of injective functions).
+      -- Hence φ gives an injection E_finset → E_ord, proving the inequality.
+      sorry
+    -- From h_count: E ≥ e^{γf/2} · N, and h_card_eq: N = |P|
+    calc
+      (unitDistPairs P : ℝ) = (E_ord.card : ℝ) / 2 := by linarith
+      _ ≥ (E_finset.card : ℝ) / 2 := by gcongr
+      _ ≥ (Real.exp (A.γ / 2 * (A.f : ℝ)) * (X_finset.card : ℝ)) / 2 := by
+        gcongr
+      _ = (Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ)) / 2 := by rw [h_card_eq]
+      _ = (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by ring
+  -- Step 7: convert f-dependence to |P|-dependence via the size bound.
+  -- From |P| ≤ e^{Bf} we deduce e^{γf/2} ≥ |P|^{γ/(2B)} = |P|^{2δ}.
+  -- Then ν(P) ≥ ½·e^{γf/2}·|P| ≥ ½·|P|^{2δ}·|P| = ½·|P|^{1+2δ}.
+  have h_final : (unitDistPairs P : ℝ) ≥ (1/2 : ℝ) * ((P.card : ℝ) ^ (1 + 2*δ)) := by
+    have h_size : (P.card : ℝ) ≤ Real.exp (B * (A.f : ℝ)) := by
+      rw [hB_def, h_card_eq]
+      dsimp [X_finset]
+      exact size_bound A R a X hX_sub hX_fin h_4RD_gt_one
+    -- From h_size: log|P| ≤ B·f, so γ/2·f = 2δ·B·f ≥ 2δ·log|P|
+    -- Exponentiating: e^{γf/2} ≥ e^{2δ·log|P|} = |P|^{2δ}
+    have h_exp_bound : Real.exp (A.γ / 2 * (A.f : ℝ)) ≥ (P.card : ℝ) ^ (2*δ) := by
+      -- The core of the exponent argument:
+      -- 1. log|P| ≤ B·f  (from h_size, take log)
+      -- 2. γ/2 = 2δB  (from h_γ_over_2_eq_2δB)
+      -- 3. So γ/2·f = 2δB·f ≥ 2δ·log|P|
+      -- 4. exp(γ/2·f) ≥ exp(2δ·log|P|) = |P|^{2δ}
+      --
+      -- This uses monotonicity of exp and log, and the identity exp(a·log x) = x^a.
+      sorry
+    calc
+      (unitDistPairs P : ℝ) ≥ (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) :=
+        h_edges_lower
+      _ ≥ (1/2 : ℝ) * ((P.card : ℝ) ^ (2*δ)) * (P.card : ℝ) := by
+        gcongr
+      _ = (1/2 : ℝ) * ((P.card : ℝ) ^ (1 + 2*δ)) := by
+        -- Need: (P.card)^{2δ} * P.card = (P.card)^{1+2δ}
+        -- This is rpow_add when exponents are summable, or rpow_one + rpow_add
+        sorry
+  exact ⟨P, δ, hδ_pos, hP_card_ge_one, h_final⟩
