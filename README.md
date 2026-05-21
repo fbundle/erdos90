@@ -34,7 +34,7 @@ Co-Authored-By: [model name]
 
 ## DISCLAIMER FOR AI USE
 
-This work is completed totally by AI with human verification
+This work is completed with human verification totally by the following AI systems:
 
 - `DeepSeek-V4-Pro with Claude Code`
 
