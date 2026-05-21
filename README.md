@@ -21,8 +21,6 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - all necessary definitions for the main theorem must be put in `Erdos90/Defs.lean`
 
-- all proven facts that put as axioms must be put in `Erdos90/Axioms.lean`
-
 - you can find some useful resources in `assets`
 
 - if `lake build` is ok, you can commit and push with your updates
