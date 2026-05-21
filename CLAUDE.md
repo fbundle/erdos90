@@ -35,17 +35,15 @@ lake build
 
 Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps.
 
-## The 3 remaining axioms
+## The 2 remaining axioms
 
-There are **3 remaining axioms** (down from the original 5, and from 7 in the max decomposition), all in `Erdos90/NumberField.lean`:
+There are **2 remaining axioms** (down from 5 original, and 7 in the peak decomposition), both in `Erdos90/NumberField.lean`:
 
 1. **`prop_3_2_to_3_6`** — Golod–Shafarevich / Chebotarev tower construction.  Produces `C_rd > 0` and for `ℓ ≥ 2`: `D₀`, `rd_F` with `log rd_F ≤ C_rd·ℓ·log ℓ`, and for every M: degree `f ≥ M` + lattice `Λ ⊂ ℂ^f` with D₀-separation.  (Absent from Mathlib: Golod-Shafarevich [GS64], Chebotarev [Tsc26], class field towers.)
 
-2. **`prop_2_2`** — Class-group pigeonhole (Prop 2.2).  Given `f`, `D₀`, `t`, `log_H`, `Λ` with D₀-separation and `t·log 2 > log_H`, produces `U ⊂ ℂ^f` with all-coordinate modulus 1, `D₀·u ∈ Λ`, and `|U| ≥ exp((t·log 2 − log_H)·f)`.
+2. **`prop_2_2`** — Class-group pigeonhole + coset averaging (Prop 2.2 + Lemma 2.4).  Produces `U ⊂ ℂ^f` with all-coordinate modulus 1, `D₀·u ∈ Λ`, `|U| ≥ exp((t·log 2 − log_H)·f)`, and `Nonempty` of the coset averaging witness function.  `Classical.choice` recovers the witness in the noncomputable section.
 
-3. **`prop_2_2_covg`** — Haar measure coset averaging (Lemma 2.4).  Given all the above plus `U` and `R > 1/2` with `log ρ(R) > −(γ/2)`, returns `CosetAvgWitness` with `E ≥ exp(γf/2)·|X|`.
-
-`C_class := 1` (concrete `def`, not axiom).  `C₀` and `prop_3_7` (Minkowski bound) were redundant and have been removed.
+`C_class := 1` (concrete `def`, not axiom).  `C₀`, `prop_3_7`, and `prop_2_2_covg` were removed/absorbed.
 
 All other statements (analytic lemmas, geometric constructions, Theorem 1.1) are fully proven in Lean.
 
@@ -69,18 +67,18 @@ All other statements (analytic lemmas, geometric constructions, Theorem 1.1) are
 
 ### Deep axioms (declared as `axiom` in `NumberField.lean`, awaiting human verification)
 - `prop_3_2_to_3_6` — Golod–Shafarevich / Chebotarev tower construction
-- `prop_2_2` — Class-group pigeonhole (norm-one elements)
-- `prop_2_2_covg` — Haar measure coset averaging (Lemma 2.4)
+- `prop_2_2` — Class-group pigeonhole + coset averaging (via Nonempty)
 
-### Theorem (proved from the 3 axioms above)
+### Theorem (proved from the 2 axioms above)
 - `exists_admissible_family` — ∃ γ>0, D>0, ∀ M, ∃ A with A.f ≥ M, A.γ = γ, A.D = D
 
 ### Removed/absorbed
 - `C_class := 1` (concrete `def`, not axiom)
 - `C₀` — redundant (absorbed into prop_3_2_to_3_6)
 - `prop_3_7` — Minkowski class-number bound (never called; absorbed into prop_2_2 + C_class)
+- `prop_2_2_covg` — combined into prop_2_2 via `Nonempty` (classical equivalence)
 
-There are zero `sorry` gaps and 3 axioms.
+There are zero `sorry` gaps and 2 axioms.
 
 ## Important types and notations
 

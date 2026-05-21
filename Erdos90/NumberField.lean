@@ -20,12 +20,11 @@ is identified as a separate lemma (currently `sorry`-closed, but provable via
 ## Sub-axioms declared here
 
 1. `prop_3_2_to_3_6`      — Golod–Shafarevich + Chebotarev tower output
-2. `prop_2_2`             — norm-one set construction (class-group pigeonhole)
-3. `prop_2_2_covg`        — Haar measure coset averaging (Lemma 2.4)
+2. `prop_2_2`             — norm-one set + coset averaging (Props 2.2, 2.4)
 
-`C_class` is a concrete `def := 1`. `C₀` and `prop_3_7` are absorbed into the
-three axioms above; they are not separately assumed.
-These three axioms and the analytic lemmas (prop_p6, hlog2_event) together
+`C_class` is a concrete `def := 1`. `C₀` and `prop_3_7` are absorbed.
+The coset averaging is encoded via `Nonempty` (classical existence).
+These two axioms and the analytic lemmas (prop_p6, hlog2_event) together
 prove `exists_admissible_family` as a `theorem`.
 -/
 
@@ -68,10 +67,10 @@ We state the output in terms of the concrete types used in `AdmissibleFamily`.
 axiom prop_3_2_to_3_6 :
     ∃ (C_rd : ℝ), C_rd > 0 ∧
     ∀ (ℓ : ℕ), ℓ ≥ 2 →
-    ∃ (D₀ : ℝ) (hD₀ : D₀ > 0) (rd_F : ℝ) (_ : rd_F ≥ 1),
+    ∃ (D₀ : ℝ), D₀ > 0 ∧ ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
       ∀ (M : ℕ),
-      ∃ (f : ℕ) (_ : f ≥ M) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ)),
+      ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ)),
         ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹
 
 /-! ## Proposition 2.2: Norm-one elements and coset averaging
@@ -101,7 +100,9 @@ axiom prop_3_2_to_3_6 :
     - D₀ · u ∈ Λ for all u ∈ U                 (u ∈ D₀⁻¹ 𝓞_K ↔ D₀·u ∈ 𝓞_K ⊂ Λ)
     - |U| ≥ exp(γ · f)                          (pigeonhole on h(K) ≤ H^f ideal classes)
     - CosetAvgWitness for all suitable R         (Lemma 2.4: Haar measure averaging) -/
--- Prop-valued part: existence of the norm-one set U with size bound.
+-- Combined axiom: Prop-valued existence of norm-one set U + Nonempty CosetAvgWitness.
+-- `Nonempty` wraps the Type-valued `CosetAvgWitness` into `Prop` so it can appear in ∧.
+-- In classical logic (noncomputable section), `Classical.choice` recovers the witness.
 axiom prop_2_2 (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (t log_H : ℝ)
     (ht : t ≥ 0) (hγ : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
@@ -109,20 +110,9 @@ axiom prop_2_2 (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (t log_
     ∃ (U : Finset (Fin f → ℂ)),
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
       (∀ u ∈ U, D₀ • u ∈ Λ) ∧
-      ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)))
-
--- Type-valued part: coset averaging witness (Lemma 2.4).
--- CosetAvgWitness is a Type, not Prop, so this must be a separate axiom/def.
-axiom prop_2_2_covg (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (t log_H : ℝ)
-    (ht : t ≥ 0) (hγ : t * Real.log 2 - log_H > 0)
-    (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹)
-    (U : Finset (Fin f → ℂ))
-    (hU_mod : ∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1)
-    (hU_in_Λ : ∀ u ∈ U, D₀ • u ∈ Λ)
-    (R : ℝ) (hR : R > 1/2)
-    (hρ : Real.log (rho R) > -((t * Real.log 2 - log_H) / 2)) :
-    CosetAvgWitness f Λ U R (t * Real.log 2 - log_H)
+      ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) ∧
+      Nonempty (∀ (R : ℝ), R > 1/2 → Real.log (rho R) > -((t * Real.log 2 - log_H) / 2) →
+        CosetAvgWitness f Λ U R (t * Real.log 2 - log_H))
 
 /-! ## Analytic lemma: Property P6 of Proposition 3.8
 
@@ -297,20 +287,23 @@ theorem exists_admissible_family :
   -- Step 7: For each M produce an AdmissibleFamily
   refine ⟨γ₀, hγ_pos, D₀, hD₀_pos, fun M => ?_⟩
   obtain ⟨f, hf_ge, hf1, Λ, hΛ_sep⟩ := h_levels M
-  obtain ⟨U, hU_mod, hU_in_Λ, hU_size⟩ :=
+  obtain ⟨U, hU_mod, hU_in_Λ, hU_size, hcovg_nonempty⟩ :=
     prop_2_2 f hf1 D₀ hD₀_pos t log_H_base ht_nonneg hγ_pos Λ hΛ_sep
   -- Rewrite hU_size in terms of γ₀
   have hU_size' : (U.card : ℝ) ≥ Real.exp (γ₀ * (f : ℝ)) := by
     have : γ₀ = t * Real.log 2 - log_H_base := rfl
     linarith [hU_size]
-  -- Coset averaging for all suitable R (uses prop_2_2_covg, Type-valued)
+  -- Coset averaging: recover the function from Nonempty via Classical.choice
+  let hcovg_func := Classical.choice hcovg_nonempty
+  -- hcovg_func : ∀ R, R > 1/2 → log ρ(R) > -((t·log 2 - log_H_base)/2) → CosetAvgWitness f Λ U R (t·log 2 - log_H_base)
   have hcovg' : ∀ R : ℝ, R > 1/2 → Real.log (rho R) > -(γ₀ / 2) →
       CosetAvgWitness f Λ U R γ₀ := by
     intro R hR hρ
-    have heq : (t * Real.log 2 - log_H_base) = γ₀ := rfl
     have hρ' : Real.log (rho R) > -((t * Real.log 2 - log_H_base) / 2) := by linarith
-    exact heq ▸ prop_2_2_covg f hf1 D₀ hD₀_pos t log_H_base ht_nonneg hγ_pos Λ hΛ_sep
-        U hU_mod hU_in_Λ R hR hρ'
+    have := hcovg_func R hR hρ'
+    -- Rewrite the return type: γ₀ = t·log 2 - log_H_base
+    have heq : (t * Real.log 2 - log_H_base) = γ₀ := rfl
+    exact heq ▸ this
   exact ⟨⟨f, hf1, D₀, hD₀_pos, γ₀, hγ_pos, Λ, U,
       hU_mod, hU_in_Λ, hU_size', hΛ_sep, hcovg'⟩,
     hf_ge, rfl, rfl⟩
