@@ -45,9 +45,9 @@ lemma unitDistPairs_le_maxUnitDists (P : Finset (ℝ × ℝ)) :
     for infinitely many n.
 
     Proof outline:
-    1. By the arithmetic axiom, there exists γ > 0, D > 0 and, for arbitrarily
+    1. By `exists_admissible_family`, there exists γ > 0, D > 0 and, for arbitrarily
        large f, an `AdmissibleFamily` A_f with A_f.γ = γ and A_f.D = D.
-    2. Fix R > 1/2 via the ρ-axiom such that log ρ(R) > -γ/2 and 4RD > 1.
+    2. Fix R > 1/2 via `exists_R_log_rho_gt` such that log ρ(R) > -γ/2 and 4RD > 1.
        Set δ = γ/(8·log(4RD)) > 0.  Note δ depends only on γ, D, R, not on f.
     3. For large enough f, `planar_set_from_datum` gives a planar set P_f with
        - |P_f| ≥ exp(γ/2 · f), so |P_f| → ∞ as f → ∞
@@ -59,7 +59,7 @@ theorem erdos_unit_distance_false :
     ∃ (δ : ℝ), δ > 0 ∧ (∀ N : ℕ, ∃ n ≥ N, (maxUnitDists n : ℝ) ≥ (n : ℝ) ^ (1 + δ)) := by
   -- Step 1: obtain the uniform constants γ > 0, D > 0 and the tower
   obtain ⟨γ, hγ_pos, D, hD_pos, h_tower⟩ := exists_admissible_family
-  -- Step 2: fix R > 1/2 via the ρ-axiom; log ρ(R) > -γ/2 and 4RD > 1
+  -- Step 2: fix R > 1/2 via exists_R_log_rho_gt; log ρ(R) > -γ/2 and 4RD > 1
   have hγ2_pos : γ / 2 > 0 := half_pos hγ_pos
   obtain ⟨R, hR, hρ_global, h_4RD_gt_one⟩ := exists_R_log_rho_gt (γ / 2) hγ2_pos D hD_pos
   -- Step 3: define δ = γ/(4B) where B = 2·log(4RD+1); this is independent of f

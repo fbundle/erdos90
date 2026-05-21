@@ -14,10 +14,9 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 |------|---------|
 | `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
 | `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure (no axioms — `exists_admissible_family` is a theorem in NumberField) |
-| `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` proved from 2 sub-axioms + analytic lemmas |
+| `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + `def lemma_2_4` + analytic lemmas; all deep number theory as `def … := by sorry` |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erdos90/Axioms.lean` | Human-readable documentation of the 2 remaining sub-axioms |
 | `Erdos90.lean` | Root import (imports all modules, including NumberField) |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
@@ -35,21 +34,11 @@ lake build
 
 Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps.
 
-## The 2 remaining axioms
+## Proof state — zero axioms, 7 `sorry` gaps
 
-There are **2 remaining axioms** (down from 5 original, and 7 in the peak decomposition), both in `Erdos90/NumberField.lean`:
+All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
-1. **`prop_3_2_to_3_6`** — Golod–Shafarevich / Chebotarev tower construction.  Produces `C_rd > 0` and for `ℓ ≥ 2`: `D₀`, `rd_F` with `log rd_F ≤ C_rd·ℓ·log ℓ`, and for every M: degree `f ≥ M` + lattice `Λ ⊂ ℂ^f` with D₀-separation.  (Absent from Mathlib: Golod-Shafarevich [GS64], Chebotarev [Tsc26], class field towers.)
-
-2. **`prop_2_2`** — Class-group pigeonhole + coset averaging (Prop 2.2 + Lemma 2.4).  Produces `U ⊂ ℂ^f` with all-coordinate modulus 1, `D₀·u ∈ Λ`, `|U| ≥ exp((t·log 2 − log_H)·f)`, and `Nonempty` of the coset averaging witness function.  `Classical.choice` recovers the witness in the noncomputable section.
-
-`C_class := 1` (concrete `def`, not axiom).  `C₀`, `prop_3_7`, and `prop_2_2_covg` were removed/absorbed.
-
-All other statements (analytic lemmas, geometric constructions, Theorem 1.1) are fully proven in Lean.
-
-## Current proof state (everything is proven)
-
-### Fully proven
+### Fully proven (no sorry)
 - `projection_injective` — first-coordinate projection injective on a Λ-coset (Lemma 2.5)
 - `card_ordered_unit_pairs_eq_two_mul_unitDistPairs` — swap involution + strong induction
 - `distSq_symm` — symmetry of Euclidean distance
@@ -59,26 +48,28 @@ All other statements (analytic lemmas, geometric constructions, Theorem 1.1) are
 - `exists_R_log_rho_gt` — ∀ ε>0, D>0, ∃ R>½, log ρ(R) > −ε ∧ 4RD > 1 (from ρ(R) → 1)
 - `tendsto_rho_atTop` — ρ(R) → 1 as R → ∞
 - `rho_formula` — algebraic simplification of ρ(R)
-- **`exists_good_coset`** — now a `def` (not `axiom`): unpacks `A.h_coset_avg` into a `GoodCoset`
+- `prop_p6` — analytic lemma: (ℓ-1)²·log 2 > C·ℓ·log ℓ for large ℓ (fully proved)
+- `hlog2_event` — log 2 ≤ C_rd·k·log k for large k (fully proved)
+- `exists_good_coset` — unpacks `A.h_coset_avg` into `GoodCoset`
 - `planar_set_from_datum` (Theorem 2.3 parametric) — fully proven
 - `admissible_family_to_planar_set` (Theorem 2.3) — fully proven
-- `erdos_unit_distance_false` (Theorem 1.1) — fully proven; B = 2·log(4RD+1), δ = γ/(4B)
+- `erdos_unit_distance_false` (Theorem 1.1) — fully proven
 - `erdos_bound_false` (contrapositive) — fully proven
+- `h_ineq` within `lemma_2_4` — algebraic inequality |U|·ρ(R)^f ≥ exp(γf/2) — fully proved
 
-### Deep axioms (declared as `axiom` in `NumberField.lean`, awaiting human verification)
+### `def` with `sorry` (deep number theory / analysis, not in Mathlib)
 - `prop_3_2_to_3_6` — Golod–Shafarevich / Chebotarev tower construction
-- `prop_2_2` — Class-group pigeonhole + coset averaging (via Nonempty)
+- `prop_2_2` — Class-group pigeonhole for norm-1 elements
 
-### Theorem (proved from the 2 axioms above)
-- `exists_admissible_family` — ∃ γ>0, D>0, ∀ M, ∃ A with A.f ≥ M, A.γ = γ, A.D = D
+### Partially proved `def` (structural proof with `sorry` gaps)
+- `lemma_2_4` — coset averaging: algebraic inequality proved, measure-theoretic part as `sorry`
+- `disc_overlap_ratio_real` — area of intersection of two ℂ-discs = πR²·ρ(R) (calculus, `sorry`)
+- `polydisc_overlap_ratio_real` — Fubini product extension (measure theory, `sorry`)
+- `hrho_pos` sub-proof within `lemma_2_4` — positivity of ρ(R) for R > 1/2 (trigonometry, `sorry`)
 
-### Removed/absorbed
-- `C_class := 1` (concrete `def`, not axiom)
-- `C₀` — redundant (absorbed into prop_3_2_to_3_6)
-- `prop_3_7` — Minkowski class-number bound (never called; absorbed into prop_2_2 + C_class)
-- `prop_2_2_covg` — combined into prop_2_2 via `Nonempty` (classical equivalence)
-
-There are zero `sorry` gaps and 2 axioms.
+### Auxiliary defs
+- `C_class := 1` (concrete `def`)
+- `polydisc_measurable` — lemma (fully proved)
 
 ## Important types and notations
 

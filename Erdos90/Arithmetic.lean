@@ -9,7 +9,7 @@ splitting and bounded root discriminant, constructed via Golod-Shafarevich
 theory and Chebotarev density.
 
 We package the conclusion as an explicit `AdmissibleFamily` structure
-and an axiom asserting its existence.
+and a theorem proving its existence (from number-theoretic defs with sorry).
 -/
 
 /-- First element of `Fin f` when `f ≥ 1`. -/
@@ -46,4 +46,4 @@ structure AdmissibleFamily where
       CosetAvgWitness f Λ U R γ
 
 /-! `exists_admissible_family` is a **theorem** proved in `Erdos90/NumberField.lean`
-    from sub-axioms corresponding to Propositions 2.2 and 3.2–3.8 of the paper. -/
+    from number-theoretic defs with sorry (Props 2.2, 3.2–3.8) + analytic lemmas. -/

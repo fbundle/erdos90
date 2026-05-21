@@ -92,7 +92,7 @@ lemma tendsto_rho_atTop : Tendsto rho atTop (𝓝 1) := by
       atTop (𝓝 (1 - 0)) := Filter.Tendsto.sub h_first h_second
   simpa [sub_zero] using h_combined.congr' h_formula_ev
 
-/-- **Lemma (replaces Axiom 2).** For any ε > 0 and D > 0, there exists R > 1/2 with
+/-- **Lemma.** For any ε > 0 and D > 0, there exists R > 1/2 with
     log ρ(R) > -ε and 4RD > 1.  Follows from ρ(R) → 1 as R → ∞. -/
 lemma exists_R_log_rho_gt (ε : ℝ) (εpos : ε > 0) (D : ℝ) (hD : D > 0) :
     ∃ R > (1/2 : ℝ), Real.log (rho R) > -ε ∧ 4 * R * D > 1 := by
@@ -351,7 +351,7 @@ def exists_good_coset (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
 ### Lemma 2.6: Size bound
 
 The number of points in the coset slice is at most exponential in f.
-This is a sup-norm packing argument (Axiom 4).
+This is a sup-norm packing argument (Lemma).
 -/
 
 lemma size_bound (A : AdmissibleFamily) (R : ℝ) (a : Fin A.f → ℂ)
@@ -590,7 +590,7 @@ theorem planar_set_from_datum (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
       (P.card : ℝ) ≥ Real.exp (A.γ / 2 * (A.f : ℝ)) ∧
       (P.card : ℝ) ≤ Real.exp ((2 * Real.log (4 * R * A.D + 1)) * (A.f : ℝ)) ∧
       (unitDistPairs P : ℝ) ≥ (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by
-  -- Step 1: obtain a good coset via averaging (Axiom 3)
+  -- Step 1: obtain a good coset via averaging (exists_good_coset)
   obtain ⟨a, X, hX_sub, hX_fin, hX_ne, h_count⟩ := exists_good_coset A R hR hρ
   -- Step 2: set up the projection and finsets
   let π₁ : (Fin A.f → ℂ) → ℂ := fun z => z (fin0 A.hf)
@@ -740,7 +740,7 @@ theorem admissible_family_to_planar_set (A : AdmissibleFamily) :
     rw [hδ_def]
     field_simp [show B ≠ 0 from by linarith [hB_pos]]
     ring
-  -- Step 3: obtain a good coset via averaging (Axiom 3)
+  -- Step 3: obtain a good coset via averaging (exists_good_coset)
   obtain ⟨a, X, hX_sub, hX_fin, hX_ne, h_count⟩ := exists_good_coset A R hR hρ
   -- Step 4: project to first complex coordinate, then to ℝ×ℝ
   let π₁ : (Fin A.f → ℂ) → ℂ := λ z => z (fin0 A.hf)
