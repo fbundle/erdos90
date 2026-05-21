@@ -1,4 +1,4 @@
--- Root of the `Erd46` library.
-import Erd46.Prerequisite
-import Erd46.Lemma
-import Erd46.Theorem
+import Erd46.Defs
+import Erd46.Arithmetic
+import Erd46.Geometric
+import Erd46.Main
