@@ -279,6 +279,7 @@ lemma size_bound (A : AdmissibleFamily) (R : ℝ) (a : Fin A.f → ℂ)
     and an admissible family A, produce a planar set P with:
     - |P| ≥ 1
     - |P| ≥ exp(γ/2 · f)  (size lower bound, from E ≤ N² and E ≥ exp·N)
+    - |P| ≤ exp(2·log(4RD) · f)  (size upper bound, from sup-norm packing)
     - ν(P) ≥ ½ · exp(γ/2 · f) · |P|  (unit-distance lower bound)
 
     This is the version used in the proof of Theorem 1.1, where R is fixed
@@ -288,6 +289,7 @@ theorem planar_set_from_datum (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
     (h_4RD_gt_one : 4 * R * A.D > 1) :
     ∃ (P : Finset (ℝ × ℝ)), P.card ≥ 1 ∧
       (P.card : ℝ) ≥ Real.exp (A.γ / 2 * (A.f : ℝ)) ∧
+      (P.card : ℝ) ≤ Real.exp (2 * Real.log (4 * R * A.D) * (A.f : ℝ)) ∧
       (unitDistPairs P : ℝ) ≥ (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by
   -- Step 1: obtain a good coset via averaging (Axiom 3)
   obtain ⟨a, X, hX_sub, hX_fin, hX_ne, h_count⟩ := exists_good_coset A R hR hρ
@@ -401,7 +403,14 @@ theorem planar_set_from_datum (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
       _ ≥ (Real.exp (A.γ / 2 * (A.f : ℝ)) * (X_finset.card : ℝ)) / 2 := by gcongr
       _ = (Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ)) / 2 := by rw [h_card_eq]
       _ = (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by ring
-  exact ⟨P, hP_card_ge_one, h_P_lower, h_edges_lower⟩
+  -- Step 6: size upper bound |P| ≤ exp(2·log(4RD)·f) via sup-norm packing
+  have h_P_upper : (P.card : ℝ) ≤ Real.exp (2 * Real.log (4 * R * A.D) * (A.f : ℝ)) := by
+    rw [h_card_eq]
+    dsimp [X_finset]
+    have := size_bound A R a X hX_sub hX_fin h_4RD_gt_one
+    simp only at this
+    linarith
+  exact ⟨P, hP_card_ge_one, h_P_lower, h_P_upper, h_edges_lower⟩
 
 /-- **Theorem 2.3.** Given an admissible family A, there exists a planar point set
     P ⊂ ℝ² and δ > 0 such that ν(P) ≥ ½·|P|^{1+2δ}.
