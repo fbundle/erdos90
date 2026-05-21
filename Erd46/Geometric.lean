@@ -275,6 +275,87 @@ lemma size_bound (A : AdmissibleFamily) (R : ℝ) (a : Fin A.f → ℂ)
 ### Theorem 2.3: From admissible family to planar point set
 -/
 
+/-- **Theorem 2.3 (parametric form).**  Given R > 1/2 satisfying the ρ-condition,
+    and an admissible family A, produce a planar set P with:
+    - |P| ≥ 1
+    - |P| ≥ exp(γ/2 · f)  (size lower bound, from E ≤ N² and E ≥ exp·N)
+    - ν(P) ≥ ½ · exp(γ/2 · f) · |P|  (unit-distance lower bound)
+
+    This is the version used in the proof of Theorem 1.1, where R is fixed
+    globally so that δ = γ/(4B) is the same for all families in the tower. -/
+theorem planar_set_from_datum (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
+    (hρ : Real.log (rho R) > -(A.γ / 2))
+    (h_4RD_gt_one : 4 * R * A.D > 1) :
+    ∃ (P : Finset (ℝ × ℝ)), P.card ≥ 1 ∧
+      (P.card : ℝ) ≥ Real.exp (A.γ / 2 * (A.f : ℝ)) ∧
+      (unitDistPairs P : ℝ) ≥ (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by
+  -- Step 1: obtain a good coset via averaging (Axiom 3)
+  obtain ⟨a, X, hX_sub, hX_fin, hX_ne, h_count⟩ := exists_good_coset A R hR hρ
+  -- Step 2: set up the projection and finsets
+  let π₁ : (Fin A.f → ℂ) → ℂ := fun z => z (fin0 A.hf)
+  have h_coset_sub : X ⊆ shift a A.Λ.carrier := fun x hx => (hX_sub hx).left
+  have h_proj_inj : ∀ x ∈ X, ∀ y ∈ X, π₁ x = π₁ y → x = y :=
+    projection_injective A X h_coset_sub
+  let X_finset : Finset (Fin A.f → ℂ) := hX_fin.toFinset
+  have hX_finset_mem : ∀ x, x ∈ X_finset ↔ x ∈ X := fun x => Set.Finite.mem_toFinset hX_fin
+  let re_im : ℂ → ℝ × ℝ := fun z => (z.re, z.im)
+  have h_re_im_inj : Function.Injective re_im := by
+    intro a b h; apply Complex.ext
+    · exact congr_arg Prod.fst h
+    · exact congr_arg Prod.snd h
+  -- Step 3: build the planar point set P
+  let P : Finset (ℝ × ℝ) := (X_finset.image π₁).image re_im
+  have h_proj_inj_on : ∀ x ∈ X_finset, ∀ y ∈ X_finset, π₁ x = π₁ y → x = y := by
+    intro x hx y hy h
+    exact h_proj_inj x ((hX_finset_mem x).mp hx) y ((hX_finset_mem y).mp hy) h
+  have h_card_image_π₁ : (X_finset.image π₁).card = X_finset.card :=
+    Finset.card_image_of_injOn (fun x hx y hy h => h_proj_inj_on x hx y hy h)
+  have h_card_eq_nat : P.card = X_finset.card := by
+    rw [show P.card = (X_finset.image π₁).card from Finset.card_image_of_injective _ h_re_im_inj,
+        h_card_image_π₁]
+  have h_card_eq : (P.card : ℝ) = (X_finset.card : ℝ) := by exact_mod_cast h_card_eq_nat
+  have hP_nonempty : P.Nonempty := by
+    rcases hX_ne with ⟨x, hx⟩
+    exact ⟨re_im (π₁ x), Finset.mem_image.mpr ⟨π₁ x,
+      Finset.mem_image.mpr ⟨x, (hX_finset_mem x).mpr hx, rfl⟩, rfl⟩⟩
+  have hP_card_ge_one : P.card ≥ 1 := Finset.one_le_card.mpr hP_nonempty
+  -- Step 4: prove |P| ≥ exp(γ/2 · f) using E ≤ N² and E ≥ exp · N
+  let N_val := X_finset.card
+  let E_finset := (X_finset ×ˢ X_finset).filter
+      (fun (p : (Fin A.f → ℂ) × (Fin A.f → ℂ)) => p.2 - p.1 ∈ A.U)
+  have hN_pos : (N_val : ℝ) > 0 :=
+    by exact_mod_cast Finset.card_pos.mpr (hX_fin.toFinset_nonempty.mpr hX_ne)
+  have h_E_le_Nsq : (E_finset.card : ℝ) ≤ (N_val : ℝ) ^ 2 := by
+    have h_sub : E_finset ⊆ X_finset ×ˢ X_finset := Finset.filter_subset _ _
+    calc (E_finset.card : ℝ)
+        ≤ ((X_finset ×ˢ X_finset).card : ℝ) := by exact_mod_cast Finset.card_le_card h_sub
+      _ = (N_val : ℝ) ^ 2 := by push_cast [Finset.card_product]; ring
+  have h_P_lower : (P.card : ℝ) ≥ Real.exp (A.γ / 2 * (A.f : ℝ)) := by
+    rw [h_card_eq]
+    -- exp · N ≤ E ≤ N², so exp ≤ N (canceling N > 0)
+    have h_mul : Real.exp (A.γ / 2 * (A.f : ℝ)) * N_val ≤ N_val * N_val :=
+      calc Real.exp (A.γ / 2 * (A.f : ℝ)) * N_val
+          ≤ E_finset.card := h_count
+        _ ≤ N_val ^ 2 := h_E_le_Nsq
+        _ = N_val * N_val := by ring
+    exact le_of_mul_le_mul_right h_mul hN_pos
+  -- Step 5: lower bound on ν(P) via the injection E_finset → ordered unit-distance pairs
+  have h_edges_lower : (unitDistPairs P : ℝ) ≥
+      (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by
+    let E_ord := (P.offDiag).filter (fun ⟨x, y⟩ => distSq x y = 1)
+    have h_ord_eq : (E_ord.card : ℝ) = 2 * (unitDistPairs P : ℝ) := by
+      exact_mod_cast card_ordered_unit_pairs_eq_two_mul_unitDistPairs P
+    have h_card_le : (E_finset.card : ℝ) ≤ (E_ord.card : ℝ) := by
+      -- φ(x,y) = (re_im(π₁ x), re_im(π₁ y)) injects E_finset into E_ord:
+      -- distance: ‖u(fin0)‖ = 1 so |π₁ x - π₁ y|² = 1; injectivity: π₁ injective on X.
+      sorry
+    calc (unitDistPairs P : ℝ) = (E_ord.card : ℝ) / 2 := by linarith
+      _ ≥ (E_finset.card : ℝ) / 2 := by gcongr
+      _ ≥ (Real.exp (A.γ / 2 * (A.f : ℝ)) * (X_finset.card : ℝ)) / 2 := by gcongr
+      _ = (Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ)) / 2 := by rw [h_card_eq]
+      _ = (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) := by ring
+  exact ⟨P, hP_card_ge_one, h_P_lower, h_edges_lower⟩
+
 /-- **Theorem 2.3.** Given an admissible family A, there exists a planar point set
     P ⊂ ℝ² and δ > 0 such that ν(P) ≥ ½·|P|^{1+2δ}.
 
@@ -406,7 +487,9 @@ theorem admissible_family_to_planar_set (A : AdmissibleFamily) :
       _ ≥ (1/2 : ℝ) * ((P.card : ℝ) ^ (2*δ)) * (P.card : ℝ) := by
         gcongr
       _ = (1/2 : ℝ) * ((P.card : ℝ) ^ (1 + 2*δ)) := by
-        -- Need: (P.card)^{2δ} * P.card = (P.card)^{1+2δ}
-        -- This is rpow_add when exponents are summable, or rpow_one + rpow_add
-        sorry
+        have hPcard_pos : (0 : ℝ) < (P.card : ℝ) :=
+          by exact_mod_cast Nat.pos_of_ne_zero (Finset.card_ne_zero.mpr hP_nonempty)
+        rw [show (1 : ℝ) + 2 * δ = 2 * δ + 1 from by ring,
+            Real.rpow_add hPcard_pos, Real.rpow_one]
+        ring
   exact ⟨P, δ, hδ_pos, hP_card_ge_one, h_final⟩

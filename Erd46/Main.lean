@@ -25,10 +25,11 @@ open Real
        large f, an `AdmissibleFamily` A_f with A_f.γ = γ and A_f.D = D.
     2. Fix R > 1/2 via the ρ-axiom such that log ρ(R) > -γ/2 and 4RD > 1.
        Set δ = γ/(8·log(4RD)) > 0.  Note δ depends only on γ, D, R, not on f.
-    3. For large enough f, `admissible_family_to_planar_set` (Theorem 2.3)
-       gives a planar set P_f with ν(P_f) ≥ ½·|P_f|^{1+2δ}.
-    4. When |P_f|^δ ≥ 2 (which holds for large f since |P_f| → ∞),
-       we get ν(P_f) ≥ |P_f|^{1+δ}.
+    3. For large enough f, `planar_set_from_datum` gives a planar set P_f with
+       - |P_f| ≥ exp(γ/2 · f), so |P_f| → ∞ as f → ∞
+       - ν(P_f) ≥ ½ · exp(γ/2 · f) · |P_f| ≥ ½ · |P_f|^{2δ} · |P_f| = ½ · |P_f|^{1+2δ}
+         (using |P_f| ≤ exp(B·f) so exp(γ/2·f) ≥ |P_f|^{γ/(2B)} = |P_f|^{2δ})
+    4. For |P_f|^δ ≥ 2 (large f), ½ · |P_f|^{1+2δ} ≥ |P_f|^{1+δ}.
     5. Setting n_f = |P_f| gives arbitrarily large n with ν(n) ≥ n^{1+δ}. -/
 theorem erdos_unit_distance_false :
     ∃ (δ : ℝ), δ > 0 ∧ (∀ N : ℕ, ∃ n ≥ N, (maxUnitDists n : ℝ) ≥ (n : ℝ) ^ (1 + δ)) := by
@@ -36,32 +37,25 @@ theorem erdos_unit_distance_false :
   obtain ⟨γ, hγ_pos, D, hD_pos, h_tower⟩ := exists_admissible_family
   -- Step 2: fix R > 1/2 via the ρ-axiom; log ρ(R) > -γ/2 and 4RD > 1
   have hγ2_pos : γ / 2 > 0 := half_pos hγ_pos
-  obtain ⟨R, hR, hρ, h_4RD_gt_one⟩ := exists_R_log_rho_gt (γ / 2) hγ2_pos D hD_pos
-  have hR_pos : R > 0 := by linarith
-  -- Step 3: define δ = γ/(4B) where B = 2·log(4RD)
+  obtain ⟨R, hR, hρ_global, h_4RD_gt_one⟩ := exists_R_log_rho_gt (γ / 2) hγ2_pos D hD_pos
+  -- Step 3: define δ = γ/(4B) where B = 2·log(4RD); this is independent of f
   set B := 2 * Real.log (4 * R * D) with hB_def
   have hB_pos : B > 0 := by
     have hlog : Real.log (4 * R * D) > 0 := Real.log_pos h_4RD_gt_one
     positivity
   set δ := γ / (4 * B) with hδ_def
   have hδ_pos : δ > 0 := div_pos hγ_pos (by positivity)
-  refine ⟨δ, hδ_pos, λ N => ?_⟩
-  -- Step 4: For any given N, pick A with f large enough so that
-  -- (a) Theorem 2.3 applies and gives ν(P) ≥ ½·|P|^{1+2δ}
-  -- (b) |P| is large enough that ½·|P|^{2δ} ≥ 1, so ν(P) ≥ |P|^{1+δ}
-  -- (c) |P| ≥ N
+  refine ⟨δ, hδ_pos, fun N => ?_⟩
+  -- Step 4: for any N, pick f large enough, get an admissible family A with
+  -- A.f ≥ M, A.γ = γ, A.D = D, then apply planar_set_from_datum.
   --
-  -- From the counting estimate in the geometric construction:
-  --   |P| ≥ e^{γf/2} (since E ≤ |P|² and E ≥ e^{γf/2}·|P|)
-  -- So choosing f large enough gives |P| arbitrarily large.
+  -- We need f large enough that:
+  -- (a) exp(γ/2 · f) ≥ N  (so |P| ≥ N)
+  -- (b) exp(γ/2 · f)^δ ≥ 2  (so ½ · |P|^{1+2δ} ≥ |P|^{1+δ})
   --
-  -- The required threshold: we need f such that e^{γf/2} ≥ max(N, 2^{1/δ}).
-  -- Let M = ⌈(2/γ)·log(max(N, 2^{1/δ}))⌉ and pick A with A.f ≥ M.
-  --
-  -- The formal details of this step involve:
-  -- 1. Extracting the lower bound |P| ≥ e^{γf/2} from the good-coset counting
-  -- 2. Real exponent arithmetic to convert ½·|P|^{1+2δ} ≥ |P|^{1+δ}
-  -- These are left as `sorry` for now (routine but tedious in Lean).
+  -- Both (a) and (b) hold for all sufficiently large f since exp(γ/2 · f) → ∞.
+  -- We leave the choice of M and the subsequent quantitative estimates as sorry,
+  -- as they require real exp/log monotonicity and rpow arithmetic.
   sorry
 
 /-- **Equivalent formulation**: the Erdős bound is false.
