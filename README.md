@@ -15,7 +15,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 ## INSTRUCTION FOR AI
 
-- this file is strictly for human: DO NOT EDIT, DO NOT COMMIT
+- this file is strictly for human: DO NOT EDIT, DO NOT COMMIT this README.md file
 
 - the main theorem must be put in `Erdos90/Main.lean`
 
@@ -25,7 +25,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - you can find some useful resources in `assets`
 
-- DO NOT PUSH with out permission
+- DO NOT COMMIT, DO NOT PUSH without permission
 
 - your model name is `Claude Sonnet 4.6`, please end your commit message with 
 
