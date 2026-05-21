@@ -19,47 +19,29 @@ is identified as a separate lemma (currently `sorry`-closed, but provable via
 
 ## Sub-axioms declared here
 
-1. `C_class` / `C₀`       — absolute constants (Propositions 3.7, 3.5)
-2. `prop_3_7`             — Minkowski class-number bound
-3. `prop_3_2_to_3_6`      — Golod–Shafarevich + Chebotarev tower output
-4. `prop_2_2`             — norm-one elements + coset averaging (Props 2.2, 2.4)
+1. `prop_3_2_to_3_6`      — Golod–Shafarevich + Chebotarev tower output
+2. `prop_2_2`             — norm-one set construction (class-group pigeonhole)
+3. `prop_2_2_covg`        — Haar measure coset averaging (Lemma 2.4)
 
-These four axioms and the analytic P6 lemma together prove
-`exists_admissible_family` as a `theorem`.
+`C_class` is a concrete `def := 1`. `C₀` and `prop_3_7` are absorbed into the
+three axioms above; they are not separately assumed.
+These three axioms and the analytic lemmas (prop_p6, hlog2_event) together
+prove `exists_admissible_family` as a `theorem`.
 -/
 
 /-! ## Absolute constants -/
 
 /-- Absolute constant from Proposition 3.7 (Minkowski ideal-class bound):
     h(K) ≤ max(2, rd(K))^{C_class · [K:ℚ]} for every number field K. -/
-axiom C_class : ℝ
-axiom C_class_pos : C_class > 0
+def C_class : ℝ := 1
+theorem C_class_pos : C_class > 0 := by
+  unfold C_class; norm_num
 
-/-- Absolute constant from Proposition 3.5 (Shafarevich relation-rank estimate):
-    r(Gal(F^{ur,3}/F)) ≤ d(Gal(F^{ur,3}/F)) + C₀
-    for any totally real cubic F with ζ₃ ∉ F. -/
-axiom C₀ : ℝ
-axiom C₀_pos : C₀ > 0
-
-/-! ## Proposition 3.7: Minkowski class-number bound
-
-**Reference**: [Neu99, Chapter I, §5]; Proposition A.13 in the paper.
-
-Statement: h(K) ≤ max(2, rd(K))^{C_class · [K:ℚ]}.
-For fields with rd(K) ≥ 2 this simplifies to h(K) ≤ rd(K)^{C_class · [K:ℚ]}.
--/
-
-/-- **Proposition 3.7.** Absolute Minkowski class-number bound.
-
-    For any number field K with rd(K) ≥ 2 (where rd(K) = |D_K|^{1/[K:ℚ]}):
-    classNumber(K) ≤ rd(K)^{C_class · [K:ℚ]}.
-
-    Here `classNumber K = Fintype.card (ClassGroup (𝓞 K))` and
-    `rootDiscr K = |discr K|^{1 / finrank ℚ K}`. -/
--- Note: The full Mathlib statement uses `rootDiscr K` and `finrank ℚ K`.
--- We abstract it here: given rd ≥ 2, h_class ≤ rd^{C_class * n}.
-axiom prop_3_7 (rd : ℝ) (h_class n : ℕ) (hrd : rd ≥ 2) :
-    (h_class : ℝ) ≤ rd ^ (C_class * (n : ℝ))
+-- C₀ from Proposition 3.5: the Shafarevich relation-rank constant.
+-- Unused in the main proof; absorbed into prop_3_2_to_3_6.
+-- Proposition 3.7 (Minkowski class-number bound) is absorbed into prop_2_2's definition;
+-- the exact constant C_class is not needed — any positive real works.
+-- We set C_class := 1 as a concrete witness.
 
 /-! ## Propositions 3.2–3.6: Tower construction
 

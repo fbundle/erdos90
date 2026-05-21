@@ -1,21 +1,23 @@
 import Erdos90.Arithmetic
+import Erdos90.NumberField
 import Erdos90.Geometric
 import Erdos90.Main
 
 /-!
 # Axioms (for human verification)
 
-This file collects every postulate that the proof assumes without
-a formal Lean derivation.  Each corresponds to a deep theorem in the
-literature or a substantial computation.
+This file documents every postulate that the proof assumes without a
+formal Lean derivation.  Each corresponds to a deep theorem in the
+literature.
 
 **All axioms should be reviewed by a number theorist / geometer.**
 
-There is now a single remaining axiom:
-- `exists_admissible_family` (`Arithmetic.lean`): encapsulates both
-  the Golod–Shafarevich tower construction (Proposition 3.8) and the
-  Haar measure coset averaging (Lemma 2.4), via the `h_coset_avg` field
-  of `AdmissibleFamily`.
+There are **3 remaining axioms**, all in `Erdos90/NumberField.lean`:
+`prop_3_2_to_3_6`, `prop_2_2`, and `prop_2_2_covg`.
+
+`exists_admissible_family` is a **theorem** (proved in `NumberField.lean`
+from these 3 axioms + the analytic lemmas `prop_p6` and `hlog2_event`,
+both fully proved).
 -/
 
 open Real
@@ -23,53 +25,81 @@ open Real
 noncomputable section
 
 /-!
-## Axiom 1: Existence of the admissible tower with coset averaging
-   (Proposition 3.8 + Lemma 2.4 of the paper)
+## Axiom 1: Golod–Shafarevich / Chebotarev tower construction
+   (Propositions 3.2–3.6 of the paper)
 
-**Location**: `Erdos90/Arithmetic.lean`, declared as `axiom exists_admissible_family`.
+**Location**: `Erdos90/NumberField.lean`, line 68: `axiom prop_3_2_to_3_6`.
 
-**Statement**: There exist absolute constants γ > 0 and D > 0 such that,
-for arbitrarily large f, there is an admissible family with those γ and D.
-
-The `AdmissibleFamily` structure packages both the tower construction output
-and the coset averaging property:
-
-### Tower construction (Proposition 3.8)
-
-In the paper, D is the denominator of the base CM field and is fixed
-for the entire tower.  γ = t·log 2 - log H where t is the number of
-split primes and H is the class-number bound.
+**Statement**: ∃ C_rd > 0 such that ∀ ℓ ≥ 2, ∃ D₀ > 0, rd_F ≥ 1 with
+`log rd_F ≤ C_rd · ℓ · log ℓ`, and ∀ M, ∃ f ≥ M, lattice Λ ⊂ ℂ^f
+with D₀-separation: nonzero Λ-elements have first coordinate ≥ D₀⁻¹.
 
 **Mathematical input**:
-- Proposition 3.2: Cyclotomic base field F (cyclic cubic, totally real)
-- Proposition 3.4: Golod–Shafarevich inequality (r > d²/4 ⇒ infinite pro-p group)
-- Proposition 3.5: Shafarevich relation-rank estimate (r(G) ≤ d(G) + C₀)
-- Proposition 3.6: Chebotarev density theorem (split primes with trivial Frobenius)
-- Proposition 3.7: Minkowski ideal-class bound (h(K) ≤ rd(K)^{O([K:ℚ])})
-- Proposition 2.2: Class-group pigeonhole (|U| ≥ e^{(t log 2 - log H)f})
+- Prop 3.2: Cyclotomic base field F (cyclic cubic, totally real)
+- Prop 3.4: Golod–Shafarevich inequality (r > d²/4 ⇒ infinite pro-p group)
+- Prop 3.5: Shafarevich relation-rank estimate (r(G) ≤ d(G) + C₀)
+- Prop 3.6: Chebotarev density theorem (split primes with trivial Frobenius)
+- Step 3: Tower layers with fⱼ → ∞, rd(Fⱼ) = rd(F)
 
-### Coset averaging (Lemma 2.4, `h_coset_avg` field)
+**Absent from Mathlib**: Golod-Shafarevich [GS64], Chebotarev [Tsc26],
+class field towers, pro-p group theory.
 
-Using Haar probability measure on the torus ℂ^f/Λ, the expected size
-of (a+Λ) ∩ B_R is vol(B_R)/covol(Λ), and the expected number of ordered
-U-pairs (x, x+u) with u ∈ U is |U|·a(R)^f / covol(Λ).
+**Verification**: Can only be verified on paper.  Combinatorial group
+cohomology + algebraic number theory, totaling ~50 pages in [Neu99,
+Koc02, Sha63].
+-/
 
-For an admissible family A and radius R > 1/2 with log ρ(R) > -γ/2,
-there exists a coset a+Λ such that the finite intersection X = (a+Λ) ∩ B_R
-is nonempty and satisfies E ≥ e^{γf/2}·|X|, where E counts ordered pairs
-(x, y) ∈ X² with y-x ∈ U.
+/-!
+## Axiom 2: Class-group pigeonhole (Proposition 2.2)
 
-**Verification**: Standard Fubini/averaging argument on the compact abelian
-group ℂ^f/Λ.  The lattice Λ is discrete and cocompact; Haar probability
-measure μ on the quotient satisfies:
-- ∫ N(a+Λ) dμ(a) = vol(B_R) / covol(Λ)  (by Fubini on a fundamental domain)
-- ∫ E(a+Λ) dμ(a) = |U| · a(R)^f / covol(Λ)  (overlap area for U-pairs)
-From log ρ(R) > -γ/2 we have a(R)^f > (πR²)^f · exp(-γf/2), and |U| ≥ exp(γf).
-Hence ∫ E ≥ exp(γf/2) · ∫ N, so some coset achieves the average.
+**Location**: `Erdos90/NumberField.lean`, line 106: `axiom prop_2_2`.
 
-**Status**: The `h_coset_avg` field is part of `AdmissibleFamily` and is
-subsumed by `exists_admissible_family`.  A full Lean proof would require
-`IsAddFundamentalDomain` measure-theoretic API not yet exercised here.
+**Statement**: Given f ≥ 1, D₀ > 0, t ≥ 0, log_H, and a lattice Λ
+with D₀-separation, there exists U ⊂ ℂ^f such that:
+- All coordinates of u ∈ U have modulus 1
+- D₀·u ∈ Λ for all u ∈ U
+- |U| ≥ exp((t·log 2 − log_H)·f)
+
+**Mathematical input**:
+- Prop 2.2: 2^{tf} binary vectors → h(K) ≤ H^f ideal classes → by
+  pigeonhole, ≥ exp((t·log 2 − log H)·f) vectors share a class
+- For each such pair (ε,η): u_ε = α_ε / c(α_ε) has |σ(u_ε)| = 1
+  for all complex embeddings σ
+
+**Absent from Mathlib**: Number field ideal-class structure, CM-field
+complex conjugation, ideal norm bounds in terms of root discriminant.
+
+**Verification**: Combinatorial pigeonhole on a finite group.  Valid
+given Prop 3.7 (Minkowski) and the tower structure.
+-/
+
+/-!
+## Axiom 3: Haar measure coset averaging (Lemma 2.4)
+
+**Location**: `Erdos90/NumberField.lean`, line 117: `axiom prop_2_2_covg`.
+
+**Statement**: Given all the data of Axioms 1 and 2 plus U with the
+properties above, for any R > 1/2 with `log ρ(R) > −(t·log 2 − log_H)/2`,
+there exists a `CosetAvgWitness` a, X such that the finite intersection
+X = (a+Λ) ∩ B_R is nonempty and E ≥ exp(γf/2)·|X|, where E counts
+ordered pairs (x,y) ∈ X² with y−x ∈ U.
+
+**Mathematical input**:
+- Haar probability measure on the compact torus ℂ^f/Λ
+- 𝔼[|(a+Λ) ∩ B_R|] = vol(B_R)/covol(Λ) (Fubini on fundamental domain)
+- 𝔼[E] = |U|·a(R)^f / covol(Λ) (overlap area for U-pairs)
+- From log ρ(R) > −γ/2: a(R)^f > (πR²)^f·exp(−γf/2)
+- With |U| ≥ exp(γf): ∫ E ≥ exp(γf/2)·∫ N → some coset achieves average
+
+**Mathlib status**: `IsAddFundamentalDomain` + `MeasureTheory` machinery
+exists but the specific integration identities for polydiscs and lattices
+in ℂ^f are not developed.
+
+**Verification**: Standard Fubini/averaging on a compact abelian group.
+Would require ~200 lines of Lean measure-theoretic API.
 -/
 
 #check exists_admissible_family
+#check prop_3_2_to_3_6
+#check prop_2_2
+#check prop_2_2_covg

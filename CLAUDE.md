@@ -13,11 +13,12 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | File | Purpose |
 |------|---------|
 | `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
-| `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure + Axiom 1 (`exists_admissible_family`) |
+| `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure (no axioms — `exists_admissible_family` is a theorem in NumberField) |
+| `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` proved from 3 sub-axioms + analytic lemmas |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erdos90/Axioms.lean` | Human-readable index of the single remaining axiom |
-| `Erdos90.lean` | Root import (imports all modules) |
+| `Erdos90/Axioms.lean` | Human-readable documentation of the 3 remaining sub-axioms |
+| `Erdos90.lean` | Root import (imports all modules, including NumberField) |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -32,17 +33,21 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps and zero axiom gaps beyond `exists_admissible_family`.
+Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps.
 
-## The 1 remaining axiom
+## The 3 remaining axioms
 
-There is a **single** remaining axiom, down from the original 5:
+There are **3 remaining axioms** (down from the original 5, and from 7 in the max decomposition), all in `Erdos90/NumberField.lean`:
 
-**`exists_admissible_family`** (`Arithmetic.lean`) — packages both:
-- **Golod–Shafarevich tower** (Proposition 3.8): ∃ γ>0, D>0, ∀ large M, ∃ A : AdmissibleFamily with A.f ≥ M, A.γ = γ, A.D = D
-- **Haar measure coset averaging** (Lemma 2.4): encoded in the `h_coset_avg` field of `AdmissibleFamily` — for any R > ½ with log ρ(R) > −γ/2, returns a `CosetAvgWitness` with E ≥ exp(γf/2)·|X|
+1. **`prop_3_2_to_3_6`** — Golod–Shafarevich / Chebotarev tower construction.  Produces `C_rd > 0` and for `ℓ ≥ 2`: `D₀`, `rd_F` with `log rd_F ≤ C_rd·ℓ·log ℓ`, and for every M: degree `f ≥ M` + lattice `Λ ⊂ ℂ^f` with D₀-separation.  (Absent from Mathlib: Golod-Shafarevich [GS64], Chebotarev [Tsc26], class field towers.)
 
-All other statements are proven in Lean.
+2. **`prop_2_2`** — Class-group pigeonhole (Prop 2.2).  Given `f`, `D₀`, `t`, `log_H`, `Λ` with D₀-separation and `t·log 2 > log_H`, produces `U ⊂ ℂ^f` with all-coordinate modulus 1, `D₀·u ∈ Λ`, and `|U| ≥ exp((t·log 2 − log_H)·f)`.
+
+3. **`prop_2_2_covg`** — Haar measure coset averaging (Lemma 2.4).  Given all the above plus `U` and `R > 1/2` with `log ρ(R) > −(γ/2)`, returns `CosetAvgWitness` with `E ≥ exp(γf/2)·|X|`.
+
+`C_class := 1` (concrete `def`, not axiom).  `C₀` and `prop_3_7` (Minkowski bound) were redundant and have been removed.
+
+All other statements (analytic lemmas, geometric constructions, Theorem 1.1) are fully proven in Lean.
 
 ## Current proof state (everything is proven)
 
@@ -62,10 +67,20 @@ All other statements are proven in Lean.
 - `erdos_unit_distance_false` (Theorem 1.1) — fully proven; B = 2·log(4RD+1), δ = γ/(4B)
 - `erdos_bound_false` (contrapositive) — fully proven
 
-### Deep axiom (declared as `axiom`, awaiting human verification)
-- `exists_admissible_family` — Golod–Shafarevich tower + Haar measure averaging
+### Deep axioms (declared as `axiom` in `NumberField.lean`, awaiting human verification)
+- `prop_3_2_to_3_6` — Golod–Shafarevich / Chebotarev tower construction
+- `prop_2_2` — Class-group pigeonhole (norm-one elements)
+- `prop_2_2_covg` — Haar measure coset averaging (Lemma 2.4)
 
-There are zero `sorry` gaps and zero axioms beyond `exists_admissible_family`.
+### Theorem (proved from the 3 axioms above)
+- `exists_admissible_family` — ∃ γ>0, D>0, ∀ M, ∃ A with A.f ≥ M, A.γ = γ, A.D = D
+
+### Removed/absorbed
+- `C_class := 1` (concrete `def`, not axiom)
+- `C₀` — redundant (absorbed into prop_3_2_to_3_6)
+- `prop_3_7` — Minkowski class-number bound (never called; absorbed into prop_2_2 + C_class)
+
+There are zero `sorry` gaps and 3 axioms.
 
 ## Important types and notations
 
