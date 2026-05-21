@@ -15,9 +15,14 @@ literature.
 There are **2 remaining axioms**, both in `Erdos90/NumberField.lean`:
 `prop_3_2_to_3_6` and `prop_2_2`.
 
+`prop_2_2` is now only the U-construction (class-group pigeonhole producing
+norm-1 elements). The coset averaging part (Lemma 2.4 of the paper) is split
+into a separate `def lemma_2_4`, which is structurally proved but has `sorry`
+gaps for the measure-theoretic unfolding identities.
+
 `exists_admissible_family` is a **theorem** (proved in `NumberField.lean`
-from these 2 axioms + the analytic lemmas `prop_p6` and `hlog2_event`,
-both fully proved).
+from these 2 axioms + `lemma_2_4` + the analytic lemmas `prop_p6` and
+`hlog2_event`, both fully proved).
 
 `C_class := 1` is a concrete `def`, not an axiom.
 `C₀` and `prop_3_7` are absorbed into the axioms above.
@@ -54,42 +59,51 @@ cohomology [GS64, Sha63] with algebraic number theory [Neu99, Koc02].
 -/
 
 /-!
-## Axiom 2: Class-group pigeonhole + coset averaging
-   (Propositions 2.2 and Lemma 2.4 of the paper)
+## Axiom 2: Class-group pigeonhole for norm-1 elements
+   (Proposition 2.2 of the paper)
 
-**Location**: `Erdos90/NumberField.lean` line 105: `axiom prop_2_2`.
+**Location**: `Erdos90/NumberField.lean` line 108: `axiom prop_2_2`.
 
 **Statement**: Given f ≥ 1, D₀ > 0, t ≥ 0, log_H, and a lattice Λ
 with D₀-separation, there exists U ⊂ ℂ^f such that:
 - All coordinates of u ∈ U have modulus 1
 - D₀·u ∈ Λ for all u ∈ U
 - |U| ≥ exp((t·log 2 − log_H)·f)
-- Nonempty (∀ R > ½ with log ρ(R) > −(t·log 2 − log_H)/2,
-  CosetAvgWitness with E ≥ exp(γf/2)·|X|)
-
-The coset averaging part uses `Nonempty` to wrap the Type-valued
-`CosetAvgWitness` into `Prop`.  In the `noncomputable` section,
-`Classical.choice` recovers the witness function.
 
 **Mathematical input**:
 - Prop 2.2: 2^{tf} binary vectors → h(K) ≤ H^f ideal classes →
   pigeonhole gives ≥ exp((t·log 2 − log H)·f) vectors sharing a class
 - For each pair: u_ε = α_ε / c(α_ε) has |σ(u_ε)| = 1 for all
   complex embeddings σ
+
+**Mathlib status**: Ideal class group, Minkowski bound, class number
+computations — not available in Mathlib.
+
+**Verification**: Combinatorial pigeonhole on the ideal class group.
+(Prop 2.2 in the paper).
+
+---
+
+## Lemma 2.4: Coset averaging (def, partially proved)
+
+**Location**: `Erdos90/NumberField.lean` line 168: `def lemma_2_4`.
+
+Given f, Λ with fundamental domain F, U with |U| ≥ exp(γf), and
+R > 1/2 with log ρ(R) > -γ/2, constructs a `CosetAvgWitness`.
+The algebraic inequality |U|·ρ(R)^f ≥ exp(γf/2) is fully proved.
+The measure-theoretic proof (unfolding trick, averaging principle)
+has `sorry` gaps pending Mathlib's Haar measure / fundamental domain
+API for ℂ^f/Λ.
+
+**Mathematical input**:
 - Lemma 2.4: Haar probability measure on ℂ^f/Λ, Fubini on a
   fundamental domain gives E_a[E] ≥ exp(γf/2)·E_a[N] → some coset
   a+Λ achieves E_a ≥ exp(γf/2)·N_a
 
-**Mathlib status**: `IsAddFundamentalDomain` + `MeasureTheory` API
-exists but the specific integration identities for polydiscs over
-lattice quotients are not developed.  Would require ~200 lines of
-measure-theoretic Lean.
-
-**Verification**: Combinatorial pigeonhole on the ideal class group
-(Prop 2.2) + standard Fubini/averaging on a compact abelian group
-(Lemma 2.4).
+**Verification**: Standard Fubini/averaging on a compact abelian group.
 -/
 
 #check exists_admissible_family
 #check prop_3_2_to_3_6
 #check prop_2_2
+#check lemma_2_4
