@@ -346,9 +346,56 @@ theorem planar_set_from_datum (A : AdmissibleFamily) (R : ℝ) (hR : R > 1/2)
     have h_ord_eq : (E_ord.card : ℝ) = 2 * (unitDistPairs P : ℝ) := by
       exact_mod_cast card_ordered_unit_pairs_eq_two_mul_unitDistPairs P
     have h_card_le : (E_finset.card : ℝ) ≤ (E_ord.card : ℝ) := by
-      -- φ(x,y) = (re_im(π₁ x), re_im(π₁ y)) injects E_finset into E_ord:
-      -- distance: ‖u(fin0)‖ = 1 so |π₁ x - π₁ y|² = 1; injectivity: π₁ injective on X.
-      sorry
+      let φ : (Fin A.f → ℂ) × (Fin A.f → ℂ) → (ℝ × ℝ) × (ℝ × ℝ) :=
+        fun p => (re_im (π₁ p.1), re_im (π₁ p.2))
+      apply Nat.cast_le.mpr
+      apply Finset.card_le_card_of_injOn φ
+      · intro ⟨x, y⟩ hp
+        obtain ⟨h_prod, hu⟩ := Finset.mem_filter.mp hp
+        obtain ⟨hx, hy⟩ := Finset.mem_product.mp h_prod
+        have hu_mod : ‖(y - x) (fin0 A.hf)‖ = 1 := A.hU_mod _ hu (fin0 A.hf)
+        have hx_P : re_im (π₁ x) ∈ P :=
+          Finset.mem_image.mpr ⟨π₁ x, Finset.mem_image.mpr ⟨x, hx, rfl⟩, rfl⟩
+        have hy_P : re_im (π₁ y) ∈ P :=
+          Finset.mem_image.mpr ⟨π₁ y, Finset.mem_image.mpr ⟨y, hy, rfl⟩, rfl⟩
+        -- distSq(re_im(π₁ x), re_im(π₁ y)) = 1
+        have h_dist : distSq (re_im (π₁ x)) (re_im (π₁ y)) = 1 := by
+          simp only [distSq, re_im, π₁]
+          -- Show ‖(y-x)(fin0)‖^2 = re^2 + im^2 via abs_apply + sq_sqrt
+          have h_norm_sq : ‖(y - x) (fin0 A.hf)‖ ^ 2 =
+              ((y - x) (fin0 A.hf)).re ^ 2 + ((y - x) (fin0 A.hf)).im ^ 2 := by
+            have h : ‖(y - x) (fin0 A.hf)‖ ^ 2 = normSq ((y - x) (fin0 A.hf)) := by
+              simp [Complex.norm_def, Real.sq_sqrt (normSq_nonneg _)]
+            rw [h, normSq_apply]; ring
+          have hre : ((y - x) (fin0 A.hf)).re = (y (fin0 A.hf)).re - (x (fin0 A.hf)).re := by
+            simp [Pi.sub_apply, sub_re]
+          have him : ((y - x) (fin0 A.hf)).im = (y (fin0 A.hf)).im - (x (fin0 A.hf)).im := by
+            simp [Pi.sub_apply, sub_im]
+          have hns2 : ((y (fin0 A.hf)).re - (x (fin0 A.hf)).re) ^ 2 +
+                      ((y (fin0 A.hf)).im - (x (fin0 A.hf)).im) ^ 2 = 1 := by
+            rw [← hre, ← him, ← h_norm_sq, hu_mod]; norm_num
+          linarith
+        -- re_im(π₁ x) ≠ re_im(π₁ y)
+        have hne : re_im (π₁ x) ≠ re_im (π₁ y) := by
+          intro heq
+          have hπ : x (fin0 A.hf) = y (fin0 A.hf) := h_re_im_inj heq
+          have h1 : (y - x) (fin0 A.hf) = y (fin0 A.hf) - x (fin0 A.hf) := Pi.sub_apply y x _
+          rw [h1, ← hπ, sub_self, norm_zero] at hu_mod
+          exact absurd hu_mod (by norm_num)
+        apply Finset.mem_filter.mpr
+        exact ⟨Finset.mem_offDiag.mpr ⟨hx_P, hy_P, hne⟩, h_dist⟩
+      · intro ⟨x1, y1⟩ hp1 ⟨x2, y2⟩ hp2 heq
+        simp only [φ, Prod.mk.injEq] at heq
+        obtain ⟨h1, h2⟩ := heq
+        have ⟨hprod1, _⟩ := Finset.mem_filter.mp hp1
+        have ⟨hprod2, _⟩ := Finset.mem_filter.mp hp2
+        have ⟨hx1, hy1⟩ := Finset.mem_product.mp hprod1
+        have ⟨hx2, hy2⟩ := Finset.mem_product.mp hprod2
+        congr 1
+        · exact h_proj_inj x1 ((hX_finset_mem x1).mp hx1) x2 ((hX_finset_mem x2).mp hx2)
+              (h_re_im_inj h1)
+        · exact h_proj_inj y1 ((hX_finset_mem y1).mp hy1) y2 ((hX_finset_mem y2).mp hy2)
+              (h_re_im_inj h2)
     calc (unitDistPairs P : ℝ) = (E_ord.card : ℝ) / 2 := by linarith
       _ ≥ (E_finset.card : ℝ) / 2 := by gcongr
       _ ≥ (Real.exp (A.γ / 2 * (A.f : ℝ)) * (X_finset.card : ℝ)) / 2 := by gcongr
@@ -448,12 +495,53 @@ theorem admissible_family_to_planar_set (A : AdmissibleFamily) :
       exact_mod_cast h_nat
     -- The projection map φ is injective on E_finset and maps into E_ord (see comment)
     have h_card_le : (E_finset.card : ℝ) ≤ (E_ord.card : ℝ) := by
-      -- Proof sketch: define φ(x,y) = (re_im(π₁ x), re_im(π₁ y)).
-      -- 1. If y-x ∈ U, then φ(x,y) has distSq = 1 (since ‖u(fin0)‖=1 and
-      --    distSq(re_im z, re_im w) = ‖z-w‖²).  Also x ≠ y because u ≠ 0.
-      -- 2. φ is injective on X_finset×X_finset (product of injective functions).
-      -- Hence φ gives an injection E_finset → E_ord, proving the inequality.
-      sorry
+      let φ : (Fin A.f → ℂ) × (Fin A.f → ℂ) → (ℝ × ℝ) × (ℝ × ℝ) :=
+        fun p => (re_im (π₁ p.1), re_im (π₁ p.2))
+      apply Nat.cast_le.mpr
+      apply Finset.card_le_card_of_injOn φ
+      · intro ⟨x, y⟩ hp
+        obtain ⟨h_prod, hu⟩ := Finset.mem_filter.mp hp
+        obtain ⟨hx, hy⟩ := Finset.mem_product.mp h_prod
+        have hu_mod : ‖(y - x) (fin0 A.hf)‖ = 1 := A.hU_mod _ hu (fin0 A.hf)
+        have hx_P : re_im (π₁ x) ∈ P :=
+          Finset.mem_image.mpr ⟨π₁ x, Finset.mem_image.mpr ⟨x, hx, rfl⟩, rfl⟩
+        have hy_P : re_im (π₁ y) ∈ P :=
+          Finset.mem_image.mpr ⟨π₁ y, Finset.mem_image.mpr ⟨y, hy, rfl⟩, rfl⟩
+        have h_dist : distSq (re_im (π₁ x)) (re_im (π₁ y)) = 1 := by
+          simp only [distSq, re_im, π₁]
+          have h_norm_sq : ‖(y - x) (fin0 A.hf)‖ ^ 2 =
+              ((y - x) (fin0 A.hf)).re ^ 2 + ((y - x) (fin0 A.hf)).im ^ 2 := by
+            have h : ‖(y - x) (fin0 A.hf)‖ ^ 2 = normSq ((y - x) (fin0 A.hf)) := by
+              simp [Complex.norm_def, Real.sq_sqrt (normSq_nonneg _)]
+            rw [h, normSq_apply]; ring
+          have hre : ((y - x) (fin0 A.hf)).re = (y (fin0 A.hf)).re - (x (fin0 A.hf)).re := by
+            simp [Pi.sub_apply, sub_re]
+          have him : ((y - x) (fin0 A.hf)).im = (y (fin0 A.hf)).im - (x (fin0 A.hf)).im := by
+            simp [Pi.sub_apply, sub_im]
+          have hns2 : ((y (fin0 A.hf)).re - (x (fin0 A.hf)).re) ^ 2 +
+                      ((y (fin0 A.hf)).im - (x (fin0 A.hf)).im) ^ 2 = 1 := by
+            rw [← hre, ← him, ← h_norm_sq, hu_mod]; norm_num
+          linarith
+        have hne : re_im (π₁ x) ≠ re_im (π₁ y) := by
+          intro heq
+          have hπ : x (fin0 A.hf) = y (fin0 A.hf) := h_re_im_inj heq
+          have h1 : (y - x) (fin0 A.hf) = y (fin0 A.hf) - x (fin0 A.hf) := Pi.sub_apply y x _
+          rw [h1, ← hπ, sub_self, norm_zero] at hu_mod
+          exact absurd hu_mod (by norm_num)
+        apply Finset.mem_filter.mpr
+        exact ⟨Finset.mem_offDiag.mpr ⟨hx_P, hy_P, hne⟩, h_dist⟩
+      · intro ⟨x1, y1⟩ hp1 ⟨x2, y2⟩ hp2 heq
+        simp only [φ, Prod.mk.injEq] at heq
+        obtain ⟨h1, h2⟩ := heq
+        have ⟨hprod1, _⟩ := Finset.mem_filter.mp hp1
+        have ⟨hprod2, _⟩ := Finset.mem_filter.mp hp2
+        have ⟨hx1, hy1⟩ := Finset.mem_product.mp hprod1
+        have ⟨hx2, hy2⟩ := Finset.mem_product.mp hprod2
+        congr 1
+        · exact h_proj_inj x1 ((hX_finset_mem x1).mp hx1) x2 ((hX_finset_mem x2).mp hx2)
+              (h_re_im_inj h1)
+        · exact h_proj_inj y1 ((hX_finset_mem y1).mp hy1) y2 ((hX_finset_mem y2).mp hy2)
+              (h_re_im_inj h2)
     -- From h_count: E ≥ e^{γf/2} · N, and h_card_eq: N = |P|
     calc
       (unitDistPairs P : ℝ) = (E_ord.card : ℝ) / 2 := by linarith
@@ -470,17 +558,18 @@ theorem admissible_family_to_planar_set (A : AdmissibleFamily) :
       rw [hB_def, h_card_eq]
       dsimp [X_finset]
       exact size_bound A R a X hX_sub hX_fin h_4RD_gt_one
-    -- From h_size: log|P| ≤ B·f, so γ/2·f = 2δ·B·f ≥ 2δ·log|P|
-    -- Exponentiating: e^{γf/2} ≥ e^{2δ·log|P|} = |P|^{2δ}
+    have hPcard_pos : (0 : ℝ) < (P.card : ℝ) :=
+      by exact_mod_cast Nat.pos_of_ne_zero (Finset.card_ne_zero.mpr hP_nonempty)
     have h_exp_bound : Real.exp (A.γ / 2 * (A.f : ℝ)) ≥ (P.card : ℝ) ^ (2*δ) := by
-      -- The core of the exponent argument:
-      -- 1. log|P| ≤ B·f  (from h_size, take log)
-      -- 2. γ/2 = 2δB  (from h_γ_over_2_eq_2δB)
-      -- 3. So γ/2·f = 2δB·f ≥ 2δ·log|P|
-      -- 4. exp(γ/2·f) ≥ exp(2δ·log|P|) = |P|^{2δ}
-      --
-      -- This uses monotonicity of exp and log, and the identity exp(a·log x) = x^a.
-      sorry
+      rw [Real.rpow_def_of_pos hPcard_pos]
+      apply Real.exp_le_exp.mpr
+      have hlog_le : Real.log (P.card : ℝ) ≤ B * (A.f : ℝ) := by
+        have h := Real.log_le_log hPcard_pos h_size
+        rwa [Real.log_exp] at h
+      calc Real.log (P.card : ℝ) * (2 * δ)
+          ≤ B * (A.f : ℝ) * (2 * δ) :=
+            mul_le_mul_of_nonneg_right hlog_le (by positivity)
+        _ = A.γ / 2 * (A.f : ℝ) := by rw [h_γ_over_2_eq_2δB]; ring
     calc
       (unitDistPairs P : ℝ) ≥ (1/2 : ℝ) * Real.exp (A.γ / 2 * (A.f : ℝ)) * (P.card : ℝ) :=
         h_edges_lower
