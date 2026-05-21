@@ -1,6 +1,10 @@
 # ERD46
 
-A lean formalization of [Erdős Problem 90](https://www.erdosproblems.com/90) *Planar Point Sets with Many Unit Distances* from OpenAI. The original blog post can be found [here](https://openai.com/index/model-disproves-discrete-geometry-conjecture/)
+A lean formalization of [Erdős Problem 90](https://www.erdosproblems.com/90) *Planar Point Sets with Many Unit Distances* from OpenAI.
+
+The original blog post can be found [here](https://openai.com/index/model-disproves-discrete-geometry-conjecture/)
+
+A lean template can be found [here](https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/ErdosProblems/90.lean)
 
 ## HUMAN VERIFICATION
 
