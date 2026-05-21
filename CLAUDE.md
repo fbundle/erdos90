@@ -26,8 +26,6 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 
 In particular: never edit or commit `README.md` itself.
 
-Commit messages must end with `Co-Authored-By: DeepSeek-V4-Pro with Claude Code`.
-
 ## Build
 
 ```bash
