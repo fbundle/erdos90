@@ -1,5 +1,6 @@
 import Erdos90.Arithmetic
 import Erdos90.Geometric
+import Erdos90.Main
 
 /-!
 # Axioms (for human verification)
@@ -12,10 +13,7 @@ literature or a substantial computation.
 
 The axioms are declared in the modules that need them:
 - `Arithmetic.lean`: Axiom 1 (`exists_admissible_family`)
-- `Geometric.lean`: Axioms 2–5 (`exists_R_log_rho_gt`, `exists_good_coset`,
-  `size_bound`, `first_coordinate_separation`)
-
-This file re-exports nothing; it serves as a human-readable index.
+- `Geometric.lean`: Axiom 2 (`exists_good_coset`)
 -/
 
 open Real
@@ -46,27 +44,11 @@ split primes and H is the class-number bound.
 #check exists_admissible_family
 
 /-!
-## Axiom 2: Behaviour of the disc-overlap ratio ρ(R) (**PROVEN**)
-
-**Location**: `Erdos90/Geometric.lean`, formerly `axiom`, now `lemma exists_R_log_rho_gt`.
-
-**Proof**: Showed lim_{R→∞} ρ(R) = 1 using the explicit formula
-ρ(R) = (2/π)·arccos(1/(2R)) - √(4R²-1)/(2πR²). The first term → (2/π)·(π/2) = 1
-by continuity of arccos; the second term → 0 via the bound √(4R²-1) ≤ 2R
-and the sandwich theorem. Then log continuity + limit definition yields the
-existence statement.
-
-**Status**: ✅ Proven in Lean.
--/
-
-#check exists_R_log_rho_gt
-
-/-!
-## Axiom 3: Coset averaging (Lemma 2.4)
+## Axiom 2: Coset averaging (Lemma 2.4)
 
 **Location**: `Erdos90/Geometric.lean`, declared as `axiom exists_good_coset`.
 
-Using Haar probability measure on the torus ℂ^f / Λ, the expected size
+Using Haar probability measure on the torus ℂ^f/Λ, the expected size
 of (a+Λ) ∩ B_R is vol(B_R)/covol(Λ), and the expected number of ordered
 U-pairs (x, x+u) with u ∈ U is |U|·a(R)^f / covol(Λ).
 
@@ -83,60 +65,45 @@ measure μ on the quotient satisfies:
 - ∫ E(a+Λ) dμ(a) = |U| · a(R)^f / covol(Λ)  (overlap area for U-pairs)
 From log ρ(R) > -γ/2 we have a(R)^f > (πR²)^f · exp(-γf/2), and |U| ≥ exp(γf).
 Hence ∫ E ≥ exp(γf/2) · ∫ N, so some coset achieves the average.
+
+**Status**: Declared as `axiom`; the Lean proof requires `IsAddFundamentalDomain`
+measure-theoretic API that is not yet fully exercised in this project.
 -/
 
 #check exists_good_coset
 
 /-!
-## Axiom 4: Packing / size bound (Lemma 2.6)
+## Proven statements (formerly axioms)
 
-**Location**: `Erdos90/Geometric.lean`, declared as `lemma size_bound`
-(proven via grid discretization).
+The following statements are now **fully proven** in Lean:
 
-**Statement**: In the sup-norm polydisc of radius R, distinct points of a
-coset of Λ are separated by at least D⁻¹ in some coordinate.  A packing
-argument gives |X| ≤ (4RD+1)^{2f} = exp(2f·log(4RD+1)) whenever 4RD > 1.
-(The +1 is a grid-discretization artifact; the mathematical content is unchanged.)
+### `exists_R_log_rho_gt` (formerly Axiom 2)
+**Location**: `Erdos90/Geometric.lean`, lemma.
 
-**Proof**: Grid ℂ with step (2D)⁻¹.  The floor functions f_ℤ(z) = ⌊(z.re+R)·2D⌋
-and g_ℤ(z) = ⌊(z.im+R)·2D⌋ map each point in the coset slice to a cell in
-[0, M)×[0, M) where M = ⌊4RD⌋+1.  First-coordinate separation implies
-distinct points go to distinct cells (otherwise their difference would have
-norm < D⁻¹).  Hence |X| ≤ M² ≤ (4RD+1)² ≤ (4RD+1)^{2f}.
--/
+Existence of R > 1/2 with log ρ(R) > -ε and 4RD > 1.
+Proved via `tendsto_rho_atTop`: ρ(R) → 1 as R → ∞, so eventually
+ρ(R) > exp(-ε) and log ρ(R) > -ε.
 
-#check size_bound
+### `size_bound` (formerly Axiom 4)
+**Location**: `Erdos90/Geometric.lean`, lemma.
 
-/-!
-## Axiom 5: First-coordinate separation (**PROVEN**)
+In the sup-norm polydisc, |X| ≤ exp(2f·log(4RD+1)).
+Proved via grid discretization: first-coordinate projection to a
+(2D)⁻¹-grid with M = ⌊4RD⌋+1 cells per coordinate.
 
-**Location**: `Erdos90/Geometric.lean`, formerly `axiom`, now `lemma first_coordinate_separation`.
+### `first_coordinate_separation` (formerly Axiom 5)
+**Location**: `Erdos90/Geometric.lean`, lemma.
 
-**Proof**: Strengthened the `hΛ_sep` field of `AdmissibleFamily` (in `Arithmetic.lean`)
-to use the distinguished first coordinate `fin0 hf` instead of `∃ r : Fin f`.
-The lemma then follows directly from `A.hΛ_sep`. This matches the paper's
-Minkowski embedding construction, where coordinate 0 corresponds to the
-distinguished embedding σ₀ : K → ℂ.
+For nonzero v ∈ Λ, ‖v(fin0 A.hf)‖ ≥ D⁻¹.
+Proved directly from the `hΛ_sep` field of `AdmissibleFamily`
+(after strengthening the structure field to use `fin0 hf`).
 
-**Status**: ✅ Proven in Lean (derived from structure field).
--/
+---
 
-#check first_coordinate_separation
+## Remaining axioms (awaiting human verification)
 
-/-!
-## Remaining axioms
-
-The project compiles with zero `sorry` gaps.  All non-axiom statements are
-fully proven in Lean.  The following are declared as `axiom` (awaiting human
-verification by a number theorist / geometer):
-
-### Axioms:
 1. **`exists_admissible_family`** (`Arithmetic.lean`) — Golod-Shafarevich tower
 2. **`exists_good_coset`** (`Geometric.lean`) — Haar measure coset averaging
-
-### Proven (formerly axioms):
-3. ~~`first_coordinate_separation`~~ — derived from `hΛ_sep` field
-4. ~~`exists_R_log_rho_gt`~~ — calculus proof (ρ(R) → 1 as R → ∞)
 
 All other lemmas and theorems are fully proven, including:
 - `projection_injective` (Lemma 2.5)
@@ -149,6 +116,7 @@ All other lemmas and theorems are fully proven, including:
 - `tendsto_rho_atTop` — ρ(R) → 1 as R → ∞
 - `rho_formula` — algebraic simplification of ρ(R)
 - `first_coordinate_separation` — first-coordinate separation bound
+- `exists_R_log_rho_gt` — existence of suitable R
 -/
 
 #check admissible_family_to_planar_set
