@@ -25,6 +25,8 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - usually paste code in one shot won't work due to syntax error, it's better to write a skeleton with sorries based on the original paper, then fill in the smaller sorries one by one
 
+- it's also helpful if you can access the tactic state of every sorry (the exepected type of each sorry)
+
 - if `lake build` is ok, you can commit and push
 
 - please end your commit message with 
