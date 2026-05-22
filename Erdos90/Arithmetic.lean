@@ -33,8 +33,8 @@ structure AdmissibleFamily where
   U    : Finset (Fin f → ℂ)
   -- All coordinates of every u ∈ U have modulus 1
   hU_mod   : ∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1
-  -- D·u ∈ Λ (common denominator control)
-  hU_in_Λ  : ∀ u ∈ U, D • u ∈ Λ
+  -- U ⊂ Λ (norm-1 elements lie in the lattice)
+  hU_in_Λ  : ∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ
   -- |U| ≥ e^{γ f}
   hU_size  : (U.card : ℝ) ≥ Real.exp (γ * (f : ℝ))
   -- Separation: nonzero lattice elements have first coordinate ≥ D⁻¹ in modulus
