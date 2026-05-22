@@ -780,6 +780,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     (hF_fund : IsAddFundamentalDomain Λ F volume) (hF_fin : volume F < ∞)
     (U : Finset (Fin f → ℂ))
     (hU_norm : ∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1)
+    (hU_in_Λ : ∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ.carrier)
     (γ : ℝ) (hγ : γ > 0)
     (hU_size : (U.card : ℝ) ≥ Real.exp (γ * (f : ℝ)))
     (R : ℝ) (hR : R > 1/2)
@@ -971,11 +972,151 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     -- Step 4: use h_overlap_sum (which is about S_u u = B_R ∩ {x | x + u ∈ B_R})
     exact h_overlap_sum
 
-  -- Since the integral inequality holds, by the integral mean-value principle,
-  -- ∃ a ∈ F such that the pointwise inequality holds and N(a) > 0.
-  -- N(a) = ∑'_g ind B_R(a+g) is finite a.e. (by ae_lt_top) since ∫ N = vol(B_R) < ∞.
-  -- Formalization deferred; this is the standard Borel-Cantelli / mean-value argument.
-  sorry
+  -- Define the pointwise functions on F:
+  --   N_fun a = ∑'_{g ∈ Λ} ind B_R (a + g)     (counts lattice pts of coset a+Λ in B_R)
+  --   E_fun a = ∑_{u ∈ U} ∑'_{g ∈ Λ} ind (S_u u) (a + g)  (pair count)
+  let N_fun : (Fin f → ℂ) → ℝ≥0∞ :=
+    fun a => ∑' (g : Λ), ind B_R (a + (g : Fin f → ℂ))
+  let E_fun : (Fin f → ℂ) → ℝ≥0∞ :=
+    fun a => ∑ u ∈ U, ∑' (g : Λ), ind (S_u u) (a + (g : Fin f → ℂ))
+  -- The integral inequality h_int_ineq says:
+  --   ∫_F E_fun ≥ c * ∫_F N_fun   where c = exp(γ/2*f)
+  let c : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ / 2 * (f : ℝ)))
+  have h_int_ineq' : ∫⁻ a in F, E_fun a ∂volume ≥ c * ∫⁻ a in F, N_fun a ∂volume := by
+    -- Rewrite E_fun integral by swapping finite sum and integral
+    have h_E_integral : ∫⁻ a in F, E_fun a ∂volume =
+        ∑ u ∈ U, ∫⁻ a in F, ∑' (g : Λ), ind (S_u u) (a + (g : Fin f → ℂ)) ∂volume := by
+      simp only [E_fun]
+      rw [← lintegral_finset_sum]
+      intro u hu
+      apply Measurable.ennreal_tsum
+      intro g
+      have h_meas_add : Measurable (fun a : Fin f → ℂ => a + (g : Fin f → ℂ)) :=
+        measurable_add_const (g : Fin f → ℂ)
+      have h_meas : Measurable ((S_u u).indicator (fun _ : Fin f → ℂ => (1 : ℝ≥0∞))) :=
+        (measurable_const : Measurable (fun _ : Fin f → ℂ => (1 : ℝ≥0∞))).indicator (hS_meas u hu)
+      exact h_meas.comp h_meas_add
+    rw [h_E_integral]
+    exact h_int_ineq
+  -- The volume of B_R is positive (open interior is nonempty, contains 0)
+  have hB_pos : 0 < volume B_R := by
+    -- The open strict polydisc {z | ∀ r, ‖z r‖ < R} is open, nonempty, and ⊆ B_R
+    have hR_pos : R > 0 := by linarith
+    have h_open_poly : IsOpen {z : Fin f → ℂ | ∀ r : Fin f, ‖z r‖ < R} := by
+      have heq : {z : Fin f → ℂ | ∀ r : Fin f, ‖z r‖ < R} =
+          ⋂ r : Fin f, {z | ‖z r‖ < R} := by
+        ext z; simp only [Set.mem_setOf_eq, Set.mem_iInter]
+      rw [heq]
+      apply isOpen_iInter_of_finite
+      intro r
+      exact isOpen_lt (continuous_norm.comp (continuous_apply r)) continuous_const
+    have h_ne : (0 : Fin f → ℂ) ∈ {z : Fin f → ℂ | ∀ r : Fin f, ‖z r‖ < R} := by
+      intro r
+      simp only [Pi.zero_apply, norm_zero]
+      exact hR_pos
+    have h_sub : {z : Fin f → ℂ | ∀ r : Fin f, ‖z r‖ < R} ⊆ B_R := by
+      intro z hz; exact fun r => le_of_lt (hz r)
+    calc 0 < volume {z : Fin f → ℂ | ∀ r : Fin f, ‖z r‖ < R} :=
+          h_open_poly.measure_pos volume ⟨0, h_ne⟩
+      _ ≤ volume B_R := measure_mono h_sub
+  -- ∫_F N_fun > 0 follows from h_int_N and hB_pos
+  have h_N_integral_pos : 0 < ∫⁻ a in F, N_fun a ∂volume := by
+    rw [h_int_N]
+    exact hB_pos
+  -- ∫_F E_fun > 0 follows from h_int_ineq' and h_N_integral_pos
+  have h_E_integral_pos : 0 < ∫⁻ a in F, E_fun a ∂volume := by
+    have hc_pos : 0 < c := by
+      simp only [c, ENNReal.ofReal_pos]
+      exact Real.exp_pos _
+    calc 0 < c * ∫⁻ a in F, N_fun a ∂volume := ENNReal.mul_pos hc_pos.ne' h_N_integral_pos.ne'
+      _ ≤ ∫⁻ a in F, E_fun a ∂volume := h_int_ineq'
+  -- PART A: Exact formula ∫_F E_fun = |U| · ρ^f · vol(B_R)
+  -- Each h_int_Eu gives vol(S_u u) = vol(B_R) · ρ^f (via polydisc_overlap_ratio_real),
+  -- so ∫_F E_fun = ∑_u vol(S_u u) = U.card · vol(B_R) · ρ^f = U.card · ρ^f · vol(B_R).
+  let c' : ℝ≥0∞ := U.card * ENNReal.ofReal ((rho R) ^ (f : ℕ))
+  have h_E_exact : ∫⁻ a in F, E_fun a ∂volume = c' * volume B_R := by
+    -- ∫_F E_fun = ∑_u ∫_F (∑_g ind(S_u u)(a+g)) = ∑_u vol(S_u u) [by h_int_Eu]
+    -- = ∑_u (vol(B_R) · ρ^f) [by polydisc_overlap_ratio_real]
+    -- = U.card · ρ^f · vol(B_R) = c' · vol(B_R)
+    sorry
+  -- By the averaging principle: ∃ a₀ ∈ F with E_fun(a₀) ≥ c * N_fun(a₀) and N_fun(a₀) ≠ 0.
+  -- Strategy: the exact formula ∫_F E_fun = c' · vol(B_R) = c' · ∫_F N_fun,
+  -- combined with h_int_ineq' (∫_F E_fun ≥ c · ∫_F N_fun), shows that
+  -- E_fun ≥ c · N_fun cannot fail on a set of full measure.  A set where it fails
+  -- would decrease the integral strictly, giving ∫_F E_fun < c' · ∫_F N_fun = ∫_F E_fun — contradiction.
+  -- Since we are in a def (Type-valued), we use Classical.choice to extract witnesses.
+  have h_avg_exists : ∃ a₀ ∈ F, N_fun a₀ ≠ 0 ∧ E_fun a₀ ≥ c * N_fun a₀ := by
+    -- Standard averaging principle: ∫ E ≥ c * ∫ N with both finite and ∫ N > 0
+    -- implies ∃ a with E(a) ≥ c * N(a) and N(a) ≠ 0.
+    -- This is measure-theoretically standard but requires care in ENNReal.
+    sorry
+  -- Unpack using Classical.choose (works in noncomputable def context)
+  -- ∃ a₀ ∈ F, P desugars to ∃ a₀, a₀ ∈ F ∧ P in Lean 4
+  let a₀ : Fin f → ℂ := h_avg_exists.choose
+  have ha₀_F : a₀ ∈ F := h_avg_exists.choose_spec.1
+  have hN_pos : N_fun a₀ ≠ 0 := h_avg_exists.choose_spec.2.1
+  have hE_ge : E_fun a₀ ≥ c * N_fun a₀ := h_avg_exists.choose_spec.2.2
+  -- Define X = (a₀ + Λ) ∩ B_R
+  let X : Set (Fin f → ℂ) := {x | ∃ g : Λ, x = a₀ + (g : Fin f → ℂ)} ∩ B_R
+  -- N_fun(a₀) is finite: since ∫_F N = vol(B_R) < ∞ and N ≥ 0, by ae_lt_top N is a.e. finite;
+  -- we chose a₀ to additionally satisfy N_fun(a₀) ≠ 0 and E_fun(a₀) ≥ c · N_fun(a₀),
+  -- but finiteness at THIS specific a₀ is a separate (a.e.) argument.
+  have h_N_fin : N_fun a₀ < ∞ := by
+    -- N_fun a₀ = ∑' g, ind B_R (a₀ + g); this tsum counts lattice points of a₀+Λ in B_R.
+    -- Since B_R is compact and Λ is discrete (hΛ_sep), the count is finite.
+    -- In measure-theoretic terms: ∫_F N = vol(B_R) < ∞ implies N < ∞ a.e.;
+    -- we need it at this specific a₀.
+    sorry
+  -- X is finite: N_fun(a₀) < ∞ implies only finitely many g ∈ Λ with a₀+g ∈ B_R
+  -- X is finite: it is a countable (since Λ is countable) intersection with a compact set;
+  -- discreteness of Λ makes this finite. We use sorry here.
+  have hX_fin : Set.Finite X := by
+    -- X = {a₀ + g | g ∈ Λ, a₀+g ∈ B_R}.
+    -- This set bijects with {g : Λ | a₀+g ∈ B_R}, which has cardinality N_fun(a₀) < ∞.
+    -- (N_fun a₀ = ∑' g, ind B_R (a₀+g) = #{g : Λ | a₀+g ∈ B_R} when finite.)
+    sorry
+  -- X is nonempty: N_fun(a₀) ≠ 0 means ∃ g with a₀+g ∈ B_R
+  have hX_ne : X.Nonempty := by
+    -- N_fun a₀ = ∑' g, ind B_R (a₀ + g) ≠ 0, so some term is nonzero
+    have hN_ne : ¬∀ (g : Λ), ind B_R (a₀ + (g : Fin f → ℂ)) = 0 := by
+      intro hall
+      apply hN_pos
+      exact ENNReal.tsum_eq_zero.mpr hall
+    push_neg at hN_ne
+    obtain ⟨g, hg⟩ := hN_ne
+    -- ind B_R (a₀ + g) ≠ 0 means a₀ + g ∈ B_R
+    have hg_mem : a₀ + (g : Fin f → ℂ) ∈ B_R := by
+      -- ind S x = S.indicator (fun _ => 1) x; nonzero iff x ∈ S
+      by_contra hmem
+      apply hg
+      -- ind B_R x = B_R.indicator (fun _ => 1) x = 0 when x ∉ B_R
+      classical
+      exact if_neg hmem
+    exact ⟨a₀ + (g : Fin f → ℂ), ⟨g, rfl⟩, hg_mem⟩
+  -- X ⊆ shift a₀ Λ.carrier ∩ polydisc f R
+  have hX_sub : X ⊆ shift a₀ Λ.carrier ∩ polydisc f R := by
+    intro x ⟨⟨g, hg_eq⟩, hx_B⟩
+    constructor
+    · -- x ∈ shift a₀ Λ.carrier
+      simp only [shift, Set.mem_setOf_eq]
+      exact ⟨(g : Fin f → ℂ), g.property, hg_eq⟩
+    · exact hx_B
+  -- h_count: pairs (x,y) ∈ X² with y-x ∈ U are ≥ exp(γ/2*f) * |X|
+  -- This follows from E_fun(a₀) ≥ c * N_fun(a₀) and the correspondence between
+  -- E_fun(a₀) and pair counts, and N_fun(a₀) and |X|.
+  -- Note: y-x ∈ U requires u ∈ Λ when x,y ∈ a₀+Λ. The E_fun counts pairs where
+  -- x ∈ B_R and x+u ∈ B_R (not necessarily x+u ∈ a₀+Λ), so there is a structural
+  -- gap; h_count is satisfied via the deeper correspondence sorry'd here.
+  have h_count : (((hX_fin.toFinset ×ˢ hX_fin.toFinset).filter
+      (fun p : (Fin f → ℂ) × (Fin f → ℂ) => p.2 - p.1 ∈ U)).card : ℝ) ≥
+      Real.exp (γ / 2 * (f : ℝ)) * hX_fin.toFinset.card := by
+    -- The averaging gives E_fun(a₀) ≥ c * N_fun(a₀).
+    -- E_fun(a₀) = number of pairs (g, u) with a₀+g ∈ B_R, u ∈ U, a₀+g+u ∈ B_R.
+    -- N_fun(a₀) = |X| = number of g ∈ Λ with a₀+g ∈ B_R.
+    -- The pair count in X with difference in U corresponds to E_fun(a₀)
+    -- (subject to the identification of u ∈ U with differences in Λ).
+    sorry
+  exact ⟨a₀, X, hX_sub, hX_fin, hX_ne, h_count⟩
 
 /-! ## Analytic lemma: Property P6 of Proposition 3.8
 
@@ -1160,7 +1301,9 @@ theorem exists_admissible_family :
   have hcovg' : ∀ R : ℝ, R > 1/2 → Real.log (rho R) > -(γ₀ / 2) →
       CosetAvgWitness f Λ U R γ₀ := by
     intro R hR hρ
-    exact lemma_2_4 f hf1 Λ hΛ_countable F hF_fund hF_fin U hU_mod γ₀ hγ_pos hU_size' R hR hρ
+    exact lemma_2_4 f hf1 Λ hΛ_countable F hF_fund hF_fin U hU_mod
+      (by sorry) -- hU_in_Λ: u ∈ Λ (paper page 7: U ⊂ Λ); currently AdmissibleFamily only has D•u ∈ Λ
+      γ₀ hγ_pos hU_size' R hR hρ
   exact ⟨⟨f, hf1, D₀, hD₀_pos, γ₀, hγ_pos, Λ, U,
       hU_mod, hU_in_Λ, hU_size', hΛ_sep, hcovg'⟩,
     hf_ge, rfl, rfl⟩
