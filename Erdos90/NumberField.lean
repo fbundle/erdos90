@@ -3,7 +3,7 @@ import Erdos90.Defs
 import Erdos90.Arithmetic
 
 open Real Filter NumberField Set MeasureTheory MeasureTheory.Measure
-open scoped ENNReal NNReal Topology Complex intervalIntegral
+open scoped ENNReal NNReal Topology Complex intervalIntegral Pointwise
 
 noncomputable section
 
@@ -818,19 +818,17 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
 
   -- Step 2: Use the fundamental domain to find a good coset.
   let B_R : Set (Fin f → ℂ) := polydisc f R
+  have hB_meas : MeasurableSet B_R := polydisc_measurable f R
+  -- Finiteness of polydisc volume via compactness
+  have hB_fin : volume B_R < ∞ := by
+    have h_compact : IsCompact (polydisc f R) := by
+      have h_pi : polydisc f R = Set.pi Set.univ (fun (_ : Fin f) => Metric.closedBall (0 : ℂ) R) := by
+        ext z; simp [polydisc, Metric.mem_closedBall, dist_eq_norm]
+      rw [h_pi]
+      exact isCompact_univ_pi fun _ => isCompact_closedBall _ _
+    exact h_compact.measure_lt_top
 
-  -- Counting functions for a ∈ F:
-  -- N(a) = |{g ∈ Λ : a+g ∈ B_R}|    (ℕ-valued)
-  -- E(a) = Σ_{u∈U} |{g ∈ Λ : a+g ∈ B_R ∧ a+g+u ∈ B_R}|
-
-  -- Measure-theoretic identities (unfolding trick via IsAddFundamentalDomain):
-  --   (1) ∫_F N(a) da = vol(B_R)
-  --   (2) ∫_F |{g : a+g ∈ B_R ∧ a+g+u ∈ B_R}| da = vol(B_R ∩ (B_R-u))   (each u)
-  -- (Proof: lintegral_eq_tsum, indicator sums, translation invariance of Lebesgue measure.)
-  -- These identities imply that the average of E over F is Σ_u vol(B_R ∩ (B_R-u)),
-  -- and the average of N is vol(B_R).
-
-  -- Algebraic estimate (independent of measure theory):
+  -- Algebraic estimate (done before measure-theoretic part):
   have h_overlap_sum : (∑ u ∈ U, (volume (B_R ∩ {x | x + u ∈ B_R})).toReal) ≥
       Real.exp (γ / 2 * (f : ℝ)) * (volume B_R).toReal := by
     have h_overlap_vol (u : Fin f → ℂ) (hu : u ∈ U) :
@@ -849,15 +847,113 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       _ = ((U.card : ℝ) * (rho R) ^ (f : ℕ)) * (volume B_R).toReal := by ring
       _ ≥ Real.exp (γ / 2 * (f : ℝ)) * (volume B_R).toReal := by gcongr
 
-  -- Averaging principle: since the average of E over the fundamental domain is
-  -- at least exp(γf/2) times the average of N, there exists a ∈ F such that
-  --   E(a) ≥ exp(γf/2) * N(a)  ∧  N(a) > 0.
-  -- The formalization of this step requires:
-  --   - Construct N, E as measurable functions on F
-  --   - Prove ∫_F N = vol(B_R) and ∫_F E = Σ_u vol(B_R ∩ (B_R-u)) via unfolding
-  --   - Apply the integral mean-value lemma to deduce ∃ a with E(a)/N(a) ≥ average ratio
-  -- These are standard but involve substantial measure-theory API.
-  -- Deferred to future work:
+  -- The coset averaging argument using the fundamental domain hF_fund.
+  -- Key identity (unfolding): vol(S) = ∑'_{g∈Λ} vol({a∈F | a+g ∈ S}) for measurable S.
+  -- This follows from hF_fund.measure_eq_tsum + translation invariance.
+  have h_unfold_vol (S : Set (Fin f → ℂ)) (hS_meas : MeasurableSet S) :
+      volume S = ∑' (g : Λ), volume (F ∩ {x | x + (g : Fin f → ℂ) ∈ S}) := by
+    have h_meas_eq := hF_fund.measure_eq_tsum' S
+    -- h_meas_eq: volume S = ∑' (g : Λ), volume (S ∩ ((g : Λ) +ᵥ F))
+    rw [h_meas_eq]
+    refine tsum_congr (fun g => ?_)
+    -- Need: volume (S ∩ ((g : Λ) +ᵥ F)) = volume (F ∩ {x | x + (g : Fin f → ℂ) ∈ S})
+    -- Use translation invariance: the map φ(x) = g + x is measure-preserving.
+    let φ := fun x : Fin f → ℂ => (g : Fin f → ℂ) + x
+    have h_φ_meas_pres : map φ volume = volume :=
+      IsAddLeftInvariant.map_add_left_eq_self (g : Fin f → ℂ)
+    -- φ⁻¹'(S) = {x | x + g ∈ S} and φ⁻¹'((g:Λ)+ᵥF) = F
+    have h_pre_S : φ ⁻¹' S = {x | x + (g : Fin f → ℂ) ∈ S} := by
+      ext x; simp [φ, add_comm]
+    have h_pre_vadd : φ ⁻¹' ((g : Λ) +ᵥ F) = F := by
+      ext x; constructor
+      · intro h
+        have hmem : φ x ∈ (g : Λ) +ᵥ F := h
+        rcases Set.mem_vadd_set.1 hmem with ⟨y, hyF, hy_eq⟩
+        have hφ : φ x = (g : Fin f → ℂ) + x := rfl
+        rw [hφ] at hy_eq
+        -- hy_eq: (g : Λ) +ᵥ y = (g : Fin f → ℂ) + x
+        -- Since VAdd for AddSubgroup is g +ᵥ y = g.val + y, we get g + y = g + x, so y = x
+        have h_vadd : (g : Λ) +ᵥ y = (g : Fin f → ℂ) + y := rfl
+        rw [h_vadd] at hy_eq
+        have hy_eq_x : y = x := add_left_cancel hy_eq
+        rw [← hy_eq_x]
+        exact hyF
+      · intro hx
+        rw [Set.mem_preimage]
+        have hφ : φ x = (g : Fin f → ℂ) + x := rfl
+        rw [hφ]
+        exact Set.mem_vadd_set.mpr ⟨x, hx, rfl⟩
+    have h_pre_inter : φ ⁻¹' (S ∩ ((g : Λ) +ᵥ F))
+        = (F ∩ {x | x + (g : Fin f → ℂ) ∈ S}) := by
+      rw [Set.preimage_inter, h_pre_S, h_pre_vadd, Set.inter_comm]
+    have h_nmeas_vadd : NullMeasurableSet ((g : Λ) +ᵥ F) volume :=
+      hF_fund.nullMeasurableSet.vadd (g : Λ)
+    calc
+      volume (S ∩ ((g : Λ) +ᵥ F))
+          = volume (φ ⁻¹' (S ∩ ((g : Λ) +ᵥ F))) :=
+        (measure_preimage_of_map_eq_self h_φ_meas_pres
+          ((hS_meas.nullMeasurableSet).inter h_nmeas_vadd)).symm
+      _ = volume (F ∩ {x | x + (g : Fin f → ℂ) ∈ S}) := by rw [h_pre_inter]
+
+  -- Using h_unfold_vol, we get the integral identities by swapping sum and integral.
+  -- Define indicator function
+  let ind (S : Set (Fin f → ℂ)) (x : Fin f → ℂ) : ℝ≥0∞ := S.indicator (fun _ => (1 : ℝ≥0∞)) x
+
+  have h_unfold (S : Set (Fin f → ℂ)) (hS_meas : MeasurableSet S) :
+      ∫⁻ a in F, (∑' (g : Λ), ind S (a + (g : Fin f → ℂ))) ∂volume = volume S := by
+    have h_swap : ∫⁻ a in F, (∑' (g : Λ), ind S (a + (g : Fin f → ℂ))) ∂volume
+        = ∑' (g : Λ), ∫⁻ a in F, ind S (a + (g : Fin f → ℂ)) ∂volume := by
+      calc
+        ∫⁻ a in F, (∑' (g : Λ), ind S (a + (g : Fin f → ℂ))) ∂volume
+            = ∫⁻ a, (∑' (g : Λ), ind S (a + (g : Fin f → ℂ))) ∂(volume.restrict F) := rfl
+        _ = ∑' (g : Λ), ∫⁻ a, ind S (a + (g : Fin f → ℂ)) ∂(volume.restrict F) :=
+          lintegral_tsum (fun g => by
+            have h_meas_add : Measurable (fun a : Fin f → ℂ => a + (g : Fin f → ℂ)) :=
+              measurable_add_const (g : Fin f → ℂ)
+            have h_meas : Measurable (S.indicator (fun _ : Fin f → ℂ => (1 : ℝ≥0∞))) :=
+              (measurable_const : Measurable (fun _ : Fin f → ℂ => (1 : ℝ≥0∞))).indicator hS_meas
+            exact (h_meas.comp h_meas_add).aemeasurable)
+        _ = ∑' (g : Λ), ∫⁻ a in F, ind S (a + (g : Fin f → ℂ)) ∂volume := rfl
+    have h_inner (g : Λ) : ∫⁻ a in F, ind S (a + (g : Fin f → ℂ)) ∂volume
+        = volume (F ∩ {x | x + (g : Fin f → ℂ) ∈ S}) := by
+      let T := {x | x + (g : Fin f → ℂ) ∈ S}
+      have hT_meas : MeasurableSet T := hS_meas.preimage (measurable_add_const (g : Fin f → ℂ))
+      have h_eq : (fun a => ind S (a + (g : Fin f → ℂ))) = T.indicator (fun _ => (1 : ℝ≥0∞)) := by
+        refine funext (fun a => ?_)
+        dsimp [ind, T]
+        classical
+        simp [Set.indicator_apply, Set.mem_setOf_eq]
+      rw [h_eq]
+      rw [setLIntegral_indicator hT_meas (fun _ => (1 : ℝ≥0∞)), setLIntegral_one, Set.inter_comm]
+    rw [h_swap]
+    simp_rw [h_inner]
+    exact (h_unfold_vol S hS_meas).symm
+
+  -- Apply unfolding to B_R (N integral) and to overlap sets (E_u integrals)
+  have h_int_N : ∫⁻ a in F, (∑' (g : Λ), ind B_R (a + (g : Fin f → ℂ))) ∂volume = volume B_R :=
+    h_unfold B_R hB_meas
+
+  let S_u (u : Fin f → ℂ) : Set (Fin f → ℂ) := B_R ∩ {x | x + u ∈ B_R}
+  have hS_meas (u : Fin f → ℂ) (hu : u ∈ U) : MeasurableSet (S_u u) :=
+    hB_meas.inter (hB_meas.preimage (measurable_add_const u))
+  have h_int_Eu (u : Fin f → ℂ) (hu : u ∈ U) :
+      ∫⁻ a in F, (∑' (g : Λ), ind (S_u u) (a + (g : Fin f → ℂ))) ∂volume = volume (S_u u) :=
+    h_unfold (S_u u) (hS_meas u hu)
+
+  -- Now the averaging: from h_overlap_sum, we have in ℝ:
+  --   ∑_u vol(S_u).toReal ≥ exp(γf/2) * vol(B_R).toReal
+  -- Convert to ENNReal inequality using finiteness of volumes.
+  have h_int_ineq : (∑ u ∈ U, ∫⁻ a in F, (∑' (g : Λ), ind (S_u u) (a + (g : Fin f → ℂ))) ∂volume) ≥
+      ENNReal.ofReal (Real.exp (γ / 2 * (f : ℝ))) *
+      ∫⁻ a in F, (∑' (g : Λ), ind B_R (a + (g : Fin f → ℂ))) ∂volume := by
+    -- Need: (∑ u ∈ U, volume (S_u u)) ≥ ENNReal.ofReal (Real.exp (γ / 2 * (f : ℝ))) * volume B_R
+    -- This follows from h_overlap_sum by converting .toReal back to ENNReal
+    sorry
+
+  -- Since the integral inequality holds, by the integral mean-value principle,
+  -- ∃ a ∈ F such that the pointwise inequality holds and N(a) > 0.
+  -- N(a) = ∑'_g ind B_R(a+g) is finite a.e. (by ae_lt_top) since ∫ N = vol(B_R) < ∞.
+  -- Formalization deferred; this is the standard Borel-Cantelli / mean-value argument.
   sorry
 
 /-! ## Analytic lemma: Property P6 of Proposition 3.8

@@ -34,7 +34,7 @@ lake build
 
 Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps.
 
-## Proof state — zero axioms, 7 `sorry` gaps
+## Proof state — zero axioms, 4 `sorry` gaps
 
 All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
@@ -56,16 +56,18 @@ All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom`
 - `erdos_unit_distance_false` (Theorem 1.1) — fully proven
 - `erdos_bound_false` (contrapositive) — fully proven
 - `h_ineq` within `lemma_2_4` — algebraic inequality |U|·ρ(R)^f ≥ exp(γf/2) — fully proved
+- `h_unfold_vol` / `h_unfold` within `lemma_2_4` — measure-theoretic unfolding via fundamental domain — fully proved
+- `disc_overlap_ratio_real` — area of intersection of two ℂ-discs = πR²·ρ(R) — fully proved
+- `polydisc_overlap_ratio_real` — Fubini product extension — fully proved
+- `hrho_pos` — positivity of ρ(R) for R > 1/2 — fully proved
+- `h_int_N` / `h_int_Eu` within `lemma_2_4` — integral identities from unfolding — fully proved
 
 ### `def` with `sorry` (deep number theory / analysis, not in Mathlib)
 - `prop_3_2_to_3_6` — Golod–Shafarevich / Chebotarev tower construction
 - `prop_2_2` — Class-group pigeonhole for norm-1 elements
 
 ### Partially proved `def` (structural proof with `sorry` gaps)
-- `lemma_2_4` — coset averaging: algebraic inequality proved, measure-theoretic part as `sorry`
-- `disc_overlap_ratio_real` — area of intersection of two ℂ-discs = πR²·ρ(R) (calculus, `sorry`)
-- `polydisc_overlap_ratio_real` — Fubini product extension (measure theory, `sorry`)
-- `hrho_pos` sub-proof within `lemma_2_4` — positivity of ρ(R) for R > 1/2 (trigonometry, `sorry`)
+- `lemma_2_4` — coset averaging: algebraic + measure-theoretic unfolding proved; `h_int_ineq` (ENNReal conversion) and final witness construction (averaging principle) remain as `sorry`
 
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)
@@ -99,6 +101,9 @@ All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom`
 - Local `let` bindings are NOT unfolded by `simp only` or `dsimp only` — use `.mp` / `.mpr` directly
 - `positivity` can't prove `R > 0` from `4*R*A.D > 1` and `A.D > 0` — use explicit `by_contra` + `nlinarith`
 - `GoodCoset A R` is a `Type` not `Prop` — use `def` not `theorem/lemma` when returning it; can't use `obtain`/tactic `cases` to eliminate into it
+- `Set.vaddSet`/`Set.smulSet` instances are scoped under `Pointwise` — need `open scoped Pointwise` for `g +ᵥ F` notation on sets
+- `Set.indicator_apply` needs `[Decidable (a ∈ s)]` — wrap in `classical` when using
+- `measurable_add_const` is the lemma for `Measurable (· + c)` on additive groups (avoids `by continuity` timeouts on `Fin f → ℂ`)
 
 ## Tips for continuing
 
