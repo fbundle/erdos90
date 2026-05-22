@@ -265,7 +265,7 @@ lemma volume_shifted_circle_eq_zero (c R : ℝ) :
     have h_norm_iff : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ = |R| ↔ (x + c) ^ 2 + y ^ 2 = R ^ 2 := by
       have h_norm_sq : Complex.normSq (({ re := x, im := y } : ℂ) - (-c : ℂ)) =
           (x + c) ^ 2 + y ^ 2 := by
-        simp [Complex.normSq_apply, Complex.sub_re, Complex.sub_im, Complex.neg_re, sq]
+        simp [Complex.normSq_apply, sq]
       constructor
       · intro h
         have h_sq : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ ^ 2 = |R| ^ 2 := by rw [h]
