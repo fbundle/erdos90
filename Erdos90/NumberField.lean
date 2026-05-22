@@ -265,7 +265,7 @@ lemma volume_shifted_circle_eq_zero (c R : ℝ) :
     have h_norm_iff : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ = |R| ↔ (x + c) ^ 2 + y ^ 2 = R ^ 2 := by
       have h_norm_sq : Complex.normSq (({ re := x, im := y } : ℂ) - (-c : ℂ)) =
           (x + c) ^ 2 + y ^ 2 := by
-        simp [Complex.normSq_apply, Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.neg_im, sq]
+        simp [Complex.normSq_apply, Complex.sub_re, Complex.sub_im, Complex.neg_re, sq]
       constructor
       · intro h
         have h_sq : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ ^ 2 = |R| ^ 2 := by rw [h]
@@ -294,7 +294,7 @@ lemma antideriv_lens_eq_aR (R : ℝ) (hR : R > 1/2) :
   have hRpos : R > 0 := by linarith
   have h_sqrt_zero : Real.sqrt (R ^ 2 - R ^ 2) = 0 := by simp
   have h_sqrt_negR_zero : Real.sqrt (R ^ 2 - (-R) ^ 2) = 0 := by
-    simp [hRpos.ne.symm]
+    simp
   have h_sqrt_half : Real.sqrt (R ^ 2 - (1/2 : ℝ) ^ 2) = Real.sqrt (4 * R ^ 2 - 1) / 2 := by
     calc
       Real.sqrt (R ^ 2 - (1/2 : ℝ) ^ 2) = Real.sqrt ((4 * R ^ 2 - 1) / 4) := by ring_nf
@@ -309,12 +309,12 @@ lemma antideriv_lens_eq_aR (R : ℝ) (hR : R > 1/2) :
   have h_arcsin_R : Real.arcsin (R⁻¹ * R) = π / 2 := by
     simp [hRpos.ne.symm, Real.arcsin_one]
   have h_arcsin_negR : Real.arcsin (R⁻¹ * (-R)) = -(π / 2) := by
-    simp [hRpos.ne.symm, Real.arcsin_neg_one]
+    simp [hRpos.ne.symm]
   have h_arcsin_half : Real.arcsin (R⁻¹ * (1/2 : ℝ)) = Real.arcsin ((2 * R)⁻¹) := by
     rw [h_inv_half]
   have h_arcsin_neg_half : Real.arcsin (R⁻¹ * (-(1/2 : ℝ))) = -Real.arcsin ((2 * R)⁻¹) := by
     calc
-      Real.arcsin (R⁻¹ * (-(1/2 : ℝ))) = Real.arcsin (-(R⁻¹ * (1/2 : ℝ))) := by ring
+      Real.arcsin (R⁻¹ * (-(1/2 : ℝ))) = Real.arcsin (-(R⁻¹ * (1/2 : ℝ))) := by ring_nf
       _ = -Real.arcsin (R⁻¹ * (1/2 : ℝ)) := by rw [Real.arcsin_neg]
       _ = -Real.arcsin ((2 * R)⁻¹) := by rw [h_inv_half]
   have h_arcsin_to_arccos : Real.arcsin ((2 * R)⁻¹) = π / 2 - Real.arccos (1 / (2 * R)) := by
@@ -581,7 +581,7 @@ lemma lens_volume_eq_aR (R : ℝ) (hR : R > 1/2) :
         unfold g f; simp
       _ = (∫ x in (-(1/2 : ℝ)) + 1..(R - 1) + 1, 2 * f x) := by
         rw [intervalIntegral.integral_comp_add_right (d := 1) (f := fun x => 2 * f x)]
-      _ = (∫ x in (1/2 : ℝ)..R, 2 * f x) := by ring
+      _ = (∫ x in (1/2 : ℝ)..R, 2 * f x) := by ring_nf
   -- FTC: compute the two integrals using the antiderivative F
   have h_deriv : ∀ x ∈ Ioo (-R) R, HasDerivAt F (2 * f x) x := by
     intro x hx
@@ -664,7 +664,7 @@ lemma disc_overlap_ratio_real (R : ℝ) (hR : R > 1/2) (u : ℂ) (hu : ‖u‖ =
         calc
           ‖z + u‖ = ‖u⁻¹ * (z + u)‖ := by
             rw [norm_mul, h_norm_inv, one_mul]
-          _ = ‖u⁻¹ * z + u⁻¹ * u‖ := by ring
+          _ = ‖u⁻¹ * z + u⁻¹ * u‖ := by ring_nf
           _ = ‖u⁻¹ * z + 1‖ := by field_simp [hu_ne]
           _ ≤ R := hsum
       exact ⟨hnorm, h2⟩
@@ -674,7 +674,7 @@ lemma disc_overlap_ratio_real (R : ℝ) (hR : R > 1/2) (u : ℂ) (hu : ‖u‖ =
       have h2 : ‖u⁻¹ * z + 1‖ ≤ R := by
         calc
           ‖u⁻¹ * z + 1‖ = ‖u⁻¹ * z + u⁻¹ * u‖ := by field_simp [hu_ne]
-          _ = ‖u⁻¹ * (z + u)‖ := by ring
+          _ = ‖u⁻¹ * (z + u)‖ := by ring_nf
           _ = ‖z + u‖ := by rw [norm_mul, h_norm_inv, one_mul]
           _ ≤ R := hsum
       exact ⟨h1, h2⟩
