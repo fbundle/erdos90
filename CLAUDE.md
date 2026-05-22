@@ -34,7 +34,7 @@ lake build
 
 Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps.
 
-## Proof state — zero axioms, 4 `sorry` gaps
+## Proof state — zero axioms, 3 `sorry` gaps
 
 All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
@@ -61,13 +61,14 @@ All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom`
 - `polydisc_overlap_ratio_real` — Fubini product extension — fully proved
 - `hrho_pos` — positivity of ρ(R) for R > 1/2 — fully proved
 - `h_int_N` / `h_int_Eu` within `lemma_2_4` — integral identities from unfolding — fully proved
+- `h_int_ineq` within `lemma_2_4` — ENNReal conversion of h_overlap_sum (∑ vol(S_u) ≥ c·vol(B_R) in ℝ≥0∞) — fully proved
 
 ### `def` with `sorry` (deep number theory / analysis, not in Mathlib)
 - `prop_3_2_to_3_6` — Golod–Shafarevich / Chebotarev tower construction
 - `prop_2_2` — Class-group pigeonhole for norm-1 elements
 
 ### Partially proved `def` (structural proof with `sorry` gaps)
-- `lemma_2_4` — coset averaging: algebraic + measure-theoretic unfolding proved; `h_int_ineq` (ENNReal conversion) and final witness construction (averaging principle) remain as `sorry`
+- `lemma_2_4` — coset averaging: algebraic + measure-theoretic unfolding proved, `h_int_ineq` (ENNReal conversion) now proved; final witness construction (averaging principle) remains as `sorry`
 
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)

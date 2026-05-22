@@ -948,7 +948,28 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       ∫⁻ a in F, (∑' (g : Λ), ind B_R (a + (g : Fin f → ℂ))) ∂volume := by
     -- Need: (∑ u ∈ U, volume (S_u u)) ≥ ENNReal.ofReal (Real.exp (γ / 2 * (f : ℝ))) * volume B_R
     -- This follows from h_overlap_sum by converting .toReal back to ENNReal
-    sorry
+    -- Step 1: rewrite integrals to volumes
+    rw [show (∑ u ∈ U, ∫⁻ a in F, (∑' (g : Λ), ind (S_u u) (a + (g : Fin f → ℂ))) ∂volume) =
+        ∑ u ∈ U, volume (S_u u) from
+      Finset.sum_congr rfl (fun u hu => h_int_Eu u hu)]
+    rw [h_int_N]
+    -- Step 2: finiteness facts
+    have hS_fin : ∀ u ∈ U, volume (S_u u) < ∞ := fun u _ => by
+      apply lt_of_le_of_lt (measure_mono Set.inter_subset_left)
+      exact hB_fin
+    have hS_ne_top : ∀ u ∈ U, volume (S_u u) ≠ ∞ := fun u hu =>
+      (hS_fin u hu).ne
+    have hSum_ne_top : (∑ u ∈ U, volume (S_u u)) ≠ ∞ :=
+      (ENNReal.sum_lt_top.mpr hS_fin).ne
+    have hB_ne_top : volume B_R ≠ ∞ := hB_fin.ne
+    have hMul_ne_top : ENNReal.ofReal (Real.exp (γ / 2 * (f : ℝ))) * volume B_R ≠ ∞ :=
+      ENNReal.mul_ne_top ENNReal.ofReal_ne_top hB_ne_top
+    -- Step 3: convert ENNReal ≥ to Real ≥ via toReal
+    rw [ge_iff_le, ← ENNReal.toReal_le_toReal hMul_ne_top hSum_ne_top]
+    rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_nonneg _)]
+    rw [ENNReal.toReal_sum hS_ne_top]
+    -- Step 4: use h_overlap_sum (which is about S_u u = B_R ∩ {x | x + u ∈ B_R})
+    exact h_overlap_sum
 
   -- Since the integral inequality holds, by the integral mean-value principle,
   -- ∃ a ∈ F such that the pointwise inequality holds and N(a) > 0.
