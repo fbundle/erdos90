@@ -33,7 +33,7 @@ Co-Authored-By: DeepSeek-V4-Pro with Claude Code
 
 ## DISCLAIMER FOR AI USE
 
-This work is completed fully by the following AI systems (with human verification):
+This work is completed fully by the following AI systems (with human verification and emotional support):
 
 - `DeepSeek-V4-Pro with Claude Code`
 
