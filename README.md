@@ -27,7 +27,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - it's also helpful if you can access the tactic state of every sorry (the exepected type of each sorry)
 
-- use `lake build <package>` to check individual files and `lake build` to check the whole project. if `lake build` is ok, you can commit and push
+- use `lake build <package>` to check individual packages/files and `lake build` to check the whole project. if `lake build` is ok, you can commit and push
 
 - one tip to speed up compilation is to split a big file into smaller files
 
