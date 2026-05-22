@@ -220,9 +220,73 @@ lemma hasDerivAt_intersect_antideriv (R x : ℝ) (hR : R > 0) (hx : x ∈ Ioo (-
       ring
   simpa [hf] using hderiv
 
+/-- The circle `{p | p.1²+p.2² = R²}` in ℝ×ℝ has Lebesgue measure zero.
+    Transfers the fact that spheres in ℂ have zero measure. -/
+lemma volume_circle_eq_zero (R : ℝ) :
+    volume {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 = R ^ 2} = 0 := by
+  let e : ℝ × ℝ ≃ᵐ ℂ := Complex.measurableEquivRealProd.symm
+  have h_pres : MeasurePreserving (e : ℝ × ℝ → ℂ) :=
+    Complex.volume_preserving_equiv_real_prod.symm
+  have h_sphere : volume (Metric.sphere (0 : ℂ) |R|) = 0 := addHaar_sphere volume (0 : ℂ) |R|
+  have h_preimage : (e : ℝ × ℝ → ℂ) ⁻¹' Metric.sphere (0 : ℂ) |R| =
+      {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 = R ^ 2} := by
+    ext ⟨x, y⟩
+    simp only [e, Complex.measurableEquivRealProd_symm_apply, Set.mem_preimage, Set.mem_setOf_eq]
+    rw [Metric.mem_sphere, Complex.dist_eq, sub_zero]
+    have h_norm_iff : ‖({ re := x, im := y } : ℂ)‖ = |R| ↔ x ^ 2 + y ^ 2 = R ^ 2 := by
+      have h_norm_sq : Complex.normSq ({ re := x, im := y } : ℂ) = x ^ 2 + y ^ 2 := by
+        simp [Complex.normSq_apply, sq]
+      constructor
+      · intro h
+        have h_sq : ‖({ re := x, im := y } : ℂ)‖ ^ 2 = |R| ^ 2 := by rw [h]
+        rw [← Complex.normSq_eq_norm_sq, h_norm_sq] at h_sq
+        rw [sq_abs] at h_sq
+        exact h_sq
+      · intro h
+        have h_sq : Complex.normSq ({ re := x, im := y } : ℂ) = R ^ 2 := by rw [h_norm_sq, h]
+        have h_sq' : ‖({ re := x, im := y } : ℂ)‖ ^ 2 = R ^ 2 := by rwa [← Complex.normSq_eq_norm_sq]
+        have h_sq'' : ‖({ re := x, im := y } : ℂ)‖ ^ 2 = |R| ^ 2 := by rw [sq_abs R, h_sq']
+        exact (sq_eq_sq₀ (norm_nonneg _) (abs_nonneg _)).mp h_sq''
+    exact h_norm_iff
+  rw [← h_preimage, h_pres.measure_preimage_equiv, h_sphere]
+
+/-- A shifted circle `{p | (p.1 + c)² + p.2² = R²}` also has measure zero. -/
+lemma volume_shifted_circle_eq_zero (c R : ℝ) :
+    volume {p : ℝ × ℝ | (p.1 + c) ^ 2 + p.2 ^ 2 = R ^ 2} = 0 := by
+  let e : ℝ × ℝ ≃ᵐ ℂ := Complex.measurableEquivRealProd.symm
+  have h_pres : MeasurePreserving (e : ℝ × ℝ → ℂ) :=
+    Complex.volume_preserving_equiv_real_prod.symm
+  have h_sphere : volume (Metric.sphere (-c : ℂ) |R|) = 0 := addHaar_sphere volume (-c : ℂ) |R|
+  have h_preimage : (e : ℝ × ℝ → ℂ) ⁻¹' Metric.sphere (-c : ℂ) |R| =
+      {p : ℝ × ℝ | (p.1 + c) ^ 2 + p.2 ^ 2 = R ^ 2} := by
+    ext ⟨x, y⟩
+    simp only [e, Complex.measurableEquivRealProd_symm_apply, Set.mem_preimage, Set.mem_setOf_eq]
+    rw [Metric.mem_sphere, Complex.dist_eq]
+    have h_norm_iff : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ = |R| ↔ (x + c) ^ 2 + y ^ 2 = R ^ 2 := by
+      have h_norm_sq : Complex.normSq (({ re := x, im := y } : ℂ) - (-c : ℂ)) =
+          (x + c) ^ 2 + y ^ 2 := by
+        simp [Complex.normSq_apply, Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.neg_im, sq]
+      constructor
+      · intro h
+        have h_sq : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ ^ 2 = |R| ^ 2 := by rw [h]
+        rw [← Complex.normSq_eq_norm_sq, h_norm_sq] at h_sq
+        rw [sq_abs R] at h_sq
+        exact h_sq
+      · intro h
+        have h_sq : Complex.normSq (({ re := x, im := y } : ℂ) - (-c : ℂ)) = R ^ 2 := by
+          rw [h_norm_sq, h]
+        have h_sq' : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ ^ 2 = R ^ 2 := by
+          rwa [← Complex.normSq_eq_norm_sq]
+        have h_sq'' : ‖({ re := x, im := y } : ℂ) - (-c : ℂ)‖ ^ 2 = |R| ^ 2 := by
+          rw [sq_abs R, h_sq']
+        exact (sq_eq_sq₀ (norm_nonneg _) (abs_nonneg _)).mp h_sq''
+    exact h_norm_iff
+  rw [← h_preimage, h_pres.measure_preimage_equiv, h_sphere]
+
 /-- **Lens volume = a(R).** For the special case u = 1 in ℝ×ℝ,
     the volume of {p | p.1²+p.2² ≤ R² ∧ (p.1+1)²+p.2² ≤ R²} equals a(R).
-    This lemma isolates the calculus part using regionBetween and FTC. -/
+    The proof uses `regionBetween` and FTC following the AreaOfACircle pattern,
+    with a null-boundary argument to bridge open and closed sets. -/
 lemma lens_volume_eq_aR (R : ℝ) (hR : R > 1/2) :
     (volume {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 ≤ R ^ 2 ∧ (p.1 + 1) ^ 2 + p.2 ^ 2 ≤ R ^ 2}).toReal =
     2 * R ^ 2 * Real.arccos (1 / (2 * R)) - (1 / 2) * Real.sqrt (4 * R ^ 2 - 1) := by
