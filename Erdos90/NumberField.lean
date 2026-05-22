@@ -2,8 +2,8 @@ import Mathlib
 import Erdos90.Defs
 import Erdos90.Arithmetic
 
-open Real Filter NumberField Set MeasureTheory
-open scoped ENNReal NNReal Topology
+open Real Filter NumberField Set MeasureTheory MeasureTheory.Measure
+open scoped ENNReal NNReal Topology Complex intervalIntegral
 
 noncomputable section
 
@@ -175,15 +175,164 @@ lemma a_pos (R : ℝ) (hR : R > 1/2) : 2*R^2*Real.arccos (1/(2*R)) - (1/2)*Real.
     nlinarith
   positivity
 
-/-- **Per-coordinate disc overlap ratio equals ρ(R).**
-    For u ∈ ℂ with ‖u‖ = 1 and R > 1/2, the area of intersection of two
-    radius-R discs centered at 0 and u equals πR²·ρ(R).  This is the classical
-    formula a(R) = 2R²·arccos(1/(2R)) − (1/2)·√(4R²−1). -/
+/-- Antiderivative of `2·√(R²−x²)`: `F(x) = R²·arcsin(x/R) + x·√(R²−x²)`
+    satisfies `F'(x) = 2·√(R²−x²)` on `(-R,R)` for `R > 0`.
+    Adapted directly from `Theorems100.area_disc`. -/
+lemma hasDerivAt_intersect_antideriv (R x : ℝ) (hR : R > 0) (hx : x ∈ Ioo (-R) R) :
+    HasDerivAt (fun y => R ^ 2 * Real.arcsin (R⁻¹ * y) + y * Real.sqrt (R ^ 2 - y ^ 2))
+      (2 * Real.sqrt (R ^ 2 - x ^ 2)) x := by
+  set f := fun y : ℝ => Real.sqrt (R ^ 2 - y ^ 2) with hf
+  set F := fun y : ℝ => R ^ 2 * Real.arcsin (R⁻¹ * y) + y * f y with hF
+  have h_sq_pos : 0 < R ^ 2 - x ^ 2 := sub_pos_of_lt (sq_lt_sq' hx.1 hx.2)
+  have h_sq_pos' : R ^ 2 - x ^ 2 ≠ 0 := by linarith
+  have hderiv : HasDerivAt F (2 * f x) x := by
+    rw [hF, hf]
+    have h_as1 : R⁻¹ * x ≠ -1 := by
+      intro h
+      have : x = -R := by
+        calc
+          x = R * (R⁻¹ * x) := by field_simp [hR.ne.symm]
+          _ = R * (-1) := by rw [h]
+          _ = -R := by ring
+      rw [this] at hx; exact lt_irrefl _ hx.1
+    have h_as2 : R⁻¹ * x ≠ 1 := by
+      intro h
+      have : x = R := by
+        calc
+          x = R * (R⁻¹ * x) := by field_simp [hR.ne.symm]
+          _ = R * 1 := by rw [h]
+          _ = R := by ring
+      rw [this] at hx; exact lt_irrefl _ hx.2
+    convert
+      (((hasDerivAt_const x (R ^ 2)).mul
+          ((hasDerivAt_arcsin h_as1 h_as2).comp x
+            ((hasDerivAt_const x R⁻¹).mul (hasDerivAt_id' x)))).add
+        ((hasDerivAt_id' x).mul ((((hasDerivAt_id' x).fun_pow 2).const_sub (R ^ 2)).sqrt
+          h_sq_pos')))
+      using 1
+    · -- algebraic simplification of the derivative expression
+      have h_cube : f x ^ 3 = (R ^ 2 - x ^ 2) * f x := by
+        rw [hf, pow_three, ← mul_assoc, mul_self_sqrt (by positivity)]
+      simp
+      field_simp
+      simp (disch := positivity)
+      field_simp
+      ring
+  simpa [hf] using hderiv
+
+/-- **Lens volume = a(R).** For the special case u = 1 in ℝ×ℝ,
+    the volume of {p | p.1²+p.2² ≤ R² ∧ (p.1+1)²+p.2² ≤ R²} equals a(R).
+    This lemma isolates the calculus part using regionBetween and FTC. -/
+lemma lens_volume_eq_aR (R : ℝ) (hR : R > 1/2) :
+    (volume {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 ≤ R ^ 2 ∧ (p.1 + 1) ^ 2 + p.2 ^ 2 ≤ R ^ 2}).toReal =
+    2 * R ^ 2 * Real.arccos (1 / (2 * R)) - (1 / 2) * Real.sqrt (4 * R ^ 2 - 1) := by
+  sorry
+
+/-- **Disc overlap ratio.** For two radius-R discs in ℂ whose centers are unit distance
+    apart, the area of their intersection equals `πR²·ρ(R) = a(R)`.
+
+    Proof: rotate u to 1, transfer to ℝ×ℝ via `measurableEquivRealProd`,
+    then apply `lens_volume_eq_aR` and `Real.arccos_eq_pi_div_two_sub_arcsin` for the ρ-factor. -/
 lemma disc_overlap_ratio_real (R : ℝ) (hR : R > 1/2) (u : ℂ) (hu : ‖u‖ = 1) :
     (volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + u‖ ≤ R}).toReal = (π * R ^ 2) * rho R := by
-  -- Standard calculus: area of intersection of two circles.
-  -- Proof via circular segments: 2·(R²·arccos(1/(2R)) − (1/4)·√(4R²−1)).
-  sorry
+  have hRpos : R > 0 := by linarith
+  -- Reduce RHS: (π*R²) * rho(R) = a(R) = 2R²·arccos(1/(2R)) − ½·√(4R²−1)
+  have ha_formula : (2 * R ^ 2 * Real.arccos (1 / (2 * R)) - (1 / 2) * Real.sqrt (4 * R ^ 2 - 1)) =
+      (π * R ^ 2) * rho R := by
+    unfold rho
+    split_ifs with hR'
+    · field_simp [hRpos.ne.symm]
+    · linarith
+  rw [← ha_formula]
+  -- Now goal: volume.toReal = 2R²·arccos(1/(2R)) − ½·√(4R²−1) = a(R)
+  -- Step 1: rotate u → 1 via multiplication by u⁻¹ (isometry since |u|=1)
+  have hu_ne : u ≠ 0 := by
+    intro hzero; rw [hzero, norm_zero] at hu; linarith
+  have h_norm_inv : ‖u⁻¹‖ = 1 := by
+    rw [norm_inv, hu, inv_one]
+  let φ : ℂ ≃ₗᵢ[ℝ] ℂ :=
+    { toFun := fun z => u⁻¹ * z
+      invFun := fun z => u * z
+      map_add' := fun x y => mul_add _ _ _
+      map_smul' := fun r z => by
+        dsimp
+        calc
+          u⁻¹ * (r • z) = u⁻¹ * ((algebraMap ℝ ℂ) r * z) := by rw [Algebra.smul_def]
+          _ = (algebraMap ℝ ℂ) r * (u⁻¹ * z) := by ring
+          _ = r • (u⁻¹ * z) := by rw [Algebra.smul_def]
+      left_inv := fun z => by field_simp [hu_ne]
+      right_inv := fun z => by field_simp [hu_ne]
+      norm_map' := fun z => by
+        dsimp
+        rw [norm_mul, h_norm_inv, one_mul] }
+  have hφ_meas : MeasurePreserving (φ : ℂ → ℂ) := LinearIsometryEquiv.measurePreserving φ
+  have hφ_emb : MeasurableEmbedding (φ : ℂ → ℂ) :=
+    φ.toContinuousLinearEquiv.toHomeomorph.measurableEmbedding
+  have hφ_preimage : φ ⁻¹' {z | ‖z‖ ≤ R ∧ ‖z + 1‖ ≤ R} = {z | ‖z‖ ≤ R ∧ ‖z + u‖ ≤ R} := by
+    ext z
+    constructor
+    · intro h; rcases h with ⟨hnorm, hsum⟩
+      dsimp [φ] at hnorm hsum
+      rw [norm_mul, h_norm_inv, one_mul] at hnorm
+      have h2 : ‖z + u‖ ≤ R := by
+        calc
+          ‖z + u‖ = ‖u⁻¹ * (z + u)‖ := by
+            rw [norm_mul, h_norm_inv, one_mul]
+          _ = ‖u⁻¹ * z + u⁻¹ * u‖ := by ring
+          _ = ‖u⁻¹ * z + 1‖ := by field_simp [hu_ne]
+          _ ≤ R := hsum
+      exact ⟨hnorm, h2⟩
+    · intro h; rcases h with ⟨hnorm, hsum⟩
+      dsimp [φ]
+      have h1 : ‖u⁻¹ * z‖ ≤ R := by rw [norm_mul, h_norm_inv, one_mul]; exact hnorm
+      have h2 : ‖u⁻¹ * z + 1‖ ≤ R := by
+        calc
+          ‖u⁻¹ * z + 1‖ = ‖u⁻¹ * z + u⁻¹ * u‖ := by field_simp [hu_ne]
+          _ = ‖u⁻¹ * (z + u)‖ := by ring
+          _ = ‖z + u‖ := by rw [norm_mul, h_norm_inv, one_mul]
+          _ ≤ R := hsum
+      exact ⟨h1, h2⟩
+  have h_vol_rot : volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + u‖ ≤ R} =
+      volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + 1‖ ≤ R} := by
+    calc
+      volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + u‖ ≤ R}
+          = volume (φ ⁻¹' {z | ‖z‖ ≤ R ∧ ‖z + 1‖ ≤ R}) := by rw [← hφ_preimage]
+      _ = volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + 1‖ ≤ R} :=
+        hφ_meas.measure_preimage_emb hφ_emb _
+  rw [h_vol_rot]
+  -- Step 2: transfer ℂ → ℝ×ℝ via `measurableEquivRealProd`
+  let e : ℂ ≃ᵐ ℝ × ℝ := Complex.measurableEquivRealProd
+  have he_pres : MeasurePreserving (e : ℂ → ℝ × ℝ) := Complex.volume_preserving_equiv_real_prod
+  have he_preimage : e ⁻¹' {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 ≤ R ^ 2 ∧ (p.1 + 1) ^ 2 + p.2 ^ 2 ≤ R ^ 2}
+      = {z : ℂ | ‖z‖ ≤ R ∧ ‖z + 1‖ ≤ R} := by
+    have hRnn : 0 ≤ R := by linarith
+    have h_norm_iff (z : ℂ) : ‖z‖ ≤ R ↔ z.re ^ 2 + z.im ^ 2 ≤ R ^ 2 := by
+      have hRnn : 0 ≤ R := by linarith
+      have h_sq_eq : z.re ^ 2 + z.im ^ 2 = ‖z‖ ^ 2 := by
+        calc
+          z.re ^ 2 + z.im ^ 2 = Complex.normSq z := by
+            simp [Complex.normSq_apply, sq]
+          _ = ‖z‖ ^ 2 := by rw [Complex.normSq_eq_norm_sq]
+      rw [h_sq_eq]
+      have h_nn : 0 ≤ ‖z‖ := norm_nonneg _
+      constructor
+      · intro h; nlinarith
+      · intro h; nlinarith
+    have h_norm_add_iff (z : ℂ) : ‖z + 1‖ ≤ R ↔ (z.re + 1) ^ 2 + z.im ^ 2 ≤ R ^ 2 := by
+      simpa [Complex.add_re, Complex.add_im, Complex.one_re, Complex.one_im] using h_norm_iff (z + 1)
+    ext z
+    simp [e, Complex.measurableEquivRealProd_apply, h_norm_iff z, h_norm_add_iff z]
+  have h_vol_re : volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + 1‖ ≤ R}
+      = volume {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 ≤ R ^ 2 ∧ (p.1 + 1) ^ 2 + p.2 ^ 2 ≤ R ^ 2} := by
+    calc
+      volume {z : ℂ | ‖z‖ ≤ R ∧ ‖z + 1‖ ≤ R}
+          = volume (e ⁻¹' {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 ≤ R ^ 2 ∧ (p.1 + 1) ^ 2 + p.2 ^ 2 ≤ R ^ 2}) := by
+        rw [he_preimage]
+      _ = volume {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 ≤ R ^ 2 ∧ (p.1 + 1) ^ 2 + p.2 ^ 2 ≤ R ^ 2} :=
+        he_pres.measure_preimage_equiv _
+  rw [h_vol_re]
+  -- Step 3: apply the calculus lemma
+  rw [lens_volume_eq_aR R hR]
 
 /-- **Polydisc overlap ratio.** For unit vector u, vol(B_R ∩ B_R−u) = vol(B_R)·ρ(R)^f.
     Follows from disc_overlap_ratio_real and Fubini for the product measure. -/
