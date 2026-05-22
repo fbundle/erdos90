@@ -29,6 +29,8 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - if `lake build` is ok, you can commit and push
 
+- one tip to speed up compilation is to split a big file into smaller files
+
 - please end your commit message with 
 
 ```
