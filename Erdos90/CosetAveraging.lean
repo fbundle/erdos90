@@ -3,6 +3,7 @@ import Erdos90.Defs
 import Erdos90.Arithmetic
 import Erdos90.DiscGeometry
 
+open Complex
 open Real Filter NumberField Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex intervalIntegral Pointwise
 
@@ -445,12 +446,169 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
   have hE_ge : E_fun a₀ ≥ c * N_fun a₀ := h_avg_exists.choose_spec.2.2
   let G : Set Λ := {g | a₀ + (g : Fin f → ℂ) ∈ B_R}
   have hG_fin : Set.Finite G := by
-    -- A subset of a lattice (with fundamental domain F, vol(F) > 0, F bounded)
-    -- that is contained in a bounded set ((-a₀) + B_R) is finite.
-    -- Proof: the translates g+F for g ∈ G are pairwise a.e. disjoint subsets
-    -- of the bounded set (-a₀) + B_R + F. Since vol(F) > 0 and the container
-    -- has finite volume, G must be finite.
-    sorry
+    -- Grid argument: grid ℂ with step < δ so same cell → ‖z₁-z₂‖ < δ.
+    -- The cell map on G is injective (by hΛ_sep) and its image is finite
+    -- (G is coordinate-wise bounded because a₀+G ⊆ B_R).
+    let step : ℝ := 2 / δ
+    have hstep_pos : step > 0 := by
+      dsimp [step]; positivity
+    -- Helper: same integer floor → |a - b| < 1
+    have abs_lt_one_of_floor_eq {a b : ℝ} (h : (⌊a⌋ : ℤ) = (⌊b⌋ : ℤ)) : |a - b| < 1 := by
+      have hfloor_eq : (⌊a⌋ : ℝ) = (⌊b⌋ : ℝ) := by exact_mod_cast h
+      have hlo : -1 < a - b := by
+        have ha : (⌊a⌋ : ℝ) ≤ a := Int.floor_le _
+        have hb : b < (⌊b⌋ : ℝ) + 1 := Int.lt_floor_add_one _
+        linarith
+      have hhi : a - b < 1 := by
+        have ha : a < (⌊a⌋ : ℝ) + 1 := Int.lt_floor_add_one _
+        have hb : (⌊b⌋ : ℝ) ≤ b := Int.floor_le _
+        linarith
+      exact abs_lt.mpr ⟨hlo, hhi⟩
+    -- Cell for a single complex number: (⌊re·step⌋, ⌊im·step⌋)
+    let cell (z : ℂ) : ℤ × ℤ := (⌊z.re * step⌋, ⌊z.im * step⌋)
+    -- Same cell → ‖z₁ - z₂‖ < δ via |re|,|im| < δ/2
+    have h_cell_norm_lt (z₁ z₂ : ℂ) (hcell : cell z₁ = cell z₂) : ‖z₁ - z₂‖ < δ := by
+      rcases Prod.mk.inj hcell with ⟨hre, him⟩
+      have hre_abs : |z₁.re * step - z₂.re * step| < 1 :=
+        abs_lt_one_of_floor_eq hre
+      have him_abs : |z₁.im * step - z₂.im * step| < 1 :=
+        abs_lt_one_of_floor_eq him
+      -- |z₁.re - z₂.re| * step < 1, same for im
+      have h_re_ineq : |z₁.re - z₂.re| * step < 1 := by
+        calc
+          |z₁.re - z₂.re| * step = |z₁.re - z₂.re| * |step| := by rw [abs_of_pos hstep_pos]
+          _ = |(z₁.re - z₂.re) * step| := by rw [← abs_mul]
+          _ = |z₁.re * step - z₂.re * step| := by ring
+          _ < 1 := hre_abs
+      have h_im_ineq : |z₁.im - z₂.im| * step < 1 := by
+        calc
+          |z₁.im - z₂.im| * step = |z₁.im - z₂.im| * |step| := by rw [abs_of_pos hstep_pos]
+          _ = |(z₁.im - z₂.im) * step| := by rw [← abs_mul]
+          _ = |z₁.im * step - z₂.im * step| := by ring
+          _ < 1 := him_abs
+      -- From |a| * (2/δ) < 1, multiply by δ: |a| * 2 < δ, so |a| < δ/2
+      have h_re_diff : |z₁.re - z₂.re| < δ / 2 := by
+        have h_mul' : |z₁.re - z₂.re| * (2 / δ) < 1 := by simpa [step] using h_re_ineq
+        have h_mul2 : |z₁.re - z₂.re| * 2 < δ := by
+          calc
+            |z₁.re - z₂.re| * 2 = (|z₁.re - z₂.re| * (2 / δ)) * δ := by field_simp [hδ_pos.ne']
+            _ < 1 * δ := mul_lt_mul_of_pos_right h_mul' hδ_pos
+            _ = δ := by simp
+        linarith
+      have h_im_diff : |z₁.im - z₂.im| < δ / 2 := by
+        have h_mul' : |z₁.im - z₂.im| * (2 / δ) < 1 := by simpa [step] using h_im_ineq
+        have h_mul2 : |z₁.im - z₂.im| * 2 < δ := by
+          calc
+            |z₁.im - z₂.im| * 2 = (|z₁.im - z₂.im| * (2 / δ)) * δ := by field_simp [hδ_pos.ne']
+            _ < 1 * δ := mul_lt_mul_of_pos_right h_mul' hδ_pos
+            _ = δ := by simp
+        linarith
+      -- Now ‖z₁ - z₂‖ ≤ |z₁.re - z₂.re| + |z₁.im - z₂.im| < δ/2 + δ/2 = δ
+      have h_sq_le : ‖z₁ - z₂‖ ^ 2 ≤ (|z₁.re - z₂.re| + |z₁.im - z₂.im|) ^ 2 := by
+        calc
+          ‖z₁ - z₂‖ ^ 2 = Complex.normSq (z₁ - z₂) := by
+            simp [Complex.norm_def, Real.sq_sqrt (Complex.normSq_nonneg _)]
+          _ = ((z₁ - z₂).re) ^ 2 + ((z₁ - z₂).im) ^ 2 := by
+            simp [Complex.normSq_apply, sq]
+          _ = (z₁.re - z₂.re) ^ 2 + (z₁.im - z₂.im) ^ 2 := by simp
+          _ = |z₁.re - z₂.re| ^ 2 + |z₁.im - z₂.im| ^ 2 := by simp [sq_abs]
+          _ ≤ (|z₁.re - z₂.re| + |z₁.im - z₂.im|) ^ 2 := by
+            have h_nonneg_prod : 0 ≤ 2 * |z₁.re - z₂.re| * |z₁.im - z₂.im| := by positivity
+            nlinarith
+      have h_abs_add : ‖z₁ - z₂‖ ≤ |z₁.re - z₂.re| + |z₁.im - z₂.im| := by
+        have h_nonneg_norm : 0 ≤ ‖z₁ - z₂‖ := norm_nonneg _
+        have h_nonneg_sum : 0 ≤ |z₁.re - z₂.re| + |z₁.im - z₂.im| := by positivity
+        nlinarith
+      have h_sum_lt : |z₁.re - z₂.re| + |z₁.im - z₂.im| < δ := by linarith
+      linarith
+    -- Uniform bound: for g ∈ G, ‖g i‖ ≤ M for all i
+    haveI : Nonempty (Fin f) := by
+      have hpos : 0 < f := by omega
+      exact ⟨⟨0, hpos⟩⟩
+    let a₀_max : ℝ := Finset.sup' (Finset.univ : Finset (Fin f))
+      Finset.univ_nonempty (fun i => ‖a₀ i‖)
+    have ha₀_bound (i : Fin f) : ‖a₀ i‖ ≤ a₀_max :=
+      Finset.le_sup' (fun j => ‖a₀ j‖) (Finset.mem_univ i)
+    let M : ℝ := R + a₀_max
+    have hG_bound (g : Λ) (hg : g ∈ G) (i : Fin f) : ‖(g : Fin f → ℂ) i‖ ≤ M := by
+      have hB : a₀ + (g : Fin f → ℂ) ∈ B_R := hg
+      have h_norm_B : ‖(a₀ + (g : Fin f → ℂ)) i‖ ≤ R := hB i
+      calc
+        ‖(g : Fin f → ℂ) i‖ = ‖(a₀ i + (g : Fin f → ℂ) i) - a₀ i‖ := by ring_nf
+        _ ≤ ‖(a₀ i + (g : Fin f → ℂ) i)‖ + ‖a₀ i‖ := norm_sub_le _ _
+        _ = ‖(a₀ + (g : Fin f → ℂ)) i‖ + ‖a₀ i‖ := by rw [Pi.add_apply]
+        _ ≤ R + ‖a₀ i‖ := by gcongr
+        _ ≤ R + a₀_max := by gcongr; exact ha₀_bound i
+        _ = M := rfl
+    -- Cell map: each coordinate independently
+    let cellMap : Λ → Fin f → ℤ × ℤ := fun g i => cell ((g : Fin f → ℂ) i)
+    -- Bounds for the cell range: |z| ≤ M → |z.re| ≤ M, so ⌊z.re*step⌋ ∈ Ico lo (hi+1)
+    let lo : ℤ := ⌊(-M) * step⌋
+    let hi : ℤ := ⌊M * step⌋
+    have h_mem_cellRange (z : ℂ) (hz : ‖z‖ ≤ M) : cell z ∈ Finset.Ico lo (hi + 1) ×ˢ Finset.Ico lo (hi + 1) := by
+      have hre_abs : |z.re| ≤ M := le_trans (abs_re_le_norm _) hz
+      have him_abs : |z.im| ≤ M := le_trans (abs_im_le_norm _) hz
+      have hre_lo : lo ≤ ⌊z.re * step⌋ := by
+        have h : (-M) * step ≤ z.re * step := by
+          nlinarith [abs_le.mp hre_abs]
+        simpa [lo] using Int.floor_mono h
+      have hre_hi : ⌊z.re * step⌋ < hi + 1 := by
+        have h : z.re * step ≤ M * step := by
+          nlinarith [abs_le.mp hre_abs]
+        have hfloor : ⌊z.re * step⌋ ≤ ⌊M * step⌋ := Int.floor_mono h
+        omega
+      have him_lo : lo ≤ ⌊z.im * step⌋ := by
+        have h : (-M) * step ≤ z.im * step := by
+          nlinarith [abs_le.mp him_abs]
+        simpa [lo] using Int.floor_mono h
+      have him_hi : ⌊z.im * step⌋ < hi + 1 := by
+        have h : z.im * step ≤ M * step := by
+          nlinarith [abs_le.mp him_abs]
+        have hfloor : ⌊z.im * step⌋ ≤ ⌊M * step⌋ := Int.floor_mono h
+        omega
+      dsimp [cell]
+      exact Finset.mem_product.mpr
+        ⟨Finset.mem_Ico.mpr ⟨hre_lo, hre_hi⟩, Finset.mem_Ico.mpr ⟨him_lo, him_hi⟩⟩
+    -- The total cell range is a finite Finset (all coordinate tuples)
+    let cellRange : Finset (ℤ × ℤ) := Finset.Ico lo (hi + 1) ×ˢ Finset.Ico lo (hi + 1)
+    let allCells : Finset (Fin f → ℤ × ℤ) := Fintype.piFinset (fun _ : Fin f => cellRange)
+    have h_cellMap_mem (g : Λ) (hg : g ∈ G) : cellMap g ∈ allCells := by
+      apply Fintype.mem_piFinset.mpr
+      intro i
+      have h_bound : ‖(g : Fin f → ℂ) i‖ ≤ M := hG_bound g hg i
+      -- cellMap g i = cell ((g i)); we need cell ((g i)) ∈ cellRange
+      rw [show cellMap g i = cell ((g : Fin f → ℂ) i) from rfl]
+      exact h_mem_cellRange ((g : Fin f → ℂ) i) h_bound
+    -- Injectivity on G: if cellMap g₁ = cellMap g₂, then g₁ = g₂
+    have h_inj_on_G : Set.InjOn cellMap G := by
+      intro g₁ hg₁ g₂ hg₂ hmap
+      by_contra hne
+      have h_sub_ne_zero : (g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ) ≠ 0 := by
+        intro hzero
+        apply hne
+        exact Subtype.ext (sub_eq_zero.mp hzero)
+      have h_sub_mem : (g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ) ∈ Λ :=
+        AddSubgroup.sub_mem _ g₁.property g₂.property
+      rcases hΛ_sep ((g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ)) h_sub_mem h_sub_ne_zero with ⟨i, hi⟩
+      have h_cell_eq : cell ((g₁ : Fin f → ℂ) i) = cell ((g₂ : Fin f → ℂ) i) := by
+        calc
+          cell ((g₁ : Fin f → ℂ) i) = cellMap g₁ i := rfl
+          _ = cellMap g₂ i := by rw [hmap]
+          _ = cell ((g₂ : Fin f → ℂ) i) := rfl
+      have h_norm_lt : ‖((g₁ : Fin f → ℂ) i - (g₂ : Fin f → ℂ) i)‖ < δ :=
+        h_cell_norm_lt ((g₁ : Fin f → ℂ) i) ((g₂ : Fin f → ℂ) i) h_cell_eq
+      have h_sub_eq : ((g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ)) i =
+        (g₁ : Fin f → ℂ) i - (g₂ : Fin f → ℂ) i := rfl
+      rw [← h_sub_eq] at h_norm_lt
+      linarith
+    -- The image cellMap '' G ⊆ allCells, which is finite
+    have h_image_sub : cellMap '' G ⊆ (allCells : Set (Fin f → ℤ × ℤ)) := by
+      intro y hy
+      rcases hy with ⟨g, hg, rfl⟩
+      exact Finset.mem_coe.mpr (h_cellMap_mem g hg)
+    have h_image_fin : Set.Finite (cellMap '' G) :=
+      Set.Finite.subset (Finset.finite_toSet allCells) h_image_sub
+    exact h_image_fin.of_finite_image h_inj_on_G
   have h_N_fin : N_fun a₀ < ∞ := by
     dsimp [N_fun, ind]
     classical
