@@ -49,6 +49,6 @@ This work is completed fully by the following AI systems (with human verificatio
 
 - `DeepSeek-V4-Pro with Claude Code` - main proof writer (90%)
 
-- `Claude Sonnet 4.6` - secondary proof writer (10%) - web search
+- `Claude Sonnet 4.6` - secondary proof writer (10% - a lot stronger than deepseek but limited use) - web search
 
 - `Gemini-3-Flash-Preview` - web search
