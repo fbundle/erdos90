@@ -20,16 +20,25 @@ This file factors the proof of `prop_3_2_to_3_6` and `prop_2_2` from
 3. **Golod–Shafarevich tower** (`GSBaseData`, `gs_base_construction` + `gs_tower_levels`, §2) —
    two sorries for Props 3.2–3.5 and Prop 3.6 + type bridge, cleanly assembled
    into `golod_shafarevich_tower_with_lattice` → `GSTowerData`.
-4. **CM class-group data** (`exists_cm_class_group_data`, §4) — one sorry for
+4. **CM class-group data** (`exists_cm_class_group_data`, §5) — one sorry for
    the algebraic number theory input to Prop 2.2: CM field K_j, split-prime
    ideal pairs, ClassGroup bound, norm-1 element constructor.
-5. **Assembly** — `cm_norm_one_elements` (§5, proved modulo §4) and
-   `prop_3_2_to_3_6_via_deep` (§6, proved modulo §2–§4).
+5. **Assembly** — `cm_norm_one_elements` (§6, proved modulo §5) and
+   `prop_3_2_to_3_6_via_deep` (§7, proved modulo §2, §5).
 
 The three sorries correspond to:
 - §2: Golod–Shafarevich base construction (Props 3.2–3.5)
 - §2: Chebotarev + Minkowski type bridge (Prop 3.6 + lattice)
-- §4: CM field + class-group pigeonhole (Prop 2.2)
+- §5: CM field + class-group pigeonhole (Prop 2.2)
+
+§4 contains four fully proved CM lemmas:
+- `norm_div_star_eq_one` — pure complex analysis: ‖z / star z‖ = 1
+- `cm_norm_div_conj_eq_one` — ‖φ(α / c(α))‖ = 1 at each complex embedding φ
+- `normAtPlace_mixedEmbedding_cm_div_conj_eq_one` — normAtPlace = 1 at every
+  infinite place under `mixedEmbedding`
+- `mixedEmbedding_cm_div_conj_complex_norm_one` — concrete ‖.2 w‖ = 1 for
+  each complex place
+All use only the `IsCMField` API already in Mathlib v4.29.1.
 -/
 
 /-! ## §1  Analytic helpers (all proved) -/
@@ -230,10 +239,82 @@ lemma exists_fiber_ge_div {α β : Type*} [Fintype α] [DecidableEq α] [Fintype
     field_simp [hNpos.ne']
   linarith [h_total, h_sum_lt, h_sum_eq]
 
-/-! ## §4  CM class-group data structure
+/-! ## §4  Provable CM field lemmas: norm of α / c(α)
+
+    This section proves the core algebraic fact underlying Proposition 2.2:
+    for a CM field K, the element α / c(α) has norm 1 at every complex
+    embedding, every infinite place, and every mixed-space coordinate.
+
+    Four lemmas at increasing levels of concreteness:
+    1. `norm_div_star_eq_one` — pure complex analysis: ‖z / star z‖ = 1
+    2. `cm_norm_div_conj_eq_one` — per-embedding version, pure algebra
+    3. `normAtPlace_mixedEmbedding_cm_div_conj_eq_one` — per-place version
+       using `mixedEmbedding` + `normAtPlace`
+    4. `mixedEmbedding_cm_div_conj_complex_norm_one` — concrete `.2` coordinate
+       version for complex places
+
+    All are fully proved (no sorry) using only the `IsCMField` API that is
+    already in Mathlib v4.29.1.  The remaining construction (split primes,
+    class-group map, Minkowski embedding) is abstracted in
+    `CMClassGroupData` below. -/
+
+/-- Pure complex analysis: for nonzero `z : ℂ`, `‖z / star z‖ = 1`.
+    This is the analytic core underlying `cm_norm_div_conj_eq_one`. -/
+lemma norm_div_star_eq_one {z : ℂ} (hz : z ≠ 0) : ‖z / star z‖ = 1 := by
+  calc
+    ‖z / star z‖ = ‖z‖ / ‖star z‖ := by rw [norm_div]
+    _ = ‖z‖ / ‖z‖ := by simp
+    _ = 1 := div_self (mt norm_eq_zero.mp hz)
+
+/-- For a CM field `K`, any nonzero `α`, and any complex embedding `φ : K → ℂ`,
+    `‖φ (α / complexConj K α)‖ = 1`.  This is the key algebraic fact that
+    powers Proposition 2.2: the Minkowski embedding of `α / c(α)` lies on the
+    product of unit circles.
+
+    Proof: `φ(α / c(α)) = φ(α) / φ(c(α)) = φ(α) / star(φ(α))`, and for any
+    nonzero `z : ℂ`, `‖z / star z‖ = ‖z‖ / ‖z‖ = 1`.
+
+    **Reference**: Neukirch, Ch. I §6; [OpenAI 2026], §2.1; based on
+    `IsCMField.complexEmbedding_complexConj` in Mathlib. -/
+lemma cm_norm_div_conj_eq_one {K : Type*} [Field K] [NumberField K] [IsCMField K]
+    (α : K) (hα : α ≠ 0) (φ : K →+* ℂ) : ‖φ (α / IsCMField.complexConj K α)‖ = 1 := by
+  have hφ0 : φ α ≠ 0 := ((map_ne_zero (f := φ)).mpr hα)
+  have h_conj : φ (IsCMField.complexConj K α) = star (φ α) := by
+    rw [IsCMField.complexEmbedding_complexConj (K := K) φ α, RCLike.star_def]
+  rw [map_div₀, h_conj]
+  exact norm_div_star_eq_one hφ0
+
+/-- The mixed-embedding lift: under the Minkowski embedding `mixedEmbedding K`,
+    the image of `α / c(α)` has `normAtPlace` = 1 at **every** infinite place.
+    This is the form directly usable when constructing `mk_unit` in
+    `exists_cm_class_group_data`. -/
+lemma normAtPlace_mixedEmbedding_cm_div_conj_eq_one {K : Type*} [Field K] [NumberField K] [IsCMField K]
+    (α : K) (hα : α ≠ 0) (w : InfinitePlace K) :
+    mixedEmbedding.normAtPlace w (NumberField.mixedEmbedding K
+      (α / IsCMField.complexConj K α)) = 1 := by
+  rw [mixedEmbedding.normAtPlace_apply, ← InfinitePlace.norm_embedding_eq]
+  exact cm_norm_div_conj_eq_one α hα (InfinitePlace.embedding w)
+
+/-- For a complex place, the concrete `.2` coordinate of the mixed embedding of
+    `α / c(α)` has modulus 1.  This is the concrete form used when relating to
+    the `Fin f → ℂ` representation (once the type bridge is filled). -/
+lemma mixedEmbedding_cm_div_conj_complex_norm_one {K : Type*} [Field K] [NumberField K] [IsCMField K]
+    (α : K) (hα : α ≠ 0) (w : {w : InfinitePlace K // InfinitePlace.IsComplex w}) :
+    ‖(NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)).2 w‖ = 1 := by
+  have h := normAtPlace_mixedEmbedding_cm_div_conj_eq_one α hα w.val
+  rw [mixedEmbedding.normAtPlace_apply_of_isComplex w.prop] at h
+  exact h
+
+/-! ## §5  CM class-group data structure
 
     The structure `CMClassGroupData` abstracts the algebraic number theory
     input needed for Proposition 2.2 (class-group pigeonhole → norm-one set).
+
+    The norm-1 property is already proved as `cm_norm_div_conj_eq_one` above.
+    What remains (all sorry'd) is the constructive number theory:
+    1. A CM field K of degree 2f with split-prime ideal pairs
+    2. The sign-vector type E = {±1}^m and class-group map φ : E → Cl(K)
+    3. The cardinality ratio |E|/|Cl(K)| ≥ exp(γ·f) + 1
 
     **Mathematical origin** ([OpenAI 2026], §2.1; Neukirch, Ch. I §6–7,
     Ch. III §3):
@@ -248,8 +329,8 @@ lemma exists_fiber_ge_div {α β : Type*} [Fintype α] [DecidableEq α] [Fintype
     and map φ : E → ClassGroup(𝒪_K) by φ(ε) = [a_ε].
 
     For ε₁ ≠ ε₂ in the same fiber (φ(ε₁) = φ(ε₂)), the ideal a_{ε₁}/a_{ε₂}
-    is principal, say = (α).  The CM property gives
-      |σ(α / c(α))| = 1   at every complex embedding σ : K → ℂ.
+    is principal, say = (α).  By `cm_norm_div_conj_eq_one` we have
+    |σ(α / c(α))| = 1 at every complex embedding σ : K → ℂ.
 
     Thus α / c(α) maps under the Minkowski embedding Φ into Λ ⊂ ℂ^f with
     all coordinates of modulus 1.  The map (ε₁, ε₂) ↦ u := Φ(α/c(α)) is
@@ -349,7 +430,7 @@ def exists_cm_class_group_data
     mk_unit_inj := sorry
   }
 
-/-! ## §5  Assembly: `cm_norm_one_elements` (Proposition 2.2)
+/-! ## §6  Assembly: `cm_norm_one_elements` (Proposition 2.2)
 
     The proof follows the paper's §2.1:
     1. Get `CMClassGroupData` from `exists_cm_class_group_data` (the algebraic sorry).
@@ -451,12 +532,12 @@ def cm_norm_one_elements
     linarith
   exact ⟨U, hU_norm, hU_mem_Λ, hU_size⟩
 
-/-! ## §6  Assembly of `prop_3_2_to_3_6` -/
+/-! ## §7  Assembly of `prop_3_2_to_3_6` -/
 
 /-- **Structured proof of `prop_3_2_to_3_6`** (assembly only; no new sorry).
 
     Chains `golod_shafarevich_tower_with_lattice` (§2, returns `GSTowerData`,
-    one sorry) and `cm_norm_one_elements` (§3, one sorry) together.  The log bound
+    two sorries) and `cm_norm_one_elements` (§6, one sorry) together.  The log bound
     (log rd_F ≤ C_rd·ℓ·log ℓ for C_rd = 1) is fully proved via `log_two_mul_le`.
 
     The caller (`exists_admissible_family` in NumberField.lean) computes

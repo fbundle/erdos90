@@ -15,7 +15,7 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
 | `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure (no axioms — `exists_admissible_family` is a theorem in NumberField) |
 | `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + analytic lemmas (`prop_p6`, `hlog2_event`); calls `prop_3_2_to_3_6_via_deep` from NumberFieldDeep |
-| `Erdos90/NumberFieldDeep.lean` | Deep number theory: Golod–Shafarevich tower (`GSBaseData` + `GSTowerData` structures; `gs_base_construction` + `gs_tower_levels`, both sorry'd; clean assembly in `golod_shafarevich_tower_with_lattice`), pigeonhole lemma (`exists_fiber_ge_div`, proved), `CMClassGroupData` structure + `exists_cm_class_group_data` (sorry'd), `cm_norm_one_elements` (proved modulo §4), `prop_3_2_to_3_6_via_deep` assembly |
+| `Erdos90/NumberFieldDeep.lean` | Deep number theory in 7 sections: §1 analytic helpers (proved), §2 GS tower (`GSBaseData` + `GSTowerData`; `gs_base_construction` + `gs_tower_levels`, both sorry'd), §3 pigeonhole (`exists_fiber_ge_div`, proved), §4 CM lemmas (4 fully proved: `norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, `normAtPlace_mixedEmbedding_cm_div_conj_eq_one`, `mixedEmbedding_cm_div_conj_complex_norm_one`), §5 `CMClassGroupData` + `exists_cm_class_group_data` (sorry'd), §6 `cm_norm_one_elements` (proved modulo §5), §7 `prop_3_2_to_3_6_via_deep` (proved modulo §2+§5) |
 | `Erdos90/CosetAveraging.lean` | `lemma_2_4` — coset averaging (fully proved) |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/DiscGeometry.lean` | Discrete geometry lemmas |
@@ -45,7 +45,7 @@ All three sorries are in **`Erdos90/NumberFieldDeep.lean`**:
 
 ### `def` with `sorry` (deep number theory, requires new Mathlib development)
 
-**`gs_base_construction`** (line ~90) — Golod–Shafarevich base data, Props 3.2–3.5
+**`gs_base_construction`** (line ~101) — Golod–Shafarevich base data, Props 3.2–3.5
 
 Lean gaps:
 - Cyclic cubic field F from ℓ primes r_i ≡ 1 (mod 3)
@@ -53,24 +53,24 @@ Lean gaps:
 - Shafarevich bound r(G) ≤ d(G) + C₀ (not in Mathlib)
 - D₀ = Q² (product of split Chebotarev primes squared)
 
-**`gs_tower_levels`** (line ~106) — Chebotarev tower levels + Minkowski lattice, Prop 3.6
+**`gs_tower_levels`** (line ~117) — Chebotarev tower levels + Minkowski lattice, Prop 3.6
 
 Lean gaps:
 - Quantitative Chebotarev: build infinite tower from G̅ (not in Mathlib)
 - Type bridge: `mixedSpace K ≃ Fin f → ℂ` for totally complex CM field K
 - Transport of `integerLattice` + `IsAddFundamentalDomain` + separation across the isomorphism
 
-**`exists_cm_class_group_data`** (line ~328) — CM field / class-group data for Prop 2.2
+**`exists_cm_class_group_data`** (line ~411) — CM field / class-group data for Prop 2.2
 
 Lean gaps:
 - CM field K of degree 2f with split-prime ideal pairs (𝔓_j, c𝔓_j) (no CM split-prime API in Mathlib)
 - Class-number bound |G| ≤ exp(log_H·f) from Minkowski / tower root-discriminant
-- Norm-1 element constructor: α/c(α) using `IsCMField.complexConj`
+- Norm-1 element constructor: α/c(α) using `IsCMField.complexConj` (core CM lemmas proved in §4)
 - Injectivity: α/c(α) = β/c(β) ⇒ α/β ∈ K⁺ ⇒ ε₂ = ε₃
 
 **Assembly functions** (no additional sorries):
 - `golod_shafarevich_tower_with_lattice ℓ hℓ : GSTowerData ℓ` — clean `let`-based assembly of `gs_base_construction` + `gs_tower_levels`
-- `prop_3_2_to_3_6_via_deep` — chains the tower data with `cm_norm_one_elements` (§6)
+- `prop_3_2_to_3_6_via_deep` — chains the tower data with `cm_norm_one_elements` (§7)
 
 Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `ZSpan.isAddFundamentalDomain`
 
@@ -98,8 +98,12 @@ Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMFiel
 - `polydisc_overlap_ratio_real` — Fubini product extension
 - `hrho_pos` — positivity of ρ(R) for R > 1/2
 - `exists_fiber_ge_div` — pigeonhole lemma (NumberFieldDeep.lean §3, fully proved)
-- `cm_norm_one_elements` — class-group pigeonhole → norm-one set U (NumberFieldDeep.lean §5, proved modulo `exists_cm_class_group_data`)
-- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §6, proved modulo three sorries)
+- `norm_div_star_eq_one` — pure complex analysis: ‖z / star z‖ = 1 (NumberFieldDeep.lean §4, fully proved)
+- `cm_norm_div_conj_eq_one` — ‖φ(α / c(α))‖ = 1 at each complex embedding (NumberFieldDeep.lean §4, fully proved)
+- `normAtPlace_mixedEmbedding_cm_div_conj_eq_one` — normAtPlace = 1 under mixedEmbedding (NumberFieldDeep.lean §4, fully proved)
+- `mixedEmbedding_cm_div_conj_complex_norm_one` — concrete ‖.2 w‖ = 1 per complex place (NumberFieldDeep.lean §4, fully proved)
+- `cm_norm_one_elements` — class-group pigeonhole → norm-one set U (NumberFieldDeep.lean §6, proved modulo `exists_cm_class_group_data`)
+- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §7, proved modulo three sorries)
 - `log_two_mul_le` — analytic helper (NumberFieldDeep.lean §1)
 
 ### Auxiliary defs
