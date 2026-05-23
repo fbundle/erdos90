@@ -191,11 +191,118 @@ variable (K : Type*) [Field K] [NumberField K] [IsTotallyComplex K]
     `mixedSpace_equiv_complex_places` with a `Fin` index equivalence.
     Not yet formalized: requires bridging `(K →+* ℂ) → ℂ` and `mixedSpace K`. -/
 def cmMinkowskiEquiv (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ) := by
-  have h_no_real : InfinitePlace.nrRealPlaces K = 0 :=
-    IsTotallyComplex.nrRealPlaces_eq_zero K
-  -- `mixedSpace_equiv_pi_fin_of_card` returns `Nonempty`, use `.some`
-  exact Nonempty.some (mixedSpace_equiv_pi_fin_of_card h_no_real f hf)
+    mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ) :=
+  mixedSpace_equiv_pi_fin_of_card (IsTotallyComplex.nrRealPlaces_eq_zero K) f hf
+/-- The explicit index equivalence between complex places of K and Fin f.
+    Built from `Fintype.equivFin` and `Fin.cast` to match the cardinality. -/
+def cmComplexPlaceEquiv (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
+    {w : InfinitePlace K // InfinitePlace.IsComplex w} ≃ Fin f := by
+  classical
+    have h_card : Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w} = f := by
+      simpa [InfinitePlace.nrComplexPlaces] using hf
+    let e_card : Fin (Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w}) ≃ Fin f :=
+      { toFun := Fin.cast h_card
+        invFun := Fin.cast h_card.symm
+        left_inv := fun x => by apply Fin.ext; simp [Fin.cast]
+        right_inv := fun x => by apply Fin.ext; simp [Fin.cast]
+      }
+    exact (Fintype.equivFin _).trans e_card
+
+/-- Applying `cmMinkowskiEquiv` at index `cmComplexPlaceEquiv K f hf w` returns
+    the second component of the mixed-space element at `w`. -/
+lemma cmMinkowskiEquiv_apply_complex (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f)
+    (x : mixedEmbedding.mixedSpace K) (w : {w : InfinitePlace K // InfinitePlace.IsComplex w}) :
+    cmMinkowskiEquiv K f hf x ((cmComplexPlaceEquiv K f hf) w) = x.2 w := by
+  dsimp [cmMinkowskiEquiv, cmComplexPlaceEquiv, mixedSpace_equiv_pi_fin_of_card]
+  simp
+
+/-- The norm of `cmMinkowskiEquiv` at coordinate `cmComplexPlaceEquiv K f hf w`
+    equals `mixedEmbedding.normAtPlace w`.  Bridges the Fin f coordinate norm
+    to the canonical norm at a complex place. -/
+lemma cmMinkowskiEquiv_normAtPlace (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f)
+    (a : 𝓞 K) (w : {w : InfinitePlace K // InfinitePlace.IsComplex w}) :
+    ‖cmMinkowskiEquiv K f hf (NumberField.mixedEmbedding K (a : K))
+      ((cmComplexPlaceEquiv K f hf) w)‖ =
+    mixedEmbedding.normAtPlace (w : InfinitePlace K) (NumberField.mixedEmbedding K (a : K)) := by
+  rw [cmMinkowskiEquiv_apply_complex]
+  rw [mixedEmbedding.normAtPlace_apply_of_isComplex w.prop]
+
+/-- Lattice membership characterization: `x` is in `cmMinkowskiLattice` iff it is the
+    `cmMinkowskiEquiv` image of the mixed embedding of some algebraic integer. -/
+lemma mem_cmMinkowskiLattice_iff (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f)
+    (x : Fin f → ℂ) :
+    x ∈ cmMinkowskiLattice K f hf ↔
+      ∃ a : 𝓞 K, cmMinkowskiEquiv K f hf (NumberField.mixedEmbedding K (a : K)) = x := by
+  have h_span_eq_map : (Submodule.span ℤ (Set.range (cmTransportedBasis K f hf))) =
+      Submodule.map
+        ((cmMinkowskiEquiv K f hf).toLinearMap.restrictScalars ℤ)
+        (mixedEmbedding.integerLattice K) := by
+    calc
+      Submodule.span ℤ (Set.range (cmTransportedBasis K f hf)) =
+          Submodule.span ℤ (Set.range ((mixedEmbedding.latticeBasis K).map
+            (cmMinkowskiEquiv K f hf))) := rfl
+      _ = Submodule.span ℤ ((cmMinkowskiEquiv K f hf) ''
+          Set.range (mixedEmbedding.latticeBasis K)) := by
+        congr; ext z; simp [cmTransportedBasis]
+      _ = Submodule.map ((cmMinkowskiEquiv K f hf).toLinearMap.restrictScalars ℤ)
+          (Submodule.span ℤ (Set.range (mixedEmbedding.latticeBasis K))) := by
+        simp [Submodule.map_span]
+      _ = Submodule.map ((cmMinkowskiEquiv K f hf).toLinearMap.restrictScalars ℤ)
+          (mixedEmbedding.integerLattice K) := by
+        rw [mixedEmbedding.span_latticeBasis K]
+  dsimp [cmMinkowskiLattice]
+  rw [h_span_eq_map]
+  constructor
+  · intro hx
+    rcases Submodule.mem_map.mp hx with ⟨y, hy_int, hy_eq⟩
+    rcases LinearMap.mem_range.mp hy_int with ⟨a, ha⟩
+    refine ⟨a, ?_⟩
+    rw [← hy_eq]
+    have ha_simp : ((mixedEmbedding K).comp (algebraMap (𝓞 K) K)).toIntAlgHom.toLinearMap a =
+        NumberField.mixedEmbedding K (a : K) := by simp
+    simp [ha_simp, ha]
+  · intro ⟨a, ha⟩
+    rw [ha]
+    apply Submodule.mem_map.mpr
+    have h_mem : NumberField.mixedEmbedding K (a : K) ∈
+        mixedEmbedding.integerLattice K := by
+      apply LinearMap.mem_range.mpr
+      refine ⟨a, ?_⟩
+      simp
+    exact ⟨NumberField.mixedEmbedding K (a : K), h_mem, by
+      dsimp; rfl⟩
+
+/-- **Separation — existence version** (proved).
+    For any nonzero `v` in the CM Minkowski lattice and `D₀ ≥ 1`,
+    there exists some coordinate `i` with `‖v i‖ ≥ D₀⁻¹`.
+    The first-coordinate version (`cmSeparation`) needs embedding reordering
+    to place the max-norm complex place at index `fin0`. -/
+lemma cmSeparation_exists (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces K = f)
+    (D₀ : ℝ) (hD₀ : D₀ > 0) (hD₀_ge_one : D₀ ≥ 1) :
+    ∀ v ∈ cmMinkowskiLattice K f hf, v ≠ 0 →
+      ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹ := by
+  intro v hv hv0
+  have hD₀_inv_le_one : D₀⁻¹ ≤ 1 := by
+    simpa [one_div] using
+      (one_div_le_one_div hD₀ (by norm_num : (0 : ℝ) < 1)).mpr hD₀_ge_one
+  rcases (mem_cmMinkowskiLattice_iff K f hf v).mp hv with ⟨a, ha⟩
+  have ha0 : a ≠ 0 := by
+    intro hzero
+    apply hv0
+    have hzero' : (a : K) = 0 := by exact_mod_cast hzero
+    rw [hzero', map_zero, map_zero] at ha
+    exact ha.symm
+  obtain ⟨w, hw⟩ := integer_separation K a ha0
+  have hw_complex : InfinitePlace.IsComplex w := IsTotallyComplex.isComplex w
+  let w' : {w : InfinitePlace K // InfinitePlace.IsComplex w} := ⟨w, hw_complex⟩
+  let idx : Fin f := cmComplexPlaceEquiv K f hf w'
+  have hnorm : ‖v idx‖ ≥ 1 := by
+    rw [← ha]
+    rw [cmMinkowskiEquiv_normAtPlace K f hf a w']
+    exact hw
+  refine ⟨idx, le_trans hD₀_inv_le_one hnorm⟩
+
+
 
   /-- Transported basis: `mixedEmbedding.latticeBasis K` mapped through
   `cmMinkowskiEquiv` to land in `Fin f → ℂ`.  This is an ℝ-basis that is also
@@ -245,22 +352,14 @@ lemma cmSeparation (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces
     (D₀ : ℝ) (hD₀ : D₀ > 0) :
     ∀ v ∈ cmMinkowskiLattice K f hf, v ≠ 0 →
       ‖v (fin0 hf1)‖ ≥ D₀⁻¹ := by
-  intro v hv hv0
-  -- v is in the ℤ-span of the transported basis = image of integerLattice K under φ
-  have h_mem_span : v ∈ Submodule.span ℤ (Set.range (cmTransportedBasis K f hf)) := hv
-  -- The integer lattice is the ℤ-span of latticeBasis; by `span_latticeBasis`,
-  --   Submodule.span ℤ (Set.range (latticeBasis K)) = integerLattice K
-  -- The transported basis is (latticeBasis K).map φ, so
-  --   Submodule.span ℤ (Set.range (cmTransportedBasis ...)) = φ(image of integerLattice)
-  -- Therefore ∃ a : 𝓞 K such that v = cmMinkowskiEquiv (mixedEmbedding K a)
-  -- Since v ≠ 0, we have a ≠ 0.
-  -- integer_separation K a ha0 : ∃ w, normAtPlace w (mixedEmbedding K a) ≥ 1
-  -- GAP: The coordinate `fin0 hf1` of `cmMinkowskiEquiv x` corresponds to some
-  -- complex place w₀ ∈ {w : InfinitePlace K // IsComplex w}.  To conclude
-  -- ‖v (fin0 hf1)‖ ≥ D₀⁻¹, we need:
-  --   1. w₀ is the place where normAtPlace is maximal (embedding reordering)
-  --   2. D₀ ≥ 1 (so D₀⁻¹ ≤ 1 ≤ |a|_w₀) — true in the base construction
-  -- The same gap appears as `hΛ_sep` in NumberFieldDeep_GSTower.lean.
+  -- GAP: `cmSeparation_exists` proves ∃ i, ‖v i‖ ≥ D₀⁻¹ (when D₀ ≥ 1).
+  -- `cmComplexPlaceEquiv K f hf` gives an explicit bijection between complex places
+  -- and Fin f coordinates, so `cmMinkowskiEquiv_normAtPlace` connects coordinate norms
+  -- to place norms.  The remaining step is: reorder the index equivalence so that
+  -- the complex place with maximal norm (from `integer_separation`) maps to `fin0 hf1`.
+  -- This requires: (1) D₀ ≥ 1 (so D₀⁻¹ ≤ 1 ≤ max_i ‖v i‖) — true in the base
+  -- construction; (2) restructuring `cmComplexPlaceEquiv` to place the max-norm
+  -- place at index `fin0`.  Same gap as `hΛ_sep` in `NumberFieldDeep_GSTower.lean`.
   sorry
 
 

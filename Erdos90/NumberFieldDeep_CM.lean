@@ -146,28 +146,25 @@ def prod_left_isEmpty_equiv_snd (V : Type*) [AddCommGroup V] [Module ℝ V] {ι 
 
 /-- For a totally complex number field K (nrRealPlaces = 0), the mixed space
 is equivalent to just the complex-place function space. -/
-lemma mixedSpace_equiv_complex_places {K : Type*} [Field K] [NumberField K]
+def mixedSpace_equiv_complex_places {K : Type*} [Field K] [NumberField K]
     (h_no_real : InfinitePlace.nrRealPlaces K = 0) :
-    Nonempty (mixedEmbedding.mixedSpace K ≃ₗ[ℝ]
-      ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ)) := by
+    mixedEmbedding.mixedSpace K ≃ₗ[ℝ]
+      ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ) := by
   classical
     haveI : IsEmpty {w : InfinitePlace K // InfinitePlace.IsReal w} :=
       (Fintype.card_eq_zero_iff
         (α := {w : InfinitePlace K // InfinitePlace.IsReal w})).mp h_no_real
-    have h_equiv : mixedEmbedding.mixedSpace K ≃ₗ[ℝ]
-        ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ) :=
-      prod_left_isEmpty_equiv_snd
+    exact prod_left_isEmpty_equiv_snd
         ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ)
-    exact ⟨h_equiv⟩
 
 /-- When K is totally complex of degree f (complex places), mixedSpace K is equivalent
 to `Fin f → ℂ`.  This is the type bridge needed for `gs_tower_levels`. -/
-lemma mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
+def mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
     (h_no_real : InfinitePlace.nrRealPlaces K = 0) (f : ℕ)
     (hf : InfinitePlace.nrComplexPlaces K = f) :
-    Nonempty (mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ)) := by
+    mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ) := by
   classical
-    obtain ⟨e₁⟩ := mixedSpace_equiv_complex_places h_no_real
+    let e₁ := mixedSpace_equiv_complex_places h_no_real
     -- Index equivalence from complex place subtype to Fin f
     have h_card : Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w} = f := by
       simpa [InfinitePlace.nrComplexPlaces] using hf
@@ -190,7 +187,7 @@ lemma mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
         map_add' := fun x y => rfl
         map_smul' := fun r x => rfl
       }
-    refine ⟨e₁.trans e_pi⟩
+    exact e₁.trans e_pi
 
 /-! ## §5  CM class-group data structure
 
