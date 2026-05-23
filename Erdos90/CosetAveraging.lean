@@ -32,12 +32,12 @@ whose intersection with the polydisc B_R has many ordered U-pairs.
     Set X = (a+Λ) ∩ B_R to get the CosetAvgWitness. -/
 def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_countable : Countable Λ) (F : Set (Fin f → ℂ))
-    (hF_fund : IsAddFundamentalDomain Λ F volume) (hF_fin : volume F < ∞)
+    (hF_fund : IsAddFundamentalDomain Λ F volume) (_hF_fin : volume F < ∞)
     (δ : ℝ) (hδ_pos : δ > 0) (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ δ)
     (U : Finset (Fin f → ℂ))
     (hU_norm : ∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1)
     (hU_in_Λ : ∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ.carrier)
-    (γ : ℝ) (hγ : γ > 0)
+    (γ : ℝ) (_hγ : γ > 0)
     (hU_size : (U.card : ℝ) ≥ Real.exp (γ * (f : ℝ)))
     (R : ℝ) (hR : R > 1/2)
     (hρ : Real.log (rho R) > - (γ / 2)) :
@@ -342,10 +342,10 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       classical
       by_cases hxS : x ∈ S
       · have hxB : x ∈ B_R := hS_sub hxS
-        simp [Set.indicator_apply, hxS, hxB]
+        simp [hxS, hxB]
       · by_cases hxB : x ∈ B_R
-        · simp [Set.indicator_apply, hxS, hxB]
-        · simp [Set.indicator_apply, hxS, hxB]
+        · simp [hxS, hxB]
+        · simp [hxS, hxB]
     have hE_le_card_N : ∀ a, E_fun a ≤ (U.card : ℝ≥0∞) * N_fun a := by
       intro a
       dsimp [E_fun, N_fun]
@@ -360,7 +360,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       tsum_nonneg (fun (g : Λ) => zero_le _)
     let s_pos : Set (Fin f → ℂ) := {a | 0 < N_fun a}
     by_contra h_no
-    push_neg at h_no
+    push Not at h_no
     have h_le_pt : ∀ a ∈ F, E_fun a ≤ c * N_fun a := by
       intro a ha
       have h_cases' : N_fun a = 0 ∨ ¬(E_fun a ≥ c * N_fun a) := by
@@ -551,7 +551,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     have heq : ∑' (g : Λ), B_R.indicator (fun _ => (1 : ℝ≥0∞)) (a₀ + (g : Fin f → ℂ)) =
         ∑ g ∈ hG_fin.toFinset, B_R.indicator (fun _ => (1 : ℝ≥0∞)) (a₀ + (g : Fin f → ℂ)) :=
       tsum_eq_sum fun g hg => by
-        simp [Set.indicator_apply, show a₀ + (g : Fin f → ℂ) ∉ B_R from
+        simp [show a₀ + (g : Fin f → ℂ) ∉ B_R from
           fun h => hg (hG_fin.mem_toFinset.mpr h)]
     rw [heq]
     have hle : ∑ g ∈ hG_fin.toFinset, B_R.indicator (fun _ => (1 : ℝ≥0∞)) (a₀ + (g : Fin f → ℂ)) ≤
@@ -581,7 +581,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       intro hall
       apply hN_pos
       exact ENNReal.tsum_eq_zero.mpr hall
-    push_neg at hN_ne
+    push Not at hN_ne
     obtain ⟨g, hg⟩ := hN_ne
     have hg_mem : a₀ + (g : Fin f → ℂ) ∈ B_R := by
       by_contra hmem
@@ -660,7 +660,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     let J : Finset (Σ u : Fin f → ℂ, Fin f → ℂ) := Finset.sigma U J_filter
     have hJ_card : (J.card : ℝ≥0∞) = ∑ u ∈ U, ((GV.filter fun x => a₀ + x + u ∈ B_R).card : ℝ≥0∞) := by
       have h_nat : J.card = ∑ u ∈ U, (J_filter u).card := Finset.card_sigma U J_filter
-      simpa [J, J_filter, Nat.cast_sum] using congrArg (fun n : ℕ => (n : ℝ≥0∞)) h_nat
+      simpa [J_filter] using congrArg (fun n : ℕ => (n : ℝ≥0∞)) h_nat
     have h_bij : J.card = I.card := by
       -- Use card_bij directly
       refine Finset.card_bij (s := J) (t := I)
@@ -751,7 +751,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
   have hX_card : (hX_fin.toFinset.card : ℝ≥0∞) = (hG_fin.toFinset.card : ℝ≥0∞) := by
     have heq : hX_fin.toFinset = hG_fin.toFinset.image (fun g : Λ => a₀ + (g : Fin f → ℂ)) := by
       ext x
-      simp [hX_fin.mem_toFinset, Finset.mem_image, hG_fin.mem_toFinset, h_map, Set.mem_image]
+      simp [Finset.mem_image, hG_fin.mem_toFinset, h_map, Set.mem_image]
     have hcard : hX_fin.toFinset.card = hG_fin.toFinset.card := by
       rw [heq]
       classical
@@ -763,12 +763,12 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     have h_tsum_eq : ∑' (g : Λ), B_R.indicator (fun _ => (1 : ℝ≥0∞)) (a₀ + (g : Fin f → ℂ))
         = ∑ g ∈ hG_fin.toFinset, (1 : ℝ≥0∞) := by
       rw [tsum_eq_sum (s := hG_fin.toFinset) (fun g hg => by
-        simp [Set.indicator_apply, show a₀ + (g : Fin f → ℂ) ∉ B_R from
+        simp [show a₀ + (g : Fin f → ℂ) ∉ B_R from
           fun h => hg (hG_fin.mem_toFinset.mpr h)])]
       apply Finset.sum_congr rfl
       intro g hg
       have hgB : a₀ + (g : Fin f → ℂ) ∈ B_R := hG_fin.mem_toFinset.mp hg
-      simp [Set.indicator_apply, hgB]
+      simp [hgB]
     rw [h_tsum_eq, hX_card]
     simp
   have h_count : ((I.card : ℝ) ≥ Real.exp (γ / 2 * (f : ℝ)) * hX_fin.toFinset.card) := by
