@@ -50,3 +50,5 @@ This work is completed fully by the following AI systems (with human verificatio
 - `DeepSeek-V4-Pro with Claude Code`
 
 - `Claude Sonnet 4.6`
+
+- `Gemini-3-Flash-Preview`
