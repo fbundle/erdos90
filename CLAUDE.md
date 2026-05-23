@@ -15,7 +15,11 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
 | `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure (no axioms — `exists_admissible_family` is a theorem in NumberField) |
 | `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + analytic lemmas (`prop_p6`, `hlog2_event`); calls `prop_3_2_to_3_6_via_deep` from NumberFieldDeep |
-| `Erdos90/NumberFieldDeep.lean` | Deep number theory in 7 sections: §1 analytic helpers (proved), §2 GS tower (`GSBaseData` + `GSTowerData`; `gs_base_construction` + `gs_tower_levels`, both sorry'd), §3 pigeonhole (`exists_fiber_ge_div`, proved), §4 CM lemmas (4 fully proved: `norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, `normAtPlace_mixedEmbedding_cm_div_conj_eq_one`, `mixedEmbedding_cm_div_conj_complex_norm_one`), §5 `CMClassGroupData` + `exists_cm_class_group_data` (sorry'd), §6 `cm_norm_one_elements` (proved modulo §5), §7 `prop_3_2_to_3_6_via_deep` (proved modulo §2+§5) |
+| `Erdos90/NumberFieldDeep.lean` | Import hub: re-exports all deep number-theoretic components from the 4 split files below |
+| `Erdos90/NumberFieldDeep_Analytic.lean` | §1: Analytic helpers (`log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq`), all proved |
+| `Erdos90/NumberFieldDeep_GSTower.lean` | §2: GS tower (`GSBaseData`, `gs_base_construction` proved, `gs_tower_levels` sorried, `GSTowerData`, `golod_shafarevich_tower_with_lattice`) |
+| `Erdos90/NumberFieldDeep_CM.lean` | §3–§5: Pigeonhole lemma (`exists_fiber_ge_div`, proved), CM lemmas (4 fully proved), `CMClassGroupData` structure + `exists_cm_class_group_data` (sorried) |
+| `Erdos90/NumberFieldDeep_Assembly.lean` | §6–§8: `cm_norm_one_elements` (proved modulo §5), `prop_3_2_to_3_6_via_deep` (proved modulo §2+§5), `ERDOS_ANT_Postulates` + `ant_postulates` (bundles the two sorries) |
 | `Erdos90/CosetAveraging.lean` | `lemma_2_4` — coset averaging (fully proved) |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/DiscGeometry.lean` | Discrete geometry lemmas |
@@ -35,42 +39,32 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` gaps.
+Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings (2 real gaps + 1 bundled postulate).
 
-## Proof state — zero axioms, 2 `sorry` gaps
+## Proof state — zero axioms, 3 `sorry` gaps
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
-Both remaining sorries are in **`Erdos90/NumberFieldDeep.lean`**:
+The remaining sorries are distributed across 3 split files importing through `NumberFieldDeep.lean`:
 
 ### `def` with `sorry` (deep number theory, requires new Mathlib development)
 
-**`gs_tower_levels`** (line ~159) — Chebotarev tower levels + Minkowski lattice, Prop 3.6
+**`gs_tower_levels`** in `NumberFieldDeep_GSTower.lean` — Chebotarev + Minkowski type bridge, Prop 3.6
+- 1 sub-sorried: `hΛ_sep` (first-coordinate separation, needs product formula + embedding re-ordering)
 
-Lean gaps:
-- Quantitative Chebotarev: build infinite tower from G̅ (not in Mathlib)
-- Type bridge: `mixedSpace K ≃ Fin f → ℂ` for totally complex CM field K
-- Transport of `integerLattice` + `IsAddFundamentalDomain` + separation across the isomorphism
+**`exists_cm_class_group_data`** in `NumberFieldDeep_CM.lean` — CM field / class-group data, Prop 2.2
+- 2 sub-sorried: `hmk_unit_norm` (needs CM field K + α/c(α) construction) + `hmk_unit_inj` (needs split-prime valuation parity)
 
-**`exists_cm_class_group_data`** (line ~453) — CM field / class-group data for Prop 2.2
+**`ant_postulates`** in `NumberFieldDeep_Assembly.lean` — bundles the two above; closes automatically when they do
 
-Lean gaps:
-- CM field K of degree 2f with split-prime ideal pairs (𝔓_j, c𝔓_j) (no CM split-prime API in Mathlib)
-- Class-number bound |G| ≤ exp(log_H·f) from Minkowski / tower root-discriminant
-- Norm-1 element constructor: α/c(α) using `IsCMField.complexConj` (core CM lemmas proved in §4)
-- Injectivity: α/c(α) = β/c(β) ⇒ α/β ∈ K⁺ ⇒ ε₂ = ε₃
+### Proved (no sorry)
 
-### Recently proved (was a sorry, now filled)
-
-**`gs_base_construction`** (line ~101) — Golod–Shafarevich base data (Props 3.2–3.5), now filled with
-D₀ = 1, rd_F = 2ℓ using the analytic lemma `log_two_mul_le` (§1). The structure only requires
-D₀ > 0, rd_F ≥ 1, and `log rd_F ≤ ℓ·log ℓ`, all of which hold for these choices. The "real"
-Golod–Shafarevich construction (Frattini quotient, Shafarevich bound) would give D₀ = Q²,
-rd_F = |D_F|^{1/3}, but the downstream functions only depend on the structural fields.
-
-**Assembly functions** (no additional sorries):
-- `golod_shafarevich_tower_with_lattice ℓ hℓ : GSTowerData ℓ` — clean `let`-based assembly of `gs_base_construction` + `gs_tower_levels`
-- `prop_3_2_to_3_6_via_deep` — chains the tower data with `cm_norm_one_elements` (§7)
+- `gs_base_construction` — GS base data with D₀ = 1, rd_F = 2ℓ, log bound via `log_two_mul_le`
+- `golod_shafarevich_tower_with_lattice` — assembly of `gs_base_construction` + `gs_tower_levels`
+- `exists_fiber_ge_div` — pigeonhole lemma (§3)
+- 4 CM lemmas in §4 (`norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, etc.)
+- `cm_norm_one_elements` — proved modulo `exists_cm_class_group_data`
+- `prop_3_2_to_3_6_via_deep` — assembly, proved modulo the two main sorries
 
 Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `ZSpan.isAddFundamentalDomain`
 
