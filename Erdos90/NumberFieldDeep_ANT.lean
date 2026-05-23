@@ -213,8 +213,9 @@ def cmComplexPlaceEquiv (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
 lemma cmMinkowskiEquiv_apply_complex (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f)
     (x : mixedEmbedding.mixedSpace K) (w : {w : InfinitePlace K // InfinitePlace.IsComplex w}) :
     cmMinkowskiEquiv K f hf x ((cmComplexPlaceEquiv K f hf) w) = x.2 w := by
-  dsimp [cmMinkowskiEquiv, cmComplexPlaceEquiv, mixedSpace_equiv_pi_fin_of_card]
-  simp
+  dsimp [cmMinkowskiEquiv, cmComplexPlaceEquiv, mixedSpace_equiv_pi_fin_of_card,
+    mixedSpace_equiv_complex_places, prod_left_isEmpty_equiv_snd]
+  rfl
 
 /-- The norm of `cmMinkowskiEquiv` at coordinate `cmComplexPlaceEquiv K f hf w`
     equals `mixedEmbedding.normAtPlace w`.  Bridges the Fin f coordinate norm
@@ -226,6 +227,20 @@ lemma cmMinkowskiEquiv_normAtPlace (f : ℕ) (hf : InfinitePlace.nrComplexPlaces
     mixedEmbedding.normAtPlace (w : InfinitePlace K) (NumberField.mixedEmbedding K (a : K)) := by
   rw [cmMinkowskiEquiv_apply_complex]
   rw [mixedEmbedding.normAtPlace_apply_of_isComplex w.prop]
+
+  /-- Transported basis: `mixedEmbedding.latticeBasis K` mapped through
+  `cmMinkowskiEquiv` to land in `Fin f → ℂ`.  This is an ℝ-basis that is also
+  a ℤ-basis of the transported integer lattice. -/
+def cmTransportedBasis (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
+    Module.Basis (Module.Free.ChooseBasisIndex ℤ (𝓞 K)) ℝ (Fin f → ℂ) :=
+  (mixedEmbedding.latticeBasis K).map (cmMinkowskiEquiv K f hf)
+
+/-- The CM Minkowski lattice: ℤ-span of the transported basis.
+  Concretely the image of `mixedEmbedding.integerLattice K` under the
+  Minkowski-space isomorphism `cmMinkowskiEquiv`. -/
+def cmMinkowskiLattice (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
+    AddSubgroup (Fin f → ℂ) :=
+  (Submodule.span ℤ (Set.range (cmTransportedBasis K f hf))).toAddSubgroup
 
 /-- Lattice membership characterization: `x` is in `cmMinkowskiLattice` iff it is the
     `cmMinkowskiEquiv` image of the mixed embedding of some algebraic integer. -/
@@ -302,21 +317,6 @@ lemma cmSeparation_exists (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComple
     exact hw
   refine ⟨idx, le_trans hD₀_inv_le_one hnorm⟩
 
-
-
-  /-- Transported basis: `mixedEmbedding.latticeBasis K` mapped through
-  `cmMinkowskiEquiv` to land in `Fin f → ℂ`.  This is an ℝ-basis that is also
-  a ℤ-basis of the transported integer lattice. -/
-def cmTransportedBasis (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    Module.Basis (Module.Free.ChooseBasisIndex ℤ (𝓞 K)) ℝ (Fin f → ℂ) :=
-  (mixedEmbedding.latticeBasis K).map (cmMinkowskiEquiv K f hf)
-
-/-- The CM Minkowski lattice: ℤ-span of the transported basis.
-  Concretely the image of `mixedEmbedding.integerLattice K` under the
-  Minkowski-space isomorphism `cmMinkowskiEquiv`. -/
-def cmMinkowskiLattice (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    AddSubgroup (Fin f → ℂ) :=
-  (Submodule.span ℤ (Set.range (cmTransportedBasis K f hf))).toAddSubgroup
 
 /-- Fundamental domain for the CM Minkowski lattice: the ZSpan fundamental domain
   of the transported basis.  By `ZSpan.isAddFundamentalDomain'` this is an

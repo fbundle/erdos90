@@ -1,0 +1,121 @@
+\providecommand{\bysame}{\leavevmode\hbox to3em{\hrulefill}\thinspace}
+\providecommand{\MR}{\relax\ifhmode\unskip\space\fi MR }
+% \MRhref is called by the amsart/book/proc definition of \MR.
+\providecommand{\MRhref}[2]{%
+  \href{http://www.ams.org/mathscinet-getitem?mr=#1}{#2}
+}
+\providecommand{\href}[2]{#2}
+\begin{thebibliography}{10}
+
+\bibitem{akhtari2025effective}
+Shabnam Akhtari, Jeffrey~D. Vaaler, and Martin Widmer, \emph{Effective equidistribution of norm one elements in {CM-fields}}, arXiv preprint arXiv:2507.10387, to appear in Annali della Scuola Normale Superiore di Pisa, Classe di Scienze (2025).
+
+\bibitem{Alon2025Typical}
+Noga Alon, Matija Buci\'c, and Lisa Sauermann, \emph{Unit and distinct distances in typical norms}, Geom. Funct. Anal. \textbf{35} (2025), 1--42.
+
+\bibitem{ApplebyFlammiaMcConnellYard2020RayClassFields}
+Marcus Appleby, Steven Flammia, Gary McConnell, and Jon Yard, \emph{Generating ray class fields of real quadratic fields via complex equiangular lines}, Acta Arithmetica \textbf{192} (2020), 211--233.
+
+\bibitem{Batyrev1998Manin}
+Victor~V. Batyrev and Yuri Tschinkel, \emph{Manin's conjecture for toric varieties}, J. Algebraic Geom. \textbf{7} (1998), 15--53.
+
+\bibitem{belolipetsky2012manifolds}
+Mikhail Belolipetsky and Alexander Lubotzky, \emph{Manifolds counting and class field towers}, Advances in Mathematics \textbf{229} (2012), 3123--3146.
+
+\bibitem{BloomErdosProblem90}
+Thomas~F. Bloom, \emph{Erd{\H{o}}s problem {\#}90}, \url{https://www.erdosproblems.com/90}, 2026, Accessed 2026-05-09.
+
+\bibitem{BorelPrasad1989Finiteness}
+Armand Borel and Gopal Prasad, \emph{Finiteness theorems for discrete subgroups of bounded covolume in semi-simple groups}, Publications Math{'e}matiques de l'IH{'E}S \textbf{69} (1989), 119--171.
+
+\bibitem{BMP}
+Peter Brass, William Moser, and J\'{a}nos Pach, \emph{Research problems in discrete geometry}, Springer, New York, 2005.
+
+\bibitem{BrassMoserPach2005}
+Peter Brass, William O.~J. Moser, and J{\'a}nos Pach, \emph{Research problems in discrete geometry}, Springer, New York, 2005.
+
+\bibitem{EllenbergVenkatesh2007Reflection}
+Jordan~S. Ellenberg and Akshay Venkatesh, \emph{Reflection principles and bounds for class group torsion}, International Mathematics Research Notices \textbf{2007} (2007), Art. ID rnm002, 18 pp.
+
+\bibitem{Er82e}
+Paul Erd\H{o}s, \emph{Some of my favourite problems which recently have been solved}, Proceedings of the International {M}athematical {C}onference, Singapore 1981 (Singapore, 1981), North-Holland Math. Stud., vol.~74, North-Holland, Amsterdam-New York, 1982, pp.~59--79.
+
+\bibitem{Er90}
+Paul Erd\H{o}s, \emph{Some of my favourite unsolved problems}, A tribute to Paul Erd\H{o}s (1990), 467--478.
+
+\bibitem{Er95}
+Paul Erd\H{o}s, \emph{Some of my favourite problems in number theory, combinatorics, and geometry}, Resenhas \textbf{2} (1995), 165--186, Combinatorics Week (Portuguese) (S\~Ao Paulo, 1994).
+
+\bibitem{Erdos1946SetsDistances}
+Paul Erd{\H{o}}s, \emph{On sets of distances of {$n$} points}, American Mathematical Monthly \textbf{53} (1946), 248--250.
+
+\bibitem{GolodShafarevich1964ClassFieldTower}
+E.~S. Golod and I.~R. Shafarevich, \emph{On the class field tower}, Izv. Akad. Nauk SSSR Ser. Mat. \textbf{28} (1964), 261--272 (Russian), English translation: Amer. Math. Soc. Transl. (2) 48 (1965), 91--102.
+
+\bibitem{GolodShafarevich1965ClassFieldTowersTranslation}
+E.~S. Golod and I.~R. Shafarevich, \emph{On class field towers}, Fourteen Papers on Logic, Algebra, Complex Variables and Topology, American Mathematical Society Translations, Series 2, vol.~48, American Mathematical Society, Providence, RI, 1965, English translation of the 1964 Russian paper, pp.~91--102.
+
+\bibitem{Guruswami2003Constructions}
+Venkatesan Guruswami, \emph{Constructions of codes from number fields}, IEEE Transactions on Information Theory \textbf{49} (2003), 594--603.
+
+\bibitem{GuthKatz2015DistinctDistances}
+Larry Guth and Nets~Hawk Katz, \emph{On the {E}rd{\H{o}}s distinct distances problem in the plane}, Annals of Mathematics \textbf{181} (2015), 155--190.
+
+\bibitem{hajir2001asymptotically}
+Farshid Hajir and Christian Maire, \emph{Asymptotically good towers of global fields}, European Congress of Mathematics, Vol. II (Barcelona, 2000) (Carles Casacuberta, Rosa~Maria Mir{\'o}-Roig, Joan Verdera, and Sebasti{\`a} Xamb{\'o}-Descamps, eds.), Progress in Mathematics, vol. 202, Birkh{\"a}user, Basel, 2001, pp.~207--218.
+
+\bibitem{hajir2021cutting}
+Farshid Hajir, Christian Maire, and Ravi Ramakrishna, \emph{Cutting towers of number fields}, Annales Math{\'e}matiques du Qu{\'e}bec \textbf{45} (2021), 321--345.
+
+\bibitem{Koch2002GaloisTheoryPExtensions}
+Helmut Koch, \emph{Galois theory of {$p$}-extensions}, Springer Monographs in Mathematics, Springer, Berlin, Heidelberg, 2002.
+
+\bibitem{Kopp2021SICPOVMStark}
+Gene~S. Kopp, \emph{{SIC-POVMs} and the {Stark} conjectures}, International Mathematics Research Notices (2021), 13812--13838.
+
+\bibitem{Lenstra1986Codes}
+Jr. Lenstra, H.~W., \emph{Codes from algebraic number fields}, Mathematics and Computer Science, II, CWI Monographs, vol.~4, North-Holland Publishing Co., Amsterdam, 1986, Proceedings of the conference held in Amsterdam, 1986, pp.~95--104.
+
+\bibitem{Liang2024QaryGV}
+Xue-Bin Liang, \emph{The $q$-ary gilbert-varshamov bound can be improved for all but finitely many positive integers $q$}, 2024, Preprint.
+
+\bibitem{LitsynTsfasman1987Constructive}
+S.~N. Litsyn and M.~A. Tsfasman, \emph{Constructive high-dimensional sphere packings}, Duke Mathematical Journal \textbf{54} (1987), 147--161.
+
+\bibitem{Littlewood1928}
+J.~E. Littlewood, \emph{On the class-number of the corpus $p(\sqrt{-k})$}, Proceedings of the London Mathematical Society \textbf{s2-27} (1928), 358–372.
+
+\bibitem{LuzziVehkalahtiLing2018AlmostUniversal}
+Laura Luzzi, Roope Vehkalahti, and Cong Ling, \emph{Almost universal codes for {MIMO} wiretap channels}, IEEE Transactions on Information Theory \textbf{64} (2018), 7218--7241.
+
+\bibitem{Maire2018}
+Christian Maire and Fr{\'e}d{\'e}rique Oggier, \emph{Maximal order codes over number fields}, Journal of Pure and Applied Algebra \textbf{222} (2018), 1827--1858.
+
+\bibitem{maynard2026sums}
+James Maynard, \emph{Sums of three positive cubes}, Journal of the London Mathematical Society \textbf{113} (2026), e70554.
+
+\bibitem{Shafarevich1963RamificationOriginal}
+Igor~R. Shafarevich, \emph{Extensions {\`a} points de ramification donn{\'e}s (en russe)}, Publications Math{\'e}matiques de l'IH{\'E}S \textbf{18} (1963), 71--92 (Russian).
+
+\bibitem{Shafarevich1966RamificationTranslation}
+Igor~R. Shafarevich, \emph{Extensions with given points of ramification}, American Mathematical Society Translations, Series 2 \textbf{59} (1966), 128--149, English translation by J. W. S. Cassels; title also cited as ``Extensions with prescribed ramification points''.
+
+\bibitem{SpencerSzemerediTrotter1984UnitDistances}
+Joel~H. Spencer, Endre Szemer{\'e}di, and William~T. Trotter, \emph{Unit distances in the euclidean plane}, Graph Theory and Combinatorics (B{\'e}la Bollob{\'a}s, ed.), Academic Press, London, 1984, Proceedings of the Cambridge Conference, 1983, pp.~293--303.
+
+\bibitem{Szekely1997CrossingNumbers}
+L{\'a}szl{\'o}~A. Sz{\'e}kely, \emph{Crossing numbers and hard {E}rd{\H{o}}s problems in discrete geometry}, Combinatorics, Probability and Computing \textbf{6} (1997), 353--358.
+
+\bibitem{Tsfasman1991GlobalFields}
+Michael~A. Tsfasman, \emph{Global fields, codes and sphere packings}, Ast{\'e}risque \textbf{198--200} (1991), 373--396.
+
+\bibitem{VehkalahtiLuzzi2015NumberField}
+Roope Vehkalahti and Laura Luzzi, \emph{Number field lattices achieve gaussian and rayleigh channel capacity within a constant gap}, 2015 IEEE International Symposium on Information Theory (ISIT), IEEE, 2015, pp.~436--440.
+
+\bibitem{Venkatesh2013SpherePackings}
+Akshay Venkatesh, \emph{A note on sphere packings in high dimension}, International Mathematics Research Notices (2013), 1628--1642.
+
+\bibitem{walfisz1942class}
+Walfisz, \emph{On the class-number of binary quadratic forms}, Trav. Inst. Math. Tbilissi \textbf{11} (1942), 57--71.
+
+\end{thebibliography}
