@@ -34,7 +34,7 @@ lake build
 
 Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps.
 
-## Proof state — zero axioms, 3 `sorry` gaps
+## Proof state — zero axioms, 2 `sorry` gaps
 
 All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
@@ -55,20 +55,27 @@ All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom`
 - `admissible_family_to_planar_set` (Theorem 2.3) — fully proven
 - `erdos_unit_distance_false` (Theorem 1.1) — fully proven
 - `erdos_bound_false` (contrapositive) — fully proven
-- `h_ineq` within `lemma_2_4` — algebraic inequality |U|·ρ(R)^f ≥ exp(γf/2) — fully proved
-- `h_unfold_vol` / `h_unfold` within `lemma_2_4` — measure-theoretic unfolding via fundamental domain — fully proved
+- `lemma_2_4` — coset averaging (all steps: algebraic inequality, measure-theoretic unfolding, ENNReal conversion, averaging principle, witness construction) — fully proved in `CosetAveraging.lean`
+- `h_ineq` / `h_unfold_vol` / `h_unfold` / `h_int_N` / `h_int_Eu` / `h_int_ineq` within `lemma_2_4` — all sub-steps fully proved
 - `disc_overlap_ratio_real` — area of intersection of two ℂ-discs = πR²·ρ(R) — fully proved
 - `polydisc_overlap_ratio_real` — Fubini product extension — fully proved
 - `hrho_pos` — positivity of ρ(R) for R > 1/2 — fully proved
-- `h_int_N` / `h_int_Eu` within `lemma_2_4` — integral identities from unfolding — fully proved
-- `h_int_ineq` within `lemma_2_4` — ENNReal conversion of h_overlap_sum (∑ vol(S_u) ≥ c·vol(B_R) in ℝ≥0∞) — fully proved
 
-### `def` with `sorry` (deep number theory / analysis, not in Mathlib)
-- `prop_3_2_to_3_6` — Golod–Shafarevich / Chebotarev tower construction
-- `prop_2_2` — Class-group pigeonhole for norm-1 elements
+### `def` with `sorry` (deep number theory, requires new Mathlib development)
 
-### Partially proved `def` (structural proof with `sorry` gaps)
-- `lemma_2_4` — coset averaging: algebraic + measure-theoretic unfolding proved, `h_int_ineq` (ENNReal conversion) now proved; final witness construction (averaging principle) remains as `sorry`
+**`prop_3_2_to_3_6`** — Golod–Shafarevich / Chebotarev tower construction
+
+Lean gaps (see docstring in `NumberField.lean`):
+- Type isomorphism `mixedSpace K ≃ Fin f → ℂ` for totally complex K, and transport of `integerLattice K` (a `Submodule ℤ (mixedSpace K)`) and `IsAddFundamentalDomain` across it
+- Separation bound ‖v(fin0)‖ ≥ D₀⁻¹ for the Minkowski lattice from the split-prime product formula
+Relevant Mathlib (available): `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `discr_prime_pow`, `isCMField`
+
+**`prop_2_2`** — Class-group pigeonhole for norm-1 elements
+
+Lean gaps (see docstring in `NumberField.lean`):
+- `prop_2_2` cannot be proved from its stated hypotheses: the abstract `hΛ_sep` does not supply the CM field structure needed to construct norm-one elements u_ε
+- Requires: CM split-prime API (not in Mathlib), explicit class-number bound h(K) ≤ H^f for tower fields, lifting elements into `AddSubgroup (Fin f → ℂ)`
+Relevant Mathlib (available): `exists_ideal_in_class_of_norm_le`, `Fintype.exists_ne_map_eq_of_card_lt`
 
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)
@@ -105,6 +112,17 @@ All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom`
 - `Set.vaddSet`/`Set.smulSet` instances are scoped under `Pointwise` — need `open scoped Pointwise` for `g +ᵥ F` notation on sets
 - `Set.indicator_apply` needs `[Decidable (a ∈ s)]` — wrap in `classical` when using
 - `measurable_add_const` is the lemma for `Measurable (· + c)` on additive groups (avoids `by continuity` timeouts on `Fin f → ℂ`)
+
+### Number field API (relevant to remaining sorries)
+
+All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
+- `mixedSpace K = ({w : InfinitePlace K // IsReal w} → ℝ) × ({w : InfinitePlace K // IsComplex w} → ℂ)` — NOT the same as `Fin f → ℂ`; for totally complex K need `Fintype.equivFin` + `LinearEquiv.piCongrLeft` to bridge
+- `fundamentalDomain_integerLattice` in `CanonicalEmbedding/Basic.lean` — `IsAddFundamentalDomain (integerLattice K) (ZSpan.fundamentalDomain (latticeBasis K))`
+- `volume_fundamentalDomain_latticeBasis` in same file — `volume (fundamentalDomain (latticeBasis K)) = (2)⁻¹^nrComplexPlaces K * sqrt ‖discr K‖₊`
+- `discr_prime_pow` in `Cyclotomic/Discriminant.lean` — explicit discriminant formula for ℚ(ζ_{p^k})
+- `IsCyclotomicExtension.isCMField` in `NumberField/Cyclotomic/Basic.lean` — cyclotomic extensions ℚ(ζ_n) with n > 2 are CM
+- `exists_ideal_in_class_of_norm_le` in `ClassNumber.lean` — every ideal class has a rep with norm ≤ Minkowski bound
+- `integerLattice K : Submodule ℤ (mixedSpace K)` (not `AddSubgroup`); convert via `Submodule.toAddSubgroup`
 
 ## Tips for continuing
 
