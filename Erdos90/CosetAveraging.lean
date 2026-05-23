@@ -614,16 +614,15 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     dsimp [E_fun, ind, I]
     -- E_fun a₀ = ∑ u ∈ U, ∑' (g : Λ), S_u u |>.indicator (fun _ => 1) (a₀ + g)
     classical
+    let GV : Finset (Fin f → ℂ) := hG_fin.toFinset.image Subtype.val
     have h_inner (u : Fin f → ℂ) (hu : u ∈ U) :
         ∑' (g : Λ), (S_u u).indicator (fun _ => (1 : ℝ≥0∞)) (a₀ + (g : Fin f → ℂ))
-        = ((hG_fin.toFinset.filter fun g => a₀ + (g : Fin f → ℂ) + u ∈ B_R).card : ℝ≥0∞) := by
+        = ((GV.filter fun x => a₀ + x + u ∈ B_R).card : ℝ≥0∞) := by
       have h_support (g : Λ) : (S_u u).indicator (fun _ => (1 : ℝ≥0∞)) (a₀ + (g : Fin f → ℂ)) =
           if a₀ + (g : Fin f → ℂ) + u ∈ B_R ∧ g ∈ G then (1 : ℝ≥0∞) else 0 := by
-        dsimp [S_u, G]
-        classical
+        dsimp [S_u, G]; classical
         simp only [Set.indicator_apply, Set.mem_inter_iff, Set.mem_setOf_eq]
-        congr 1
-        exact propext ⟨fun h => ⟨h.2, h.1⟩, fun h => ⟨h.2, h.1⟩⟩
+        congr 1; exact propext ⟨fun h => ⟨h.2, h.1⟩, fun h => ⟨h.2, h.1⟩⟩
       rw [tsum_congr (fun g => by rw [h_support g])]
       have h_support_finite (g : Λ) (hg : g ∉ hG_fin.toFinset) :
           (if a₀ + (g : Fin f → ℂ) + u ∈ B_R ∧ g ∈ G then (1 : ℝ≥0∞) else 0) = 0 := by
@@ -637,73 +636,112 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         have hgG : g ∈ G := hG_fin.mem_toFinset.mp hg
         dsimp [G] at hgG ⊢
         simp [hgG]
-      rw [h_sum_simp, ← Finset.sum_filter]
-      simp
-    let J := Finset.sigma U fun u => hG_fin.toFinset.filter fun g => a₀ + (g : Fin f → ℂ) + u ∈ B_R
-    have hJ_card : (J.card : ℝ≥0∞) = ∑ u ∈ U, ((hG_fin.toFinset.filter fun g => a₀ + (g : Fin f → ℂ) + u ∈ B_R).card : ℝ≥0∞) := by
-      simp [J, Finset.card_sigma]
+      rw [h_sum_simp]
+      have h_card_sum : (∑ g ∈ hG_fin.toFinset, (if a₀ + (g : Fin f → ℂ) + u ∈ B_R then (1 : ℝ≥0∞) else 0))
+          = ((GV.filter fun x => a₀ + x + u ∈ B_R).card : ℝ≥0∞) := by
+        have hinj : Set.InjOn Subtype.val (hG_fin.toFinset : Set Λ) := by
+          intro x hx y hy h
+          exact Subtype.ext h
+        have hsum : (∑ g ∈ hG_fin.toFinset, (if a₀ + (g : Fin f → ℂ) + u ∈ B_R then (1 : ℝ≥0∞) else 0))
+            = (∑ x ∈ GV, (if a₀ + x + u ∈ B_R then (1 : ℝ≥0∞) else 0)) := by
+          dsimp [GV]
+          have h := Finset.sum_image (f := fun x : Fin f → ℂ => if a₀ + x + u ∈ B_R then (1 : ℝ≥0∞) else 0) hinj
+          simpa using h.symm
+        have hsum2 : (∑ x ∈ GV, (if a₀ + x + u ∈ B_R then (1 : ℝ≥0∞) else 0))
+            = ((GV.filter fun x => a₀ + x + u ∈ B_R).card : ℝ≥0∞) := by
+          rw [← Finset.sum_filter, Finset.card_eq_sum_ones]
+          simp
+        calc
+          (∑ g ∈ hG_fin.toFinset, (if a₀ + (g : Fin f → ℂ) + u ∈ B_R then (1 : ℝ≥0∞) else 0))
+              = (∑ x ∈ GV, (if a₀ + x + u ∈ B_R then (1 : ℝ≥0∞) else 0)) := hsum
+          _ = ((GV.filter fun x => a₀ + x + u ∈ B_R).card : ℝ≥0∞) := hsum2
+      exact h_card_sum
+    let J_filter (u : Fin f → ℂ) : Finset (Fin f → ℂ) := GV.filter fun x => a₀ + x + u ∈ B_R
+    let J : Finset (Σ u : Fin f → ℂ, Fin f → ℂ) := Finset.sigma U J_filter
+    have hJ_card : (J.card : ℝ≥0∞) = ∑ u ∈ U, ((GV.filter fun x => a₀ + x + u ∈ B_R).card : ℝ≥0∞) := by
+      have h_nat : J.card = ∑ u ∈ U, (J_filter u).card := Finset.card_sigma U J_filter
+      simpa [J, J_filter, Nat.cast_sum] using congrArg (fun n : ℕ => (n : ℝ≥0∞)) h_nat
     have h_bij : J.card = I.card := by
-      dsimp [I]
-      let f : (Σ u : Fin f → ℂ, Λ) → (Fin f → ℂ) × (Fin f → ℂ) :=
-        fun x => (a₀ + (x.2 : Fin f → ℂ), a₀ + (x.2 : Fin f → ℂ) + x.1)
-      refine Finset.card_bij (s := J) (t := (hX_fin.toFinset ×ˢ hX_fin.toFinset).filter
-        (fun p : (Fin f → ℂ) × (Fin f → ℂ) => p.2 - p.1 ∈ U))
-        (fun a _ => f a) ?_ ?_ ?_
-      · intro a ha
-        -- a = ⟨u, g⟩ for some u ∈ U, g ∈ Λ with a₀+g+u ∈ B_R
-        rcases Finset.mem_sigma.mp ha with ⟨hu, hg⟩
-        rcases Finset.mem_filter.mp hg with ⟨hg_finset, hcond⟩
+      -- Use card_bij directly
+      refine Finset.card_bij (s := J) (t := I)
+        (fun a _ha => (a₀ + a.2, a₀ + a.2 + a.1)) ?_ ?_ ?_
+      · -- hi: image is in I
+        intro a ha
+        rcases Finset.mem_sigma.mp ha with ⟨hu, hg_mem⟩
+        rcases Finset.mem_filter.mp hg_mem with ⟨hg_finset, hcond⟩
+        -- hg_finset : a.2 ∈ GV = hG_fin.toFinset.image Subtype.val
+        have ha2_mem_image : a.2 ∈ hG_fin.toFinset.image Subtype.val := by
+          dsimp [GV] at hg_finset; exact hg_finset
+        rcases Finset.mem_image.mp ha2_mem_image with ⟨g, hg_finset_orig, hg_val⟩
+        -- hg_val : Subtype.val g = a.2
+        dsimp [I]
         rw [Finset.mem_filter]
         constructor
         · rw [Finset.mem_product]
           constructor
-          · rw [hX_fin.mem_toFinset, h_map]
-            refine ⟨a.2, hG_fin.mem_toFinset.mp hg_finset, rfl⟩
-          · rw [hX_fin.mem_toFinset, h_map]
-            refine ⟨a.2, hcond, add_assoc _ _ _⟩
-        · dsimp [f]
-          simp
-      · intro a₁ ha₁ a₂ ha₂ h_eq
+          · -- a₀ + a.2 ∈ hX_fin.toFinset
+            rw [hX_fin.mem_toFinset, h_map, ← hg_val]
+            exact ⟨g, hG_fin.mem_toFinset.mp hg_finset_orig, rfl⟩
+          · -- a₀ + a.2 + a.1 ∈ hX_fin.toFinset
+            have hu_Λ : a.1 ∈ Λ := hU_in_Λ a.1 hu
+            let g' : Λ := g + ⟨a.1, hu_Λ⟩
+            have hg'G : g' ∈ G := by
+              dsimp [G, g']
+              rw [← hg_val] at hcond
+              simpa [add_assoc] using hcond
+            have h_eq : a₀ + (g' : Fin f → ℂ) = a₀ + a.2 + a.1 := by
+              dsimp [g']; rw [hg_val]; simp [add_assoc]
+            rw [hX_fin.mem_toFinset, h_map]
+            exact ⟨g', hg'G, h_eq⟩
+        · -- (a₀ + a.2 + a.1) - (a₀ + a.2) = a.1 ∈ U
+          have : (a₀ + a.2 + a.1) - (a₀ + a.2) = a.1 := by abel
+          rw [this]
+          exact hu
+      · -- i_inj
+        intro a₁ ha₁ a₂ ha₂ h_eq
         rcases Finset.mem_sigma.mp ha₁ with ⟨hu₁, hg₁⟩
         rcases Finset.mem_sigma.mp ha₂ with ⟨hu₂, hg₂⟩
-        dsimp [f] at h_eq
         rcases Prod.mk.inj h_eq with ⟨h_first, h_second⟩
-        have hg_coe_eq : (a₁.2 : Fin f → ℂ) = (a₂.2 : Fin f → ℂ) := add_left_cancel h_first
+        have hg_eq : a₁.2 = a₂.2 := add_left_cancel h_first
         have hu_eq : a₁.1 = a₂.1 := by
-          rw [hg_coe_eq] at h_second
+          rw [hg_eq] at h_second
           exact add_left_cancel h_second
-        exact Sigma.ext hu_eq (Subtype.ext hg_coe_eq)
-      · intro p hp
+        exact Sigma.ext hu_eq (heq_of_eq hg_eq)
+      · -- i_surj
+        intro p hp
         rw [Finset.mem_filter] at hp
         rcases hp with ⟨hp_prod, hpU⟩
         rcases Finset.mem_product.mp hp_prod with ⟨hx, hy⟩
         rw [hX_fin.mem_toFinset, h_map] at hx hy
-        rcases hx with ⟨gx, hgxG, rfl⟩
-        rcases hy with ⟨gy, hgyG, hgy_eq⟩
+        rcases hx with ⟨gx, hgxG, hx_eq⟩
+        rcases hy with ⟨gy, hgyG, hy_eq⟩
+        have hx_eq' : p.1 = a₀ + (gx : Fin f → ℂ) := by simpa using hx_eq.symm
+        have hy_eq' : p.2 = a₀ + (gy : Fin f → ℂ) := by simpa using hy_eq.symm
         let u := p.2 - p.1
         have hu_U : u ∈ U := by
-          dsimp [u]
-          -- p.2 - p.1 ∈ U is exactly hpU since p.1 = a₀ + gx
-          -- But we need to be careful: p.2 - p.1 is already the expression in hpU
-          simpa using hpU
-        have ha0gxu_BR : a₀ + (gx : Fin f → ℂ) + u ∈ B_R := by
-          dsimp [u]
-          -- p.2 = a₀ + gy, p.1 = a₀ + gx, so p.2 - p.1 + p.1 = p.2 = a₀ + gy ∈ B_R
-          calc
-            a₀ + (gx : Fin f → ℂ) + (p.2 - p.1) = p.2 := by
-              dsimp
-              rw [hgy_eq]
-              abel
-            _ = a₀ + (gy : Fin f → ℂ) := by rw [hgy_eq]
-            _ ∈ B_R := hgyG
+          simpa [u] using hpU
         have hgx_finset : gx ∈ hG_fin.toFinset := hG_fin.mem_toFinset.mpr hgxG
-        refine ⟨⟨u, gx⟩, Finset.mem_sigma.mpr ⟨hu_U,
-          Finset.mem_filter.mpr ⟨hgx_finset, ha0gxu_BR⟩⟩, ?_⟩
-        dsimp [f, u]
-        ext <;> abel
+        have hgx_GV : (gx : Fin f → ℂ) ∈ GV := by
+          dsimp [GV]
+          exact Finset.mem_image.mpr ⟨gx, hgx_finset, rfl⟩
+        have ha0gxu_BR : a₀ + (gx : Fin f → ℂ) + u ∈ B_R := by
+          have h_eq_temp : a₀ + (gx : Fin f → ℂ) + (p.2 - p.1) = a₀ + (gy : Fin f → ℂ) := by
+            rw [hx_eq', hy_eq']; abel
+          dsimp [u]; rw [h_eq_temp]; exact hgyG
+        refine ⟨⟨u, (gx : Fin f → ℂ)⟩, Finset.mem_sigma.mpr ⟨hu_U,
+          Finset.mem_filter.mpr ⟨hgx_GV, ha0gxu_BR⟩⟩, ?_⟩
+        ext x
+        · simpa using congrArg (fun f => f x) hx_eq'.symm
+        · dsimp [u]
+          have h_eq : a₀ + (gx : Fin f → ℂ) + (p.2 - p.1) = p.2 := by
+            calc
+              a₀ + (gx : Fin f → ℂ) + (p.2 - p.1) = a₀ + (gy : Fin f → ℂ) := by
+                rw [hx_eq', hy_eq']; abel
+              _ = p.2 := hy_eq'.symm
+          simpa using congrArg (fun f => f x) h_eq
     calc
       ∑ u ∈ U, ∑' (g : Λ), (S_u u).indicator (fun _ => (1 : ℝ≥0∞)) (a₀ + (g : Fin f → ℂ))
-          = ∑ u ∈ U, ((hG_fin.toFinset.filter fun g => a₀ + (g : Fin f → ℂ) + u ∈ B_R).card : ℝ≥0∞) := by
+          = ∑ u ∈ U, ((GV.filter fun x => a₀ + x + u ∈ B_R).card : ℝ≥0∞) := by
         refine Finset.sum_congr rfl (fun u hu => by rw [h_inner u hu])
       _ = (J.card : ℝ≥0∞) := by
         rw [← hJ_card]
