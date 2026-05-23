@@ -47,8 +47,8 @@ Co-Authored-By: DeepSeek-V4-Pro with Claude Code
 
 This work is completed fully by the following AI systems (with human verification and emotional support):
 
-- `DeepSeek-V4-Pro with Claude Code`
+- `DeepSeek-V4-Pro with Claude Code` - main proof writer (80%)
 
-- `Claude Sonnet 4.6`
+- `Claude Sonnet 4.6` - secondary proof writer (20%)
 
-- `Gemini-3-Flash-Preview`
+- `Gemini-3-Flash-Preview` - search engine
