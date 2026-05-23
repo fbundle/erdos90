@@ -4,6 +4,21 @@ Search date: 2026-05-23. All paths under vendor/mathlib4/Mathlib/.
 
 ---
 
+## 0. Chebotarev Density Theorem in Lean4/Mathlib
+
+**Status: ADVANCED DEVELOPMENT (May 2026)**
+
+- **Project**: `PrimeNumberTheoremAnd` (PNT+) led by Terence Tao and Alex Kontorovich.
+- **Goal**: Formalizing CDT as a prerequisite for Fermat's Last Theorem (Kevin Buzzard's project).
+- **Status**: 
+    - Dirichlet's Theorem for Primes in Arithmetic Progressions: **DONE**.
+    - Prime Number Theorem (with error term): **DONE**.
+    - Full Chebotarev Density Theorem: Most analytic and algebraic lemmas are finished; full merge into Mathlib expected by late 2026.
+    - Frobenius elements and Artin symbols are now available in the project's repository.
+- **Source**: `https://github.com/AlexKontorovich/PrimeNumberTheoremAnd`
+
+---
+
 ## 1. CM Field API (`NumberField/CMField.lean`)
 
 ```
