@@ -3,6 +3,7 @@ import Erdos90.Defs
 import Erdos90.Arithmetic
 import Erdos90.DiscGeometry
 import Erdos90.CosetAveraging
+import Erdos90.NumberFieldDeep
 
 open Real Filter NumberField Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex intervalIntegral Pointwise
@@ -106,26 +107,19 @@ def prop_3_2_to_3_6 :
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
       ∀ (M : ℕ),
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
-        (hΛ_countable : Countable Λ) (F : Set (Fin f → ℂ)),
+        (_ : Countable Λ) (F : Set (Fin f → ℂ)),
         IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-        (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) := by
-  -- C_rd = 1 suffices: log(rd_F) ≤ log(2ℓ) ≤ ℓ · log ℓ for any ℓ ≥ 2.
-  refine ⟨1, by norm_num, fun ℓ hℓ => ?_⟩
-  have hℓ_pos : (0 : ℝ) < ℓ := by exact_mod_cast Nat.pos_of_ne_zero (by omega)
-  -- For each ℓ, the tower construction gives D₀ > 0 and rd_F ∈ [1, 2ℓ] with the
-  -- log bound, plus an infinite sequence of lattices with growing degree and fixed
-  -- separation D₀⁻¹.  The content of Props 3.2–3.6 (Golod–Shafarevich + Chebotarev)
-  -- and the Minkowski-to-Fin-f isomorphism are recorded as a single sorry here;
-  -- see the docstring above for the complete mathematical argument.
-  --
-  -- Provable sub-facts used below (if the tower witness were supplied):
-  --   • rd_F ≥ 1:  follows from |discr K| ≥ 1 for any number field K ≠ ℚ
-  --   • log(rd_F) ≤ ℓ · log ℓ:  holds for rd_F ≤ 2ℓ and ℓ ≥ 2
-  --       (log(2ℓ) = log 2 + log ℓ ≤ ℓ · log ℓ iff log 2 ≤ (ℓ-1) · log ℓ, true for ℓ ≥ 2)
-  --   • IsAddFundamentalDomain:  `fundamentalDomain_integerLattice` (Mathlib)
-  --   • volume F < ∞:             `volume_fundamentalDomain_latticeBasis` (Mathlib)
-  --   • Countable Λ:              from Submodule ℤ structure (Mathlib)
-  sorry
+        (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :=
+  -- Delegate to the structured proof in NumberFieldDeep.lean.
+  -- That file consolidates three sorry'd gaps (each with a detailed docstring):
+  --   (a) golod_shafarevich_tower_with_lattice: infinite pro-3 tower + Chebotarev split primes
+  --       → produces D₀, rd_F, and tower levels fⱼ → ∞  (Props 3.2–3.6)
+  --   (b) Type bridge: mixedSpace K_j ≃ Fin f_j → ℂ, and transport of
+  --       integerLattice + IsAddFundamentalDomain + product-formula separation
+  --       → Lean currently lacks this isomorphism + the D₀-separation API
+  -- The only non-sorry'd step (log rd_F ≤ C_rd · ℓ · log ℓ for C_rd = 1) is proved
+  -- in log_two_mul_le in NumberFieldDeep.lean.
+  prop_3_2_to_3_6_via_deep
 
 /-! ## Proposition 2.2: Norm-one elements and coset averaging
 
@@ -191,14 +185,15 @@ def prop_2_2 (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (t log_H 
     ∃ (U : Finset (Fin f → ℂ)),
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
       (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
-      ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
-  -- Norm-one element construction and class-group pigeonhole.
-  -- See docstring for the complete proof sketch.
-  -- Key Mathlib lemmas available: exists_ideal_in_class_of_norm_le (ClassNumber.lean),
-  -- Fintype.exists_ne_map_eq_of_card_lt (pigeonhole), discr_prime_pow (Cyclotomic.lean).
-  -- Lean gap: connecting the abstract Λ to a specific CM field K from prop_3_2_to_3_6
-  -- and constructing the norm-one elements u_ε within that field.
-  sorry
+      ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) :=
+  -- Delegate to cm_norm_one_elements in NumberFieldDeep.lean.
+  -- That function carries a single targeted sorry for the CM class-group construction:
+  --   · CM split-prime ideal API: constructing {𝔓_s, c𝔓_s} for each q_b (not in Mathlib)
+  --   · ClassGroup pigeonhole: `Fintype.exists_ne_map_eq_of_card_lt` IS in Mathlib, but
+  --     the map ε ↦ [𝔄_ε] ∈ ClassGroup K and the norm-one quotient u_ε = αε/c(αε)
+  --     require the CM field structure not yet available abstractly in Mathlib
+  --   · Lifting u_ε into AddSubgroup (Fin f → ℂ) via the type bridge from §2
+  cm_norm_one_elements f hf1 D₀ hD₀ t log_H ht hγ Λ hΛ_sep
 
 /-! ## Lemma 2.4: Coset averaging (proved theorem)
 
