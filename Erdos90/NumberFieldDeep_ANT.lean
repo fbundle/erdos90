@@ -215,7 +215,7 @@ lemma cmMinkowskiEquiv_apply_complex (f : ℕ) (hf : InfinitePlace.nrComplexPlac
     cmMinkowskiEquiv K f hf x ((cmComplexPlaceEquiv K f hf) w) = x.2 w := by
   dsimp [cmMinkowskiEquiv, cmComplexPlaceEquiv, mixedSpace_equiv_pi_fin_of_card,
     mixedSpace_equiv_complex_places, prod_left_isEmpty_equiv_snd]
-  rfl
+  simp
 
 /-- The norm of `cmMinkowskiEquiv` at coordinate `cmComplexPlaceEquiv K f hf w`
     equals `mixedEmbedding.normAtPlace w`.  Bridges the Fin f coordinate norm
@@ -258,7 +258,12 @@ lemma mem_cmMinkowskiLattice_iff (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K
             (cmMinkowskiEquiv K f hf))) := rfl
       _ = Submodule.span ℤ ((cmMinkowskiEquiv K f hf) ''
           Set.range (mixedEmbedding.latticeBasis K)) := by
-        congr; ext z; simp [cmTransportedBasis]
+        have h_range_eq : Set.range ((mixedEmbedding.latticeBasis K).map
+            (cmMinkowskiEquiv K f hf)) =
+            (cmMinkowskiEquiv K f hf) ''
+              Set.range (mixedEmbedding.latticeBasis K) := by
+          ext z; simp
+        rw [h_range_eq]
       _ = Submodule.map ((cmMinkowskiEquiv K f hf).toLinearMap.restrictScalars ℤ)
           (Submodule.span ℤ (Set.range (mixedEmbedding.latticeBasis K))) := by
         simp [Submodule.map_span]
@@ -275,17 +280,16 @@ lemma mem_cmMinkowskiLattice_iff (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K
     rw [← hy_eq]
     have ha_simp : ((mixedEmbedding K).comp (algebraMap (𝓞 K) K)).toIntAlgHom.toLinearMap a =
         NumberField.mixedEmbedding K (a : K) := by simp
-    simp [ha_simp, ha]
+    simpa [ha_simp] using ha
   · intro ⟨a, ha⟩
-    rw [ha]
+    rw [← ha]
     apply Submodule.mem_map.mpr
     have h_mem : NumberField.mixedEmbedding K (a : K) ∈
         mixedEmbedding.integerLattice K := by
       apply LinearMap.mem_range.mpr
       refine ⟨a, ?_⟩
       simp
-    exact ⟨NumberField.mixedEmbedding K (a : K), h_mem, by
-      dsimp; rfl⟩
+    exact ⟨NumberField.mixedEmbedding K (a : K), h_mem, rfl⟩
 
 /-- **Separation — existence version** (proved).
     For any nonzero `v` in the CM Minkowski lattice and `D₀ ≥ 1`,
