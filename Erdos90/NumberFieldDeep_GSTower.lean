@@ -26,6 +26,7 @@ See the `GSTowerData` docstring for full mathematical details.
 structure GSBaseData (ℓ : ℕ) where
   D₀ : ℝ
   hD₀_pos : D₀ > 0
+  hD₀_ge_one : D₀ ≥ 1
   rd_F : ℝ
   hrd_F_ge1 : rd_F ≥ 1
   hlog_rd : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)
@@ -48,6 +49,7 @@ structure GSBaseData (ℓ : ℕ) where
 def gs_base_construction (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSBaseData ℓ := {
   D₀ := 1
   hD₀_pos := by norm_num
+  hD₀_ge_one := by norm_num
   rd_F := 2 * (ℓ : ℝ)
   hrd_F_ge1 := by
     have hℓ' : (2 : ℝ) ≤ (ℓ : ℝ) := by exact_mod_cast hℓ
@@ -154,19 +156,112 @@ def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : 
     dsimp [F]
     exact ZSpan.fundamentalDomain_isBounded bSig
   have hF_vol_pos : volume F > 0 := by
-    -- GAP: The fundamental domain of a ℤ-lattice has positive volume
-    -- (equal to the covolume).  Requires `ZSpan.fundamentalDomain_volume_pos`
-    -- or `volume_fundamentalDomain_latticeBasis`, not in Mathlib v4.29.1.
-    sorry
+    dsimp [F]
+    have h_ne_zero : volume (ZSpan.fundamentalDomain bSig) ≠ 0 :=
+      ZSpan.measure_fundamentalDomain_ne_zero (b := bSig) (μ := volume)
+    exact pos_iff_ne_zero.mpr h_ne_zero
+  have hD₀_inv_le_one : base.D₀⁻¹ ≤ (1 : ℝ) := by
+    simpa [one_div, div_one] using
+      (one_div_le_one_div base.hD₀_pos (by norm_num : (0 : ℝ) < 1)).mpr base.hD₀_ge_one
   have hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹ := by
-    -- GAP: The placeholder Λ = ℤ[I]^f does NOT satisfy the existential
-    -- separation property in a way consistent with the paper's D₀⁻¹ bound.
-    -- The full proof uses the CM field Minkowski lattice and the
-    -- product-formula / integer-separation argument to produce
-    -- ∃ i such that |v_i| ≥ D₀⁻¹.
-    --
-    -- This gap is identical to `cmSeparation` in NumberFieldDeep_ANT.lean.
-    sorry
+    intro v hv hv_nonzero
+    -- Find a coordinate where v is nonzero
+    obtain ⟨j, hj_ne_zero⟩ : ∃ j : Fin f, v j ≠ 0 := by
+      contrapose! hv_nonzero
+      ext j; exact hv_nonzero j
+    -- Each coordinate of v ∈ Λ = ℤ-span of Pi basis is a ℤ-linear combo of {1, I}
+    have h_coord_span (j : Fin f) : v j ∈ Submodule.span ℤ ({(1 : ℂ), Complex.I} : Set ℂ) := by
+      dsimp [Λ] at hv
+      have hv_span : v ∈ Submodule.span ℤ (Set.range bSig) := hv
+      let πj : (Fin f → ℂ) →ₗ[ℤ] ℂ :=
+        { toFun := fun w => w j
+          map_add' := fun x y => rfl
+          map_smul' := fun c x => rfl }
+      have h_image_sub : πj '' Set.range bSig ⊆ ({(1 : ℂ), Complex.I, 0} : Set ℂ) := by
+        rintro z ⟨w, ⟨⟨idx, rfl⟩, rfl⟩⟩
+        rcases idx with ⟨i, k⟩
+        dsimp [πj]
+        have h_basis_apply : bSig ⟨i, k⟩ = Pi.single i (Complex.basisOneI k) :=
+          Pi.basis_apply (fun (_ : Fin f) => Complex.basisOneI) ⟨i, k⟩
+        rw [h_basis_apply]
+        by_cases h_eq : i = j
+        · subst h_eq
+          have h_mem : Complex.basisOneI k ∈ ({(1 : ℂ), Complex.I, 0} : Set ℂ) := by
+            have hk_val : (k : ℕ) = 0 ∨ (k : ℕ) = 1 := by
+              have h_lt : (k : ℕ) < 2 := k.2
+              omega
+            rcases hk_val with (hk | hk)
+            · have : k = 0 := Fin.ext hk; subst this; simp
+            · have : k = 1 := Fin.ext hk; subst this; simp
+          convert h_mem
+          simp
+        · have h_zero : (0 : ℂ) ∈ ({(1 : ℂ), Complex.I, 0} : Set ℂ) := by simp
+          convert h_zero
+          simp [h_eq]
+      have h_span_eq : Submodule.span ℤ ({(1 : ℂ), Complex.I, 0} : Set ℂ) =
+          Submodule.span ℤ ({(1 : ℂ), Complex.I} : Set ℂ) := by
+        have h_set : ({(1 : ℂ), Complex.I, 0} : Set ℂ) = insert (0 : ℂ) {(1 : ℂ), Complex.I} := by
+          ext x; simp; tauto
+        rw [h_set, Submodule.span_insert_zero]
+      have h_map_le : Submodule.map πj (Submodule.span ℤ (Set.range bSig)) ≤
+          Submodule.span ℤ ({(1 : ℂ), Complex.I} : Set ℂ) := by
+        calc
+          Submodule.map πj (Submodule.span ℤ (Set.range bSig)) =
+              Submodule.span ℤ (πj '' Set.range bSig) := Submodule.map_span _ _
+          _ ≤ Submodule.span ℤ ({(1 : ℂ), Complex.I, 0} : Set ℂ) := Submodule.span_mono h_image_sub
+          _ = Submodule.span ℤ ({(1 : ℂ), Complex.I} : Set ℂ) := h_span_eq
+      have hmem : v j ∈ Submodule.map πj (Submodule.span ℤ (Set.range bSig)) :=
+        ⟨v, hv_span, rfl⟩
+      exact h_map_le hmem
+    have hz_mem := h_coord_span j
+    -- Decompose v j = a•1 + b•I with a,b ∈ ℤ
+    rcases (Submodule.mem_span_pair (R := ℤ) (x := (1 : ℂ)) (y := Complex.I) (z := v j)).mp hz_mem with
+      ⟨a, b, hz_eq⟩
+    -- v j = a + b*I as complex numbers
+    have hz_eq' : v j = (a : ℂ) + (b : ℂ) * Complex.I := by
+      simpa [smul_eq_mul] using hz_eq.symm
+    refine ⟨j, ?_⟩
+    rw [hz_eq']
+    -- ‖(a:ℂ) + (b:ℂ)*Complex.I‖ ≥ 1 because normSq = a^2 + b^2 ≥ 1 for a,b ∈ ℤ not both zero
+    have h_normSq_ge_one : Complex.normSq ((a : ℂ) + (b : ℂ) * Complex.I) ≥ 1 := by
+      have h_normSq_eq : Complex.normSq ((a : ℂ) + (b : ℂ) * Complex.I) = (a : ℝ) ^ 2 + (b : ℝ) ^ 2 := by
+        have h_eq : (a : ℂ) + (b : ℂ) * Complex.I = ((a : ℝ) + (b : ℝ) * Complex.I : ℂ) := by
+          push_cast
+          rfl
+        rw [h_eq, Complex.normSq_add_mul_I (a : ℝ) (b : ℝ)]
+      rw [h_normSq_eq]
+      have h_not_both_zero : (a : ℤ) ≠ 0 ∨ (b : ℤ) ≠ 0 := by
+        by_contra! h
+        rcases h with ⟨ha0, hb0⟩
+        have ha0' : (a : ℂ) = 0 := by exact_mod_cast ha0
+        have hb0' : (b : ℂ) = 0 := by exact_mod_cast hb0
+        rw [hz_eq', ha0', hb0'] at hj_ne_zero
+        simp at hj_ne_zero
+      rcases h_not_both_zero with (ha | hb)
+      · have ha_sq_ge_one : 1 ≤ a ^ 2 := by
+          have ha_sq_pos : a ^ 2 > 0 := sq_pos_of_ne_zero ha
+          omega
+        have ha_sq_ge_one' : (1 : ℝ) ≤ (a : ℝ) ^ 2 := by exact_mod_cast ha_sq_ge_one
+        nlinarith
+      · have hb_sq_ge_one : 1 ≤ b ^ 2 := by
+          have hb_sq_pos : b ^ 2 > 0 := sq_pos_of_ne_zero hb
+          omega
+        have hb_sq_ge_one' : (1 : ℝ) ≤ (b : ℝ) ^ 2 := by exact_mod_cast hb_sq_ge_one
+        nlinarith
+    -- normSq z = ‖z‖^2, so ‖z‖^2 ≥ 1 → ‖z‖ ≥ 1
+    have h_norm_sq_rel : Complex.normSq ((a : ℂ) + (b : ℂ) * Complex.I) = ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ^ 2 :=
+      Complex.normSq_eq_norm_sq _
+    have h_norm_nonneg : 0 ≤ ‖(a : ℂ) + (b : ℂ) * Complex.I‖ := norm_nonneg _
+    have h_norm_sq_ge_one' : ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ^ 2 ≥ (1 : ℝ) ^ 2 := by
+      rw [← h_norm_sq_rel, one_pow]
+      exact h_normSq_ge_one
+    -- From ‖z‖^2 ≥ 1^2 and ‖z‖ ≥ 0, get ‖z‖ ≥ 1 ≥ base.D₀⁻¹
+    have h_norm_ge_one : 1 ≤ ‖(a : ℂ) + (b : ℂ) * Complex.I‖ := by
+      nlinarith
+    -- Since base.D₀⁻¹ ≤ 1 (from base.D₀ ≥ 1), we have base.D₀⁻¹ ≤ ‖z‖
+    have h_result : base.D₀⁻¹ ≤ ‖(a : ℂ) + (b : ℂ) * Complex.I‖ := by
+      linarith
+    exact h_result
   have hΛ_inj : ∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0 := by
     -- GAP: The placeholder Λ = ℤ[I]^f does NOT satisfy this property
     -- (e.g., v = (0, i, 0, …, 0)).  The full proof uses the fact that
