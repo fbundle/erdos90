@@ -386,18 +386,14 @@ def exists_cm_class_group_data
   let mk_unit : E → E → Fin f → ℂ :=
     fun ε₁ ε₂ => (0 : Fin f → ℂ)  -- placeholder zero vector
   have hmk_unit_mem_Λ : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → mk_unit ε₁ ε₂ ∈ Λ := by
-    -- With the placeholder φ (constant map), all ε satisfy φ ε₁ = φ ε₂,
-    -- so we need mk_unit ε₁ ε₂ ∈ Λ for ANY ε₁ ≠ ε₂.  The zero vector
-    -- is in every AddSubgroup, so this holds.  (The real mk_unit would
-    -- return α/c(α) ∈ D₀⁻¹·𝒪_K which lies in Λ by construction.)
     intro ε₁ ε₂ _hne _heq
     -- 0 ∈ Λ because Λ is an AddSubgroup (contains zero)
     exact AddSubgroup.zero_mem Λ
   have hmk_unit_norm : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → ∀ r, ‖mk_unit ε₁ ε₂ r‖ = 1 := by
-    -- The placeholder mk_unit returns the zero vector, so ‖0 r‖ = ‖0‖ = 0 ≠ 1.
-    -- This is genuinely sorried; the correct proof uses §4 lemma
+    -- Genuinely sorried: the correct proof uses §4 lemma
     --   cm_norm_div_conj_eq_one α hα (embedding corresponding to r)
     -- which shows ‖σ_r(α / c(α))‖ = 1 for every complex embedding σ_r.
+    -- Cannot be proved with the placeholder zero vector (‖0‖ = 0 ≠ 1).
     sorry  -- Sub‑sorried: needs CM field K + choice of α + §4 lemma application
   have hmk_unit_inj : ∀ ε₁ ε₂ ε₃, ε₁ ≠ ε₂ → ε₁ ≠ ε₃ → φ ε₁ = φ ε₂ → φ ε₁ = φ ε₃ →
       mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃ → ε₂ = ε₃ := by

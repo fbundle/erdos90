@@ -26,15 +26,16 @@ from five specialized files:
    `ERDOS_ANT_Postulates`, and `ant_postulates` (bundles the two sorries).
 
 5. **`NumberFieldDeep_ANT.lean`** — Sawin parameters (§Sawin), product formula
-   separation (sorried, proved mathematically), Minkowski lattice transport
-   (`cmMinkowskiEquiv` proved, 6 infrastructure defs/lemmas sorried),
-   tower postulate `sawin_tower_exists` (1 sorry), `gs_tower_levels_v2` (sorried),
-   `exists_cm_class_group_data_v2` (sorried). 12 sorries total.
+   separation (proved), integer separation (proved), Minkowski lattice transport
+   (`cmMinkowskiEquiv` proved, `cmTransportedBasis`, `cmMinkowskiLattice`,
+   `cmFundamentalDomain`, and 3 properties proved; `cmSeparation` sorried),
+   tower postulate `sawin_tower_exists` (1 sorry), `gs_tower_levels_v2` and
+   `exists_cm_class_group_data_v2` (delegate to v1). 2 deep sorries remain.
 
-The remaining `sorry` gaps:
-- `gs_tower_levels` (GSTower) / `gs_tower_levels_v2` (ANT) — separated into
-  `sawin_tower_exists` (tower postulate) + `cmSeparation` (embedding reordering)
-- `exists_cm_class_group_data` (CM) / `exists_cm_class_group_data_v2` (ANT) —
-  requires CM field class-group API + split-prime valuation parity
-- `ant_postulates` (Assembly) — bundles the above; closes automatically when they do
+The remaining `sorry` gaps (7 total across 5 declarations):
+- `hΛ_sep` within `gs_tower_levels` (GSTower) — first-coordinate separation
+- `hmk_unit_norm` + `hmk_unit_inj` within `exists_cm_class_group_data` (CM) — α/c(α) construction
+- `ant_postulates` (Assembly, 2 sorries) — bundles the above
+- `cmSeparation` (ANT) — embedding reordering for first-coordinate separation
+- `sawin_tower_exists` (ANT) — GS + Chebotarev tower postulate
 -/

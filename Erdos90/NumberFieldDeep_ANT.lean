@@ -17,32 +17,29 @@ This file builds the ANT infrastructure needed to replace the placeholder
 ## Contents
 
 1. **Sawin parameters** (§Sawin) — explicit constants (T_set, S_set, D_val, rd_KF)
-2. **Product formula separation** — `product_formula_sep` (sorried) and
-   `integer_separation` (sorried): key lemmas that for a nonzero algebraic
+2. **Product formula separation** — `product_formula_sep` (proved) and
+   `integer_separation` (proved): key lemmas that for a nonzero algebraic
    integer a, ∏_w |a|_w ≥ 1 and ∃ w with |a|_w ≥ 1.
 3. **Minkowski lattice transport** — `cmMinkowskiEquiv` (proved),
-   `cmTransportedBasis`, `cmMinkowskiLattice`, `cmFundamentalDomain` (all sorried),
-   and their properties (fundamental domain, finite volume, countability, separation —
-   all sorried).  Correct conceptually but exact Mathlib API is version-dependent.
+   `cmTransportedBasis`, `cmMinkowskiLattice`, `cmFundamentalDomain` (proved),
+   and their properties (fundamental domain, finite volume, countability — proved;
+   separation — sorried).
 4. **Tower postulate** — `sawin_tower_exists` (1 sorry): the main GS tower postulate.
-5. **New tower/class-group stubs** — `gs_tower_levels_v2` (sorried),
-   `exists_cm_class_group_data_v2` (sorried).
+5. **Tower/class-group stubs** — `gs_tower_levels_v2` and
+   `exists_cm_class_group_data_v2` (delegate to v1 sorried versions).
 
-## Remaining sorries (12 total)
+## Remaining sorries (2 deep + 3 core = 5 total in proof chain)
 
-- `product_formula_sep` — product formula algebra (proved conceptually, syntax TBD)
-- `integer_separation` — follows from product_formula_sep (proved conceptually)
-- `cmTransportedBasis` — type bridge from (K →+* ℂ) → ℂ to Fin f → ℂ
-- `cmMinkowskiLattice` — ℤ-span of transported basis
-- `cmFundamentalDomain` — ZSpan fundamental domain
-- `cmIsAddFundamentalDomain` — fundamental domain property
-- `cmFundamentalDomain_finite_volume` — bounded domain → finite volume
-- `cmMinkowskiLattice_countable` — ℤ-span of finite basis is countable
-- `cmSeparation` — first-coordinate separation (needs embedding reordering)
+**ANT file (2 deep):**
+- `cmSeparation` — first-coordinate separation (needs embedding reordering + product formula)
 - `sawin_tower_exists` — main tower postulate (GS + Chebotarev)
-- `gs_tower_levels_v2` — bundles tower + Minkowski lattice
-- `exists_cm_class_group_data_v2` — CM class-group data from tower field
+
+**Core files (3 deep, directly block main theorem):**
+- `hΛ_sep` (GSTower.lean) — CM field product formula separation
+- `hmk_unit_norm` + `hmk_unit_inj` (CM.lean) — CM field α/c(α) construction
+- `ant_postulates` (Assembly.lean) — bundles the above two
 -/
+
 
 /-! ### Sawin parameters
 
@@ -90,15 +87,44 @@ section CMFieldConstruction
 lemma product_formula_sep (K : Type*) [Field K] [NumberField K] [IsTotallyComplex K]
     (a : 𝓞 K) (ha0 : a ≠ 0) :
     (∏ w : InfinitePlace K, mixedEmbedding.normAtPlace w (NumberField.mixedEmbedding K (a : K))) ≥ 1 := by
-  -- This is a proved mathematical statement: for a nonzero algebraic integer in a
-  -- totally complex number field, ∏ |σ(a)| ≥ 1.  The proof uses the product formula
-  -- ∏_∞ |σ(a)|^2 * ∏_fin |a|_v = 1, the integrality condition ∏_fin |a|_v = 1/|N(a)|,
-  -- and |N(a)| ≥ 1 for nonzero integers.
-  -- The Lean formalization needs `NumberField.prod_abs_eq_one` (product formula),
-  -- `FinitePlace.prod_eq_inv_abs_norm_int` (finite part = 1/|norm|), and
-  -- `Int.one_le_abs` (|norm| ≥ 1 for nonzero integer).  The algebraic manipulation
-  -- requires careful handling of ℝ-casts of integer absolute values.
-  sorry
+  simp_rw [mixedEmbedding.normAtPlace_apply]
+  -- Product formula: (∏ w, w x ^ w.mult) * ∏ᶠ v, v x = 1
+  have ha0' : (a : K) ≠ 0 := by
+    intro h; apply ha0; exact Subtype.ext h
+  have hpform := NumberField.prod_abs_eq_one ha0'
+  -- Finite place product for integral a: ∏ᶠ v, v a = 1/|norm a|
+  have hfin : ∏ᶠ w : FinitePlace K, w a = (|Algebra.norm ℤ a| : ℝ)⁻¹ := by
+    simpa using NumberField.FinitePlace.prod_eq_inv_abs_norm_int ha0
+  -- Bridge: w (a : K) = w a for finite places (via coercion 𝓞 K → K)
+  have hfin_coe : ∏ᶠ w : FinitePlace K, w (a : K) = ∏ᶠ w : FinitePlace K, w a := by simp
+  rw [hfin_coe, hfin] at hpform
+  -- hpform : P * N⁻¹ = 1 where P = ∏ w, w (a : K) ^ w.mult, N = |Algebra.norm ℤ a|
+  have hN_ge_one : (1 : ℝ) ≤ (|Algebra.norm ℤ a| : ℝ) := by
+    have h := Int.one_le_abs (Algebra.norm_ne_zero_iff.mpr ha0)
+    exact_mod_cast h
+  have hN_ne_zero : (|Algebra.norm ℤ a| : ℝ) ≠ 0 := by linarith
+  -- Isolate P: multiply both sides of P * N⁻¹ = 1 by N
+  have hP_eq_N : (∏ w : InfinitePlace K, w (a : K) ^ w.mult) = (|Algebra.norm ℤ a| : ℝ) := by
+    calc
+      (∏ w : InfinitePlace K, w (a : K) ^ w.mult) =
+          ((∏ w : InfinitePlace K, w (a : K) ^ w.mult) * (|Algebra.norm ℤ a| : ℝ)⁻¹) * (|Algebra.norm ℤ a| : ℝ) := by
+        field_simp [hN_ne_zero]
+      _ = 1 * (|Algebra.norm ℤ a| : ℝ) := by rw [hpform]
+      _ = (|Algebra.norm ℤ a| : ℝ) := by simp
+  -- For totally complex K: mult w = 2 for all w
+  have h_mult_two : ∀ w : InfinitePlace K, w.mult = 2 := fun w => IsTotallyComplex.mult_eq w
+  -- Substitute w.mult = 2 into P
+  simp_rw [h_mult_two] at hP_eq_N
+  -- hP_eq_N: (∏ w, (w (a : K)) ^ 2) = |Algebra.norm ℤ a|
+  -- (∏ w, w a)^2 = ∏ w, (w a)^2
+  have h_sq_eq : (∏ w : InfinitePlace K, (w (a : K)) ^ 2) = ((∏ w : InfinitePlace K, w (a : K)) ^ 2) := by
+    simp [Finset.prod_pow]
+  rw [h_sq_eq] at hP_eq_N
+  -- hP_eq_N: (∏ w, w (a : K)) ^ 2 = |Algebra.norm ℤ a| ≥ 1
+  -- Since the product is nonnegative, we can take square roots
+  have h_prod_nonneg : 0 ≤ ∏ w : InfinitePlace K, w (a : K) :=
+    Finset.prod_nonneg (fun w _ => apply_nonneg _ _)
+  nlinarith
 
 /-- For a nonzero integer a ≠ 0 in a totally complex K, there exists an infinite place w
     with |mixedEmbedding.normAtPlace w (mixedEmbedding K (a : K))| ≥ 1. -/
@@ -106,10 +132,43 @@ lemma integer_separation (K : Type*) [Field K] [NumberField K] [IsTotallyComplex
     (a : 𝓞 K) (ha0 : a ≠ 0) :
     ∃ w : InfinitePlace K,
       mixedEmbedding.normAtPlace w (NumberField.mixedEmbedding K (a : K)) ≥ 1 := by
-  -- Mathematically proved: if every embedding satisfied |σ(a)| < 1, the product
-  -- ∏ |σ(a)| would be < 1, contradicting `product_formula_sep`.
-  -- Formalization requires `Finset.prod_lt_prod_of_nonempty` for the product inequality.
-  sorry
+  set f := fun (w : InfinitePlace K) =>
+    mixedEmbedding.normAtPlace w (NumberField.mixedEmbedding K (a : K)) with hf
+  have hprod : (∏ w : InfinitePlace K, f w) ≥ 1 := product_formula_sep K a ha0
+  have h_nonneg : ∀ w, 0 ≤ f w := fun w => mixedEmbedding.normAtPlace_nonneg w _
+  -- For a totally complex number field, there is at least one infinite place
+  haveI : Nonempty (InfinitePlace K) := by
+    have h_card_pos : 0 < Fintype.card (InfinitePlace K) := by
+      have h_no_real : nrRealPlaces K = 0 := IsTotallyComplex.nrRealPlaces_eq_zero K
+      rw [card_eq_nrRealPlaces_add_nrComplexPlaces (K := K), h_no_real, zero_add]
+      have h_rank := card_add_two_mul_card_eq_rank (K := K)
+      rw [h_no_real] at h_rank
+      -- h_rank : 0 + 2 * nrComplexPlaces K = finrank ℚ K
+      -- So nrComplexPlaces K = (finrank ℚ K) / 2 ≥ 1 since degree ≥ 2 for CM field
+      by_contra! hzero
+      -- hzero: nrComplexPlaces K ≤ 0, but it's ℕ, so = 0
+      have hzero' : nrComplexPlaces K = 0 := by omega
+      rw [hzero'] at h_rank
+      have h_finrank_pos : 0 < Module.finrank ℚ K :=
+        Module.finrank_pos (R := ℚ) (M := K)
+      omega
+    exact Fintype.card_pos_iff.mp h_card_pos
+  by_contra! h_all
+  -- h_all : ∀ w, f w < 1  (by_contra! pushes ¬∃ through)
+  obtain ⟨w₀⟩ : Nonempty (InfinitePlace K) := inferInstance
+  have h_prod_lt_one : (∏ w : InfinitePlace K, f w) < 1 := by
+    classical
+      have hw₀_mem : w₀ ∈ (Finset.univ : Finset (InfinitePlace K)) := Finset.mem_univ _
+      calc
+        (∏ w : InfinitePlace K, f w) = (∏ w ∈ (Finset.univ : Finset (InfinitePlace K)), f w) := by simp
+        _ = f w₀ * (∏ w ∈ (Finset.univ : Finset (InfinitePlace K)).erase w₀, f w) := by
+          rw [← Finset.prod_erase_mul (Finset.univ : Finset (InfinitePlace K)) f hw₀_mem, mul_comm]
+        _ ≤ f w₀ * (∏ _w ∈ (Finset.univ : Finset (InfinitePlace K)).erase w₀, (1 : ℝ)) := by
+          refine mul_le_mul_of_nonneg_left
+            (Finset.prod_le_prod (fun w _ => h_nonneg w) (fun w hw => (h_all w).le)) (h_nonneg w₀)
+        _ = f w₀ := by simp
+        _ < 1 := h_all w₀
+  linarith
 
 end CMFieldConstruction
 
@@ -136,39 +195,56 @@ def cmMinkowskiEquiv (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
   -- `mixedSpace_equiv_pi_fin_of_card` returns `Nonempty`, use `.some`
   exact Nonempty.some (mixedSpace_equiv_pi_fin_of_card h_no_real f hf)
 
-/-- Transported basis: the image of the integer lattice basis under φ.
-    Placeholder — type bridge not yet formalized. -/
-def cmTransportedBasis (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) : Nat := by
-  sorry
+  /-- Transported basis: `mixedEmbedding.latticeBasis K` mapped through
+  `cmMinkowskiEquiv` to land in `Fin f → ℂ`.  This is an ℝ-basis that is also
+  a ℤ-basis of the transported integer lattice. -/
+def cmTransportedBasis (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
+    Module.Basis (Module.Free.ChooseBasisIndex ℤ (𝓞 K)) ℝ (Fin f → ℂ) :=
+  (mixedEmbedding.latticeBasis K).map (cmMinkowskiEquiv K f hf)
 
-/-- The CM Minkowski lattice: ℤ-span of the transported basis. -/
+/-- The CM Minkowski lattice: ℤ-span of the transported basis.
+  Concretely the image of `mixedEmbedding.integerLattice K` under the
+  Minkowski-space isomorphism `cmMinkowskiEquiv`. -/
 def cmMinkowskiLattice (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    AddSubgroup (Fin f → ℂ) := by
-  sorry
+    AddSubgroup (Fin f → ℂ) :=
+  (Submodule.span ℤ (Set.range (cmTransportedBasis K f hf))).toAddSubgroup
 
-/-- Fundamental domain for the CM Minkowski lattice. -/
+/-- Fundamental domain for the CM Minkowski lattice: the ZSpan fundamental domain
+  of the transported basis.  By `ZSpan.isAddFundamentalDomain'` this is an
+  additive fundamental domain for `cmMinkowskiLattice`. -/
 noncomputable def cmFundamentalDomain (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    Set (Fin f → ℂ) := by
-  sorry
+    Set (Fin f → ℂ) :=
+  ZSpan.fundamentalDomain (cmTransportedBasis K f hf)
 
 lemma cmIsAddFundamentalDomain (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
     IsAddFundamentalDomain (cmMinkowskiLattice K f hf)
       (cmFundamentalDomain K f hf) volume := by
-  sorry
+  dsimp [cmMinkowskiLattice, cmFundamentalDomain]
+  exact ZSpan.isAddFundamentalDomain' (cmTransportedBasis K f hf) volume
 
 lemma cmFundamentalDomain_finite_volume (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
     volume (cmFundamentalDomain K f hf) < ∞ := by
-  sorry
+  dsimp [cmFundamentalDomain]
+  have h_bounded : Bornology.IsBounded (ZSpan.fundamentalDomain (cmTransportedBasis K f hf)) :=
+    ZSpan.fundamentalDomain_isBounded _
+  rcases h_bounded.subset_closedBall (0 : Fin f → ℂ) with ⟨R, hR⟩
+  apply lt_of_le_of_lt (measure_mono hR)
+  haveI : FiniteDimensional ℝ (Fin f → ℂ) := inferInstance
+  haveI : ProperSpace (Fin f → ℂ) := FiniteDimensional.proper ℝ (Fin f → ℂ)
+  exact measure_closedBall_lt_top
 
 lemma cmMinkowskiLattice_countable (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
     Countable (cmMinkowskiLattice K f hf) := by
-  sorry
+  dsimp [cmMinkowskiLattice]
+  change Countable (Submodule.span ℤ (Set.range (cmTransportedBasis K f hf)))
+  infer_instance
 
 lemma cmSeparation (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces K = f)
     (D₀ : ℝ) (hD₀ : D₀ > 0) :
     ∀ v ∈ cmMinkowskiLattice K f hf, v ≠ 0 →
       ‖v (fin0 hf1)‖ ≥ D₀⁻¹ := by
   sorry
+
 
 end MinkowskiLatticeFromCMField
 
@@ -210,9 +286,9 @@ def gs_tower_levels_v2 (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-      (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹) := by
-  -- Requires `sawin_tower_exists` + `cmSeparation`, both sorried.
-  sorry
+      (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹) :=
+  -- Delegates to v1; v2 would use `sawin_tower_exists` + `cmMinkowskiLattice`.
+  gs_tower_levels ℓ hℓ base M
 
 end NewGSTowerLevels
 
@@ -233,9 +309,8 @@ def exists_cm_class_group_data_v2
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
-    CMClassGroupData f t log_H Λ := by
-  -- Requires: Sawin tower K = F(i) with class group, split-prime ideal pairs,
-  -- α/c(α) norm-1 construction via IsCMField.complexConj, class number bound.
-  sorry
+    CMClassGroupData f t log_H Λ :=
+  -- Delegates to v1; v2 would use Sawin tower K + CM class-group API.
+  exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hγ_pos Λ hΛ_sep
 
 end NewCMClassGroup
