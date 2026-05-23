@@ -16,19 +16,20 @@ noncomputable section
 This file translates the proof of `exists_admissible_family` from the paper
 "Planar Point Sets with Many Unit Distances" (OpenAI, 2026) into Lean 4.
 
-The deep number-theoretic steps are declared as `def`s with `sorry`, each
-corresponding directly to a proposition in the paper. The analytic estimate
-γ > 0 (Property P6) and the auxiliary `hlog2_event` are fully proved.
+The deep number-theoretic steps are `def`s with `sorry` in `NumberFieldDeep.lean`:
 
-## Number-theoretic defs (with sorry)
+1. `golod_shafarevich_tower_with_lattice` — Props 3.2–3.6: Golod–Shafarevich +
+   Chebotarev tower, Minkowski lattice, type bridge
+2. `cm_norm_one_elements` — Prop 2.2: norm-one set from class-group pigeonhole
 
-1. `prop_3_2_to_3_6`      — Golod–Shafarevich + Chebotarev tower output
-2. `prop_2_2`             — norm-one set from class-group pigeonhole (Prop 2.2)
-3. `lemma_2_4`            — coset averaging (Lemma 2.4, partial proof)
+These are assembled as `prop_3_2_to_3_6` (this file) providing both the tower data
+and a Prop-2.2 callback.  Lemma 2.4 (coset averaging) is fully proved in
+`CosetAveraging.lean`.
 
-`C_class` is a concrete `def := 1`. `C₀` and `prop_3_7` are absorbed.
-Together with the analytic lemmas (prop_p6, hlog2_event) these
-prove `exists_admissible_family` as a `theorem`.
+The analytic estimate γ > 0 (Property P6) and `hlog2_event` are fully proved below.
+`C_class` is a concrete `def := 1`.
+
+Together these prove `exists_admissible_family` as a `theorem`.
 -/
 
 /-! ## Absolute constants -/
@@ -41,7 +42,7 @@ theorem C_class_pos : C_class > 0 := by
 
 -- C₀ from Proposition 3.5: the Shafarevich relation-rank constant.
 -- Unused in the main proof; absorbed into prop_3_2_to_3_6.
--- Proposition 3.7 (Minkowski class-number bound) is absorbed into prop_2_2's definition;
+-- Proposition 3.7 (Minkowski class-number bound) is absorbed into the tower's Prop-2.2 callback;
 -- the exact constant C_class is not needed — any positive real works.
 -- We set C_class := 1 as a concrete witness.
 
@@ -59,47 +60,30 @@ We state the output in terms of the concrete types used in `AdmissibleFamily`.
 - Step 3: Tower layers have fⱼ → ∞, rd(Fⱼ) = rd(F), qᵦ splits everywhere.
 -/
 
-/-- **Propositions 3.2–3.6 (combined output).**
+/-- **Propositions 3.2–3.6 (tower) + Proposition 2.2 (norm-one elements, via callback).**
 
-    For any ℓ ≥ 2, the construction produces:
-    - `D₀ > 0`: the denominator D₀ = Q² (Q = ∏ qᵦ, t split primes)
-    - `rd_F ≥ 1`: root discriminant of the base field F
-    - `log rd_F ≤ C_rd · ℓ · log ℓ` for an absolute constant C_rd
-    - For every M, a degree f ≥ M, lattice Λ ⊂ ℂ^f (Minkowski image Φ(D₀⁻¹ 𝓞 Kⱼ)),
-      with D₀-separation: nonzero Λ-elements have first coordinate ≥ D₀⁻¹.
+    For any ℓ ≥ 2, the Golod–Shafarevich + Chebotarev construction produces:
+    - `C_rd = 1`: absolute constant (log bound proved via `log_two_mul_le`)
+    - `D₀ > 0`: denominator Q² (Q = ∏_{b=1}^t q_b, product of split primes)
+    - `rd_F ≥ 1`: root discriminant of the base cubic field F, with
+      `log rd_F ≤ C_rd · ℓ · log ℓ`
 
-    **Proof strategy (pending Mathlib support):**
+    For every M, a tower level `f ≥ M` with:
+    - `Λ ⊂ ℂ^f`: Minkowski lattice Φ_j(D₀⁻¹ · 𝓞_{K_j}) for the CM field K_j = F_j(i)
+    - `F ⊂ ℂ^f`: fundamental domain of Λ (IsAddFundamentalDomain, finite volume)
+    - `∀ v ∈ Λ, v ≠ 0 → ‖v(fin0 hf1)‖ ≥ D₀⁻¹` (product-formula separation)
 
-    Step 1 (Tower base, Props 3.2–3.4): For ℓ ≥ 2, choose a prime p with ℓ ≤ p ≤ 2ℓ
-    (Bertrand, `Nat.bertrand`).  The cyclotomic base field F = ℚ(ζ_p) is a CM field
-    (`IsCyclotomicExtension.isCMField`), with root discriminant
-      rd_F = p^{(p-2)/(p-1)} < p ≤ 2ℓ.
-    Then log rd_F < log(2ℓ) = log 2 + log ℓ ≤ ℓ · log ℓ for ℓ ≥ 2,
-    so C_rd = 1 suffices.
+    It also provides a **callback** for Prop 2.2: given `t` and `log_H`
+    (the tower parameters, defined externally from ℓ and rd_F) with
+    `γ := t·log 2 − log_H > 0`, the callback returns the norm-one set `U`
+    from the class-group pigeonhole on K_j.
 
-    Step 2 (Split primes, Prop 3.6): By Chebotarev density, pick t = ⌊(ℓ-1)²/200⌋
-    primes qᵦ that split completely in F.  Set D₀ = Q² where Q = ∏ qᵦ.
-
-    Step 3 (Tower levels, Props 3.3–3.5): The unramified p-class field tower above F
-    (Golod–Shafarevich [GS64]: d(G) ≥ ℓ-1, r(G) ≤ d(G) + C₀, Frobenius killing
-    via Prop 3.6 keeps r(G̅) ≤ d(G̅)²/4 for large ℓ) gives infinitely many layers
-    K_j with [K_j:ℚ] = 2f_j → ∞ and rd(K_j) = rd(F) (unramified).
-
-    Step 4 (Minkowski lattice, Mathlib available): For each K_j, the Minkowski embedding
-      Φ_j : K_j →+* mixedSpace K_j  (`NumberField.mixedEmbedding`)
-    with lattice Φ_j(D₀⁻¹ 𝓞_{K_j}) satisfies
-      IsAddFundamentalDomain via `fundamentalDomain_integerLattice` (Mathlib),
-      volume F_j < ∞ via `volume_fundamentalDomain_latticeBasis` (Mathlib).
-
-    Step 5 (Separation, number-theoretic): For the specific D₀ = Q² and nonzero
-    v = Φ_j(α/D₀) ∈ Λ_j, the product formula |N(α)| ≥ 1 together with the
-    split-prime structure of Q ensures ‖v(fin0)‖ = |σ₁(α)|/D₀ ≥ D₀⁻¹.
-
-    **Lean gap**: Steps 3–5 require formalizing
-    (a) the type isomorphism `mixedSpace K_j ≃ Fin f_j → ℂ` for totally complex K_j
-        (transport of `integerLattice` and `IsAddFundamentalDomain` across the equiv), and
-    (b) the separation bound from the split-prime product formula.
-    Neither is in Mathlib (2025); both are mathematically unambiguous. -/
+    **Lean gaps** (two sorries in NumberFieldDeep.lean):
+    (a) `golod_shafarevich_tower_with_lattice`: Golod–Shafarevich pro-3 tower +
+        Chebotarev split primes + type bridge `mixedSpace K_j ≃ Fin f_j → ℂ`
+        (not in Mathlib v4.29.1)
+    (b) `cm_norm_one_elements`: CM split-prime ideal pairs + class-group
+        pigeonhole for U (not in Mathlib v4.29.1) -/
 def prop_3_2_to_3_6 :
     ∃ (C_rd : ℝ), C_rd > 0 ∧
     ∀ (ℓ : ℕ), ℓ ≥ 2 →
@@ -109,91 +93,16 @@ def prop_3_2_to_3_6 :
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
         IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-        (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :=
-  -- Delegate to the structured proof in NumberFieldDeep.lean.
-  -- That file consolidates three sorry'd gaps (each with a detailed docstring):
-  --   (a) golod_shafarevich_tower_with_lattice: infinite pro-3 tower + Chebotarev split primes
-  --       → produces D₀, rd_F, and tower levels fⱼ → ∞  (Props 3.2–3.6)
-  --   (b) Type bridge: mixedSpace K_j ≃ Fin f_j → ℂ, and transport of
-  --       integerLattice + IsAddFundamentalDomain + product-formula separation
-  --       → Lean currently lacks this isomorphism + the D₀-separation API
-  -- The only non-sorry'd step (log rd_F ≤ C_rd · ℓ · log ℓ for C_rd = 1) is proved
-  -- in log_two_mul_le in NumberFieldDeep.lean.
+        (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) ∧
+        ∀ (t log_H : ℝ), t ≥ 0 → (t * Real.log 2 - log_H > 0) →
+        ∃ (U : Finset (Fin f → ℂ)),
+          (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
+          (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
+          ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) :=
+  -- Delegate to NumberFieldDeep.lean.
+  -- The log bound (log rd_F ≤ C_rd·ℓ·log ℓ, C_rd = 1) is fully proved via `log_two_mul_le`.
+  -- The tower data and the Prop-2.2 callback are from the two sorries.
   prop_3_2_to_3_6_via_deep
-
-/-! ## Proposition 2.2: Norm-one elements and coset averaging
-
-**References**: Proposition 2.2 (norm-one construction) and Lemma 2.4 (coset averaging).
-
-**Proof sketch**:
-- From the 2^{tf} binary vectors ε ∈ {0,1}^{tf} indexing prime pairs,
-  the ideals A_ε fall in ≤ h(K) ≤ H^f ideal classes;
-  by pigeonhole ≥ 2^{tf}/H^f = exp(γf) vectors share a class.
-- For each such pair (ε, η): u_ε = α_ε/c(α_ε) satisfies u_ε·c(u_ε) = 1
-  and |σ(u_ε)| = 1 for all complex embeddings σ (equation (3) in the paper).
-- Lemma 2.4: Haar measure + Fubini on ℂ^f/Λ gives E_a[E] ≥ exp(γf/2)·E_a[N];
-  some coset a achieves E_a ≥ exp(γf/2)·N_a with N_a ≥ 1.
--/
-
-/-- **Proposition 2.2 (norm-one elements from class-group pigeonhole).**
-
-    Given:
-    - Degree f ≥ 1 and denominator D₀ > 0
-    - t ≥ 0 (number of split prime pairs) and log_H (log of the class-number bound base)
-    - γ := t·log 2 − log_H > 0 (from Proposition 3.8, Property P6)
-    - Minkowski lattice Λ with D₀-separation
-
-    Produces U ⊂ ℂ^f with:
-    - All coordinates of u ∈ U have modulus 1   (|σ(u)| = 1 for all embeddings)
-    - D₀ · u ∈ Λ for all u ∈ U                 (u ∈ D₀⁻¹ 𝓞_K ↔ D₀·u ∈ 𝓞_K ⊂ Λ)
-    - |U| ≥ exp(γ · f)                          (pigeonhole on h(K) ≤ H^f ideal classes)
-
-    **Proof strategy (pending Mathlib support):**
-
-    The argument uses the CM field K = K_j (from `prop_3_2_to_3_6`) implicitly:
-
-    Step 1 (Norm-one candidates): The t split prime pairs (pᵦ, qᵦ) with pᵦ · qᵦ =: qᵦ give
-    2^{tf} binary vectors ε ∈ {0,1}^{tf}.  For each ε, form the ideal
-      A_ε = ∏_b pᵦ^{εᵦ} · qᵦ^{1-εᵦ}  ⊂ O_K.
-    The element α_ε := generator of the principal ideal (after clearing class-group torsion)
-    satisfies α_ε · c(α_ε) = N(A_ε) ∈ ℤ (where c is complex conjugation), so
-    u_ε := α_ε / √(N A_ε) satisfies |σᵢ(u_ε)| = 1 for all complex embeddings σᵢ.
-    Moreover D₀ · u_ε ∈ O_K ⊂ Λ.
-
-    Step 2 (Class-group pigeonhole, Mathlib partially): By the Minkowski bound
-      h(K) ≤ M K  (available as `exists_ideal_in_class_of_norm_le` in Mathlib),
-    and the class-number bound h(K) ≤ H^f where H = exp(log_H),
-    the 2^{tf} ideals A_ε lie in at most H^f = exp(log_H · f) classes.
-    By pigeonhole (`Fintype.exists_ne_map_eq_of_card_lt` in Mathlib):
-      ∃ class C with |{ε : A_ε ∈ C}| ≥ 2^{tf} / H^f = exp((t · log 2 − log_H) · f) = exp(γf).
-    From any two ε ≠ η in the same class, u := u_ε / u_η is norm-one and lies in D₀⁻¹ 𝓞_K ⊆ Λ.
-    The collection U of all such u has |U| ≥ exp(γf).
-
-    **Lean gap**: This proof relies on Λ being the Minkowski lattice of a specific CM field K
-    (from `prop_3_2_to_3_6`); the abstract `hΛ_sep` hypothesis alone does not supply the
-    number-field structure needed to form α_ε, apply the class-group, or verify |σᵢ(u)| = 1.
-    Formalising this requires:
-    (a) An API for CM field split primes and norm-one elements (not in Mathlib 2025),
-    (b) An explicit class-group bound h(K) ≤ H^f for the tower fields (Minkowski bound
-        in Mathlib gives individual-field bounds, but the uniform H^f form needs work),
-    (c) Lifting the elements u_ε into the Lean lattice type `AddSubgroup (Fin f → ℂ)`.
-    All of this is mathematically unambiguous and recorded as a single sorry. -/
-def prop_2_2 (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (t log_H : ℝ)
-    (ht : t ≥ 0) (hγ : t * Real.log 2 - log_H > 0)
-    (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
-    ∃ (U : Finset (Fin f → ℂ)),
-      (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
-      (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
-      ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) :=
-  -- Delegate to cm_norm_one_elements in NumberFieldDeep.lean.
-  -- That function carries a single targeted sorry for the CM class-group construction:
-  --   · CM split-prime ideal API: constructing {𝔓_s, c𝔓_s} for each q_b (not in Mathlib)
-  --   · ClassGroup pigeonhole: `Fintype.exists_ne_map_eq_of_card_lt` IS in Mathlib, but
-  --     the map ε ↦ [𝔄_ε] ∈ ClassGroup K and the norm-one quotient u_ε = αε/c(αε)
-  --     require the CM field structure not yet available abstractly in Mathlib
-  --   · Lifting u_ε into AddSubgroup (Fin f → ℂ) via the type bridge from §2
-  cm_norm_one_elements f hf1 D₀ hD₀ t log_H ht hγ Λ hΛ_sep
 
 /-! ## Lemma 2.4: Coset averaging (proved theorem)
 
@@ -292,23 +201,24 @@ lemma prop_p6 (C : ℝ) (hC : C > 0) :
 
 /-- **Theorem (Proposition 3.8 assembled).**
 
-    From `prop_3_2_to_3_6`, `prop_2_2`, and `prop_p6`, we prove
-    `exists_admissible_family`: ∃ γ>0, D>0, ∀ M, ∃ A with A.f ≥ M, A.γ = γ, A.D = D.
+    From `prop_3_2_to_3_6` (tower data + Prop-2.2 callback) and `prop_p6`
+    (analytic γ > 0 lemma), we prove `exists_admissible_family`:
+    ∃ γ>0, D>0, ∀ M, ∃ A with A.f ≥ M, A.γ = γ, A.D = D.
 
-    **Proof** (following Proposition 3.8, Steps 1–4 and the paper's Remark 3.9):
+    **Proof** (following Proposition 3.8, Steps 1–4 and Remark 3.9):
 
     Step 1. Choose C_P6 = 4·C_class·C_rd; by `prop_p6` find ℓ₀ such that
             for ℓ = max(ℓ₀, 2): t·log 2 > C_P6·ℓ·log ℓ ≥ log_H_base  (P6 → γ > 0).
 
     Step 2. `prop_3_2_to_3_6` at ℓ gives D₀, rd_F with log rd_F ≤ C_rd·ℓ·log ℓ.
-            Set log_H_base = 2·C_class·log(2·rd_F).
-            Then log_H_base ≤ 4·C_class·C_rd·ℓ·log ℓ ≤ t·log 2  (by P6).
+            Set t = ⌊(ℓ-1)²/200⌋ and log_H_base = 2·C_class·log(2·rd_F).
+            Then log_H_base ≤ 4·C_class·C_rd·ℓ·log ℓ (Step 4 of Prop 3.8).
 
-    Step 3. For each M, the tower yields f ≥ M and Λ with D₀-separation.
-            `prop_2_2` produces U satisfying all AdmissibleFamily fields.
+    Step 3. Since t·log 2 − log_H_base > 0 (from P6), the Prop-2.2 callback
+            produces U satisfying all AdmissibleFamily fields.
 
-    Step 4. Package as AdmissibleFamily with γ = γ₀ := t·log 2 − log_H_base and D = D₀.
-            These are independent of j (Remark 3.9). -/
+    Step 4. Package as AdmissibleFamily with γ = γ₀ := t·log 2 − log_H_base
+            and D = D₀.  These are independent of j (Remark 3.9). -/
 theorem exists_admissible_family :
     ∃ (γ : ℝ) (_hγ : γ > 0) (D : ℝ) (_hD : D > 0),
       ∀ (M : ℕ), ∃ (A : AdmissibleFamily), A.f ≥ M ∧ A.γ = γ ∧ A.D = D := by
@@ -345,7 +255,7 @@ theorem exists_admissible_family :
   have hℓ_ge_ℓ₀ : ℓ ≥ ℓ₀ := le_trans (Nat.le_max_left _ _) (Nat.le_max_left _ _)
   have hℓ_ge_ℓ₁ : ℓ ≥ ℓ₁ := le_trans (Nat.le_max_right _ _) (Nat.le_max_left _ _)
   have hℓ_ge_2  : ℓ ≥ 2 := Nat.le_max_right _ _
-  -- Step 4: Tower data at ℓ
+  -- Step 4: Tower data at ℓ (includes Prop-2.2 callback)
   obtain ⟨D₀, hD₀_pos, rd_F, hrd_F_ge1, hlog_rd, h_levels⟩ := h_tower ℓ hℓ_ge_2
   -- Tower parameter t
   set t : ℝ := (((ℓ - 1)^2 : ℕ) : ℝ) / 200 with ht_def
@@ -377,9 +287,10 @@ theorem exists_admissible_family :
   let γ₀ := t * Real.log 2 - log_H_base
   -- Step 7: For each M produce an AdmissibleFamily
   refine ⟨γ₀, hγ_pos, D₀, hD₀_pos, fun M => ?_⟩
-  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, ⟨hF_fund, hF_fin, hΛ_sep⟩⟩ := h_levels M
+  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep, hU_callback⟩ := h_levels M
+  -- Use the Prop-2.2 callback to get U (requires the CM field K_j)
   obtain ⟨U, hU_mod, hU_in_Λ, hU_size⟩ :=
-    prop_2_2 f hf1 D₀ hD₀_pos t log_H_base ht_nonneg hγ_pos Λ hΛ_sep
+    hU_callback t log_H_base ht_nonneg hγ_pos
   -- Rewrite hU_size in terms of γ₀
   have hU_size' : (U.card : ℝ) ≥ Real.exp (γ₀ * (f : ℝ)) := by
     have : γ₀ = t * Real.log 2 - log_H_base := rfl
