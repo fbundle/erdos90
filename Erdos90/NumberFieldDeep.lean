@@ -17,17 +17,19 @@ This file factors the proof of `prop_3_2_to_3_6` and `prop_2_2` from
 2. **Pigeonhole lemma** (`exists_fiber_ge_div`, §3) — fully proved.
    The standard averaging argument: for f : α → β between finite nonempty types,
    ∃ b with |f⁻¹(b)| ≥ |α|/|β|.  This is the pure combinatorial core of Prop 2.2.
-3. **Golod–Shafarevich tower** (`golod_shafarevich_tower_with_lattice`, §2) —
-   one sorry for Props 3.2–3.6 (pro-3 tower + Chebotarev + type bridge).
+3. **Golod–Shafarevich tower** (`GSBaseData`, `gs_base_construction` + `gs_tower_levels`, §2) —
+   two sorries for Props 3.2–3.5 and Prop 3.6 + type bridge, cleanly assembled
+   into `golod_shafarevich_tower_with_lattice` → `GSTowerData`.
 4. **CM class-group data** (`exists_cm_class_group_data`, §4) — one sorry for
    the algebraic number theory input to Prop 2.2: CM field K_j, split-prime
    ideal pairs, ClassGroup bound, norm-1 element constructor.
 5. **Assembly** — `cm_norm_one_elements` (§5, proved modulo §4) and
    `prop_3_2_to_3_6_via_deep` (§6, proved modulo §2–§4).
 
-The three sorries (§2, §4) correspond to:
-- Section 3 of [OpenAI 2026]: Golod–Shafarevich + Chebotarev + type bridge
-- Section 2 of [OpenAI 2026]: CM field + class-group pigeonhole
+The three sorries correspond to:
+- §2: Golod–Shafarevich base construction (Props 3.2–3.5)
+- §2: Chebotarev + Minkowski type bridge (Prop 3.6 + lattice)
+- §4: CM field + class-group pigeonhole (Prop 2.2)
 -/
 
 /-! ## §1  Analytic helpers (all proved) -/
@@ -54,68 +56,132 @@ lemma two_mul_nat_ge_one (ℓ : ℕ) (hℓ : ℓ ≥ 2) : (1 : ℝ) ≤ 2 * (ℓ
   have : (2 : ℝ) ≤ ℓ := by exact_mod_cast hℓ
   linarith
 
-/-! ## §2  Golod–Shafarevich tower with Chebotarev split primes
+/-! ## §2  Golod–Shafarevich tower — `GSTowerData` structure + constructor
 
-**Mathematical content** (Props 3.2–3.6 of [OpenAI 2026]):
+The `GSTowerData` structure abstracts the output of Props 3.2–3.6:
+- Fields `D₀`, `rd_F`, log bound, and `getTowerLevel` (an ∀M callback)
+- `GSBaseData` packages Props 3.2–3.5 (D₀, rd_F, log bound)
+- `gs_base_construction` — one sorry (Props 3.2–3.5)
+- `gs_tower_levels` — one sorry (Prop 3.6 + Minkowski type bridge)
+- `golod_shafarevich_tower_with_lattice` — assembly (no additional sorry)
 
-Step 1. Choose ℓ primes r₁,…,rₗ ≡ 1 (mod 3).  The cyclic cubic field
-F (subfield of ℚ(ζ_{r₁})⋯ℚ(ζ_{rₗ})) has |D_F| = D² = (∏ rᵢ)², M/F
-everywhere unramified, d(G) ≥ ℓ−1 for G = Gal(F^{ur,3}/F).
-
-Step 2. By Chebotarev (Prop 3.6), find t = ⌊(ℓ−1)²/100⌋ primes q₁,…,qₜ
-with Frobenius in Φ(G).  Set D₀ = Q² where Q = ∏ qᵦ.
-
-Step 3. Golod–Shafarevich: G̅ is infinite (r(G̅) < d(G̅)²/4 for large ℓ),
-giving infinite tower F = F₀ ⊂ F₁ ⊂ ⋯ with fⱼ = [Fⱼ : ℚ] → ∞, Kⱼ = Fⱼ(i),
-rd(Kⱼ) = rd(F) = |D_F|^{1/3}.
-
-Step 4. For each Kⱼ, the Minkowski embedding Φⱼ : Kⱼ →+* mixedSpace Kⱼ
-gives lattice Λⱼ = Φⱼ(D₀⁻¹ · O_{Kⱼ}) ⊂ mixedSpace Kⱼ (≈ ℂ^{fⱼ} for the
-totally complex field Kⱼ).  Mathlib provides `fundamentalDomain_integerLattice`
-and `volume_fundamentalDomain_latticeBasis`.  The first-coordinate separation
-`‖v(fin0)‖ ≥ D₀⁻¹` follows from |N(β)| ≥ 1 and the product formula.
-
-**Lean gaps** (three sub-steps, none in Mathlib v4.29.1):
-(a) Golod–Shafarevich: pro-3 group theory, Frattini subgroup, relation-rank
-    estimate r ≤ d²/4 (not in Mathlib)
-(b) Quantitative Chebotarev: ∃ t primes with prescribed Frobenius (not in Mathlib)
-(c) Type bridge: `mixedSpace Kⱼ ≃ Fin fⱼ → ℂ` for totally complex Kⱼ, and
-    transport of `integerLattice Kⱼ` + `IsAddFundamentalDomain` across it
-    (the isomorphism is in principle constructible via `Fintype.equivFin` +
-    `LinearEquiv.piCongrLeft` but the API to use it is missing from Mathlib)
+See the `GSTowerData` docstring for full mathematical details.
 -/
 
-/-- **Golod–Shafarevich tower** (Props 3.2–3.6, sorry'd).
+/-- Base data from Props 3.2–3.5: Golod–Shafarevich construction of D₀ = Q² and
+    rd_F = |D_F|^{1/3} with log bound, extracted as a separate `def` to avoid
+    `∃`-elimination into `Type` (since `GSTowerData` contains ℝ fields). -/
+structure GSBaseData (ℓ : ℕ) where
+  D₀ : ℝ
+  hD₀_pos : D₀ > 0
+  rd_F : ℝ
+  hrd_F_ge1 : rd_F ≥ 1
+  hlog_rd : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)
 
-    For each ℓ ≥ 2, produces:
-    - `D₀ > 0`  (denominator Q² from the t split primes q₁,…,qₜ)
-    - `rd_F ≥ 1`  (root discriminant of the base cubic field F)
-    - `log rd_F ≤ ℓ · log ℓ`  (since rd_F ≤ 2ℓ)
+/-- **Props 3.2–3.5**: Golod–Shafarevich base construction (sorry'd).
 
-    And for every M, a tower level with `f ≥ M`:
-    - `Λ ⊂ ℂ^f`  (Minkowski lattice Φⱼ(D₀⁻¹ · O_{Kⱼ}))
-    - `F : Set (Fin f → ℂ)`  (fundamental domain of Λ)
-    - `IsAddFundamentalDomain Λ F volume`  (Mathlib provides this for number fields)
-    - `volume F < ∞`  (Mathlib provides this via `volume_fundamentalDomain_latticeBasis`)
-    - `∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹`  (first-coordinate separation)
+    For each ℓ ≥ 2, constructs:
+    - ℓ primes r₁,…,r_ℓ ≡ 1 (mod 3) → cyclic cubic field F
+    - M/F everywhere unramified, d(G) ≥ ℓ−1 for G = Gal(F^{ur,3}/F)
+    - |D_F| = (∏ rᵢ)² = D², so rd_F = |D_F|^{1/3} ≤ 2ℓ
+    - Chebotarev gives t = ⌊(ℓ−1)²/100⌋ primes q₁,…,qₜ
+    - D₀ = Q² where Q = ∏ qᵦ
 
-    The tower data (D₀, rd_F, Λ, separation) is the input to `prop_2_2` which
-    constructs the norm-one set U via the class-group pigeonhole. -/
-def golod_shafarevich_tower_with_lattice :
-    ∀ (ℓ : ℕ), ℓ ≥ 2 →
-    ∃ (D₀ : ℝ), D₀ > 0 ∧ ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
-      Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
-      ∀ (M : ℕ),
-        ∃ (f : ℕ), f ≥ M ∧
-        ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
-          (_ : Countable Λ) (F : Set (Fin f → ℂ)),
-          IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-          (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) := by
-  intro ℓ hℓ
-  -- D₀ = Q² (product of split primes squared).  rd_F = |D_F|^{1/3} ≤ 2ℓ.
-  -- For each M, the Minkowski lattice Λ of Kⱼ for some j with fⱼ ≥ M.
-  -- The sorried sub-steps: Golod–Shafarevich (a), Chebotarev (b), type bridge (c).
+    Requires: Golod–Shafarevich pro-3 group theory, Shafarevich bound,
+    Frattini quotient — none of this is in Mathlib v4.29.1. -/
+def gs_base_construction (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSBaseData ℓ := by
   sorry
+
+/-- **Prop 3.6 + Minkowski type bridge**: tower levels with lattice (sorry'd).
+
+    Given the base data (D₀, rd_F) from Props 3.2–3.5, for each M returns a
+    tower level Kⱼ = Fⱼ(i) with degree f ≥ M and Minkowski lattice
+    Λ = Φⱼ(D₀⁻¹·𝒪_{Kⱼ}) ⊂ ℂ^f.
+
+    Requires:
+    - Quantitative Chebotarev: build infinite tower from G̅
+    - Type bridge: `mixedSpace Kⱼ ≃ Fin f → ℂ` for totally complex CM field Kⱼ
+    - Transport of `integerLattice` + `IsAddFundamentalDomain` across isomorphism
+    - D₀-separation from split-prime product formula
+
+    None of this is in Mathlib v4.29.1. -/
+def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
+    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      (_ : Countable Λ) (F : Set (Fin f → ℂ)),
+      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
+      (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹) := by
+  sorry
+
+
+/-- **Golod–Shafarevich tower data** — abstract interface for Props 3.2–3.6.
+
+    Packages the output of the Golod–Shafarevich / Chebotarev tower construction:
+    - `D₀ > 0`: denominator Q² (product of t split primes q₁,…,qₜ squared)
+    - `rd_F ≥ 1`: root discriminant of the base cubic field F
+    - `log rd_F ≤ ℓ · log ℓ`: log bound (since rd_F ≤ 2ℓ)
+    - `getTowerLevel`: for any M, a tower level Kⱼ = Fⱼ(i) with degree f ≥ M
+      and Minkowski lattice Λ ⊂ ℂ^f with fundamental domain F and separation.
+
+    The tower data feeds into Prop 2.2 (`cm_norm_one_elements`) which constructs
+    the norm-one set U via the class-group pigeonhole on Kⱼ.
+
+    **Mathematical content** (Props 3.2–3.6 of [OpenAI 2026]):
+    1. Choose ℓ primes r₁,…,r_ℓ ≡ 1 (mod 3).  The cyclic cubic field F
+       (subfield of ℚ(ζ_{r₁})⋯ℚ(ζ_{r_ℓ})) has |D_F| = D² = (∏ rᵢ)², M/F
+       everywhere unramified, d(G) ≥ ℓ−1 for G = Gal(F^{ur,3}/F).
+    2. Golod–Shafarevich: r(G) ≤ d(G)²/4 ⟹ G infinite pro-3.  With Shafarevich
+       bound r ≤ d + C₀, this gives infinite tower F = F₀ ⊂ F₁ ⊂ ⋯ with
+       fⱼ = [Fⱼ : ℚ] → ∞, Kⱼ = Fⱼ(i) CM, rd(Kⱼ) = rd(F) = |D_F|^{1/3} ≤ 2ℓ.
+    3. Chebotarev (Prop 3.6): find t = ⌊(ℓ−1)²/100⌋ primes q₁,…,qₜ with
+       Frobenius in Φ(G).  Killing them gives G̅ infinite.  Set D₀ = Q², Q = ∏ qᵦ.
+    4. Minkowski embedding: Φⱼ : Kⱼ →+* mixedSpace Kⱼ ≃ ℂ^{fⱼ} gives lattice
+       Λⱼ = Φⱼ(D₀⁻¹ · 𝒪_{Kⱼ}) with first-coordinate separation from the
+       split-prime product formula.
+
+    **Lean gaps** (three sub-steps, none fully in Mathlib v4.29.1):
+    - (a) Golod–Shafarevich: pro-3 group theory, Frattini subgroup, relation-rank
+      bound r ≤ d²/4.  Not in Mathlib.
+    - (b) Quantitative Chebotarev: ∃ t primes q₁,…,qₜ with prescribed Frobenius
+      in the Frattini-quotient Φ(G).  Not in Mathlib.
+    - (c) Type bridge: `mixedSpace K ≃ Fin f → ℂ` for totally complex K, and
+      transport of `integerLattice K` + `IsAddFundamentalDomain` + separation
+      across it.  The isomorphism can be built from `Fintype.equivFin` +
+      `LinearEquiv.piCongrLeft`, but the full API (fundamental domain transport,
+      volume preservation, separation) is not in Mathlib.
+
+    **Relevant Mathlib APIs** (available but incomplete):
+    - `fundamentalDomain_integerLattice` in `CanonicalEmbedding/Basic.lean`
+    - `volume_fundamentalDomain_latticeBasis` in same file
+    - `ZSpan.isAddFundamentalDomain` in `Algebra/Module/ZLattice/Basic.lean`
+    - `IsCyclotomicExtension.isCMField` in `NumberField/Cyclotomic/Basic.lean`
+    - `discr_prime_pow` in `Cyclotomic/Discriminant.lean` -/
+structure GSTowerData (ℓ : ℕ) where
+  D₀ : ℝ
+  hD₀_pos : D₀ > 0
+  rd_F : ℝ
+  hrd_F_ge1 : rd_F ≥ 1
+  hlog_rd : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)
+  /-- For any M, provides a tower level with degree f ≥ M and Minkowski lattice Λ ⊂ ℂ^f
+      such that ‖v(fin0 hf1)‖ ≥ D₀⁻¹ for all nonzero v ∈ Λ.
+      Encapsulates Prop 3.6 (Chebotarev split primes) + the Minkowski embedding type bridge. -/
+  getTowerLevel (M : ℕ) : ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+    (_ : Countable Λ) (F : Set (Fin f → ℂ)),
+    IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
+    (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹)
+
+/-- **Golod–Shafarevich tower with lattice** (Props 3.2–3.6).
+
+    Assembly of `gs_base_construction` (Props 3.2–3.5, sorry'd) and
+    `gs_tower_levels` (Prop 3.6 + type bridge, sorry'd) into `GSTowerData`.
+    No additional sorries beyond the two sub-defs. -/
+def golod_shafarevich_tower_with_lattice (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSTowerData ℓ :=
+  let base := gs_base_construction ℓ hℓ
+  { D₀ := base.D₀
+    hD₀_pos := base.hD₀_pos
+    rd_F := base.rd_F
+    hrd_F_ge1 := base.hrd_F_ge1
+    hlog_rd := base.hlog_rd
+    getTowerLevel := gs_tower_levels ℓ hℓ base }
 
 /-! ## §3  Pigeonhole lemma — fully proved -/
 
@@ -389,8 +455,8 @@ def cm_norm_one_elements
 
 /-- **Structured proof of `prop_3_2_to_3_6`** (assembly only; no new sorry).
 
-    Chains `golod_shafarevich_tower_with_lattice` (§2, one sorry) and
-    `cm_norm_one_elements` (§3, one sorry) together.  The log bound
+    Chains `golod_shafarevich_tower_with_lattice` (§2, returns `GSTowerData`,
+    one sorry) and `cm_norm_one_elements` (§3, one sorry) together.  The log bound
     (log rd_F ≤ C_rd·ℓ·log ℓ for C_rd = 1) is fully proved via `log_two_mul_le`.
 
     The caller (`exists_admissible_family` in NumberField.lean) computes
@@ -413,11 +479,12 @@ theorem prop_3_2_to_3_6_via_deep :
           (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
           ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
   refine ⟨1, one_pos, fun ℓ hℓ => ?_⟩
-  obtain ⟨D₀, hD₀_pos, rd_F, hrd_ge1, hlog_rd, h_levels⟩ :=
-    golod_shafarevich_tower_with_lattice ℓ hℓ
-  refine ⟨D₀, hD₀_pos, rd_F, hrd_ge1, by linarith, fun M => ?_⟩
-  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep⟩ := h_levels M
+  let tower : GSTowerData ℓ := golod_shafarevich_tower_with_lattice ℓ hℓ
+  refine ⟨tower.D₀, tower.hD₀_pos, tower.rd_F, tower.hrd_F_ge1, by
+    -- log rd_F ≤ ℓ·log ℓ, and C_rd = 1
+    simpa using tower.hlog_rd, fun M => ?_⟩
+  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep⟩ := tower.getTowerLevel M
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep, fun t log_H ht hγ_pos => ?_⟩
-  exact cm_norm_one_elements f hf1 D₀ hD₀_pos rd_F t log_H ht hγ_pos Λ hΛ_sep
+  exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hγ_pos Λ hΛ_sep
 
 end
