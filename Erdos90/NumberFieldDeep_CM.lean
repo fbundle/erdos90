@@ -390,19 +390,33 @@ def exists_cm_class_group_data
     -- 0 ∈ Λ because Λ is an AddSubgroup (contains zero)
     exact AddSubgroup.zero_mem Λ
   have hmk_unit_norm : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → ∀ r, ‖mk_unit ε₁ ε₂ r‖ = 1 := by
-    -- Genuinely sorried: the correct proof uses §4 lemma
-    --   cm_norm_div_conj_eq_one α hα (embedding corresponding to r)
-    -- which shows ‖σ_r(α / c(α))‖ = 1 for every complex embedding σ_r.
-    -- Cannot be proved with the placeholder zero vector (‖0‖ = 0 ≠ 1).
-    sorry  -- Sub‑sorried: needs CM field K + choice of α + §4 lemma application
+    -- GAP: Placeholder mk_unit = 0 has ‖0‖ = 0 ≠ 1, so this cannot be proved.
+    -- The real proof: given ε₁ ≠ ε₂ with φ(ε₁) = φ(ε₂) (same ideal class),
+    -- the principal ideal 𝔄_{ε₂}·𝔄_{ε₁}⁻¹ = (α) for some α ∈ K^×.
+    -- Define mk_unit ε₁ ε₂ := Φ(α / c(α)) where:
+    --   • Φ : K → Fin f → ℂ is the Minkowski embedding (cmMinkowskiEquiv)
+    --   • c = IsCMField.complexConj : K → K is complex conjugation
+    -- Then for each coordinate r (corresponding to a complex embedding σ_r):
+    --   ‖mk_unit ε₁ ε₂ r‖ = ‖σ_r(α / c(α))‖ = ‖σ_r(α) / star(σ_r(α))‖ = 1
+    -- by §4 lemma `cm_norm_div_conj_eq_one` (proved at line ~220 of this file).
+    -- WHAT'S MISSING: the CM field K, the ideal generators α, and the
+    -- connection between Φ and the complex embeddings (IsCMField API).
+    sorry
   have hmk_unit_inj : ∀ ε₁ ε₂ ε₃, ε₁ ≠ ε₂ → ε₁ ≠ ε₃ → φ ε₁ = φ ε₂ → φ ε₁ = φ ε₃ →
       mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃ → ε₂ = ε₃ := by
-    -- The placeholder mk_unit is constant, so mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃
-    -- always holds, but ε₂ = ε₃ does not follow.  In the correct proof:
-    --   Φ(α₂/c(α₂)) = Φ(α₃/c(α₃)) → α₂/c(α₂) = α₃/c(α₃)  (Φ injective)
-    --   → α₂·c(α₃) = α₃·c(α₂) → (α₂/α₃) = c(α₂/α₃) → α₂/α₃ ∈ K⁺
-    --   → valuations at 𝔓_s are equal mod 2 → ε₂ = ε₃
-    sorry  -- Sub‑sorried: needs split‑prime valuation argument
+    -- GAP: Placeholder mk_unit = 0 is constant, so injectivity fails.
+    -- The real proof (with mk_unit ε₁ ε₂ = Φ(α₂ / c(α₂))):
+    --   Φ(α₂/c(α₂)) = Φ(α₃/c(α₃))
+    --   → α₂/c(α₂) = α₃/c(α₃)  (Φ is injective on K)
+    --   → α₂·c(α₃) = α₃·c(α₂)
+    --   → (α₂/α₃) = c(α₂/α₃)
+    --   → α₂/α₃ ∈ K⁺ (the totally real subfield)
+    --   → v_𝔓(α₂/α₃) ∈ 2ℤ  (valuation parity from CM split‑prime condition)
+    --   → the sign-vector entries for ε₂, ε₃ encode these valuations mod 2
+    --   → ε₂ = ε₃
+    -- WHAT'S MISSING: split‑prime ideal pairs in CM field, valuation parity
+    -- `IsCMField.complexConj` API in Mathlib (exists but incomplete).
+    sorry
   -- -----------------------------------------------------------------
   -- Assemble the result
   -- -----------------------------------------------------------------

@@ -187,18 +187,11 @@ structure ERDOS_ANT_Postulates where
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
     CMClassGroupData f t log_H Λ
 
-/-- The two ANT postulates are not yet constructible with Mathlib v4.29.1.
-    This is the only `sorry` in the proof architecture — all other `def`s
-    and `theorem`s are proved, transitively dependent on these two fields
-    via `sorryAx`. -/
-def ant_postulates : ERDOS_ANT_Postulates := by
-  refine {
-    gs_tower := ?_
-    cm_class_group := ?_
-  }
-  · -- Postulate 1: Golod–Shafarevich tower (Props 3.2–3.6)
-    -- Requires Chebotarev + pro-p group theory + mixedSpace type bridge.
-    sorry
-  · -- Postulate 2: CM class-group data (Prop 2.2)
-    -- Requires CM field construction + split-prime ideal pairs.
-    sorry
+/-- The two ANT postulates delegate to the existing (partially sorried) functions
+    `gs_tower_levels` and `exists_cm_class_group_data`.  Each has internal `sorry`
+    gaps for the deep number theory (GS tower, CM field, split-prime API);
+    these propagate transitively via `sorryAx` to `erdos_unit_distance_false`. -/
+def ant_postulates : ERDOS_ANT_Postulates := {
+  gs_tower := gs_tower_levels
+  cm_class_group := exists_cm_class_group_data
+}

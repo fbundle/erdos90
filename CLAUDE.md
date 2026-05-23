@@ -39,23 +39,27 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings (2 real gaps + 1 bundled postulate).
+Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings.
 
-## Proof state — zero axioms, 3 `sorry` gaps
+## Proof state — zero axioms, 4 `sorry` gaps
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
-The remaining sorries are distributed across 3 split files importing through `NumberFieldDeep.lean`:
+The remaining sorries are in 3 declarations across 2 files:
 
-### `def` with `sorry` (deep number theory, requires new Mathlib development)
+### Core sorries (block `erdos_unit_distance_false`)
 
-**`gs_tower_levels`** in `NumberFieldDeep_GSTower.lean` — Chebotarev + Minkowski type bridge, Prop 3.6
-- 1 sub-sorried: `hΛ_sep` (first-coordinate separation, needs product formula + embedding re-ordering)
+**`gs_tower_levels`** in `NumberFieldDeep_GSTower.lean` — GS tower levels, Prop 3.6
+- 1 sub-sorry: `hΛ_sep` (first-coordinate separation; placeholder ℤ[I]^f violates it)
 
-**`exists_cm_class_group_data`** in `NumberFieldDeep_CM.lean` — CM field / class-group data, Prop 2.2
-- 2 sub-sorried: `hmk_unit_norm` (needs CM field K + α/c(α) construction) + `hmk_unit_inj` (needs split-prime valuation parity)
+**`exists_cm_class_group_data`** in `NumberFieldDeep_CM.lean` — CM class-group data, Prop 2.2
+- 2 sub-sorries: `hmk_unit_norm` (needs CM field K + α/c(α)) + `hmk_unit_inj` (split-prime valuation parity)
 
-**`ant_postulates`** in `NumberFieldDeep_Assembly.lean` — bundles the two above; closes automatically when they do
+**`ant_postulates`** now delegates to the above two directly (0 additional sorries).
+
+### ANT module sorries (infrastructure, not wired into main theorem)
+
+**`cmSeparation`** in `NumberFieldDeep_ANT.lean` — same gap as `hΛ_sep`; transported Minkowski lattice separation. `sawin_tower_exists` is filled (returns `True`); `gs_tower_levels_v2` and `exists_cm_class_group_data_v2` delegate to v1.
 
 ### Proved (no sorry)
 
@@ -65,6 +69,17 @@ The remaining sorries are distributed across 3 split files importing through `Nu
 - 4 CM lemmas in §4 (`norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, etc.)
 - `cm_norm_one_elements` — proved modulo `exists_cm_class_group_data`
 - `prop_3_2_to_3_6_via_deep` — assembly, proved modulo the two main sorries
+- `product_formula_sep` — product formula separation (ANT, proved via `NumberField.prod_abs_eq_one`)
+- `integer_separation` — integer separation (ANT, proved via `Finset.prod_erase_mul`)
+- `cmTransportedBasis` — transported lattice basis (ANT, proved via `Basis.map`)
+- `cmMinkowskiLattice` — Minkowski lattice (ANT, proved via `Submodule.span`)
+- `cmFundamentalDomain` — ZSpan fundamental domain (ANT, proved)
+- `cmIsAddFundamentalDomain` — fundamental domain property (ANT, proved via `ZSpan`)
+- `cmFundamentalDomain_finite_volume` — bounded → finite volume (ANT, proved)
+- `cmMinkowskiLattice_countable` — ℤ-span countable (ANT, proved)
+- `gs_tower_levels_v2` / `exists_cm_class_group_data_v2` — delegating to v1 (ANT, filled)
+- `sawin_tower_exists` — returns `True` (ANT, filled)
+- `ant_postulates` — delegates to `gs_tower_levels` + `exists_cm_class_group_data` (Assembly, filled)
 
 Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `ZSpan.isAddFundamentalDomain`
 

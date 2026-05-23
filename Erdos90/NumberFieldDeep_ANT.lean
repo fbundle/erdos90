@@ -17,27 +17,29 @@ This file builds the ANT infrastructure needed to replace the placeholder
 ## Contents
 
 1. **Sawin parameters** (§Sawin) — explicit constants (T_set, S_set, D_val, rd_KF)
-2. **Product formula separation** — `product_formula_sep` (proved) and
-   `integer_separation` (proved): key lemmas that for a nonzero algebraic
-   integer a, ∏_w |a|_w ≥ 1 and ∃ w with |a|_w ≥ 1.
-3. **Minkowski lattice transport** — `cmMinkowskiEquiv` (proved),
-   `cmTransportedBasis`, `cmMinkowskiLattice`, `cmFundamentalDomain` (proved),
-   and their properties (fundamental domain, finite volume, countability — proved;
-   separation — sorried).
-4. **Tower postulate** — `sawin_tower_exists` (1 sorry): the main GS tower postulate.
+2. **Product formula separation** — `product_formula_sep` and `integer_separation`
+   (both proved) using `NumberField.prod_abs_eq_one` + `IsTotallyComplex.mult_eq`.
+3. **Minkowski lattice transport** — `cmMinkowskiEquiv`, `cmTransportedBasis`,
+   `cmMinkowskiLattice`, `cmFundamentalDomain` and 3 properties (all proved);
+   `cmSeparation` (sorried: embedding reordering gap).
+4. **Tower postulate** — `sawin_tower_exists` (filled: returns `True`; real content
+   is in `gs_tower_levels`).
 5. **Tower/class-group stubs** — `gs_tower_levels_v2` and
-   `exists_cm_class_group_data_v2` (delegate to v1 sorried versions).
+   `exists_cm_class_group_data_v2` (delegate to v1).
 
-## Remaining sorries (2 deep + 3 core = 5 total in proof chain)
+## Remaining sorries (4 in 3 declarations)
 
-**ANT file (2 deep):**
-- `cmSeparation` — first-coordinate separation (needs embedding reordering + product formula)
-- `sawin_tower_exists` — main tower postulate (GS + Chebotarev)
+- `hΛ_sep` within `gs_tower_levels` (GSTower.lean) — first-coordinate separation;
+  placeholder ℤ[I]^f violates the property; needs CM field Minkowski lattice
+- `hmk_unit_norm` within `exists_cm_class_group_data` (CM.lean) — ‖α/c(α)‖ = 1;
+  placeholder mk_unit = 0 can't satisfy it; needs CM field + §4 lemma
+- `hmk_unit_inj` within `exists_cm_class_group_data` (CM.lean) — injectivity of
+  mk_unit on class-group fibers; needs split-prime valuation parity
+- `cmSeparation` (this file) — same gap as `hΛ_sep`, applied to the transported
+  Minkowski lattice; needs embedding reordering
 
-**Core files (3 deep, directly block main theorem):**
-- `hΛ_sep` (GSTower.lean) — CM field product formula separation
-- `hmk_unit_norm` + `hmk_unit_inj` (CM.lean) — CM field α/c(α) construction
-- `ant_postulates` (Assembly.lean) — bundles the above two
+`ant_postulates` (Assembly.lean) now delegates to `gs_tower_levels` and
+`exists_cm_class_group_data` directly (no additional sorries).
 -/
 
 
@@ -243,6 +245,22 @@ lemma cmSeparation (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces
     (D₀ : ℝ) (hD₀ : D₀ > 0) :
     ∀ v ∈ cmMinkowskiLattice K f hf, v ≠ 0 →
       ‖v (fin0 hf1)‖ ≥ D₀⁻¹ := by
+  intro v hv hv0
+  -- v is in the ℤ-span of the transported basis = image of integerLattice K under φ
+  have h_mem_span : v ∈ Submodule.span ℤ (Set.range (cmTransportedBasis K f hf)) := hv
+  -- The integer lattice is the ℤ-span of latticeBasis; by `span_latticeBasis`,
+  --   Submodule.span ℤ (Set.range (latticeBasis K)) = integerLattice K
+  -- The transported basis is (latticeBasis K).map φ, so
+  --   Submodule.span ℤ (Set.range (cmTransportedBasis ...)) = φ(image of integerLattice)
+  -- Therefore ∃ a : 𝓞 K such that v = cmMinkowskiEquiv (mixedEmbedding K a)
+  -- Since v ≠ 0, we have a ≠ 0.
+  -- integer_separation K a ha0 : ∃ w, normAtPlace w (mixedEmbedding K a) ≥ 1
+  -- GAP: The coordinate `fin0 hf1` of `cmMinkowskiEquiv x` corresponds to some
+  -- complex place w₀ ∈ {w : InfinitePlace K // IsComplex w}.  To conclude
+  -- ‖v (fin0 hf1)‖ ≥ D₀⁻¹, we need:
+  --   1. w₀ is the place where normAtPlace is maximal (embedding reordering)
+  --   2. D₀ ≥ 1 (so D₀⁻¹ ≤ 1 ≤ |a|_w₀) — true in the base construction
+  -- The same gap appears as `hΛ_sep` in NumberFieldDeep_GSTower.lean.
   sorry
 
 
@@ -257,15 +275,13 @@ with bounded root discriminant and prescribed split primes.
 
 section TowerPostulate
 
-/-- **Tower existence postulate** — the single ANT sorry.
-    For any M, there exists an f ≥ M, a totally real number field F,
-    a CM field K = F(i), and tower data satisfying:
-    - `h_nrComplex` : nrComplexPlaces K = f
-    - `split_condition` : primes in S_set split in K/F
-    Requires: Golod-Shafarevich pro-2 group theory, quantitative Chebotarev,
-    Shafarevich relation bound, Frattini quotient computation. -/
-def sawin_tower_exists (M : ℕ) : True := by
-  sorry
+/-- **Tower existence postulate** — placeholder for the GS + Chebotarev tower.
+    The real mathematical content is in `gs_tower_levels` (GSTower.lean)
+    and its `hΛ_sep` sub-sorry, which constructs the CM field Minkowski lattice
+    with first-coordinate separation.  This trivial placeholder exists for the
+    `gs_tower_levels_v2` code path, which currently delegates to v1. -/
+def sawin_tower_exists (M : ℕ) : True :=
+  trivial
 
 end TowerPostulate
 

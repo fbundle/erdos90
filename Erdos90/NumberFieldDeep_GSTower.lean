@@ -157,7 +157,26 @@ def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : 
   -- not the specific numeric bound.
   -- -----------------------------------------------------------------
   have hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹ := by
-    sorry  -- Requires: CM field product‑formula + embedding re‑ordering
+    -- GAP: The placeholder Λ = ℤ[I]^f does NOT satisfy this property.
+    -- Counterexample: v = (0, 1, 0, …, 0) is nonzero and in ℤ[I]^f, but
+    -- ‖v(fin0 hf1)‖ = 0 < 1 = D₀⁻¹.
+    --
+    -- The actual proof requires the CM field Minkowski lattice:
+    --   Let K = F(i) be a CM field of degree 2f, totally complex.
+    --   Let Φ : K ↪ mixedSpace K ≃ Fin f → ℂ be the Minkowski embedding.
+    --   Define Λ = Φ(D₀⁻¹ · 𝒪_K), the image of the scaled ring of integers.
+    --   Then for any nonzero v = Φ(a/D₀) with a ∈ 𝒪_K \ {0}:
+    --     • product_formula_sep K a ha0 : ∏_w |a|_w ≥ 1
+    --     • integer_separation K a ha0 : ∃ w, |a|_w ≥ 1
+    --     • By choosing the Fin equivalence to put a maximal-|a| embedding
+    --       at coordinate fin0, we get |a|_w₀ ≥ 1, so
+    --       ‖v(fin0 hf1)‖ = |a|_w₀ / D₀ ≥ D₀⁻¹.
+    --   The embedding reordering requires modifying `cmMinkowskiEquiv`.
+    --
+    -- This gap is identical to `cmSeparation` in NumberFieldDeep_ANT.lean.
+    -- Both require: GS tower (constructs K), product formula (proved),
+    -- embedding reordering (not yet formalized).
+    sorry
   exact ⟨f, hf_ge_M, hf1, Λ, hΛ_countable, F, hF_fund, hF_vol, hΛ_sep⟩
 
 

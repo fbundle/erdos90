@@ -27,15 +27,17 @@ from five specialized files:
 
 5. **`NumberFieldDeep_ANT.lean`** — Sawin parameters (§Sawin), product formula
    separation (proved), integer separation (proved), Minkowski lattice transport
-   (`cmMinkowskiEquiv` proved, `cmTransportedBasis`, `cmMinkowskiLattice`,
-   `cmFundamentalDomain`, and 3 properties proved; `cmSeparation` sorried),
-   tower postulate `sawin_tower_exists` (1 sorry), `gs_tower_levels_v2` and
-   `exists_cm_class_group_data_v2` (delegate to v1). 2 deep sorries remain.
+   (7 definitions/lemmas proved, `cmSeparation` sorried), tower postulate
+   (filled), `gs_tower_levels_v2` and `exists_cm_class_group_data_v2` (delegate
+   to v1). 1 deep sorry remains (`cmSeparation`).
 
-The remaining `sorry` gaps (7 total across 5 declarations):
-- `hΛ_sep` within `gs_tower_levels` (GSTower) — first-coordinate separation
-- `hmk_unit_norm` + `hmk_unit_inj` within `exists_cm_class_group_data` (CM) — α/c(α) construction
-- `ant_postulates` (Assembly, 2 sorries) — bundles the above
-- `cmSeparation` (ANT) — embedding reordering for first-coordinate separation
-- `sawin_tower_exists` (ANT) — GS + Chebotarev tower postulate
+The 3 remaining `sorry` declarations (4 actual `sorry` keywords):
+- `hΛ_sep` within `gs_tower_levels` (GSTower) — first-coordinate separation;
+  placeholder lattice ℤ[I]^f violates the property
+- `hmk_unit_norm` + `hmk_unit_inj` within `exists_cm_class_group_data` (CM) —
+  α/c(α) norm-1 + injectivity on fibers; both need CM field construction
+- `cmSeparation` (ANT) — same gap as `hΛ_sep`, applied to transported Minkowski lattice
+
+`ant_postulates` (Assembly) delegates to `gs_tower_levels` + `exists_cm_class_group_data`
+directly (no additional sorries).
 -/
