@@ -14,10 +14,13 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 |------|---------|
 | `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
 | `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure (no axioms — `exists_admissible_family` is a theorem in NumberField) |
-| `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + `def lemma_2_4` + analytic lemmas; all deep number theory as `def … := by sorry` |
+| `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + analytic lemmas (`prop_p6`, `hlog2_event`); calls `prop_3_2_to_3_6_via_deep` from NumberFieldDeep |
+| `Erdos90/NumberFieldDeep.lean` | Deep number theory: Golod–Shafarevich tower (`golod_shafarevich_tower_with_lattice`, sorry'd), pigeonhole lemma (`exists_fiber_ge_div`, proved), `CMClassGroupData` structure + `exists_cm_class_group_data` (sorry'd), `cm_norm_one_elements` (proved modulo §4), `prop_3_2_to_3_6_via_deep` assembly |
+| `Erdos90/CosetAveraging.lean` | `lemma_2_4` — coset averaging (fully proved) |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
+| `Erdos90/DiscGeometry.lean` | Discrete geometry lemmas |
 | `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erdos90.lean` | Root import (imports all modules, including NumberField) |
+| `Erdos90.lean` | Root import (imports all modules) |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -32,13 +35,35 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with zero `sorry` gaps.
+Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` gaps.
 
 ## Proof state — zero axioms, 2 `sorry` gaps
 
-All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
+All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
+
+Both sorries are in **`Erdos90/NumberFieldDeep.lean`**:
+
+### `def` with `sorry` (deep number theory, requires new Mathlib development)
+
+**`golod_shafarevich_tower_with_lattice`** (line 104) — Golod–Shafarevich / Chebotarev tower (Props 3.2–3.6)
+
+Lean gaps:
+- (a) Golod–Shafarevich: pro-3 group theory, relation-rank estimate r ≤ d²/4 (not in Mathlib)
+- (b) Quantitative Chebotarev: ∃ t primes with prescribed Frobenius (not in Mathlib)
+- (c) Type bridge: `mixedSpace K ≃ Fin f → ℂ` for totally complex K, transport of `integerLattice K` and `IsAddFundamentalDomain` across it
+
+**`exists_cm_class_group_data`** (line 264) — CM field / class-group data for Prop 2.2
+
+Lean gaps:
+- CM field K of degree 2f with split-prime ideal pairs (𝔓_j, c𝔓_j) (no CM split-prime API in Mathlib)
+- Class-number bound |G| ≤ exp(log_H·f) from Minkowski / tower root-discriminant
+- Norm-1 element constructor: α/c(α) using `IsCMField.complexConj`
+- Injectivity: α/c(α) = β/c(β) ⇒ α/β ∈ K⁺ ⇒ ε₂ = ε₃
+
+Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`
 
 ### Fully proven (no sorry)
+
 - `projection_injective` — first-coordinate projection injective on a Λ-coset (Lemma 2.5)
 - `card_ordered_unit_pairs_eq_two_mul_unitDistPairs` — swap involution + strong induction
 - `distSq_symm` — symmetry of Euclidean distance
@@ -48,38 +73,27 @@ All number-theoretic postulates are now `def`s with `sorry` bodies (zero `axiom`
 - `exists_R_log_rho_gt` — ∀ ε>0, D>0, ∃ R>½, log ρ(R) > −ε ∧ 4RD > 1 (from ρ(R) → 1)
 - `tendsto_rho_atTop` — ρ(R) → 1 as R → ∞
 - `rho_formula` — algebraic simplification of ρ(R)
-- `prop_p6` — analytic lemma: (ℓ-1)²·log 2 > C·ℓ·log ℓ for large ℓ (fully proved)
-- `hlog2_event` — log 2 ≤ C_rd·k·log k for large k (fully proved)
+- `prop_p6` — analytic lemma: (ℓ-1)²·log 2 > C·ℓ·log ℓ for large ℓ (in NumberField.lean)
+- `hlog2_event` — log 2 ≤ C_rd·k·log k for large k (in NumberField.lean)
 - `exists_good_coset` — unpacks `A.h_coset_avg` into `GoodCoset`
 - `planar_set_from_datum` (Theorem 2.3 parametric) — fully proven
 - `admissible_family_to_planar_set` (Theorem 2.3) — fully proven
 - `erdos_unit_distance_false` (Theorem 1.1) — fully proven
 - `erdos_bound_false` (contrapositive) — fully proven
-- `lemma_2_4` — coset averaging (all steps: algebraic inequality, measure-theoretic unfolding, ENNReal conversion, averaging principle, witness construction) — fully proved in `CosetAveraging.lean`
+- `lemma_2_4` — coset averaging (CosetAveraging.lean, fully proved)
 - `h_ineq` / `h_unfold_vol` / `h_unfold` / `h_int_N` / `h_int_Eu` / `h_int_ineq` within `lemma_2_4` — all sub-steps fully proved
-- `disc_overlap_ratio_real` — area of intersection of two ℂ-discs = πR²·ρ(R) — fully proved
-- `polydisc_overlap_ratio_real` — Fubini product extension — fully proved
-- `hrho_pos` — positivity of ρ(R) for R > 1/2 — fully proved
-
-### `def` with `sorry` (deep number theory, requires new Mathlib development)
-
-**`prop_3_2_to_3_6`** — Golod–Shafarevich / Chebotarev tower construction
-
-Lean gaps (see docstring in `NumberField.lean`):
-- Type isomorphism `mixedSpace K ≃ Fin f → ℂ` for totally complex K, and transport of `integerLattice K` (a `Submodule ℤ (mixedSpace K)`) and `IsAddFundamentalDomain` across it
-- Separation bound ‖v(fin0)‖ ≥ D₀⁻¹ for the Minkowski lattice from the split-prime product formula
-Relevant Mathlib (available): `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `discr_prime_pow`, `isCMField`
-
-**`prop_2_2`** — Class-group pigeonhole for norm-1 elements
-
-Lean gaps (see docstring in `NumberField.lean`):
-- `prop_2_2` cannot be proved from its stated hypotheses: the abstract `hΛ_sep` does not supply the CM field structure needed to construct norm-one elements u_ε
-- Requires: CM split-prime API (not in Mathlib), explicit class-number bound h(K) ≤ H^f for tower fields, lifting elements into `AddSubgroup (Fin f → ℂ)`
-Relevant Mathlib (available): `exists_ideal_in_class_of_norm_le`, `Fintype.exists_ne_map_eq_of_card_lt`
+- `disc_overlap_ratio_real` — area of intersection of two ℂ-discs = πR²·ρ(R)
+- `polydisc_overlap_ratio_real` — Fubini product extension
+- `hrho_pos` — positivity of ρ(R) for R > 1/2
+- `exists_fiber_ge_div` — pigeonhole lemma (NumberFieldDeep.lean §3, fully proved)
+- `cm_norm_one_elements` — class-group pigeonhole → norm-one set U (NumberFieldDeep.lean §5, proved modulo `exists_cm_class_group_data`)
+- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §6, proved modulo two sorries)
+- `log_two_mul_le` — analytic helper (NumberFieldDeep.lean §1)
 
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)
 - `polydisc_measurable` — lemma (fully proved)
+- `CMClassGroupData f t log_H Λ` — structure abstracting the CM field / class-group input for Prop 2.2 (fields: `E`, `G`, `φ`, `cardE`, `cardG`, `hcardE`, `hcardG`, `h_card_ratio`, `mk_unit`, `mk_unit_mem_Λ`, `mk_unit_norm`, `mk_unit_inj`)
 
 ## Important types and notations
 
@@ -113,6 +127,20 @@ Relevant Mathlib (available): `exists_ideal_in_class_of_norm_le`, `Fintype.exist
 - `Set.indicator_apply` needs `[Decidable (a ∈ s)]` — wrap in `classical` when using
 - `measurable_add_const` is the lemma for `Measurable (· + c)` on additive groups (avoids `by continuity` timeouts on `Fin f → ℂ`)
 
+### Typeclass instance identity: use `letI` not `haveI`
+
+When a structure carries typeclass fields (e.g., `CMClassGroupData` has `[fintypeE : Fintype E]`), surface them with **`letI`** (not `haveI`):
+
+```lean
+-- CORRECT: letI — transparent binder, kernel can unfold to data.fintypeE
+letI : Fintype data.E := data.fintypeE
+
+-- WRONG: haveI — opaque binder, NOT def-eq to data.fintypeE, breaks simpa/rw
+haveI : Fintype data.E := data.fintypeE
+```
+
+`letI` creates a `let` binder that is definitionally equal to the structure projection. The kernel can unfold it, so `Fintype.card data.E` (via `letI`) is def-eq to `Fintype.card data.E` (via `data.fintypeE`). With `haveI`, the binder is opaque and `simpa [data.hcardE]` fails with instance mismatch.
+
 ### Number field API (relevant to remaining sorries)
 
 All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
@@ -134,7 +162,9 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. Commit often with descriptive messages.  Always end commits with the co-author line.
+5. The two sorries are genuinely deep: Golod–Shafarevich pro-p group theory and CM field split-prime API. Neither exists in Mathlib v4.29.1.  The rest of the formalization is ready — only the algebraic number theory input is missing.
+
+6. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Memory
 

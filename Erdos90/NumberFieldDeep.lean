@@ -127,7 +127,7 @@ def golod_shafarevich_tower_with_lattice :
 
     The proof is the standard double-counting argument:
     `|α| = Σ_b |f⁻¹(b)| ≤ |β| · max_b |f⁻¹(b)|`, so `max_b |f⁻¹(b)| ≥ |α| / |β|`. -/
-lemma exists_fiber_ge_div {α β : Type*} [Fintype α] [Fintype β] [DecidableEq β]
+lemma exists_fiber_ge_div {α β : Type*} [Fintype α] [DecidableEq α] [Fintype β] [DecidableEq β]
     (f : α → β) (hβ_pos : 0 < Fintype.card β) :
     ∃ b : β, ((Finset.filter (λ a => f a = b) Finset.univ).card : ℝ) ≥
       (Fintype.card α : ℝ) / (Fintype.card β : ℝ) := by
@@ -164,73 +164,135 @@ lemma exists_fiber_ge_div {α β : Type*} [Fintype α] [Fintype β] [DecidableEq
     field_simp [hNpos.ne']
   linarith [h_total, h_sum_lt, h_sum_eq]
 
-/-! ## §4  Algebraic lemmas for the CM class-group — sorry'd
+/-! ## §4  CM class-group data structure
 
-    The two lemmas below capture the number-theoretic steps that the CM field
-    Kⱼ provides (see the docstring for `cm_norm_one_elements`).  Both are
-    `sorry` because they require CM field / ideal-class API not in Mathlib.
+    The structure `CMClassGroupData` abstracts the algebraic number theory
+    input needed for Proposition 2.2 (class-group pigeonhole → norm-one set).
 
-    We state them with the precise hypotheses needed, so the assembly in
-    `cm_norm_one_elements` (§5) is fully proved modulo these two algebraic
-    lemmas. -/
+    **Mathematical origin** ([OpenAI 2026], §2.1; Neukirch, Ch. I §6–7,
+    Ch. III §3):
+
+    Let K be a CM field (totally complex quadratic extension of a totally real
+    field K⁺, [K : ℚ] = 2f).  Let t be the number of split primes q₁,…,q_t
+    in the base field, each splitting as m = t·f distinct prime ideal pairs
+    𝔓_j, c𝔓_j in 𝒪_K (where c is complex conjugation).
+
+    The sign-vector set E = {±1}^m has |E| = 2^m.  For ε ∈ E, define
+      a_ε = ∏_{j=1}^m 𝔓_j^{(1+ε_j)/2} · (c𝔓_j)^{(1-ε_j)/2}
+    and map φ : E → ClassGroup(𝒪_K) by φ(ε) = [a_ε].
+
+    For ε₁ ≠ ε₂ in the same fiber (φ(ε₁) = φ(ε₂)), the ideal a_{ε₁}/a_{ε₂}
+    is principal, say = (α).  The CM property gives
+      |σ(α / c(α))| = 1   at every complex embedding σ : K → ℂ.
+
+    Thus α / c(α) maps under the Minkowski embedding Φ into Λ ⊂ ℂ^f with
+    all coordinates of modulus 1.  The map (ε₁, ε₂) ↦ u := Φ(α/c(α)) is
+    injective for fixed ε₁ within the fiber. -/
+
+/-- Abstract data packaging the CM field / class-group construction for Prop 2.2.
+
+    Provides:
+    - Finite types `E` (sign vectors {±1}^m) and `G` (abstracting the class group),
+      with `Fintype`/`DecidableEq` as typeclass instances (auto-available from the
+      structure fields).
+    - A map `φ : E → G` (the class-group map)
+    - A cardinality ratio `|E|/|G| ≥ exp(γ·f) + 1` (strong enough to absorb the −1
+      loss when fixing an anchor element)
+    - A function `mk_unit` that, given ε₁ ≠ ε₂ in the same fiber of φ, produces
+      a vector in Λ ⊂ ℂ^f with all coordinates of modulus 1
+    - Injectivity: fixing ε₁, the map ε₂ ↦ mk_unit ε₁ ε₂ is injective on the fiber
+
+    **Reference**: Proposition 2.2 of [OpenAI 2026]; Neukirch Ch. I §6–7, Ch. III §3. -/
+structure CMClassGroupData (f : ℕ) (t log_H : ℝ) (Λ : AddSubgroup (Fin f → ℂ)) where
+  E : Type
+  [fintypeE : Fintype E]
+  [decidableEqE : DecidableEq E]
+  G : Type
+  [fintypeG : Fintype G]
+  [decidableEqG : DecidableEq G]
+  φ : E → G
+  /-- Explicit ℕ cardinals — avoid instance-dependent `Fintype.card` in the ratio bound. -/
+  cardE : ℕ
+  cardG : ℕ
+  hcardE : cardE = Fintype.card E
+  hcardG : cardG = Fintype.card G
+  /-- |E| / |G| ≥ exp((t·log 2 − log_H)·f) + 1.
+      The "+1" compensates for losing one element when fixing a fiber anchor ε₀:
+      |U| = |F| − 1 ≥ exp(γ·f).  Uses explicit ℕ cardinals to avoid instance mismatches. -/
+  h_card_ratio : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 ≤ (cardE : ℝ) / (cardG : ℝ)
+  /-- Construct a norm-1 lattice vector from two distinct elements in the same fiber. -/
+  mk_unit : E → E → Fin f → ℂ
+  mk_unit_mem_Λ : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → mk_unit ε₁ ε₂ ∈ Λ
+  mk_unit_norm : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → ∀ r, ‖mk_unit ε₁ ε₂ r‖ = 1
+  /-- Injectivity: for a fixed anchor ε₁, distinct ε₂, ε₃ in the fiber give distinct vectors. -/
+  mk_unit_inj : ∀ ε₁ ε₂ ε₃, ε₁ ≠ ε₂ → ε₁ ≠ ε₃ → φ ε₁ = φ ε₂ → φ ε₁ = φ ε₃ →
+    mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃ → ε₂ = ε₃
 
 /-- **CM class-group data existence** (sorry'd).
 
-    Given the tower parameters `(t, log_H, D₀, f, Λ)`, there exists a CM field
-    K of degree 2f (a totally complex quadratic extension of a totally real
-    field of degree f), with ring of integers 𝒪_K, such that:
+    This is the single number-theoretic sorry for Proposition 2.2.
+    It asserts that for every tower level (parametrized by f, t, log_H, Λ)
+    satisfying the resolution hypotheses, the algebraic data needed for
+    the class-group pigeonhole exists.
 
-    1. (prime ideal pairs) There are m = ⌈t⌉·f distinct nonzero prime ideals
-       𝔓₁,…,𝔓_m, c𝔓₁,…,c𝔓_m in 𝒪_K, where c is complex conjugation.
-    2. (class bound) |ClassGroup(𝒪_K)| ≤ exp(log_H · f).
-    3. (Minkowski embedding) The Minkowski embedding Φ : K → ℂ^f maps
-       D₀⁻¹·𝒪_K onto the lattice Λ (via the type bridge mixedSpace K ≃ ℂ^f).
-    4. (norm-one property) For any α ∈ K^×, the element u = α / c(α) satisfies
-       |σ(u)| = 1 at every complex embedding σ (equivalently: ‖Φ(u) r‖ = 1 for
-       every coordinate r ∈ Fin f).
+    Returns an existential over types `E`, `G` with `Fintype`/`DecidableEq` instances
+    (using `obtain` avoids the `let`-binder instance problem).
 
-    **Mathematical justification** ([OpenAI 2026], §2.1, §3.1–3.7):
-    The tower fields Kⱼ = Fⱼ(i) are CM by construction; the split primes
-    q_1,…,q_t and the Minkowski bound supply the ideal pairs and the class
-    bound; the CM property of Kⱼ (complex conjugation is the Rosati involution)
-    gives |σ(α/c(α))|² = σ(α·c(α⁻¹)·c(α)·α⁻¹) = 1.
+    **What needs to be constructed** (not available in Mathlib v4.29.1):
+    1. A CM field K of degree 2f (totally complex, quadratic over totally real K⁺)
+       with ring of integers 𝒪_K and class group G = ClassGroup(𝒪_K).
+    2. m ≥ t·f split-prime ideal pairs (𝔓_j, c𝔓_j) in 𝒪_K.
+    3. The sign-vector type E = {±1}^m and class map φ : E → G.
+    4. Proof that |G| ≤ exp(log_H · f) (class-number bound from Minkowski / tower
+       root-discriminant bounds; uses `exists_ideal_in_class_of_norm_le` in Mathlib).
+    5. Proof that |E|/|G| ≥ exp(γ·f) + 1 (from |E| = 2^m ≥ 2^{t·f} and the
+       class-number bound, using 2·exp(γ·f) ≥ exp(γ·f) + 1 for γ·f > 0).
+    6. The norm-1 element constructor mk_unit (from α/c(α) for CM fields, using
+       Mathlib's `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`).
+    7. Injectivity of mk_unit on fibers (number-theoretic: α/c(α) = β/c(β) implies
+       α/β ∈ K⁺, which together with the ideal equality forces ε₂ = ε₃).
 
-    **Lean gap**: none of CM split-prime ideal API, Minkowski bound for tower
-    fields, or Minkowski-embedding type bridge exist in Mathlib v4.29.1. -/
+    **Relevant Mathlib APIs** (incomplete but provide building blocks):
+    - `IsCyclotomicExtension.Rat.isCMField` — cyclotomic extensions are CM
+    - `NumberField.classNumber` — class number (cardinality of ClassGroup)
+    - `NumberField.exists_ideal_in_class_of_norm_le` — Minkowski bound
+    - `IsCMField.complexConj` — complex conjugation on CM fields
+    - `IsCMField.complexEmbedding_complexConj` — conj interacts with embeddings
+    - `NumberField.mixedSpace` / `integerLattice` / `fundamentalDomain_integerLattice` — lattice
+
+    **Reference**: Section 2 of [OpenAI 2026]; Neukirch Ch. I §6–7, Ch. III §3. -/
 def exists_cm_class_group_data
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
-    -- The CM field, its ring of integers, the class group, the map φ,
-    -- and the key algebraic properties.
-    ∃ (m : ℕ) (hm : (m : ℝ) ≥ t * (f : ℝ)),
-    -- There exists a set E of cardinality 2^m and a map φ: E → G
-    -- where |G| ≤ exp(log_H · f), plus a norm-1 element constructor
-    -- that extracts ≥ exp(γ·f) elements of U ⊂ Λ from any large fiber of φ.
-    False := by
-  -- Placeholder: this is the number-theoretic sorry.
-  -- The `False` conclusion will be eliminated when we fill in the proof that
-  -- the CM field data actually yields the required U.
-  sorry
+    CMClassGroupData f t log_H Λ := by
+  -- All fields require CM field / algebraic number theory not in Mathlib v4.29.1.
+  exact {
+    E := Fin 1
+    G := Fin 1
+    φ := sorry
+    cardE := 1
+    cardG := 1
+    hcardE := sorry
+    hcardG := sorry
+    h_card_ratio := sorry
+    mk_unit := sorry
+    mk_unit_mem_Λ := sorry
+    mk_unit_norm := sorry
+    mk_unit_inj := sorry
+  }
 
-/-! ## §5  Assembly: `cm_norm_one_elements`
+/-! ## §5  Assembly: `cm_norm_one_elements` (Proposition 2.2)
 
-    The proof of `cm_norm_one_elements` (Prop 2.2) is structured as follows:
-
-    1. Apply the pigeonhole lemma `exists_fiber_ge_div` to the map
-       φ: E → ClassGroup(𝒪_K) provided by the CM class-group data.
-    2. The domain size is |E| = 2^m ≥ 2^{t·f} = exp(t·log 2 · f).
-    3. The codomain size is |ClassGroup(𝒪_K)| ≤ exp(log_H · f).
-    4. Therefore some fiber has size ≥ exp(t·log 2 · f) / exp(log_H · f)
-       = exp((t·log 2 − log_H)·f) = exp(γ·f).
-    5. From any two distinct ε ≠ η in this fiber, the algebraic lemma
-       `exists_cm_class_group_data` constructs a norm-1 element u ∈ Λ.
-    6. Distinct pairs give distinct u, yielding |U| ≥ exp(γ·f).
-
-    The only `sorry` in the proof below is `exists_cm_class_group_data`
-    (§4).  Every other step (pigeonhole, arithmetic, set-theoretic
-    construction) is fully proved. -/
+    The proof follows the paper's §2.1:
+    1. Get `CMClassGroupData` from `exists_cm_class_group_data` (the algebraic sorry).
+    2. Apply `exists_fiber_ge_div` (pigeonhole, §3) to φ : E → G.
+    3. Obtain a fiber F = φ⁻¹(g) with |F| ≥ |E|/|G| ≥ exp(γ·f) + 1.
+    4. Pick an anchor ε₀ ∈ F.
+    5. For each ε ∈ F \ {ε₀}, embed u := mk_unit ε₀ ε ∈ Λ with ‖u r‖ = 1.
+    6. By injectivity of mk_unit on F, these are all distinct, so
+       |U| = |F| − 1 ≥ exp(γ·f). -/
 
 def cm_norm_one_elements
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (_rd_F : ℝ)
@@ -241,12 +303,87 @@ def cm_norm_one_elements
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
       (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
       ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
-  -- Obtain the CM class-group data (the number-theoretic sorry)
-  -- `exists_cm_class_group_data` currently returns `∃ m, ..., False` as a
-  -- placeholder; when filled in, it returns the concrete algebraic data.
-  obtain ⟨_m, _hm, hfalse⟩ :=
+  -- Step 1: Get the CM class-group data (the one algebraic sorry)
+  have data : CMClassGroupData f t log_H Λ :=
     exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hγ_pos Λ hΛ_sep
-  exact False.elim hfalse
+  -- letI binds definitionally to the structure fields, avoiding haveI's opaque binder mismatch
+  letI : Fintype data.E := data.fintypeE
+  letI : DecidableEq data.E := data.decidableEqE
+  letI : Fintype data.G := data.fintypeG
+  letI : DecidableEq data.G := data.decidableEqG
+  -- Convert h_card_ratio (uses ℕ cardE/cardG) to Fintype.card
+  have h_card_ratio' : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 ≤
+      (Fintype.card data.E : ℝ) / (Fintype.card data.G : ℝ) := by
+    simpa [data.hcardE, data.hcardG] using data.h_card_ratio
+  -- Step 2: Prove G is nonempty (otherwise division by zero contradicts h_card_ratio)
+  have hG_nonempty : 0 < Fintype.card data.G := by
+    by_contra! hzero
+    have hcard0 : Fintype.card data.G = 0 := by omega
+    have hcard0' : (Fintype.card data.G : ℝ) = 0 := by exact_mod_cast hcard0
+    have h_contra : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 ≤ (0 : ℝ) := by
+      simpa [hcard0'] using h_card_ratio'
+    have h_exp_pos : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) > 0 := Real.exp_pos _
+    linarith
+  -- Step 3: Apply the pigeonhole lemma to φ : E → G
+  obtain ⟨g, hg⟩ := exists_fiber_ge_div data.φ hG_nonempty
+  -- Fiber F = φ⁻¹(g)
+  let F : Finset data.E := Finset.filter (λ ε => data.φ ε = g) Finset.univ
+  have hF_mem (ε : data.E) (hε : ε ∈ F) : data.φ ε = g :=
+    (Finset.mem_filter.mp hε).2
+  -- Step 4: Size bound on F: |F| ≥ exp(γ·f) + 1
+  have hF_size : (F.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 := by
+    linarith
+  -- F is nonempty (in fact |F| ≥ 2 since exp(γ·f) > 0)
+  have hF_nonempty : F.Nonempty := by
+    have h_exp_ge_one : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) ≥ 1 := by
+      have hγf_nonneg : 0 ≤ (t * Real.log 2 - log_H) * (f : ℝ) :=
+        mul_nonneg (le_of_lt hγ_pos) (Nat.cast_nonneg _)
+      exact Real.one_le_exp_iff.mpr hγf_nonneg
+    have hcard_one : (1 : ℝ) ≤ F.card := by linarith
+    have : 1 ≤ F.card := by exact_mod_cast hcard_one
+    exact Finset.one_le_card.mp this
+  obtain ⟨ε₀, hε₀⟩ := hF_nonempty
+  have hε₀_fib : data.φ ε₀ = g := hF_mem ε₀ hε₀
+  -- For Nat.cast_sub later: F.card ≥ 1
+  have hF_card_ge_one : 1 ≤ F.card := by
+    have : (1 : ℝ) ≤ F.card := by
+      have h_exp_pos : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) > 0 := Real.exp_pos _
+      linarith
+    exact_mod_cast this
+  -- Step 5: Construct U = {mk_unit ε₀ ε | ε ∈ F \ {ε₀}}
+  let F' : Finset data.E := F.erase ε₀
+  have hF'_card : F'.card = F.card - 1 := by
+    rw [Finset.card_erase_of_mem hε₀]
+  -- The function ε ↦ mk_unit ε₀ ε is injective on F' (by mk_unit_inj)
+  have h_inj_on : ∀ x ∈ F', ∀ y ∈ F',
+      (λ ε => data.mk_unit ε₀ ε) x = (λ ε => data.mk_unit ε₀ ε) y → x = y := by
+    intro x hx y hy h_eq
+    have mem_x := Finset.mem_erase.mp hx
+    have mem_y := Finset.mem_erase.mp hy
+    have hx_fib : data.φ ε₀ = data.φ x := (hε₀_fib.trans (hF_mem x mem_x.2).symm)
+    have hy_fib : data.φ ε₀ = data.φ y := (hε₀_fib.trans (hF_mem y mem_y.2).symm)
+    exact data.mk_unit_inj ε₀ x y (Ne.symm mem_x.1) (Ne.symm mem_y.1) hx_fib hy_fib h_eq
+  let U : Finset (Fin f → ℂ) := F'.image (λ ε => data.mk_unit ε₀ ε)
+  have hU_card : U.card = F'.card :=
+    Finset.card_image_of_injOn h_inj_on
+  -- Step 6: Verify the three required properties of U
+  have hU_norm : ∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1 := by
+    intro u hu r
+    obtain ⟨ε, hε, rfl⟩ := Finset.mem_image.mp hu
+    have mem_ε := Finset.mem_erase.mp hε
+    have hε_fib : data.φ ε₀ = data.φ ε := (hε₀_fib.trans (hF_mem ε mem_ε.2).symm)
+    exact data.mk_unit_norm ε₀ ε (Ne.symm mem_ε.1) hε_fib r
+  have hU_mem_Λ : ∀ u ∈ U, u ∈ Λ := by
+    intro u hu
+    obtain ⟨ε, hε, rfl⟩ := Finset.mem_image.mp hu
+    have mem_ε := Finset.mem_erase.mp hε
+    have hε_fib : data.φ ε₀ = data.φ ε := (hε₀_fib.trans (hF_mem ε mem_ε.2).symm)
+    exact data.mk_unit_mem_Λ ε₀ ε (Ne.symm mem_ε.1) hε_fib
+  have hU_size : (U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) := by
+    rw [hU_card, hF'_card]
+    rw [Nat.cast_sub hF_card_ge_one, Nat.cast_one]
+    linarith
+  exact ⟨U, hU_norm, hU_mem_Λ, hU_size⟩
 
 /-! ## §6  Assembly of `prop_3_2_to_3_6` -/
 
