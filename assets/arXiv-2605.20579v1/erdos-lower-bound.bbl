@@ -1,0 +1,93 @@
+\begin{thebibliography}{10}
+
+\bibitem{humanwriteup}
+Noga Alon, Thomas~F. Bloom, W.~T. Gowers, Daniel Litt, Will Sawin, Arul
+  Shankar, Jacob Tsimerman, Victor Wang, and Melanie~Matchett Wood.
+\newblock Remarks on the disproof of the unit distance conjecture, 2026.
+\newblock arXiv preprint.
+
+\bibitem{Ellenberg2007}
+Jordan~S. Ellenberg and Akshay Venkatesh.
+\newblock Reflection principles and bounds for class group torsion.
+\newblock {\em International Mathematics Research Notices}, 2007, January 2007.
+
+\bibitem{Erdos1946}
+P.~Erd\H{o}s.
+\newblock On sets of distances of $n$ points.
+\newblock {\em The American Mathematical Monthly}, 53(5):248, May 1946.
+
+\bibitem{Erds1982}
+Paul Erd\H{o}s.
+\newblock Some of my favourite problems which recently have been solved.
+\newblock In {\em Proceedings of the International Mathematical Conference},
+  page 59–79. Elsevier, 1982.
+
+\bibitem{Erdos1994}
+Paul Erd\H{o}s.
+\newblock Some problems in number theory, combinatorics and combinatorial
+  geometry.
+\newblock {\em Mathematica Pannonica}, 5(2):261--269, 1994.
+
+\bibitem{GolodShafarevich}
+E.~S. Golod and I.~R. Shafarevich.
+\newblock On the class field tower.
+\newblock {\em Izv. Akad. Nauk SSSR Ser. Mat.}, 28:261--272, 1964.
+
+\bibitem{hajir2021shafarevich}
+Farshid Hajir, Christian Maire, and Ravi Ramakrishna.
+\newblock On the {S}hafarevich group of restricted ramification extensions of
+  number fields in the tame case.
+\newblock {\em Indiana University Mathematics Journal}, 70(6):2693--2710, 2021.
+\newblock hal-03549431.
+
+\bibitem{Koch1969}
+Helmut Koch.
+\newblock Zum satz von {G}olod‐{S}chafarewitsch.
+\newblock {\em Mathematische Nachrichten}, 42(4-6):321–333, January 1969.
+
+\bibitem{Lenstra1986Codes}
+Jr. Lenstra, H.~W.
+\newblock Codes from algebraic number fields.
+\newblock In {\em Mathematics and Computer Science, II}, volume~4 of {\em CWI
+  Monographs}, pages 95--104. North-Holland Publishing Co., Amsterdam, 1986.
+\newblock Proceedings of the conference held in Amsterdam, 1986.
+
+\bibitem{LitsynTsfasman1987Constructive}
+S.~N. Litsyn and M.~A. Tsfasman.
+\newblock Constructive high-dimensional sphere packings.
+\newblock {\em Duke Mathematical Journal}, 54(1):147--161, June 1987.
+
+\bibitem{Louboutin2000}
+Stéphane Louboutin.
+\newblock Explicit bounds for residues of {D}edekind zeta functions, values of
+  {$L$}-functions at $s=1$, and relative class numbers.
+\newblock {\em Journal of Number Theory}, 85(2):263–282, December 2000.
+
+\bibitem{Neukirch2008}
+J\"{u}rgen Neukirch, Alexander Schmidt, and Kay Wingberg.
+\newblock {\em Cohomology of Number Fields}.
+\newblock Springer Berlin Heidelberg, 2008.
+
+\bibitem{machinewriteup}
+OpenAI.
+\newblock Planar points sets with many unit distances, 2026.
+\newblock Blog post available at \url{https://openai.com/news/}.
+
+\bibitem{Spencer1983}
+J.~Spencer, E.~Szemer\'edi, and W.~Trotter, Jr.
+\newblock Unit distances in the {E}uclidean plane.
+\newblock In {\em Graph theory and combinatorics ({C}ambridge, 1983)}, pages
+  293--303. Academic Press, London, 1984.
+
+\bibitem{Vinberg1965}
+E.~B. Vinberg.
+\newblock On the theorem concerning the infinite-dimensionality of an
+  associative algebra.
+\newblock {\em Izv. Akad. Nauk SSSR Ser. Mat.}, 29:209--214, 1965.
+
+\bibitem{Washington1997}
+Lawrence~C. Washington.
+\newblock {\em Introduction to Cyclotomic Fields}.
+\newblock Springer New York, 1997.
+
+\end{thebibliography}

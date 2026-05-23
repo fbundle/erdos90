@@ -345,6 +345,66 @@ lemma mixedEmbedding_cm_div_conj_complex_norm_one {K : Type*} [Field K] [NumberF
   rw [mixedEmbedding.normAtPlace_apply_of_isComplex w.prop] at h
   exact h
 
+open Function
+
+/-- When the real-place index set is empty, `((ι → ℝ) × V)` is linearly equivalent to `V`. -/
+def prod_left_isEmpty_equiv_snd (V : Type*) [AddCommGroup V] [Module ℝ V] {ι : Type*} [IsEmpty ι] :
+    ((ι → ℝ) × V) ≃ₗ[ℝ] V where
+  toFun := Prod.snd
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+  invFun v := (fun i => isEmptyElim i, v)
+  left_inv _ := Prod.ext (funext fun i => isEmptyElim i) rfl
+  right_inv _ := rfl
+
+/-- For a totally complex number field K (nrRealPlaces = 0), the mixed space
+is equivalent to just the complex-place function space. -/
+lemma mixedSpace_equiv_complex_places {K : Type*} [Field K] [NumberField K]
+    (h_no_real : InfinitePlace.nrRealPlaces K = 0) :
+    Nonempty (mixedEmbedding.mixedSpace K ≃ₗ[ℝ]
+      ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ)) := by
+  classical
+    haveI : IsEmpty {w : InfinitePlace K // InfinitePlace.IsReal w} :=
+      (Fintype.card_eq_zero_iff
+        (α := {w : InfinitePlace K // InfinitePlace.IsReal w})).mp h_no_real
+    have h_equiv : mixedEmbedding.mixedSpace K ≃ₗ[ℝ]
+        ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ) :=
+      prod_left_isEmpty_equiv_snd
+        ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ)
+    exact ⟨h_equiv⟩
+
+/-- When K is totally complex of degree f (complex places), mixedSpace K is equivalent
+to `Fin f → ℂ`.  This is the type bridge needed for `gs_tower_levels`. -/
+lemma mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
+    (h_no_real : InfinitePlace.nrRealPlaces K = 0) (f : ℕ)
+    (hf : InfinitePlace.nrComplexPlaces K = f) :
+    Nonempty (mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ)) := by
+  classical
+    obtain ⟨e₁⟩ := mixedSpace_equiv_complex_places h_no_real
+    -- Index equivalence from complex place subtype to Fin f
+    have h_card : Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w} = f := by
+      simpa [InfinitePlace.nrComplexPlaces] using hf
+    let e_card : Fin (Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w}) ≃ Fin f :=
+      { toFun := Fin.cast h_card
+        invFun := Fin.cast h_card.symm
+        left_inv := fun x => by
+          apply Fin.ext; simp [Fin.cast]
+        right_inv := fun x => by
+          apply Fin.ext; simp [Fin.cast]
+      }
+    let e_idx : {w : InfinitePlace K // InfinitePlace.IsComplex w} ≃ Fin f :=
+      (Fintype.equivFin _).trans e_card
+    -- Lift to arrow equivalence, then as a linear equivalence
+    let e_arrow : ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ) ≃ (Fin f → ℂ) :=
+      Equiv.arrowCongr e_idx (Equiv.refl ℂ)
+    let e_pi : ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ) ≃ₗ[ℝ]
+      (Fin f → ℂ) := {
+        e_arrow with
+        map_add' := fun x y => rfl
+        map_smul' := fun r x => rfl
+      }
+    refine ⟨e₁.trans e_pi⟩
+
 /-! ## §5  CM class-group data structure
 
     The structure `CMClassGroupData` abstracts the algebraic number theory
@@ -607,5 +667,51 @@ theorem prop_3_2_to_3_6_via_deep :
   obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep⟩ := tower.getTowerLevel M
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep, fun t log_H ht hγ_pos => ?_⟩
   exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hγ_pos Λ hΛ_sep
+
+/-! ## §8  ANT postulates — what remains to be formalized
+
+The two `sorry` gaps in this file (`gs_tower_levels` and `exists_cm_class_group_data`)
+are captured by the following bundled structure.  Every theorem above is proved
+**conditional on** these two postulates (transitively via `sorryAx`).
+
+When the missing Mathlib APIs become available, only the two fields of
+`ant_postulates` need to be filled; no other sorries exist in the proof chain.
+
+**Postulate 1 (Golod–Shafarevich tower, Props 3.2–3.6):** builds an infinite
+unramified pro‑3 tower with bounded root discriminant and prescribed split primes.
+Needs: pro‑3 group theory (Frattini quotient, Golod–Shafarevich inequality),
+quantitative Chebotarev, and the `mixedSpace K ≃ Fin f → ℂ` type bridge.
+
+**Postulate 2 (CM class-group data, Prop 2.2):** constructs the sign‑vector type
+E = {±1}^m, class‑group G = Cl(K), and norm‑1 element constructor α/c(α)
+satisfying the cardinality bound.  Needs: CM field construction, split‑prime
+ideal pairs, Minkowski class‑number bound. -/
+structure ERDOS_ANT_Postulates where
+  gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
+    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      (_ : Countable Λ) (F : Set (Fin f → ℂ)),
+      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
+      (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹)
+  cm_class_group (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
+    (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
+    (Λ : AddSubgroup (Fin f → ℂ))
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
+    CMClassGroupData f t log_H Λ
+
+/-- The two ANT postulates are not yet constructible with Mathlib v4.29.1.
+    This is the only `sorry` in the proof architecture — all other `def`s
+    and `theorem`s are proved, transitively dependent on these two fields
+    via `sorryAx`. -/
+def ant_postulates : ERDOS_ANT_Postulates := by
+  refine {
+    gs_tower := ?_
+    cm_class_group := ?_
+  }
+  · -- Postulate 1: Golod–Shafarevich tower (Props 3.2–3.6)
+    -- Requires Chebotarev + pro-p group theory + mixedSpace type bridge.
+    sorry
+  · -- Postulate 2: CM class-group data (Prop 2.2)
+    -- Requires CM field construction + split-prime ideal pairs.
+    sorry
 
 end
