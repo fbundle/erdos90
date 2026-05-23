@@ -37,8 +37,10 @@ structure AdmissibleFamily where
   hU_in_Λ  : ∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ
   -- |U| ≥ e^{γ f}
   hU_size  : (U.card : ℝ) ≥ Real.exp (γ * (f : ℝ))
-  -- Separation: nonzero lattice elements have first coordinate ≥ D⁻¹ in modulus
-  hΛ_sep   : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf)‖ ≥ D⁻¹
+  -- Separation: every nonzero lattice element has SOME coordinate ≥ D⁻¹ in modulus
+  hΛ_sep   : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D⁻¹
+  -- Injectivity: projection to the first coordinate is injective on Λ
+  hΛ_inj   : ∀ v ∈ Λ, v (fin0 hf) = 0 → v = 0
   -- Coset averaging (Lemma 2.4): for any R > 1/2 with log ρ(R) > -γ/2, there exists
   -- a coset a+Λ whose intersection X with the polydisc B_R satisfies E ≥ exp(γf/2)·|X|,
   -- where E counts ordered pairs (x,y) ∈ X² with y-x ∈ U.

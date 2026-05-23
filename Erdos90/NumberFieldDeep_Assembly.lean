@@ -34,7 +34,7 @@ def cm_norm_one_elements
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (_rd_F : ℝ)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
     ∃ (U : Finset (Fin f → ℂ)),
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
       (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
@@ -141,8 +141,10 @@ theorem prop_3_2_to_3_6_via_deep :
       ∀ (M : ℕ),
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
-        IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-        (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) ∧
+        IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+        Bornology.IsBounded F ∧
+        (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
+        (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
         ∀ (t log_H : ℝ), t ≥ 0 → (t * Real.log 2 - log_H > 0) →
         ∃ (U : Finset (Fin f → ℂ)),
           (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
@@ -153,8 +155,10 @@ theorem prop_3_2_to_3_6_via_deep :
   refine ⟨tower.D₀, tower.hD₀_pos, tower.rd_F, tower.hrd_F_ge1, by
     -- log rd_F ≤ ℓ·log ℓ, and C_rd = 1
     simpa using tower.hlog_rd, fun M => ?_⟩
-  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep⟩ := tower.getTowerLevel M
-  refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep, fun t log_H ht hγ_pos => ?_⟩
+  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
+    hΛ_sep, hΛ_inj⟩ := tower.getTowerLevel M
+  refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
+    hΛ_sep, hΛ_inj, fun t log_H ht hγ_pos => ?_⟩
   exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hγ_pos Λ hΛ_sep
 
 /-! ## §8  ANT postulates — what remains to be formalized
@@ -179,12 +183,14 @@ structure ERDOS_ANT_Postulates where
   gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
-      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-      (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹)
+      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+      Bornology.IsBounded F ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
   cm_class_group (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
     CMClassGroupData f t log_H Λ
 
 /-- The two ANT postulates delegate to the existing (partially sorried) functions

@@ -72,8 +72,10 @@ def gs_base_construction (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSBaseData ℓ := {
 def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
-      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-      (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹) := by
+      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+      Bornology.IsBounded F ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) := by
   -- -----------------------------------------------------------------
   -- §2.1  Choose field degree f ≥ M
   -- -----------------------------------------------------------------
@@ -143,41 +145,37 @@ def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : 
     haveI : ProperSpace (Fin f → ℂ) := FiniteDimensional.proper ℝ (Fin f → ℂ)
     exact measure_closedBall_lt_top
   -- -----------------------------------------------------------------
-  -- §2.4  First‑coordinate separation ‖v(fin0 hf1)‖ ≥ D₀⁻¹
+  -- §2.4  Remaining properties: bounded, positive volume, separation, injectivity
   --
-  -- For the Gaussian‑integer lattice ℤ[I]^f, there exist nonzero vectors
-  -- with v(fin0) = 0 (e.g., v = i·e₂ when f ≥ 2), violating the claim.
-  -- The claim only holds for lattices from CM number‑field embeddings with
-  -- the product‑formula argument applied to re‑order embeddings so that
-  -- the first coordinate realizes the maximum modulus.
-  --
-  -- This is the deepest gap — resolved only when the number‑field embedding
-  -- is properly constructed and the product‑formula separation is proved.
-  -- Downstream code (CosetAveraging.lean) only needs D₀⁻¹ > 0 (positivity),
-  -- not the specific numeric bound.
+  -- All four require the CM field Minkowski lattice (not the Gaussian‑integer
+  -- placeholder) and are therefore sorried.
   -- -----------------------------------------------------------------
-  have hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹ := by
-    -- GAP: The placeholder Λ = ℤ[I]^f does NOT satisfy this property.
-    -- Counterexample: v = (0, 1, 0, …, 0) is nonzero and in ℤ[I]^f, but
-    -- ‖v(fin0 hf1)‖ = 0 < 1 = D₀⁻¹.
-    --
-    -- The actual proof requires the CM field Minkowski lattice:
-    --   Let K = F(i) be a CM field of degree 2f, totally complex.
-    --   Let Φ : K ↪ mixedSpace K ≃ Fin f → ℂ be the Minkowski embedding.
-    --   Define Λ = Φ(D₀⁻¹ · 𝒪_K), the image of the scaled ring of integers.
-    --   Then for any nonzero v = Φ(a/D₀) with a ∈ 𝒪_K \ {0}:
-    --     • product_formula_sep K a ha0 : ∏_w |a|_w ≥ 1
-    --     • integer_separation K a ha0 : ∃ w, |a|_w ≥ 1
-    --     • By choosing the Fin equivalence to put a maximal-|a| embedding
-    --       at coordinate fin0, we get |a|_w₀ ≥ 1, so
-    --       ‖v(fin0 hf1)‖ = |a|_w₀ / D₀ ≥ D₀⁻¹.
-    --   The embedding reordering requires modifying `cmMinkowskiEquiv`.
+  have hF_bounded : Bornology.IsBounded F := by
+    dsimp [F]
+    exact ZSpan.fundamentalDomain_isBounded bSig
+  have hF_vol_pos : volume F > 0 := by
+    -- GAP: The fundamental domain of a ℤ-lattice has positive volume
+    -- (equal to the covolume).  Requires `ZSpan.fundamentalDomain_volume_pos`
+    -- or `volume_fundamentalDomain_latticeBasis`, not in Mathlib v4.29.1.
+    sorry
+  have hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹ := by
+    -- GAP: The placeholder Λ = ℤ[I]^f does NOT satisfy the existential
+    -- separation property in a way consistent with the paper's D₀⁻¹ bound.
+    -- The full proof uses the CM field Minkowski lattice and the
+    -- product-formula / integer-separation argument to produce
+    -- ∃ i such that |v_i| ≥ D₀⁻¹.
     --
     -- This gap is identical to `cmSeparation` in NumberFieldDeep_ANT.lean.
-    -- Both require: GS tower (constructs K), product formula (proved),
-    -- embedding reordering (not yet formalized).
     sorry
-  exact ⟨f, hf_ge_M, hf1, Λ, hΛ_countable, F, hF_fund, hF_vol, hΛ_sep⟩
+  have hΛ_inj : ∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0 := by
+    -- GAP: The placeholder Λ = ℤ[I]^f does NOT satisfy this property
+    -- (e.g., v = (0, i, 0, …, 0)).  The full proof uses the fact that
+    -- Λ = Φ(D₀⁻¹ · 𝒪_K) comes from the Minkowski embedding of a CM field,
+    -- and projection onto any coordinate (evaluation at an embedding)
+    -- is injective because K is a field.
+    sorry
+  exact ⟨f, hf_ge_M, hf1, Λ, hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded,
+    hΛ_sep, hΛ_inj⟩
 
 
 /-- **Golod–Shafarevich tower data** — abstract interface for Props 3.2–3.6.
@@ -229,12 +227,15 @@ structure GSTowerData (ℓ : ℕ) where
   hrd_F_ge1 : rd_F ≥ 1
   hlog_rd : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)
   /-- For any M, provides a tower level with degree f ≥ M and Minkowski lattice Λ ⊂ ℂ^f
-      such that ‖v(fin0 hf1)‖ ≥ D₀⁻¹ for all nonzero v ∈ Λ.
-      Encapsulates Prop 3.6 (Chebotarev split primes) + the Minkowski embedding type bridge. -/
+      such that ∃ i, ‖v i‖ ≥ D₀⁻¹ for all nonzero v ∈ Λ, and projection to fin0 is
+      injective on Λ.  Encapsulates Prop 3.6 (Chebotarev split primes) + the Minkowski
+      embedding type bridge. -/
   getTowerLevel (M : ℕ) : ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     (_ : Countable Λ) (F : Set (Fin f → ℂ)),
-    IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-    (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹)
+    IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+    Bornology.IsBounded F ∧
+    (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
+    (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
 
 /-- **Golod–Shafarevich tower with lattice** (Props 3.2–3.6).
 

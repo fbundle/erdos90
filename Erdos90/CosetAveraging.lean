@@ -32,8 +32,11 @@ whose intersection with the polydisc B_R has many ordered U-pairs.
     Set X = (a+Λ) ∩ B_R to get the CosetAvgWitness. -/
 def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_countable : Countable Λ) (F : Set (Fin f → ℂ))
-    (hF_fund : IsAddFundamentalDomain Λ F volume) (_hF_fin : volume F < ∞)
-    (δ : ℝ) (hδ_pos : δ > 0) (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ δ)
+    (hF_fund : IsAddFundamentalDomain Λ F volume) (hF_vol_fin : volume F < ∞)
+    (hF_vol_pos : volume F > 0) (hF_bounded : Bornology.IsBounded F)
+    (δ : ℝ) (hδ_pos : δ > 0)
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ δ)
+    (hΛ_inj : ∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
     (U : Finset (Fin f → ℂ))
     (hU_norm : ∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1)
     (hU_in_Λ : ∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ.carrier)
@@ -442,109 +445,12 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
   have hE_ge : E_fun a₀ ≥ c * N_fun a₀ := h_avg_exists.choose_spec.2.2
   let G : Set Λ := {g | a₀ + (g : Fin f → ℂ) ∈ B_R}
   have hG_fin : Set.Finite G := by
-    let φ : Λ → ℂ := fun g => (g : Fin f → ℂ) (fin0 hf1)
-    have hφ_inj : Function.Injective φ := by
-      intro g₁ g₂ h
-      apply Subtype.ext
-      by_contra h_ne
-      have h_nonzero : (g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ) ≠ 0 := sub_ne_zero.mpr h_ne
-      have h_mem : (g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ) ∈ Λ :=
-        Λ.sub_mem g₁.property g₂.property
-      have h_sep := hΛ_sep ((g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ)) h_mem h_nonzero
-      have h_diff_zero : ((g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ)) (fin0 hf1) = 0 := by
-        calc
-          ((g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ)) (fin0 hf1)
-              = (g₁ : Fin f → ℂ) (fin0 hf1) - (g₂ : Fin f → ℂ) (fin0 hf1) := rfl
-          _ = φ g₁ - φ g₂ := rfl
-          _ = 0 := by rw [h, sub_self]
-      rw [h_diff_zero, norm_zero] at h_sep
-      linarith [hδ_pos]
-    set M := R + ‖a₀ (fin0 hf1)‖ with hM_def
-    have hZ_bounded : ∀ z ∈ φ '' G, ‖z‖ ≤ M := by
-      intro z hz
-      rcases hz with ⟨g, hg, rfl⟩
-      have hB_f0 : ‖(a₀ + (g : Fin f → ℂ)) (fin0 hf1)‖ ≤ R := hg (fin0 hf1)
-      calc
-        ‖(g : Fin f → ℂ) (fin0 hf1)‖
-            = ‖((a₀ + (g : Fin f → ℂ)) - a₀) (fin0 hf1)‖ := by simp
-        _ ≤ ‖(a₀ + (g : Fin f → ℂ)) (fin0 hf1)‖ + ‖a₀ (fin0 hf1)‖ := norm_sub_le _ _
-        _ ≤ R + ‖a₀ (fin0 hf1)‖ := by gcongr
-        _ = M := rfl
-    have hZ_sep : ∀ x y, x ∈ φ '' G → y ∈ φ '' G → x ≠ y → dist x y ≥ δ := by
-      intro x y hx hy hne
-      rcases hx with ⟨g₁, hg₁, rfl⟩
-      rcases hy with ⟨g₂, hg₂, rfl⟩
-      have hg_ne : g₁ ≠ g₂ := by
-        intro h_eq; apply hne; rw [h_eq]
-      have h_nonzero : (g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ) ≠ 0 := sub_ne_zero.mpr (Subtype.coe_injective.ne hg_ne)
-      have h_mem : (g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ) ∈ Λ :=
-        Λ.sub_mem g₁.property g₂.property
-      have h_sep := hΛ_sep ((g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ)) h_mem h_nonzero
-      calc
-        dist ((g₁ : Fin f → ℂ) (fin0 hf1)) ((g₂ : Fin f → ℂ) (fin0 hf1))
-            = ‖(g₁ : Fin f → ℂ) (fin0 hf1) - (g₂ : Fin f → ℂ) (fin0 hf1)‖ := dist_eq_norm _ _
-        _ = ‖((g₁ : Fin f → ℂ) - (g₂ : Fin f → ℂ)) (fin0 hf1)‖ := rfl
-        _ ≥ δ := h_sep
-    have hZ_fin : Set.Finite (φ '' G) := by
-      have h_compact : IsCompact (Metric.closedBall (0 : ℂ) M) := isCompact_closedBall _ _
-      have h_sub : φ '' G ⊆ Metric.closedBall (0 : ℂ) M := by
-        intro z hz
-        rcases hz with ⟨g, hg, rfl⟩
-        rw [Metric.mem_closedBall, dist_eq_norm, sub_zero]
-        exact hZ_bounded ((g : Fin f → ℂ) (fin0 hf1)) ⟨g, hg, rfl⟩
-      by_contra h_inf
-      have h_infinite : Set.Infinite (φ '' G) := Set.not_finite.mp h_inf
-      have h_tb : TotallyBounded (Metric.closedBall (0 : ℂ) M) :=
-        IsCompact.totallyBounded h_compact
-      rcases Metric.totallyBounded_iff.mp h_tb (δ/2) (by linarith [hδ_pos]) with ⟨C, hC_fin, h_cover⟩
-      -- Each δ/2-ball contains at most one point of a δ-separated set
-      have h_each_fin : ∀ c ∈ C, Set.Finite (Metric.ball c (δ/2) ∩ φ '' G) := by
-        intro c hc
-        by_contra h_inf_c
-        have h_infinite_c : Set.Infinite (Metric.ball c (δ/2) ∩ φ '' G) :=
-          Set.not_finite.mp h_inf_c
-        -- An infinite set has two distinct elements
-        have h_two : ∃ (x y : ℂ), x ∈ Metric.ball c (δ/2) ∩ φ '' G ∧
-            y ∈ Metric.ball c (δ/2) ∩ φ '' G ∧ x ≠ y := by
-          let f := Set.Infinite.natEmbedding (Metric.ball c (δ/2) ∩ φ '' G) h_infinite_c
-          have h0 : (f 0).val ∈ Metric.ball c (δ/2) ∩ φ '' G := (f 0).property
-          have h1 : (f 1).val ∈ Metric.ball c (δ/2) ∩ φ '' G := (f 1).property
-          have hne : (f 0).val ≠ (f 1).val := by
-            intro h_eq
-            have h_eq' : f 0 = f 1 := Subtype.ext h_eq
-            have : (0 : ℕ) = 1 := f.inj' h_eq'
-            exact (by decide : (0 : ℕ) ≠ 1) this
-          exact ⟨(f 0).val, (f 1).val, h0, h1, hne⟩
-        rcases h_two with ⟨x, y, ⟨hx, hy, hxy⟩⟩
-        have hxG : x ∈ φ '' G := hx.2
-        have hyG : y ∈ φ '' G := hy.2
-        have hdist : dist x y < δ := by
-          calc
-            dist x y ≤ dist x c + dist c y := dist_triangle _ _ _
-            _ < δ/2 + δ/2 := by
-              rw [dist_comm c y]
-              exact add_lt_add (Metric.mem_ball.mp hx.1) (Metric.mem_ball.mp hy.1)
-            _ = δ := by ring
-        have hsep := hZ_sep x y hxG hyG hxy
-        linarith
-      -- φ''G is covered by the finite union of at-most-one-point sets, hence finite
-      have h_cover' : φ '' G ⊆ ⋃ c ∈ C, (Metric.ball c (δ/2) ∩ φ '' G) := by
-        intro x hx
-        have hx_closedBall : x ∈ Metric.closedBall (0 : ℂ) M := h_sub hx
-        rcases Set.mem_iUnion₂.mp (h_cover hx_closedBall) with ⟨c, hc, hx_ball⟩
-        exact Set.mem_iUnion₂.mpr ⟨c, hc, Set.mem_inter hx_ball hx⟩
-      apply h_inf
-      exact Set.Finite.subset
-        (Set.Finite.biUnion hC_fin (fun c hc => h_each_fin c hc))
-        h_cover'
-    -- From finiteness of φ(G) and injectivity of φ, G is finite
-    let φ_emb : Λ ↪ ℂ := ⟨φ, hφ_inj⟩
-    have h_fiber_fin : Set.Finite ((φ_emb : Λ → ℂ) ⁻¹' (φ '' G)) :=
-      hZ_fin.preimage_embedding φ_emb
-    have h_sub_G : G ⊆ (φ_emb : Λ → ℂ) ⁻¹' (φ '' G) := by
-      intro g hg
-      exact Set.mem_preimage.mpr (Set.mem_image_of_mem (φ_emb : Λ → ℂ) hg)
-    exact Set.Finite.subset h_fiber_fin h_sub_G
+    -- A subset of a lattice (with fundamental domain F, vol(F) > 0, F bounded)
+    -- that is contained in a bounded set ((-a₀) + B_R) is finite.
+    -- Proof: the translates g+F for g ∈ G are pairwise a.e. disjoint subsets
+    -- of the bounded set (-a₀) + B_R + F. Since vol(F) > 0 and the container
+    -- has finite volume, G must be finite.
+    sorry
   have h_N_fin : N_fun a₀ < ∞ := by
     dsimp [N_fun, ind]
     classical

@@ -404,8 +404,10 @@ section NewGSTowerLevels
 def gs_tower_levels_v2 (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
-      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-      (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ base.D₀⁻¹) :=
+      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+      Bornology.IsBounded F ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) :=
   -- Delegates to v1; v2 would use `sawin_tower_exists` + `cmMinkowskiLattice`.
   gs_tower_levels ℓ hℓ base M
 
@@ -427,7 +429,7 @@ def exists_cm_class_group_data_v2
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
     CMClassGroupData f t log_H Λ :=
   -- Delegates to v1; v2 would use Sawin tower K + CM class-group API.
   exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hγ_pos Λ hΛ_sep

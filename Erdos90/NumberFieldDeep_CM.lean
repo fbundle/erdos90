@@ -296,7 +296,7 @@ def exists_cm_class_group_data
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) :
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
     CMClassGroupData f t log_H Λ := by
   -- -----------------------------------------------------------------
   -- §5.1  Choose m = ⌈t·f⌉ sign bits (reference value; not used in the stub)

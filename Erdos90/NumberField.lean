@@ -92,8 +92,10 @@ def prop_3_2_to_3_6 :
       ∀ (M : ℕ),
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
-        IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧
-        (∀ v ∈ Λ, v ≠ 0 → ‖v (fin0 hf1)‖ ≥ D₀⁻¹) ∧
+        IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+        Bornology.IsBounded F ∧
+        (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
+        (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
         ∀ (t log_H : ℝ), t ≥ 0 → (t * Real.log 2 - log_H > 0) →
         ∃ (U : Finset (Fin f → ℂ)),
           (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
@@ -287,7 +289,8 @@ theorem exists_admissible_family :
   let γ₀ := t * Real.log 2 - log_H_base
   -- Step 7: For each M produce an AdmissibleFamily
   refine ⟨γ₀, hγ_pos, D₀, hD₀_pos, fun M => ?_⟩
-  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hΛ_sep, hU_callback⟩ := h_levels M
+  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
+    hΛ_sep, hΛ_inj, hU_callback⟩ := h_levels M
   -- Use the Prop-2.2 callback to get U (requires the CM field K_j)
   obtain ⟨U, hU_mod, hU_in_Λ, hU_size⟩ :=
     hU_callback t log_H_base ht_nonneg hγ_pos
@@ -300,8 +303,8 @@ theorem exists_admissible_family :
       CosetAvgWitness f Λ U R γ₀ := by
     intro R hR hρ
     have hδ_pos : D₀⁻¹ > 0 := inv_pos.mpr hD₀_pos
-    exact lemma_2_4 f hf1 Λ hΛ_countable F hF_fund hF_fin D₀⁻¹ hδ_pos hΛ_sep U hU_mod
-      hU_in_Λ γ₀ hγ_pos hU_size' R hR hρ
+    exact lemma_2_4 f hf1 Λ hΛ_countable F hF_fund hF_fin hF_vol_pos hF_bounded
+      D₀⁻¹ hδ_pos hΛ_sep hΛ_inj U hU_mod hU_in_Λ γ₀ hγ_pos hU_size' R hR hρ
   exact ⟨⟨f, hf1, D₀, hD₀_pos, γ₀, hγ_pos, Λ, U,
-      hU_mod, hU_in_Λ, hU_size', hΛ_sep, hcovg'⟩,
+      hU_mod, hU_in_Λ, hU_size', hΛ_sep, hΛ_inj, hcovg'⟩,
     hf_ge, rfl, rfl⟩

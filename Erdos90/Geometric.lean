@@ -130,23 +130,11 @@ lemma exists_R_log_rho_gt (ε : ℝ) (εpos : ε > 0) (D : ℝ) (hD : D > 0) :
   exact ⟨R, hR.1, hR.2.1, hR.2.2⟩
 
 /-!
-### First-coordinate separation
-
-This follows directly from the strengthened `hΛ_sep` field of `AdmissibleFamily`.
-In the Minkowski lattice Λ = Φ(D⁻¹O_K), coordinate 0 corresponds to the
-distinguished embedding σ₀ : K → ℂ, so the first coordinate inherits the
-separation bound.
--/
-
-lemma first_coordinate_separation (A : AdmissibleFamily) (v : Fin A.f → ℂ)
-    (hvΛ : v ∈ A.Λ) (hv_ne : v ≠ 0) : ‖v (fin0 A.hf)‖ ≥ A.D⁻¹ :=
-  A.hΛ_sep v hvΛ hv_ne
-
-/-!
 ### Lemma 2.5: Projection injectivity
 
 The first-coordinate projection π₁: ℂ^f → ℂ is injective on any subset of
-a single Λ-coset.
+a single Λ-coset.  Follows from `hΛ_inj` (any nonzero lattice element has
+nonzero first coordinate, since the complex embedding K → ℂ is injective).
 -/
 
 lemma first_coord_mod_one (A : AdmissibleFamily) (u : Fin A.f → ℂ) (hu : u ∈ A.U) :
@@ -159,31 +147,26 @@ lemma projection_injective (A : AdmissibleFamily) {a : Fin A.f → ℂ} (X : Set
   intro x hx y hy h_first_eq
   have hx_shift : x ∈ shift a A.Λ.carrier := hX hx
   have hy_shift : y ∈ shift a A.Λ.carrier := hX hy
-  rcases hx_shift with ⟨vx, hvxΛ, rfl⟩
-  rcases hy_shift with ⟨vy, hvyΛ, rfl⟩
-  have h_vx_vy_coord0 : (vx (fin0 A.hf)) = (vy (fin0 A.hf)) := by
-    calc
-      vx (fin0 A.hf) = ((a + vx) (fin0 A.hf)) - (a (fin0 A.hf)) := by
-        rw [Pi.add_apply, add_sub_cancel_left]
-      _ = ((a + vy) (fin0 A.hf)) - (a (fin0 A.hf)) := by rw [h_first_eq]
-      _ = vy (fin0 A.hf) := by rw [Pi.add_apply, add_sub_cancel_left]
+  rcases hx_shift with ⟨vx, hvxΛ, hx_eq⟩
+  rcases hy_shift with ⟨vy, hvyΛ, hy_eq⟩
   have h_diff_coord0 : ((vx - vy) (fin0 A.hf)) = 0 := by
-    rw [Pi.sub_apply, h_vx_vy_coord0, sub_self]
-  by_contra h_ne
-  have h_diff_ne : vx - vy ≠ 0 := by
-    intro hzero
-    apply h_ne
-    have h_eq : vx = vy := sub_eq_zero.mp hzero
-    calc
-      a + vx = a + vy := by rw [h_eq]
-      _ = a + vy := rfl
+    have hx_at : x (fin0 A.hf) = a (fin0 A.hf) + vx (fin0 A.hf) := by rw [hx_eq, Pi.add_apply]
+    have hy_at : y (fin0 A.hf) = a (fin0 A.hf) + vy (fin0 A.hf) := by rw [hy_eq, Pi.add_apply]
+    have h_vx_eq_vy : vx (fin0 A.hf) = vy (fin0 A.hf) := by
+      calc
+        vx (fin0 A.hf) = (a (fin0 A.hf) + vx (fin0 A.hf)) - a (fin0 A.hf) := by ring
+        _ = x (fin0 A.hf) - a (fin0 A.hf) := by rw [hx_at]
+        _ = y (fin0 A.hf) - a (fin0 A.hf) := by rw [h_first_eq]
+        _ = (a (fin0 A.hf) + vy (fin0 A.hf)) - a (fin0 A.hf) := by rw [hy_at]
+        _ = vy (fin0 A.hf) := by ring
+    simp [Pi.sub_apply, h_vx_eq_vy, sub_self]
   have h_in_Λ : vx - vy ∈ A.Λ := A.Λ.sub_mem hvxΛ hvyΛ
-  have h_bound0 := first_coordinate_separation A (vx - vy) h_in_Λ h_diff_ne
-  rw [h_diff_coord0] at h_bound0
-  have hDinv : A.D⁻¹ > 0 := inv_pos.mpr A.hD
-  have hzero : ‖(0 : ℂ)‖ = 0 := norm_zero
-  rw [hzero] at h_bound0
-  linarith
+  have h_diff_eq_zero : vx - vy = 0 := A.hΛ_inj (vx - vy) h_in_Λ h_diff_coord0
+  calc
+    x = a + vx := hx_eq
+    _ = a + (vy + (vx - vy)) := by abel
+    _ = a + vy := by rw [h_diff_eq_zero, add_zero]
+    _ = y := hy_eq.symm
 
 /-!
 ### Counting lemma: cardinality of ordered unit-distance pairs
@@ -369,7 +352,6 @@ lemma size_bound (A : AdmissibleFamily) (R : ℝ) (a : Fin A.f → ℂ)
     linarith [h_4RD_gt_one]
   have hX_coset : X ⊆ shift a A.Λ.carrier := fun x hx => (hX hx).1
   have hX_polydisc : X ⊆ polydisc A.f R := fun x hx => (hX hx).2
-  let r := fin0 A.hf
   -- Helper: |⌊a⌋ = ⌊b⌋| → |a - b| < 1
   have abs_lt_one_of_floor_eq {a b : ℝ} (h : (⌊a⌋ : ℤ) = (⌊b⌋ : ℤ)) : |a - b| < 1 := by
     have hfloor_eq : (⌊a⌋ : ℝ) = (⌊b⌋ : ℝ) := by exact_mod_cast h
@@ -398,128 +380,130 @@ lemma size_bound (A : AdmissibleFamily) (R : ℝ) (a : Fin A.f → ℂ)
     have hfloor_nonneg : (0 : ℤ) ≤ Int.floor (4 * R * A.D) :=
       Int.floor_nonneg.mpr (by positivity : 0 ≤ 4 * R * A.D)
     omega
-  have h_range : ∀ x ∈ X, f_ℤ (x r) ∈ Finset.Ico (0 : ℤ) M ∧ g_ℤ (x r) ∈ Finset.Ico (0 : ℤ) M := by
-    intro x hx
-    have hzx : ‖x r‖ ≤ R := (hX_polydisc hx) r
-    have hre : |(x r).re| ≤ R :=
-      le_trans (abs_re_le_norm _) hzx
-    have him : |(x r).im| ≤ R :=
-      le_trans (abs_im_le_norm _) hzx
-    have hre_nonneg : 0 ≤ ((x r).re + R) * (2 * A.D) := by
-      have habs : |(x r).re| ≤ R := le_trans (abs_re_le_norm _) hzx
-      have hlower : -R ≤ (x r).re := (abs_le.mp habs).1
-      have hsum : 0 ≤ (x r).re + R := by linarith
+  -- Per-coordinate cell and its range
+  let cellPerCoord : ℂ → ℤ × ℤ := fun z => (f_ℤ z, g_ℤ z)
+  let targetCells : Finset (ℤ × ℤ) := Finset.Ico (0 : ℤ) M ×ˢ Finset.Ico (0 : ℤ) M
+  have h_range : ∀ x ∈ X, ∀ i : Fin A.f, cellPerCoord (x i) ∈ targetCells := by
+    intro x hx i
+    have hzx : ‖x i‖ ≤ R := (hX_polydisc hx) i
+    have hre_nonneg : 0 ≤ ((x i).re + R) * (2 * A.D) := by
+      have habs : |(x i).re| ≤ R := le_trans (abs_re_le_norm _) hzx
+      have hlower : -R ≤ (x i).re := (abs_le.mp habs).1
+      have hsum : 0 ≤ (x i).re + R := by linarith
       positivity
-    have him_nonneg : 0 ≤ ((x r).im + R) * (2 * A.D) := by
-      have habs : |(x r).im| ≤ R := le_trans (abs_im_le_norm _) hzx
-      have hlower : -R ≤ (x r).im := (abs_le.mp habs).1
-      have hsum : 0 ≤ (x r).im + R := by linarith
+    have him_nonneg : 0 ≤ ((x i).im + R) * (2 * A.D) := by
+      have habs : |(x i).im| ≤ R := le_trans (abs_im_le_norm _) hzx
+      have hlower : -R ≤ (x i).im := (abs_le.mp habs).1
+      have hsum : 0 ≤ (x i).im + R := by linarith
       positivity
-    have hre_ub : ((x r).re + R) * (2 * A.D) ≤ 4 * R * A.D := by
-      have hsum : (x r).re + R ≤ 2 * R := by
-        have habs : |(x r).re| ≤ R := le_trans (abs_re_le_norm _) hzx
-        have hupper : (x r).re ≤ R := (abs_le.mp habs).2
+    have hre_ub : ((x i).re + R) * (2 * A.D) ≤ 4 * R * A.D := by
+      have hsum : (x i).re + R ≤ 2 * R := by
+        have habs : |(x i).re| ≤ R := le_trans (abs_re_le_norm _) hzx
+        have hupper : (x i).re ≤ R := (abs_le.mp habs).2
         linarith
       nlinarith
-    have him_ub : ((x r).im + R) * (2 * A.D) ≤ 4 * R * A.D := by
-      have hsum : (x r).im + R ≤ 2 * R := by
-        have habs : |(x r).im| ≤ R := le_trans (abs_im_le_norm _) hzx
-        have hupper : (x r).im ≤ R := (abs_le.mp habs).2
+    have him_ub : ((x i).im + R) * (2 * A.D) ≤ 4 * R * A.D := by
+      have hsum : (x i).im + R ≤ 2 * R := by
+        have habs : |(x i).im| ≤ R := le_trans (abs_im_le_norm _) hzx
+        have hupper : (x i).im ≤ R := (abs_le.mp habs).2
         linarith
       nlinarith
-    have hf_lo : (0 : ℤ) ≤ f_ℤ (x r) :=
+    have hf_lo : (0 : ℤ) ≤ f_ℤ (x i) :=
       Int.floor_nonneg.mpr (mod_cast hre_nonneg)
-    have hf_hi : f_ℤ (x r) < M := by
-      calc f_ℤ (x r) ≤ Int.floor (4 * R * A.D) :=
+    have hf_hi : f_ℤ (x i) < M := by
+      calc f_ℤ (x i) ≤ Int.floor (4 * R * A.D) :=
         Int.floor_le_floor (mod_cast hre_ub)
       _ < M := Int.lt_succ_self _
-    have hg_lo : (0 : ℤ) ≤ g_ℤ (x r) :=
+    have hg_lo : (0 : ℤ) ≤ g_ℤ (x i) :=
       Int.floor_nonneg.mpr (mod_cast him_nonneg)
-    have hg_hi : g_ℤ (x r) < M := by
-      calc g_ℤ (x r) ≤ Int.floor (4 * R * A.D) :=
+    have hg_hi : g_ℤ (x i) < M := by
+      calc g_ℤ (x i) ≤ Int.floor (4 * R * A.D) :=
         Int.floor_le_floor (mod_cast him_ub)
       _ < M := Int.lt_succ_self _
-    exact ⟨Finset.mem_Ico.mpr ⟨hf_lo, hf_hi⟩, Finset.mem_Ico.mpr ⟨hg_lo, hg_hi⟩⟩
-  -- Separation: distinct x,y with same cell would be too close
-  have h_sep : ∀ x ∈ X, ∀ y ∈ X, x ≠ y → ‖(x - y) r‖ ≥ A.D⁻¹ := by
-    intro x hx y hy hne
-    rcases hX_coset hx with ⟨vx, hvx, rfl⟩
-    rcases hX_coset hy with ⟨vy, hvy, rfl⟩
-    have hv_mem : vx - vy ∈ A.Λ := AddSubgroup.sub_mem _ hvx hvy
-    have hv_ne : vx - vy ≠ 0 := by
-      intro hzero; apply hne; have h_eq := sub_eq_zero.mp hzero; rw [h_eq]
-    have h := first_coordinate_separation A (vx - vy) hv_mem hv_ne
-    simpa [r, Pi.sub_apply] using h
-  -- Injectivity: same cell → x = y (otherwise separation would be violated)
-  have h_inj : ∀ x ∈ X, ∀ y ∈ X,
-      (f_ℤ (x r), g_ℤ (x r)) = (f_ℤ (y r), g_ℤ (y r)) → x = y := by
-    intro x hx y hy hcell
-    by_contra hne
-    have hsep := h_sep x hx y hy hne
-    rcases Prod.mk.inj hcell with ⟨hf_eq, hg_eq⟩
-    have hf_eq' : (⌊((x r).re + R) * (2 * A.D)⌋ : ℤ) = (⌊((y r).re + R) * (2 * A.D)⌋ : ℤ) := by
-      simpa [f_ℤ] using hf_eq
-    have hg_eq' : (⌊((x r).im + R) * (2 * A.D)⌋ : ℤ) = (⌊((y r).im + R) * (2 * A.D)⌋ : ℤ) := by
-      simpa [g_ℤ] using hg_eq
-    -- Same floor → re/im differences < (2D)⁻¹
-    have hre_abs : |((x r).re + R) * (2 * A.D) - ((y r).re + R) * (2 * A.D)| < 1 :=
+    exact Finset.mem_product.mpr ⟨Finset.mem_Ico.mpr ⟨hf_lo, hf_hi⟩,
+      Finset.mem_Ico.mpr ⟨hg_lo, hg_hi⟩⟩
+  -- If two complex numbers land in the same cell, their norm distance is < D⁻¹
+  have h_cell_dist_lt (z₁ z₂ : ℂ) (hf : f_ℤ z₁ = f_ℤ z₂) (hg : g_ℤ z₁ = g_ℤ z₂) : ‖z₁ - z₂‖ < A.D⁻¹ := by
+    have hf_eq' : (⌊(z₁.re + R) * (2 * A.D)⌋ : ℤ) = (⌊(z₂.re + R) * (2 * A.D)⌋ : ℤ) := by
+      simpa [f_ℤ] using hf
+    have hg_eq' : (⌊(z₁.im + R) * (2 * A.D)⌋ : ℤ) = (⌊(z₂.im + R) * (2 * A.D)⌋ : ℤ) := by
+      simpa [g_ℤ] using hg
+    have hre_abs : |(z₁.re + R) * (2 * A.D) - (z₂.re + R) * (2 * A.D)| < 1 :=
       abs_lt_one_of_floor_eq hf_eq'
-    have him_abs : |((x r).im + R) * (2 * A.D) - ((y r).im + R) * (2 * A.D)| < 1 :=
+    have him_abs : |(z₁.im + R) * (2 * A.D) - (z₂.im + R) * (2 * A.D)| < 1 :=
       abs_lt_one_of_floor_eq hg_eq'
-    have hre_diff : |(x r).re - (y r).re| * (2 * A.D) < 1 := by
+    have hre_diff : |z₁.re - z₂.re| * (2 * A.D) < 1 := by
       calc
-        |(x r).re - (y r).re| * (2 * A.D) = |((x r).re - (y r).re) * (2 * A.D)| := by
+        |z₁.re - z₂.re| * (2 * A.D) = |(z₁.re - z₂.re) * (2 * A.D)| := by
           rw [abs_mul, abs_of_pos (by positivity : 0 < 2 * A.D)]
-        _ = |((x r).re + R) * (2 * A.D) - ((y r).re + R) * (2 * A.D)| := by ring_nf
+        _ = |(z₁.re + R) * (2 * A.D) - (z₂.re + R) * (2 * A.D)| := by ring_nf
         _ < 1 := hre_abs
-    have him_diff : |(x r).im - (y r).im| * (2 * A.D) < 1 := by
+    have him_diff : |z₁.im - z₂.im| * (2 * A.D) < 1 := by
       calc
-        |(x r).im - (y r).im| * (2 * A.D) = |((x r).im - (y r).im) * (2 * A.D)| := by
+        |z₁.im - z₂.im| * (2 * A.D) = |(z₁.im - z₂.im) * (2 * A.D)| := by
           rw [abs_mul, abs_of_pos (by positivity : 0 < 2 * A.D)]
-        _ = |((x r).im + R) * (2 * A.D) - ((y r).im + R) * (2 * A.D)| := by ring_nf
+        _ = |(z₁.im + R) * (2 * A.D) - (z₂.im + R) * (2 * A.D)| := by ring_nf
         _ < 1 := him_abs
     have hpos_2D : 0 < 2 * A.D := by positivity
-    have hre_bound : |(x r).re - (y r).re| < (2 * A.D)⁻¹ := by
+    have hre_bound : |z₁.re - z₂.re| < (2 * A.D)⁻¹ := by
       calc
-        |(x r).re - (y r).re| = ((|(x r).re - (y r).re|) * (2 * A.D)) * ((2 * A.D)⁻¹) := by
+        |z₁.re - z₂.re| = ((|z₁.re - z₂.re|) * (2 * A.D)) * ((2 * A.D)⁻¹) := by
           field_simp [hpos_2D.ne']
-        _ < 1 * ((2 * A.D)⁻¹) := by
-          gcongr
+        _ < 1 * ((2 * A.D)⁻¹) := by gcongr
         _ = (2 * A.D)⁻¹ := by simp
-    have him_bound : |(x r).im - (y r).im| < (2 * A.D)⁻¹ := by
+    have him_bound : |z₁.im - z₂.im| < (2 * A.D)⁻¹ := by
       calc
-        |(x r).im - (y r).im| = ((|(x r).im - (y r).im|) * (2 * A.D)) * ((2 * A.D)⁻¹) := by
+        |z₁.im - z₂.im| = ((|z₁.im - z₂.im|) * (2 * A.D)) * ((2 * A.D)⁻¹) := by
           field_simp [hpos_2D.ne']
-        _ < 1 * ((2 * A.D)⁻¹) := by
-          gcongr
+        _ < 1 * ((2 * A.D)⁻¹) := by gcongr
         _ = (2 * A.D)⁻¹ := by simp
-    -- Combine into norm bound: ‖(x-y)r‖² < (D⁻¹)², contradicting ≥ D⁻¹
-    have h_norm_sq_lt : ‖(x - y) r‖ ^ 2 < (A.D⁻¹) ^ 2 := by
+    have h_norm_sq_lt : ‖z₁ - z₂‖ ^ 2 < (A.D⁻¹) ^ 2 := by
       calc
-        ‖(x - y) r‖ ^ 2 = ‖(x r) - (y r)‖ ^ 2 := by simp [Pi.sub_apply]
-        _ = normSq ((x r) - (y r)) := by
+        ‖z₁ - z₂‖ ^ 2 = normSq (z₁ - z₂) := by
           simp [Complex.norm_def, Real.sq_sqrt (normSq_nonneg _)]
-        _ = ((x r).re - (y r).re) ^ 2 + ((x r).im - (y r).im) ^ 2 := by
+        _ = (z₁.re - z₂.re) ^ 2 + (z₁.im - z₂.im) ^ 2 := by
           simp [normSq_apply, Complex.sub_re, Complex.sub_im]; ring
-        _ = |(x r).re - (y r).re| ^ 2 + |(x r).im - (y r).im| ^ 2 := by simp [sq_abs]
+        _ = |z₁.re - z₂.re| ^ 2 + |z₁.im - z₂.im| ^ 2 := by simp [sq_abs]
         _ < ((2 * A.D)⁻¹) ^ 2 + ((2 * A.D)⁻¹) ^ 2 := by
-          have hre_sq_lt : |(x r).re - (y r).re| ^ 2 < ((2 * A.D)⁻¹) ^ 2 :=
+          have hre_sq_lt : |z₁.re - z₂.re| ^ 2 < ((2 * A.D)⁻¹) ^ 2 :=
             (sq_lt_sq₀ (abs_nonneg _) (by positivity)).mpr hre_bound
-          have him_sq_lt : |(x r).im - (y r).im| ^ 2 < ((2 * A.D)⁻¹) ^ 2 :=
+          have him_sq_lt : |z₁.im - z₂.im| ^ 2 < ((2 * A.D)⁻¹) ^ 2 :=
             (sq_lt_sq₀ (abs_nonneg _) (by positivity)).mpr him_bound
           nlinarith
         _ = (A.D⁻¹) ^ 2 / 2 := by ring
         _ < (A.D⁻¹) ^ 2 := by nlinarith [sq_pos_of_ne_zero (by positivity : A.D⁻¹ ≠ 0)]
-    have hn_nonneg : 0 ≤ ‖(x - y) r‖ := norm_nonneg _
+    have hn_nonneg : 0 ≤ ‖z₁ - z₂‖ := norm_nonneg _
     have hD_nonneg : 0 ≤ A.D⁻¹ := by positivity
     nlinarith
-  -- From injectivity: |X| ≤ M²
-  let X_finset : Finset (Fin A.f → ℂ) := hXfin.toFinset
-  have hX_finset_mem : ∀ x, x ∈ X_finset ↔ x ∈ X := fun x => Set.Finite.mem_toFinset hXfin
-  let cellMap : (Fin A.f → ℂ) → ℤ × ℤ := fun x => (f_ℤ (x r), g_ℤ (x r))
-  let target : Finset (ℤ × ℤ) := Finset.Ico (0 : ℤ) M ×ˢ Finset.Ico (0 : ℤ) M
-  have h_target_card : target.card = (M.natAbs : ℕ) * (M.natAbs : ℕ) := by
-    dsimp [target]
+  -- Full cell map: tuple of per-coordinate cells
+  let cellMap : (Fin A.f → ℂ) → (Fin A.f → ℤ × ℤ) := fun x i => cellPerCoord (x i)
+  -- Injectivity: same cell tuple → x = y
+  have h_inj : ∀ x ∈ X, ∀ y ∈ X, cellMap x = cellMap y → x = y := by
+    intro x hx y hy hcell
+    by_contra hne
+    have h_diff_mem : x - y ∈ A.Λ := by
+      rcases hX_coset hx with ⟨vx, hvx, hx_eq⟩
+      rcases hX_coset hy with ⟨vy, hvy, hy_eq⟩
+      rw [hx_eq, hy_eq]
+      have : (a + vx) - (a + vy) = vx - vy := by abel
+      rw [this]
+      exact AddSubgroup.sub_mem _ hvx hvy
+    have h_diff_ne : x - y ≠ 0 := sub_ne_zero.mpr hne
+    rcases A.hΛ_sep (x - y) h_diff_mem h_diff_ne with ⟨i, hi⟩
+    have h_cell_eq : cellPerCoord (x i) = cellPerCoord (y i) := by
+      calc
+        cellPerCoord (x i) = cellMap x i := rfl
+        _ = cellMap y i := congr_fun hcell i
+        _ = cellPerCoord (y i) := rfl
+    rcases Prod.mk.inj h_cell_eq with ⟨hf_eq, hg_eq⟩
+    have hdist_lt : ‖x i - y i‖ < A.D⁻¹ := h_cell_dist_lt (x i) (y i) hf_eq hg_eq
+    have h_sub_eq : x i - y i = (x - y) i := by simp
+    rw [h_sub_eq] at hdist_lt
+    linarith
+  -- Target: all possible cell tuples, one per coordinate
+  let allCellMaps : Finset (Fin A.f → ℤ × ℤ) := Fintype.piFinset (fun _ : Fin A.f => targetCells)
+  have h_targetCells_card : targetCells.card = (M.natAbs : ℕ) * (M.natAbs : ℕ) := by
+    dsimp [targetCells]
     have hcard : (Finset.Ico (0 : ℤ) M).card = M.natAbs := by
       have hpos : (0 : ℤ) ≤ M := by omega
       calc
@@ -527,43 +511,58 @@ lemma size_bound (A : AdmissibleFamily) (R : ℝ) (a : Fin A.f → ℂ)
         _ = M.toNat := by simp
         _ = M.natAbs := by omega
     simp [hcard]
+  have h_allCellMaps_card : allCellMaps.card = (targetCells.card : ℕ) ^ (A.f : ℕ) := by
+    simp [allCellMaps, Fintype.card_piFinset]
+  -- From injectivity: |X| ≤ M^{2f}
+  let X_finset : Finset (Fin A.f → ℂ) := hXfin.toFinset
+  have hX_finset_mem : ∀ x, x ∈ X_finset ↔ x ∈ X := fun x => Set.Finite.mem_toFinset hXfin
   have h_inj_on : ∀ x ∈ X_finset, ∀ y ∈ X_finset, cellMap x = cellMap y → x = y := by
     intro x hx y hy h
     exact h_inj x ((hX_finset_mem x).mp hx) y ((hX_finset_mem y).mp hy) h
-  have h_cellMap_image : ∀ x ∈ X_finset, cellMap x ∈ target := by
+  have h_cellMap_image : ∀ x ∈ X_finset, cellMap x ∈ allCellMaps := by
     intro x hx
-    rcases h_range x ((hX_finset_mem x).mp hx) with ⟨hf, hg⟩
-    exact Finset.mem_product.mpr ⟨hf, hg⟩
-  have h_card_nat : X_finset.card ≤ M.natAbs * M.natAbs := by
-    have hMapsTo : Set.MapsTo cellMap (X_finset : Set (Fin A.f → ℂ)) (target : Set (ℤ × ℤ)) :=
-      h_cellMap_image
-    have hInjOn : Set.InjOn cellMap (X_finset : Set (Fin A.f → ℂ)) := by
-      intro x hx y hy h
-      exact h_inj_on x hx y hy h
-    have h := Finset.card_le_card_of_injOn cellMap hMapsTo hInjOn
-    simpa [h_target_card] using h
-
+    have hxX : x ∈ X := (hX_finset_mem x).mp hx
+    apply Fintype.mem_piFinset.mpr
+    intro i
+    simpa [cellMap] using h_range x hxX i
+  have h_card_nat : X_finset.card ≤ allCellMaps.card :=
+    Finset.card_le_card_of_injOn cellMap
+      (fun x hx => h_cellMap_image x hx)
+      (fun x hx y hy h => h_inj_on x hx y hy h)
   have hM_nonneg : (0 : ℝ) ≤ M := by exact mod_cast (by omega : (0 : ℤ) ≤ M)
-  -- Convert to ℝ and chain the inequalities
+  -- Convert to ℝ and chain the inequalities: n ≤ M^{2f} ≤ (4RD+1)^{2f} = exp(2f·log(4RD+1))
   calc
     (n : ℝ) = (X_finset.card : ℝ) := rfl
-    _ ≤ ((M.natAbs : ℕ) * (M.natAbs : ℕ) : ℝ) := by exact mod_cast h_card_nat
-    _ = ((M : ℝ) ^ 2) := by simp; ring
-    _ ≤ ((4 * R * A.D + 1) : ℝ) ^ 2 := by
+    _ ≤ (allCellMaps.card : ℝ) := by exact mod_cast h_card_nat
+    _ = ((targetCells.card : ℕ) ^ (A.f : ℕ) : ℝ) := by exact mod_cast h_allCellMaps_card
+    _ = (((M.natAbs : ℕ) * (M.natAbs : ℕ)) ^ (A.f : ℕ) : ℝ) := by
+      exact mod_cast congrArg (fun c : ℕ => c ^ (A.f : ℕ)) h_targetCells_card
+    _ = (((M : ℝ) ^ 2) ^ (A.f : ℕ) : ℝ) := by
+      have hM_nonneg_int : 0 ≤ (M : ℤ) := by omega
+      have h_natAbs_eq : (M.natAbs : ℝ) = (M : ℝ) := by
+        simpa using congrArg (fun (x : ℤ) => (x : ℝ)) (Int.ofNat_natAbs_of_nonneg hM_nonneg_int)
+      have h_base_eq : ((M.natAbs * M.natAbs : ℕ) : ℝ) = (M : ℝ) ^ 2 := by
+        push_cast
+        rw [h_natAbs_eq]
+        ring
+      simpa [Nat.cast_pow] using congrArg (fun x : ℝ => x ^ (A.f : ℕ)) h_base_eq
+    _ = ((M : ℝ) ^ 2) ^ (A.f : ℝ) := by
+      simp [Real.rpow_natCast]
+    _ ≤ (((4 * R * A.D + 1) : ℝ) ^ 2) ^ (A.f : ℝ) := by
       have hMle : (M : ℝ) ≤ 4 * R * A.D + 1 := by
         dsimp [M]
-        have hfloor : (Int.floor (4 * R * A.D) : ℝ) ≤ 4 * R * A.D := by exact Int.floor_le _
+        have hfloor : (Int.floor (4 * R * A.D) : ℝ) ≤ 4 * R * A.D := Int.floor_le _
         push_cast; linarith
-      nlinarith
-    _ ≤ ((4 * R * A.D + 1) : ℝ) ^ (2 * (A.f : ℝ)) := by
-      have h_one_le : (1 : ℝ) ≤ 4 * R * A.D + 1 := by nlinarith
-      have h_exp_ge : (2 : ℝ) ≤ 2 * (A.f : ℝ) := by
-        have hf1 : (1 : ℝ) ≤ (A.f : ℝ) := by exact_mod_cast A.hf
-        nlinarith
+      have h_sq_le : (M : ℝ) ^ 2 ≤ ((4 * R * A.D + 1) : ℝ) ^ 2 := by nlinarith
+      have hf_nonneg : 0 ≤ (A.f : ℝ) := by exact mod_cast Nat.zero_le _
+      exact Real.rpow_le_rpow (by positivity) h_sq_le hf_nonneg
+    _ = (4 * R * A.D + 1 : ℝ) ^ (2 * (A.f : ℝ)) := by
       calc
-        ((4 * R * A.D + 1) : ℝ) ^ (2 : ℕ) = ((4 * R * A.D + 1) : ℝ) ^ (2 : ℝ) := by norm_num [Real.rpow_natCast]
-        _ ≤ ((4 * R * A.D + 1) : ℝ) ^ (2 * (A.f : ℝ)) :=
-          Real.rpow_le_rpow_of_exponent_le (by linarith) h_exp_ge
+        (((4 * R * A.D + 1) : ℝ) ^ 2) ^ (A.f : ℝ) = ((4 * R * A.D + 1 : ℝ) ^ (2 : ℝ)) ^ (A.f : ℝ) := by
+          norm_num
+        _ = (4 * R * A.D + 1 : ℝ) ^ ((2 : ℝ) * (A.f : ℝ)) := by
+          rw [Real.rpow_mul (by positivity : 0 ≤ (4 : ℝ)*R*A.D+1) (2 : ℝ) (A.f : ℝ)]
+        _ = ((4 * R * A.D + 1 : ℝ) ^ (2 * (A.f : ℝ))) := by ring
     _ = Real.exp (Real.log ((4 * R * A.D + 1 : ℝ) ^ (2 * (A.f : ℝ)))) := by
       rw [Real.exp_log (by positivity : 0 < (4 * R * A.D + 1 : ℝ) ^ (2 * (A.f : ℝ)))]
     _ = Real.exp ((2 * (A.f : ℝ)) * Real.log (4 * R * A.D + 1)) := by
