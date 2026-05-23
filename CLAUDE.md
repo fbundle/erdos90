@@ -15,7 +15,7 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Defs.lean` | Geometric primitives (`polydisc`, `shift`, `rho`, `CosetAvgWitness`) + core definitions (`distSq`, `unitDistPairs`, `maxUnitDists`) |
 | `Erdos90/Arithmetic.lean` | `AdmissibleFamily` structure (no axioms — `exists_admissible_family` is a theorem in NumberField) |
 | `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + analytic lemmas (`prop_p6`, `hlog2_event`); calls `prop_3_2_to_3_6_via_deep` from NumberFieldDeep |
-| `Erdos90/NumberFieldDeep.lean` | Deep number theory: Golod–Shafarevich tower (`golod_shafarevich_tower_with_lattice`, sorry'd), pigeonhole lemma (`exists_fiber_ge_div`, proved), `CMClassGroupData` structure + `exists_cm_class_group_data` (sorry'd), `cm_norm_one_elements` (proved modulo §4), `prop_3_2_to_3_6_via_deep` assembly |
+| `Erdos90/NumberFieldDeep.lean` | Deep number theory: Golod–Shafarevich tower (`GSBaseData` + `GSTowerData` structures; `gs_base_construction` + `gs_tower_levels`, both sorry'd; clean assembly in `golod_shafarevich_tower_with_lattice`), pigeonhole lemma (`exists_fiber_ge_div`, proved), `CMClassGroupData` structure + `exists_cm_class_group_data` (sorry'd), `cm_norm_one_elements` (proved modulo §4), `prop_3_2_to_3_6_via_deep` assembly |
 | `Erdos90/CosetAveraging.lean` | `lemma_2_4` — coset averaging (fully proved) |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/DiscGeometry.lean` | Discrete geometry lemmas |
@@ -35,24 +35,32 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` gaps.
+Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` gaps.
 
-## Proof state — zero axioms, 2 `sorry` gaps
+## Proof state — zero axioms, 3 `sorry` gaps
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
-Both sorries are in **`Erdos90/NumberFieldDeep.lean`**:
+All three sorries are in **`Erdos90/NumberFieldDeep.lean`**:
 
 ### `def` with `sorry` (deep number theory, requires new Mathlib development)
 
-**`golod_shafarevich_tower_with_lattice`** (line 104) — Golod–Shafarevich / Chebotarev tower (Props 3.2–3.6)
+**`gs_base_construction`** (line ~90) — Golod–Shafarevich base data, Props 3.2–3.5
 
 Lean gaps:
-- (a) Golod–Shafarevich: pro-3 group theory, relation-rank estimate r ≤ d²/4 (not in Mathlib)
-- (b) Quantitative Chebotarev: ∃ t primes with prescribed Frobenius (not in Mathlib)
-- (c) Type bridge: `mixedSpace K ≃ Fin f → ℂ` for totally complex K, transport of `integerLattice K` and `IsAddFundamentalDomain` across it
+- Cyclic cubic field F from ℓ primes r_i ≡ 1 (mod 3)
+- Golod–Shafarevich: pro-3 group theory, relation-rank estimate r ≤ d²/4 (not in Mathlib)
+- Shafarevich bound r(G) ≤ d(G) + C₀ (not in Mathlib)
+- D₀ = Q² (product of split Chebotarev primes squared)
 
-**`exists_cm_class_group_data`** (line 264) — CM field / class-group data for Prop 2.2
+**`gs_tower_levels`** (line ~106) — Chebotarev tower levels + Minkowski lattice, Prop 3.6
+
+Lean gaps:
+- Quantitative Chebotarev: build infinite tower from G̅ (not in Mathlib)
+- Type bridge: `mixedSpace K ≃ Fin f → ℂ` for totally complex CM field K
+- Transport of `integerLattice` + `IsAddFundamentalDomain` + separation across the isomorphism
+
+**`exists_cm_class_group_data`** (line ~328) — CM field / class-group data for Prop 2.2
 
 Lean gaps:
 - CM field K of degree 2f with split-prime ideal pairs (𝔓_j, c𝔓_j) (no CM split-prime API in Mathlib)
@@ -60,7 +68,11 @@ Lean gaps:
 - Norm-1 element constructor: α/c(α) using `IsCMField.complexConj`
 - Injectivity: α/c(α) = β/c(β) ⇒ α/β ∈ K⁺ ⇒ ε₂ = ε₃
 
-Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`
+**Assembly functions** (no additional sorries):
+- `golod_shafarevich_tower_with_lattice ℓ hℓ : GSTowerData ℓ` — clean `let`-based assembly of `gs_base_construction` + `gs_tower_levels`
+- `prop_3_2_to_3_6_via_deep` — chains the tower data with `cm_norm_one_elements` (§6)
+
+Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `ZSpan.isAddFundamentalDomain`
 
 ### Fully proven (no sorry)
 
@@ -87,12 +99,14 @@ Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMFiel
 - `hrho_pos` — positivity of ρ(R) for R > 1/2
 - `exists_fiber_ge_div` — pigeonhole lemma (NumberFieldDeep.lean §3, fully proved)
 - `cm_norm_one_elements` — class-group pigeonhole → norm-one set U (NumberFieldDeep.lean §5, proved modulo `exists_cm_class_group_data`)
-- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §6, proved modulo two sorries)
+- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §6, proved modulo three sorries)
 - `log_two_mul_le` — analytic helper (NumberFieldDeep.lean §1)
 
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)
 - `polydisc_measurable` — lemma (fully proved)
+- `GSTowerData ℓ` — structure abstracting the Golod–Shafarevich tower output (fields: `D₀`, `hD₀_pos`, `rd_F`, `hrd_F_ge1`, `hlog_rd`, `getTowerLevel`)
+- `GSBaseData ℓ` — structure for Props 3.2–3.5 base field data (fields: `D₀`, `hD₀_pos`, `rd_F`, `hrd_F_ge1`, `hlog_rd`)
 - `CMClassGroupData f t log_H Λ` — structure abstracting the CM field / class-group input for Prop 2.2 (fields: `E`, `G`, `φ`, `cardE`, `cardG`, `hcardE`, `hcardG`, `h_card_ratio`, `mk_unit`, `mk_unit_mem_Λ`, `mk_unit_norm`, `mk_unit_inj`)
 
 ## Important types and notations
@@ -162,9 +176,11 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The two sorries are genuinely deep: Golod–Shafarevich pro-p group theory and CM field split-prime API. Neither exists in Mathlib v4.29.1.  The rest of the formalization is ready — only the algebraic number theory input is missing.
+5. The three sorries are genuinely deep: Golod–Shafarevich pro-p group theory, quantitative Chebotarev, and CM field split-prime API. None exist in Mathlib v4.29.1.  The rest of the formalization is ready — only the algebraic number theory input is missing.
 
-6. Commit often with descriptive messages.  Always end commits with the co-author line.
+6. **∃ elimination into Type:** `Exists.casesOn` only eliminates into `Prop` in Lean 4.  When constructing a structure with `ℝ` or other non-`Prop` fields, use helper structures (like `GSBaseData`) instead of `∃` existential hypotheses — otherwise `obtain`/`cases` fails with "recursor can only eliminate into Prop".
+
+7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Memory
 
