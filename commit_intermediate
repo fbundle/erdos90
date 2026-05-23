@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+git add . ':!README.md'
+git commit -m "intermediate progress"
+git push
