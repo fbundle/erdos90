@@ -1,6 +1,6 @@
-# ERDOS90 [WIP]
+# ERDOS90
 
-A lean formalization of [Erdős Problem 90](https://www.erdosproblems.com/90): *Planar Point Sets with Many Unit Distances* from OpenAI.
+[WIP] A lean formalization of [Erdős Problem 90](https://www.erdosproblems.com/90): *Planar Point Sets with Many Unit Distances* from OpenAI.
 
 The original blog post can be found [here](https://openai.com/index/model-disproves-discrete-geometry-conjecture/)
 
