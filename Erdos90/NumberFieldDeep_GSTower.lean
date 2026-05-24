@@ -196,7 +196,7 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
       calc
         φ (NumberField.mixedEmbedding K (a : K)) = φ w := by rw [hw_eq]
         _ = (φ.restrictScalars ℤ).toLinearMap w := by
-          simp [LinearEquiv.restrictScalars_apply]
+          simp
         _ = v := hw
     · rintro ⟨a, ha⟩
       refine ⟨NumberField.mixedEmbedding K (a : K), ⟨a, by simp⟩, ?_⟩

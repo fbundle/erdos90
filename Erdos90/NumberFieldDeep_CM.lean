@@ -341,6 +341,12 @@ lemma mk_unit_from_cm_quotient {K : Type} [Field K] [NumberField K] [IsCMField K
     cmData.h_φ_norm_div_conj α hα
   exact ⟨h_mem, h_norm⟩
 
+/-- Complex conjugation induces an automorphism of the ideal class group of a CM field.
+    Uses `ClassGroup.mulEquiv` (available in Mathlib v4.29.1). -/
+noncomputable def classGroupComplexConj (K : Type) [Field K] [NumberField K] [IsCMField K] :
+    ClassGroup (𝓞 K) ≃* ClassGroup (𝓞 K) :=
+  ClassGroup.mulEquiv (IsCMField.ringOfIntegersComplexConj K).toRingEquiv
+
 /-- **CM class-group data existence** (sorry'd).
 
     This is the single number-theoretic sorry for Proposition 2.2.

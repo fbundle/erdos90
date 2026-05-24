@@ -408,7 +408,7 @@ lemma lens_volume_eq_aR (R : ℝ) (hR : R > 1/2) :
     rw [hN_def]
     have h1 : volume {p : ℝ × ℝ | p.1 ^ 2 + p.2 ^ 2 = R ^ 2} = 0 := volume_circle_eq_zero R
     have h2 : volume {p : ℝ × ℝ | (p.1 + 1) ^ 2 + p.2 ^ 2 = R ^ 2} = 0 := volume_shifted_circle_eq_zero 1 R
-    apply le_antisymm ((measure_union_le _ _).trans ?_) (zero_le _)
+    refine le_antisymm ((measure_union_le _ _).trans ?_) (by simp)
     rw [h1, h2]
     simp
   -- a.e. equality: L and S_left ∪ S_right differ only on N (null)

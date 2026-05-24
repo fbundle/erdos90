@@ -245,9 +245,9 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
   have h_E_integral : ∫⁻ a in F, E_fun a ∂volume =
       ∑ u ∈ U, ∫⁻ a in F, ∑' (g : Λ), ind (S_u u) (a + (g : Fin f → ℂ)) ∂volume := by
     simp only [E_fun]
-    rw [← lintegral_finset_sum]
+    rw [← lintegral_finsetSum]
     intro u hu
-    apply Measurable.ennreal_tsum
+    apply Measurable.tsum
     intro g
     have h_meas_add : Measurable (fun a : Fin f → ℂ => a + (g : Fin f → ℂ)) :=
       measurable_add_const (g : Fin f → ℂ)
@@ -330,7 +330,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
   have h_avg_exists : ∃ a₀ ∈ F, N_fun a₀ ≠ 0 ∧ E_fun a₀ ≥ c * N_fun a₀ := by
     have hN_meas : Measurable N_fun := by
       dsimp [N_fun]
-      refine Measurable.ennreal_tsum fun (g : Λ) => ?_
+      refine Measurable.tsum fun (g : Λ) => ?_
       have h_meas_ind : Measurable (ind B_R) :=
         (measurable_const : Measurable (fun _ : Fin f → ℂ => (1 : ℝ≥0∞))).indicator hB_meas
       exact h_meas_ind.comp (measurable_add_const (g : Fin f → ℂ))
@@ -361,7 +361,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         _ = ∑ u ∈ U, N_fun a := rfl
         _ = (U.card : ℝ≥0∞) * N_fun a := by simp
     have hN_nonneg : ∀ a, 0 ≤ N_fun a := fun a =>
-      tsum_nonneg (fun (g : Λ) => zero_le _)
+      tsum_nonneg (fun (g : Λ) => by simp)
     let s_pos : Set (Fin f → ℂ) := {a | 0 < N_fun a}
     by_contra h_no
     push Not at h_no
@@ -375,7 +375,7 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         · right; exact not_le.mpr (h_no_a hNzero)
       rcases h_cases' with (hNzero | h_not_ge)
       · have hEzero : E_fun a = 0 := by
-          apply le_antisymm ?_ (zero_le _)
+          apply le_antisymm ?_ (by simp)
           calc
             E_fun a ≤ (U.card : ℝ≥0∞) * N_fun a := hE_le_card_N a
             _ = (U.card : ℝ≥0∞) * 0 := by rw [hNzero]
