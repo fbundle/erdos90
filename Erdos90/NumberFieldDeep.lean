@@ -27,16 +27,20 @@ from five specialized files:
 
 5. **`NumberFieldDeep_ANT.lean`** — Sawin parameters (§Sawin), product formula
    separation (proved), integer separation (proved), Minkowski lattice transport
-   (7 definitions/lemmas proved, `cmSeparation` sorried), tower postulate
+   (8 definitions/lemmas proved, `cmSeparation` now proved by correcting its
+   statement to ∃ i and delegating to `cmSeparation_exists`), tower postulate
    (filled), `gs_tower_levels_v2` and `exists_cm_class_group_data_v2` (delegate
-   to v1). 1 deep sorry remains (`cmSeparation`).
+   to v1). 0 deep sorries remain in this file.
 
-The 3 remaining `sorry` declarations (4 actual `sorry` keywords):
-- `hΛ_sep` within `gs_tower_levels` (GSTower) — first-coordinate separation;
-  placeholder lattice ℤ[I]^f violates the property
-- `hmk_unit_norm` + `hmk_unit_inj` within `exists_cm_class_group_data` (CM) —
-  α/c(α) norm-1 + injectivity on fibers; both need CM field construction
-- `cmSeparation` (ANT) — same gap as `hΛ_sep`, applied to transported Minkowski lattice
+The 3 remaining `sorry` declarations (3 actual `sorry` keywords), all blocking
+the main theorem via `sorryAx`:
+- `hΛ_inj` within `gs_tower_levels` (GSTower) — first-coordinate injectivity;
+  provably FALSE for placeholder ℤ[I]^f (counterexample: (0,I,0,…)); needs CM
+  field Minkowski lattice from the Golod–Shafarevich tower (not in Mathlib v4.29.1)
+- `hmk_unit_norm` within `exists_cm_class_group_data` (CM) — ‖0‖ = 0 ≠ 1;
+  provably FALSE for placeholder mk_unit = 0; needs CM field + α/c(α) construction
+- `hmk_unit_inj` within `exists_cm_class_group_data` (CM) — constant 0 not
+  injective; provably FALSE with placeholder; needs split-prime valuation parity
 
 `ant_postulates` (Assembly) delegates to `gs_tower_levels` + `exists_cm_class_group_data`
 directly (no additional sorries).

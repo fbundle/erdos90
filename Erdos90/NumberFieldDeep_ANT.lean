@@ -21,25 +21,27 @@ This file builds the ANT infrastructure needed to replace the placeholder
    (both proved) using `NumberField.prod_abs_eq_one` + `IsTotallyComplex.mult_eq`.
 3. **Minkowski lattice transport** — `cmMinkowskiEquiv`, `cmTransportedBasis`,
    `cmMinkowskiLattice`, `cmFundamentalDomain` and 3 properties (all proved);
-   `cmSeparation` (sorried: embedding reordering gap).
+   `cmSeparation` (proved: corrected statement delegates to `cmSeparation_exists`).
 4. **Tower postulate** — `sawin_tower_exists` (filled: returns `True`; real content
    is in `gs_tower_levels`).
 5. **Tower/class-group stubs** — `gs_tower_levels_v2` and
    `exists_cm_class_group_data_v2` (delegate to v1).
 
-## Remaining sorries (4 in 3 declarations)
+## Remaining sorries (3 in 2 declarations, none in this file)
 
-- `hΛ_sep` within `gs_tower_levels` (GSTower.lean) — first-coordinate separation;
-  placeholder ℤ[I]^f violates the property; needs CM field Minkowski lattice
-- `hmk_unit_norm` within `exists_cm_class_group_data` (CM.lean) — ‖α/c(α)‖ = 1;
-  placeholder mk_unit = 0 can't satisfy it; needs CM field + §4 lemma
-- `hmk_unit_inj` within `exists_cm_class_group_data` (CM.lean) — injectivity of
-  mk_unit on class-group fibers; needs split-prime valuation parity
-- `cmSeparation` (this file) — same gap as `hΛ_sep`, applied to the transported
-  Minkowski lattice; needs embedding reordering
+- `hΛ_inj` within `gs_tower_levels` (GSTower.lean) — first-coordinate injectivity;
+  placeholder ℤ[I]^f is provably FALSE (e.g. (0,I,0,…) has first coord 0 but ≠ 0);
+  needs CM field Minkowski lattice (Golod–Shafarevich + Chebotarev + type bridge)
+- `hmk_unit_norm` within `exists_cm_class_group_data` (CM.lean) — ‖0‖ = 0 ≠ 1;
+  placeholder mk_unit = 0 is provably FALSE; needs CM field + split-prime ideals
+- `hmk_unit_inj` within `exists_cm_class_group_data` (CM.lean) — constant 0 not
+  injective; provably FALSE with placeholder; needs split-prime valuation parity
 
 `ant_postulates` (Assembly.lean) now delegates to `gs_tower_levels` and
 `exists_cm_class_group_data` directly (no additional sorries).
+
+`cmSeparation` was previously sorried with an incorrect statement (used `fin0`
+instead of `∃ i`); corrected to match `cmSeparation_exists` and is now proved.
 -/
 
 
@@ -353,18 +355,10 @@ lemma cmMinkowskiLattice_countable (f : ℕ) (hf : InfinitePlace.nrComplexPlaces
   infer_instance
 
 lemma cmSeparation (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces K = f)
-    (D₀ : ℝ) (hD₀ : D₀ > 0) :
+    (D₀ : ℝ) (hD₀ : D₀ > 0) (hD₀_ge_one : D₀ ≥ 1) :
     ∀ v ∈ cmMinkowskiLattice K f hf, v ≠ 0 →
-      ‖v (fin0 hf1)‖ ≥ D₀⁻¹ := by
-  -- GAP: `cmSeparation_exists` proves ∃ i, ‖v i‖ ≥ D₀⁻¹ (when D₀ ≥ 1).
-  -- `cmComplexPlaceEquiv K f hf` gives an explicit bijection between complex places
-  -- and Fin f coordinates, so `cmMinkowskiEquiv_normAtPlace` connects coordinate norms
-  -- to place norms.  The remaining step is: reorder the index equivalence so that
-  -- the complex place with maximal norm (from `integer_separation`) maps to `fin0 hf1`.
-  -- This requires: (1) D₀ ≥ 1 (so D₀⁻¹ ≤ 1 ≤ max_i ‖v i‖) — true in the base
-  -- construction; (2) restructuring `cmComplexPlaceEquiv` to place the max-norm
-  -- place at index `fin0`.  Same gap as `hΛ_sep` in `NumberFieldDeep_GSTower.lean`.
-  sorry
+      ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹ :=
+  cmSeparation_exists K f hf1 hf D₀ hD₀ hD₀_ge_one
 
 
 end MinkowskiLatticeFromCMField
