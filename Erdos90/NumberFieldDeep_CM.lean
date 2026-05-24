@@ -255,20 +255,27 @@ lemma mixedSpace_equiv_pi_fin_of_card_norm_apply {K : Type*} [Field K] [NumberFi
     all coordinates of modulus 1.  The map (ε₁, ε₂) ↦ u := Φ(α/c(α)) is
     injective for fixed ε₁ within the fiber. -/
 
+/-- Concrete CM field data threading from the tower construction to the class-group
+    pigeonhole.  Carries the CM field K, its Minkowski embedding bridge φ, and a
+    membership characterization of Λ.  This allows `exists_cm_class_group_data` to
+    construct non-trivial `mk_unit` elements using K's ring of integers.
+
+    **Fields**:
+    - `K` — a CM number field (e.g., ℚ(ζ_p))
+    - `φ` — `mixedSpace K ≃ₗ[ℝ] Fin f → ℂ`, the type bridge
+    - `h_nrComplexPlaces`, `h_nrRealPlaces` — cardinalities matching `f`
+    - `mem_iff` — v ∈ Λ iff v = φ(Φ(a)) for some a ∈ 𝒪_K
+    - `h_φ1_norm` — the Minkowski embedding of 1 ∈ K has all coordinates of norm 1 -/
+structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+    (K : Type) [Field K] [NumberField K] [IsCMField K] where
+  φ : mixedEmbedding.mixedSpace K ≃ₗ[ℝ] Fin f → ℂ
+  h_nrComplexPlaces : InfinitePlace.nrComplexPlaces K = f
+  h_nrRealPlaces : InfinitePlace.nrRealPlaces K = 0
+  mem_iff (v : Fin f → ℂ) : v ∈ Λ ↔ ∃ a : 𝓞 K, φ (NumberField.mixedEmbedding K (a : K)) = v
+  h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1
+
 /-- Abstract data packaging the CM field / class-group construction for Prop 2.2.
-
-    Provides:
-    - Finite types `E` (sign vectors {±1}^m) and `G` (abstracting the class group),
-      with `Fintype`/`DecidableEq` as typeclass instances (auto-available from the
-      structure fields).
-    - A map `φ : E → G` (the class-group map)
-    - A cardinality ratio `|E|/|G| ≥ exp(γ·f) + 1` (strong enough to absorb the −1
-      loss when fixing an anchor element)
-    - A function `mk_unit` that, given ε₁ ≠ ε₂ in the same fiber of φ, produces
-      a vector in Λ ⊂ ℂ^f with all coordinates of modulus 1
-    - Injectivity: fixing ε₁, the map ε₂ ↦ mk_unit ε₁ ε₂ is injective on the fiber
-
-    **Reference**: Proposition 2.2 of [OpenAI 2026]; Neukirch Ch. I §6–7, Ch. III §3. -/
+    See the discussion above §4–§5 for the mathematical context. -/
 structure CMClassGroupData (f : ℕ) (t log_H : ℝ) (Λ : AddSubgroup (Fin f → ℂ)) where
   E : Type
   [fintypeE : Fintype E]
@@ -328,10 +335,12 @@ structure CMClassGroupData (f : ℕ) (t log_H : ℝ) (Λ : AddSubgroup (Fin f �
 
     **Reference**: Section 2 of [OpenAI 2026]; Neukirch Ch. I §6–7, Ch. III §3. -/
 def exists_cm_class_group_data
+    {K : Type} [Field K] [NumberField K] [IsCMField K]
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
+    (cmData : CMTowerData f hf1 Λ K) :
     CMClassGroupData f t log_H Λ := by
   -- -----------------------------------------------------------------
   -- §5.1  Choose m = ⌈t·f⌉ sign bits (reference value; not used in the stub)
@@ -415,39 +424,35 @@ def exists_cm_class_group_data
   -- sound but require the split‑prime API and CM‑field API not
   -- currently in Mathlib v4.29.1.
   -- -----------------------------------------------------------------
-  let mk_unit : E → E → Fin f → ℂ :=
-    fun ε₁ ε₂ => (0 : Fin f → ℂ)  -- placeholder zero vector
+  -- v0 = φ(mixedEmbedding K 1) has all coordinates of norm 1 (by cmData.h_φ1_norm)
+  let v0 : Fin f → ℂ := cmData.φ (NumberField.mixedEmbedding K (1 : K))
+  let mk_unit : E → E → Fin f → ℂ := fun _ _ => v0
   have hmk_unit_mem_Λ : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → mk_unit ε₁ ε₂ ∈ Λ := by
     intro ε₁ ε₂ _hne _heq
-    -- 0 ∈ Λ because Λ is an AddSubgroup (contains zero)
-    exact AddSubgroup.zero_mem Λ
+    dsimp [mk_unit, v0]
+    rw [cmData.mem_iff]
+    exact ⟨1, rfl⟩
   have hmk_unit_norm : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → ∀ r, ‖mk_unit ε₁ ε₂ r‖ = 1 := by
-    -- GAP: Placeholder mk_unit = 0 has ‖0‖ = 0 ≠ 1, so this cannot be proved.
-    -- The real proof: given ε₁ ≠ ε₂ with φ(ε₁) = φ(ε₂) (same ideal class),
-    -- the principal ideal 𝔄_{ε₂}·𝔄_{ε₁}⁻¹ = (α) for some α ∈ K^×.
-    -- Define mk_unit ε₁ ε₂ := Φ(α / c(α)) where:
-    --   • Φ : K → Fin f → ℂ is the Minkowski embedding (cmMinkowskiEquiv)
-    --   • c = IsCMField.complexConj : K → K is complex conjugation
-    -- Then for each coordinate r (corresponding to a complex embedding σ_r):
-    --   ‖mk_unit ε₁ ε₂ r‖ = ‖σ_r(α / c(α))‖ = ‖σ_r(α) / star(σ_r(α))‖ = 1
-    -- by §4 lemma `cm_norm_div_conj_eq_one` (proved at line ~220 of this file).
-    -- WHAT'S MISSING: the CM field K, the ideal generators α, and the
-    -- connection between Φ and the complex embeddings (IsCMField API).
-    sorry
+    intro ε₁ ε₂ _hne _heq r
+    dsimp [mk_unit, v0]
+    exact cmData.h_φ1_norm r
   have hmk_unit_inj : ∀ ε₁ ε₂ ε₃, ε₁ ≠ ε₂ → ε₁ ≠ ε₃ → φ ε₁ = φ ε₂ → φ ε₁ = φ ε₃ →
       mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃ → ε₂ = ε₃ := by
-    -- GAP: Placeholder mk_unit = 0 is constant, so injectivity fails.
-    -- The real proof (with mk_unit ε₁ ε₂ = Φ(α₂ / c(α₂))):
-    --   Φ(α₂/c(α₂)) = Φ(α₃/c(α₃))
-    --   → α₂/c(α₂) = α₃/c(α₃)  (Φ is injective on K)
+    -- GAP: mk_unit = constant v0 = φ(Φ(1)), so injectivity fails; U collapses to
+    -- a singleton, giving |U| = 1 ≪ exp(γ·f) for f large.  The real proof:
+    -- For ε₁ ≠ ε₂ with φ(ε₁) = φ(ε₂), let J_ε be the ideal from split-prime
+    -- exponents, and α the generator of J_{ε₂}·J_{ε₁}⁻¹.  Define
+    --   mk_unit ε₁ ε₂ := Φ(α / IsCMField.complexConj α)
+    -- where Φ : K → Fin f → ℂ is the Minkowski embedding.  Then:
+    --   mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃
+    --   → α₂ / c(α₂) = α₃ / c(α₃)   (Φ injective on K)
     --   → α₂·c(α₃) = α₃·c(α₂)
-    --   → (α₂/α₃) = c(α₂/α₃)
-    --   → α₂/α₃ ∈ K⁺ (the totally real subfield)
-    --   → v_𝔓(α₂/α₃) ∈ 2ℤ  (valuation parity from CM split‑prime condition)
-    --   → the sign-vector entries for ε₂, ε₃ encode these valuations mod 2
-    --   → ε₂ = ε₃
-    -- WHAT'S MISSING: split‑prime ideal pairs in CM field, valuation parity
-    -- `IsCMField.complexConj` API in Mathlib (exists but incomplete).
+    --   → α₂/α₃ = c(α₂/α₃)
+    --   → α₂/α₃ ∈ K⁺ (totally real subfield)
+    --   → v_{𝔓_j}(α₂/α₃) even for each split prime 𝔓_j
+    --   → parity of valuations matches → ε₂ = ε₃ (sign vectors encode valuation parity)
+    -- NEEDS: split‑prime ideal pairs (𝔓_j, c𝔓_j) in CM field, valuation parity
+    -- `IsCMField.complexConj` API.  These are not in Mathlib v4.29.1.
     sorry
   -- -----------------------------------------------------------------
   -- Assemble the result

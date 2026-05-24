@@ -65,6 +65,8 @@ def gs_base_construction (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSBaseData ℓ := {
     and the product formula for separation.  All properties are proved (no sorry). -/
 def gs_tower_levels_proved (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      (K : Type) (hField : Field K) (hNF : NumberField K) (hCM : IsCMField K)
+      (cmData : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
@@ -314,8 +316,19 @@ def gs_tower_levels_proved (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ
     have ha0 : a = 0 := Subtype.ext ha_eq_zero
     rw [ha_eq_zero, map_zero, map_zero] at ha
     exact ha.symm
-  exact ⟨f, hf_ge_M, hf1, Λ, hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded,
-    hΛ_sep, hΛ_inj⟩
+  have h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1 := by
+    intro r
+    rw [mixedSpace_equiv_pi_fin_of_card_norm_apply h_nrRealPlaces f h_nrComplexPlaces_card (1 : K) r]
+    simp [mixedEmbedding.normAtPlace_apply]
+  let cmData : CMTowerData f hf1 Λ K := {
+    φ := φ
+    h_nrComplexPlaces := h_nrComplexPlaces_card
+    h_nrRealPlaces := h_nrRealPlaces
+    mem_iff := mem_lattice_iff
+    h_φ1_norm := h_φ1_norm
+  }
+  refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
+    hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩
 
 /-- **Prop 3.6 + Minkowski type bridge**: tower levels with lattice (fully proved).
 
@@ -325,6 +338,8 @@ def gs_tower_levels_proved (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ
     absolute-value positivity.  Delegates to `gs_tower_levels_proved`. -/
 def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      (K : Type) (hField : Field K) (hNF : NumberField K) (hCM : IsCMField K)
+      (cmData : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
@@ -387,6 +402,8 @@ structure GSTowerData (ℓ : ℕ) where
       injective on Λ.  Encapsulates Prop 3.6 (Chebotarev split primes) + the Minkowski
       embedding type bridge. -/
   getTowerLevel (M : ℕ) : ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+    (K : Type) (hField : Field K) (hNF : NumberField K) (hCM : IsCMField K)
+    (cmData : CMTowerData f hf1 Λ K)
     (_ : Countable Λ) (F : Set (Fin f → ℂ)),
     IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
     Bornology.IsBounded F ∧

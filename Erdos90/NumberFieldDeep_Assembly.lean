@@ -31,17 +31,19 @@ outputs needed by `NumberField.lean`:
        |U| = |F| − 1 ≥ exp(γ·f). -/
 
 def cm_norm_one_elements
+    {K : Type} [Field K] [NumberField K] [IsCMField K]
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (_rd_F : ℝ)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
+    (cmData : CMTowerData f hf1 Λ K) :
     ∃ (U : Finset (Fin f → ℂ)),
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
       (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
       ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
   -- Step 1: Get the CM class-group data (the one algebraic sorry)
   have data : CMClassGroupData f t log_H Λ :=
-    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hγ_pos Λ hΛ_sep
+    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hγ_pos Λ hΛ_sep cmData
   -- letI binds definitionally to the structure fields, avoiding haveI's opaque binder mismatch
   letI : Fintype data.E := data.fintypeE
   letI : DecidableEq data.E := data.decidableEqE
@@ -126,7 +128,7 @@ def cm_norm_one_elements
 /-- **Structured proof of `prop_3_2_to_3_6`** (assembly only; no new sorry).
 
     Chains `golod_shafarevich_tower_with_lattice` (§2, returns `GSTowerData`,
-    two sorries) and `cm_norm_one_elements` (§6, one sorry) together.  The log bound
+    fully proved) and `cm_norm_one_elements` (§6, one sorry) together.  The log bound
     (log rd_F ≤ C_rd·ℓ·log ℓ for C_rd = 1) is fully proved via `log_two_mul_le`.
 
     The caller (`exists_admissible_family` in NumberField.lean) computes
@@ -155,16 +157,19 @@ theorem prop_3_2_to_3_6_via_deep :
   refine ⟨tower.D₀, tower.hD₀_pos, tower.rd_F, tower.hrd_F_ge1, by
     -- log rd_F ≤ ℓ·log ℓ, and C_rd = 1
     simpa using tower.hlog_rd, fun M => ?_⟩
-  obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
-    hΛ_sep, hΛ_inj⟩ := tower.getTowerLevel M
+  obtain ⟨f, hf_ge, hf1, Λ, K, hField, hNF, hCM, cmData, hΛ_countable, F, hF_fund, hF_fin,
+    hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩ := tower.getTowerLevel M
+  letI : Field K := hField
+  letI : NumberField K := hNF
+  letI : IsCMField K := hCM
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
     hΛ_sep, hΛ_inj, fun t log_H ht hγ_pos => ?_⟩
-  exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hγ_pos Λ hΛ_sep
+  exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hγ_pos Λ hΛ_sep cmData
 
 /-! ## §8  ANT postulates — what remains to be formalized
 
-The single `sorry` gap in this file (`exists_cm_class_group_data`) is captured
-by the `cm_class_group` field of the bundled structure below.  Every theorem
+The single `sorry` gap in this file (`hmk_unit_inj` within `exists_cm_class_group_data`)
+is captured by the `cm_class_group` field of the bundled structure below.  Every theorem
 above is proved **conditional on** this one postulate (transitively via `sorryAx`).
 
 `gs_tower_levels` is now fully proved (via cyclotomic CM field ℚ(ζ_p)); its
@@ -180,20 +185,24 @@ ideal pairs, Minkowski class‑number bound. -/
 structure ERDOS_ANT_Postulates where
   gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      (K : Type) (hField : Field K) (hNF : NumberField K) (hCM : IsCMField K)
+      (cmData : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
       (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
-  cm_class_group (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
+  cm_class_group {K : Type} [Field K] [NumberField K] [IsCMField K]
+    (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
     (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
+    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
+    (cmData : CMTowerData f hf1 Λ K) :
     CMClassGroupData f t log_H Λ
 
 /-- The ANT postulates delegate to `gs_tower_levels` (fully proved via cyclotomic
-    CM field) and `exists_cm_class_group_data` (one remaining `sorry`, with two
-    sub-sorries `hmk_unit_norm` and `hmk_unit_inj`).  Only the CM class-group
+    CM field) and `exists_cm_class_group_data` (one remaining `sorry`:
+    `hmk_unit_inj`; `hmk_unit_norm` is proved).  Only the CM class-group
     data propagate via `sorryAx` to `erdos_unit_distance_false`. -/
 def ant_postulates : ERDOS_ANT_Postulates := {
   gs_tower := gs_tower_levels

@@ -33,12 +33,11 @@ from five specialized files:
    (filled), `gs_tower_levels_v2` and `exists_cm_class_group_data_v2` (delegate
    to v1). 0 deep sorries remain in this file.
 
-The 2 remaining `sorry` declarations (2 actual `sorry` keywords), both blocking
+The 1 remaining `sorry` declaration (1 actual `sorry` keyword), blocking
 the main theorem via `sorryAx`:
-- `hmk_unit_norm` within `exists_cm_class_group_data` (CM) — ‖0‖ = 0 ≠ 1;
-  provably FALSE for placeholder mk_unit = 0; needs CM field + α/c(α) construction
-- `hmk_unit_inj` within `exists_cm_class_group_data` (CM) — constant 0 not
-  injective; provably FALSE with placeholder; needs split-prime valuation parity
+- `hmk_unit_inj` within `exists_cm_class_group_data` (CM) — constant mk_unit = φ(1)
+  not injective; provably FALSE with placeholder; needs split-prime valuation parity
+  and the ideal construction J_ε from sign vectors via α/c(α)
 
 `gs_tower_levels` is now fully proved (via cyclotomic CM field ℚ(ζ_p) with
 product-formula separation).  `ant_postulates` (Assembly) delegates to
