@@ -195,21 +195,7 @@ variable (K : Type*) [Field K] [NumberField K] [IsTotallyComplex K]
 def cmMinkowskiEquiv (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
     mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ) :=
   mixedSpace_equiv_pi_fin_of_card (IsTotallyComplex.nrRealPlaces_eq_zero K) f hf
-/-- The explicit index equivalence between complex places of K and Fin f.
-    Built from `Fintype.equivFin` and `Fin.cast` to match the cardinality. -/
-def cmComplexPlaceEquiv (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    {w : InfinitePlace K // InfinitePlace.IsComplex w} ≃ Fin f := by
-  classical
-    have h_card : Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w} = f := by
-      simpa [InfinitePlace.nrComplexPlaces] using hf
-    let e_card : Fin (Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w}) ≃ Fin f :=
-      { toFun := Fin.cast h_card
-        invFun := Fin.cast h_card.symm
-        left_inv := fun x => by apply Fin.ext; simp [Fin.cast]
-        right_inv := fun x => by apply Fin.ext; simp [Fin.cast]
-      }
-    exact (Fintype.equivFin _).trans e_card
-
+-- cmComplexPlaceEquiv is now defined in NumberFieldDeep_CM.lean (shared dependency)
 /-- Applying `cmMinkowskiEquiv` at index `cmComplexPlaceEquiv K f hf w` returns
     the second component of the mixed-space element at `w`. -/
 lemma cmMinkowskiEquiv_apply_complex (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f)

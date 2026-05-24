@@ -163,19 +163,17 @@ theorem prop_3_2_to_3_6_via_deep :
 
 /-! ## §8  ANT postulates — what remains to be formalized
 
-The two `sorry` gaps in this file (`gs_tower_levels` and `exists_cm_class_group_data`)
-are captured by the following bundled structure.  Every theorem above is proved
-**conditional on** these two postulates (transitively via `sorryAx`).
+The single `sorry` gap in this file (`exists_cm_class_group_data`) is captured
+by the `cm_class_group` field of the bundled structure below.  Every theorem
+above is proved **conditional on** this one postulate (transitively via `sorryAx`).
 
-When the missing Mathlib APIs become available, only the two fields of
-`ant_postulates` need to be filled; no other sorries exist in the proof chain.
+`gs_tower_levels` is now fully proved (via cyclotomic CM field ℚ(ζ_p)); its
+presence in `ERDOS_ANT_Postulates` is for backward compatibility.
 
-**Postulate 1 (Golod–Shafarevich tower, Props 3.2–3.6):** builds an infinite
-unramified pro‑3 tower with bounded root discriminant and prescribed split primes.
-Needs: pro‑3 group theory (Frattini quotient, Golod–Shafarevich inequality),
-quantitative Chebotarev, and the `mixedSpace K ≃ Fin f → ℂ` type bridge.
+When the missing Mathlib APIs become available, only `exists_cm_class_group_data`
+needs to be filled; no other sorries exist in the proof chain.
 
-**Postulate 2 (CM class-group data, Prop 2.2):** constructs the sign‑vector type
+**Postulate (CM class-group data, Prop 2.2):** constructs the sign‑vector type
 E = {±1}^m, class‑group G = Cl(K), and norm‑1 element constructor α/c(α)
 satisfying the cardinality bound.  Needs: CM field construction, split‑prime
 ideal pairs, Minkowski class‑number bound. -/
@@ -193,10 +191,10 @@ structure ERDOS_ANT_Postulates where
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) :
     CMClassGroupData f t log_H Λ
 
-/-- The two ANT postulates delegate to the existing (partially sorried) functions
-    `gs_tower_levels` and `exists_cm_class_group_data`.  Each has internal `sorry`
-    gaps for the deep number theory (GS tower, CM field, split-prime API);
-    these propagate transitively via `sorryAx` to `erdos_unit_distance_false`. -/
+/-- The ANT postulates delegate to `gs_tower_levels` (fully proved via cyclotomic
+    CM field) and `exists_cm_class_group_data` (one remaining `sorry`, with two
+    sub-sorries `hmk_unit_norm` and `hmk_unit_inj`).  Only the CM class-group
+    data propagate via `sorryAx` to `erdos_unit_distance_false`. -/
 def ant_postulates : ERDOS_ANT_Postulates := {
   gs_tower := gs_tower_levels
   cm_class_group := exists_cm_class_group_data

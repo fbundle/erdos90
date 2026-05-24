@@ -157,15 +157,14 @@ def mixedSpace_equiv_complex_places {K : Type*} [Field K] [NumberField K]
     exact prod_left_isEmpty_equiv_snd
         ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ)
 
-/-- When K is totally complex of degree f (complex places), mixedSpace K is equivalent
-to `Fin f → ℂ`.  This is the type bridge needed for `gs_tower_levels`. -/
-def mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
-    (h_no_real : InfinitePlace.nrRealPlaces K = 0) (f : ℕ)
+/-- Equivalence between complex places of a totally complex number field K
+    and Fin f, where f = nrComplexPlaces K.  Extracted as a standalone definition
+    so that `mixedSpace_equiv_pi_fin_of_card` and downstream lemmas share the
+    same `e_idx`, avoiding definitional equality issues. -/
+def cmComplexPlaceEquiv (K : Type*) [Field K] [NumberField K] (f : ℕ)
     (hf : InfinitePlace.nrComplexPlaces K = f) :
-    mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ) := by
+    {w : InfinitePlace K // InfinitePlace.IsComplex w} ≃ Fin f := by
   classical
-    let e₁ := mixedSpace_equiv_complex_places h_no_real
-    -- Index equivalence from complex place subtype to Fin f
     have h_card : Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w} = f := by
       simpa [InfinitePlace.nrComplexPlaces] using hf
     let e_card : Fin (Fintype.card {w : InfinitePlace K // InfinitePlace.IsComplex w}) ≃ Fin f :=
@@ -176,9 +175,18 @@ def mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
         right_inv := fun x => by
           apply Fin.ext; simp [Fin.cast]
       }
+    exact (Fintype.equivFin _).trans e_card
+
+/-- When K is totally complex of degree f (complex places), mixedSpace K is equivalent
+to `Fin f → ℂ`.  This is the type bridge needed for `gs_tower_levels`. -/
+def mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
+    (h_no_real : InfinitePlace.nrRealPlaces K = 0) (f : ℕ)
+    (hf : InfinitePlace.nrComplexPlaces K = f) :
+    mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ) := by
+  classical
+    let e₁ := mixedSpace_equiv_complex_places h_no_real
     let e_idx : {w : InfinitePlace K // InfinitePlace.IsComplex w} ≃ Fin f :=
-      (Fintype.equivFin _).trans e_card
-    -- Lift to arrow equivalence, then as a linear equivalence
+      cmComplexPlaceEquiv K f hf
     let e_arrow : ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ) ≃ (Fin f → ℂ) :=
       Equiv.arrowCongr e_idx (Equiv.refl ℂ)
     let e_pi : ({w : InfinitePlace K // InfinitePlace.IsComplex w} → ℂ) ≃ₗ[ℝ]
@@ -188,6 +196,33 @@ def mixedSpace_equiv_pi_fin_of_card {K : Type*} [Field K] [NumberField K]
         map_smul' := fun r x => rfl
       }
     exact e₁.trans e_pi
+
+/-- Evaluating `mixedSpace_equiv_pi_fin_of_card` at index i gives the mixed-space
+    `.2` coordinate at the complex place corresponding to i. -/
+lemma mixedSpace_equiv_pi_fin_of_card_apply {K : Type*} [Field K] [NumberField K]
+    (h_no_real : InfinitePlace.nrRealPlaces K = 0) (f : ℕ)
+    (hf : InfinitePlace.nrComplexPlaces K = f)
+    (x : mixedEmbedding.mixedSpace K) (i : Fin f) :
+    mixedSpace_equiv_pi_fin_of_card h_no_real f hf x i =
+      x.2 ((cmComplexPlaceEquiv K f hf).symm i) := by
+  dsimp [mixedSpace_equiv_pi_fin_of_card, mixedSpace_equiv_complex_places,
+    prod_left_isEmpty_equiv_snd]
+
+/-- The norm of `mixedSpace_equiv_pi_fin_of_card` evaluated at the image of a ∈ K
+    equals `normAtPlace` at the corresponding complex place. -/
+lemma mixedSpace_equiv_pi_fin_of_card_norm_apply {K : Type*} [Field K] [NumberField K]
+    (h_no_real : InfinitePlace.nrRealPlaces K = 0) (f : ℕ)
+    (hf : InfinitePlace.nrComplexPlaces K = f)
+    (a : K) (i : Fin f) :
+    ‖mixedSpace_equiv_pi_fin_of_card h_no_real f hf
+      (NumberField.mixedEmbedding K a) i‖ =
+    mixedEmbedding.normAtPlace
+      ((cmComplexPlaceEquiv K f hf).symm i : InfinitePlace K)
+      (NumberField.mixedEmbedding K a) := by
+  rw [mixedSpace_equiv_pi_fin_of_card_apply]
+  let w := (cmComplexPlaceEquiv K f hf).symm i
+  have h_complex : InfinitePlace.IsComplex (w : InfinitePlace K) := w.prop
+  rw [mixedEmbedding.normAtPlace_apply_of_isComplex h_complex]
 
 /-! ## §5  CM class-group data structure
 
