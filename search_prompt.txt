@@ -2,3 +2,72 @@ I am using an AI to write proof in this directory, here is what needed to finish
 Could you help to do search and find the resources and write into assets/
 assets/search_results/ should hold the details
 assets/ should hold the original sources: PDFs, tex files, etc.
+
+The gap is small enough that targeted web searches can resolve it. Here are the concrete pieces needed:                                                                                                                                                                                                        ---                                                                                                  1. Split primes in CM cyclotomic fields                                                                                                                                                                   Search: split prime in CM extension ℚ(ζ_p) complex conjugation                                                                                                                                            We need: For K = ℚ(ζ_p) and K⁺ = ℚ(ζ_p + ζ_p⁻¹), find primes 𝓅 of K⁺ that split as 𝓅 = 𝔓·c𝔓 in K. These                                                                                                   are the primes where the Frobenius has order 2 in the quadratic extension K/K⁺.                                                                                                                           Concrete fact to find: For a prime q ≡ ±1 (mod p), its behavior in the quadratic extension           ℚ(ζ_p)/ℚ(ζ_p+ζ_p⁻¹). Need: infinitely many such q with q ≡ 1 (mod p) — these split completely in ℚ(ζ_p),                                                                                                   and among the p-1 primes above q in ℚ(ζ_p), they pair up under conjugation.                                                                                                                              Reference: Washington, Introduction to Cyclotomic Fields, Chapter 2-3; Neukirch, Algebraic Number    Theory, Ch. I §9.                                                                                                                                                                                       
+                                                                                                     
+  ---                                                 
+                                                      
+  2. Class group action of complex conjugation                                                                                                        
+                                                                                                     
+                                                                                                     
+  Search: ClassGroup complex conjugation automorphism or ringOfIntegersComplexConj induces class grou
+p map                                                                                             
+                                                      
+  In Mathlib v4.29.1, ClassGroup.mulEquiv does NOT exist but ClassGroup.equiv and QuotientGroup.congr
+ do.                                                                                              
+  Need to manually construct the map:             
+  ClassGroup (𝓞 K) → ClassGroup (𝓞 K)                                                                
+                                                                                                     
+  induced by ringOfIntegersComplexConj : (𝓞 K) ≃ₐ[𝓞 K⁺] (𝓞 K).                           
+                                                                                                     
+                           
+  The newer Mathlib source at RingTheory/ClassGroup.lean:449 shows how — it's ~7 lines using        
+                                                                                                  
+  ClassGroup.equiv + QuotientGroup.congr. This can be ported into the project directly.
+                                                                                                  
+                                                                                                     
+  ---                      
+  3. Discrete valuation API in Mathlib v4.29.1
+                                                                                                       Search: Mathlib IsDedekindDomain valuation or Mathlib DiscreteValuationRing                        
+                                                                                                  
+  Check what exists at Mathlib/RingTheory/DedekindDomain/. Specifically need:
+  - IsDedekindDomain.HeightOneSpectrum — the set of nonzero prime ideals                            - valuation at a prime ideal                                                                    
+  - v_𝔓(a/c(a)) parity lemma: for a split prime 𝔓 in a CM field, v_𝔓(α/c(α)) ≡ 0 mod 2 iff v_𝔓(α) =
+  v_{c𝔓}(α)           
+
+    4. The α/c(α) quotient                              
+                                                      
+  Search: CM field alpha over complex conjugate norm one or totally real subfield fixed by complex
+  conjugation                                                                                        
+                                                                                                     
+  Already partially proved in our code: normAtPlace_mixedEmbedding_cm_div_conj_eq_one shows ‖α/c(α)‖ 
+= 1 at                   
+  every complex embedding. What's missing: the integrality condition — when is α/c(α) ∈ D₀⁻¹·𝓞_K? Thi
+s is                     
+  controlled by the valuations at split primes.
+
+  ---
+  5. The ideal J_ε encoding                       
+
+  Search: sign vector encoding split prime ideals CM field
+
+  The construction: for m split-prime pairs (𝔓_j, c𝔓_j) and sign vector ε ∈ {±1}^m:
+  J_ε = ∏_{ε_j = +1} 𝔓_j · ∏_{ε_j = -1} c(𝔓_j)
+  Map φ: ε ↦ [J_ε] ∈ Cl(K). Then:
+  - |E| = 2^m, |G| = h_K
+  - |E|/|G| ≥ exp(γ·f) + 1 follows from m ≥ t·f + log h_K / log 2
+  - Injectivity: J_ε₁/J_ε₂ principal ⇒ valuations at 𝔓_j encode ε₁ vs ε₂
+
+  ---
+  Search instructions for an AI
+
+  ▎ "Search Mathlib v4.29.1 source code on GitHub for: (1) IsDedekindDomain valuation API, (2)
+  ▎ ClassGroup.equiv and QuotientGroup.congr signatures, (3) ringOfIntegersComplexConj definition in
+  ▎ CMField.lean. Also search for: prime splitting in cyclotomic extensions ℚ(ζ_p), explicit construc
+tion of                  
+  ▎  split prime pairs in CM fields, Washington Introduction to Cyclotomic Fields Chapter 2 prime
+  ▎ decomposition, and the ClassGroup.mulEquiv definition from the latest Mathlib master."
+
+  The most actionable piece is item 2 — porting ClassGroup.mulEquiv from newer Mathlib into our file 
+is ~10                   
+  lines and gives us the algebraic backbone for the injectivity proof.
