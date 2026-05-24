@@ -284,7 +284,7 @@ lemma mem_cmMinkowskiLattice_iff (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K
     there exists some coordinate `i` with `‖v i‖ ≥ D₀⁻¹`.
     The first-coordinate version (`cmSeparation`) needs embedding reordering
     to place the max-norm complex place at index `fin0`. -/
-lemma cmSeparation_exists (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces K = f)
+lemma cmSeparation_exists (f : ℕ) (_hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces K = f)
     (D₀ : ℝ) (hD₀ : D₀ > 0) (hD₀_ge_one : D₀ ≥ 1) :
     ∀ v ∈ cmMinkowskiLattice K f hf, v ≠ 0 →
       ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹ := by
@@ -363,7 +363,7 @@ section TowerPostulate
     and its `hΛ_sep` sub-sorry, which constructs the CM field Minkowski lattice
     with first-coordinate separation.  This trivial placeholder exists for the
     `gs_tower_levels_v2` code path, which currently delegates to v1. -/
-def sawin_tower_exists (M : ℕ) : True :=
+def sawin_tower_exists (_M : ℕ) : True :=
   trivial
 
 end TowerPostulate
@@ -383,8 +383,8 @@ section NewGSTowerLevels
     are proved using Mathlib's integer lattice API. -/
 def gs_tower_levels_v2 (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
-      (K : Type) (hField : Field K) (hNF : NumberField K) (hCM : IsCMField K)
-      (cmData : CMTowerData f hf1 Λ K)
+      (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
+      (_ : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧

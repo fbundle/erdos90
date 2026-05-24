@@ -33,11 +33,11 @@ whose intersection with the polydisc B_R has many ordered U-pairs.
     Set X = (a+Λ) ∩ B_R to get the CosetAvgWitness. -/
 def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_countable : Countable Λ) (F : Set (Fin f → ℂ))
-    (hF_fund : IsAddFundamentalDomain Λ F volume) (hF_vol_fin : volume F < ∞)
-    (hF_vol_pos : volume F > 0) (hF_bounded : Bornology.IsBounded F)
+    (hF_fund : IsAddFundamentalDomain Λ F volume) (_hF_vol_fin : volume F < ∞)
+    (_hF_vol_pos : volume F > 0) (_hF_bounded : Bornology.IsBounded F)
     (δ : ℝ) (hδ_pos : δ > 0)
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ δ)
-    (hΛ_inj : ∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
+    (_hΛ_inj : ∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
     (U : Finset (Fin f → ℂ))
     (hU_norm : ∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1)
     (hU_in_Λ : ∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ.carrier)
@@ -478,13 +478,13 @@ def lemma_2_4 (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         calc
           |z₁.re - z₂.re| * step = |z₁.re - z₂.re| * |step| := by rw [abs_of_pos hstep_pos]
           _ = |(z₁.re - z₂.re) * step| := by rw [← abs_mul]
-          _ = |z₁.re * step - z₂.re * step| := by ring
+          _ = |z₁.re * step - z₂.re * step| := by ring_nf
           _ < 1 := hre_abs
       have h_im_ineq : |z₁.im - z₂.im| * step < 1 := by
         calc
           |z₁.im - z₂.im| * step = |z₁.im - z₂.im| * |step| := by rw [abs_of_pos hstep_pos]
           _ = |(z₁.im - z₂.im) * step| := by rw [← abs_mul]
-          _ = |z₁.im * step - z₂.im * step| := by ring
+          _ = |z₁.im * step - z₂.im * step| := by ring_nf
           _ < 1 := him_abs
       -- From |a| * (2/δ) < 1, multiply by δ: |a| * 2 < δ, so |a| < δ/2
       have h_re_diff : |z₁.re - z₂.re| < δ / 2 := by

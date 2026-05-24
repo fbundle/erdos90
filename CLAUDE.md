@@ -41,45 +41,36 @@ lake build
 
 Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings.
 
-## Proof state — zero axioms, 4 `sorry` gaps
+## Proof state — zero axioms, 1 `sorry` gap
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
 
-The remaining sorries are in 3 declarations across 2 files:
+The remaining sorry is in 1 declaration:
 
-### Core sorries (block `erdos_unit_distance_false`)
+### Core sorry (blocks `erdos_unit_distance_false`)
 
-**`gs_tower_levels`** in `NumberFieldDeep_GSTower.lean` — GS tower levels, Prop 3.6
-- 1 sub-sorry: `hΛ_sep` (first-coordinate separation; placeholder ℤ[I]^f violates it)
-
-**`exists_cm_class_group_data`** in `NumberFieldDeep_CM.lean` — CM class-group data, Prop 2.2
-- 2 sub-sorries: `hmk_unit_norm` (needs CM field K + α/c(α)) + `hmk_unit_inj` (split-prime valuation parity)
-
-**`ant_postulates`** now delegates to the above two directly (0 additional sorries).
-
-### ANT module sorries (infrastructure, not wired into main theorem)
-
-**`cmSeparation`** in `NumberFieldDeep_ANT.lean` — same gap as `hΛ_sep`; transported Minkowski lattice separation. `sawin_tower_exists` is filled (returns `True`); `gs_tower_levels_v2` and `exists_cm_class_group_data_v2` delegate to v1.
+**`hmk_unit_inj`** within `exists_cm_class_group_data` in `NumberFieldDeep_CM.lean` — CM class-group data injectivity, Prop 2.2
+- `mk_unit` is currently a placeholder constant `v0 = φ(Φ(1))`, making injectivity provably FALSE for nontrivial fibers
+- Needs: split-prime ideal pairs (𝔓_j, c𝔓_j) in CM field K, D₀ = Q² scaling, valuation parity lemma, `mk_unit ε₁ ε₂ = Φ(α/c(α))` where α generates J_{ε₂}·J_{ε₁}⁻¹
+- Blocked by: `ClassGroup.mulEquiv` missing from Mathlib v4.29.1 (added in later versions), no split-prime API
 
 ### Proved (no sorry)
 
 - `gs_base_construction` — GS base data with D₀ = 1, rd_F = 2ℓ, log bound via `log_two_mul_le`
+- `gs_tower_levels_proved` — tower levels via cyclotomic CM field ℚ(ζ_p), product-formula lattice
+- `gs_tower_levels` / `gs_tower_levels_v2` — delegate to `gs_tower_levels_proved`
 - `golod_shafarevich_tower_with_lattice` — assembly of `gs_base_construction` + `gs_tower_levels`
 - `exists_fiber_ge_div` — pigeonhole lemma (§3)
 - 4 CM lemmas in §4 (`norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, etc.)
+- `mk_unit_from_cm_quotient` — for α/c(α) ∈ 𝓞_K, Minkowski image is in Λ with norm 1 (infrastructure for real mk_unit)
+- `hmk_unit_norm` — filled using `cmData.h_φ1_norm`
+- `hmk_unit_mem_Λ` — filled using `cmData.mem_iff`
 - `cm_norm_one_elements` — proved modulo `exists_cm_class_group_data`
-- `prop_3_2_to_3_6_via_deep` — assembly, proved modulo the two main sorries
+- `prop_3_2_to_3_6_via_deep` — assembly, proved modulo `exists_cm_class_group_data`
 - `product_formula_sep` — product formula separation (ANT, proved via `NumberField.prod_abs_eq_one`)
 - `integer_separation` — integer separation (ANT, proved via `Finset.prod_erase_mul`)
-- `cmTransportedBasis` — transported lattice basis (ANT, proved via `Basis.map`)
-- `cmMinkowskiLattice` — Minkowski lattice (ANT, proved via `Submodule.span`)
-- `cmFundamentalDomain` — ZSpan fundamental domain (ANT, proved)
-- `cmIsAddFundamentalDomain` — fundamental domain property (ANT, proved via `ZSpan`)
-- `cmFundamentalDomain_finite_volume` — bounded → finite volume (ANT, proved)
-- `cmMinkowskiLattice_countable` — ℤ-span countable (ANT, proved)
-- `gs_tower_levels_v2` / `exists_cm_class_group_data_v2` — delegating to v1 (ANT, filled)
-- `sawin_tower_exists` — returns `True` (ANT, filled)
-- `ant_postulates` — delegates to `gs_tower_levels` + `exists_cm_class_group_data` (Assembly, filled)
+- `cmTransportedBasis`, `cmMinkowskiLattice`, `cmFundamentalDomain`, `cmIsAddFundamentalDomain`, `cmFundamentalDomain_finite_volume`, `cmMinkowskiLattice_countable` — all ANT lattice lemmas proved
+- `sawin_tower_exists`, `ant_postulates` — filled, delegate to `gs_tower_levels` + `exists_cm_class_group_data`
 
 Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `ZSpan.isAddFundamentalDomain`
 
@@ -116,7 +107,8 @@ Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMFiel
 - `normAtPlace_mixedEmbedding_cm_div_conj_eq_one` — normAtPlace = 1 under mixedEmbedding (NumberFieldDeep.lean §4, fully proved)
 - `mixedEmbedding_cm_div_conj_complex_norm_one` — concrete ‖.2 w‖ = 1 per complex place (NumberFieldDeep.lean §4, fully proved)
 - `cm_norm_one_elements` — class-group pigeonhole → norm-one set U (NumberFieldDeep.lean §6, proved modulo `exists_cm_class_group_data`)
-- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §7, proved modulo two sorries)
+- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §7, proved modulo 1 sorry)
+- `mk_unit_from_cm_quotient` — for α/c(α) ∈ 𝓞_K, Minkowski image is in Λ with norm 1 (NumberFieldDeep_CM.lean, infrastructure lemma, fully proved)
 
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)

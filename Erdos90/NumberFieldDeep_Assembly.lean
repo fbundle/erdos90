@@ -185,8 +185,8 @@ ideal pairs, Minkowski class‑number bound. -/
 structure ERDOS_ANT_Postulates where
   gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
-      (K : Type) (hField : Field K) (hNF : NumberField K) (hCM : IsCMField K)
-      (cmData : CMTowerData f hf1 Λ K)
+      (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
+      (_ : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
