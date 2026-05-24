@@ -51,4 +51,4 @@ This work is completed fully by the following AI systems (with human verificatio
 
 - `Claude Sonnet 4.6` - secondary proof writer (10% - a lot stronger than deepseek but limited use) - web search
 
-- `Gemini-3-Flash-Preview` - web search
+- `Gemini-3-Flash-Preview, Gemini-3.1-Flash-Lite-Preview` - web search
