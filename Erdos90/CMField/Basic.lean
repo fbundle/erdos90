@@ -1,6 +1,6 @@
 import Mathlib
 
-open Real Set
+open Real Set NumberField
 open scoped Complex Pointwise
 
 noncomputable section
@@ -18,35 +18,15 @@ conjugate.
 
 * `SplitPrimeData K m` — m distinct prime ideals, each `≠` its complex conjugate,
   all 2m primes (primes and their conjugates) pairwise distinct.
-* `conjHeightOneSpectrum` — complex conjugation lifted to `HeightOneSpectrum (𝓞 K)`.
 * `conjIdeal` — complex conjugation on `Ideal (𝓞 K)`, defined directly from
   `ringOfIntegersComplexConj`.
 -/
 
 variable (K : Type*) [Field K] [NumberField K] [IsCMField K]
 
-/-- Complex conjugation on `HeightOneSpectrum (𝓞 K)`, induced by
-`IsCMField.ringOfIntegersComplexConj`. -/
-noncomputable def conjHeightOneSpectrum :
-    HeightOneSpectrum (𝓞 K) → HeightOneSpectrum (𝓞 K) :=
-  HeightOneSpectrum.equivOfRingEquiv
-    (IsCMField.ringOfIntegersComplexConj K).toRingEquiv
-
-@[simp]
-lemma conjHeightOneSpectrum_asIdeal (v : HeightOneSpectrum (𝓞 K)) :
-    (conjHeightOneSpectrum K v).asIdeal =
-      Ideal.map (IsCMField.ringOfIntegersComplexConj K) v.asIdeal := by
-  rfl
-
-lemma conjHeightOneSpectrum_involutive :
-    Function.Involutive (conjHeightOneSpectrum K) := by
-  intro v
-  ext : 1
-  simp [conjHeightOneSpectrum]
-
 /-- Complex conjugation on `Ideal (𝓞 K)`, directly as an `Ideal` map. -/
 noncomputable def conjIdeal : Ideal (𝓞 K) → Ideal (𝓞 K) :=
-  Ideal.map (IsCMField.ringOfIntegersComplexConj K)
+  Ideal.map ((IsCMField.ringOfIntegersComplexConj K).toRingHom)
 
 @[simp]
 lemma conjIdeal_mul (I J : Ideal (𝓞 K)) :
@@ -57,11 +37,29 @@ lemma conjIdeal_mul (I J : Ideal (𝓞 K)) :
 lemma conjIdeal_conjIdeal (I : Ideal (𝓞 K)) :
     conjIdeal K (conjIdeal K I) = I := by
   dsimp [conjIdeal]
-  rw [Ideal.map_map, Ideal.map_id]
-  · rfl
-  · -- ringOfIntegersComplexConj composed with itself is identity
-    apply AlgEquiv.coe_ringEquiv_injective
-    ext x; simp
+  let φ : (𝓞 K) →+* (𝓞 K) := (IsCMField.ringOfIntegersComplexConj K).toRingHom
+  have h_alg : ∀ x : 𝓞 K, (IsCMField.ringOfIntegersComplexConj K)
+      ((IsCMField.ringOfIntegersComplexConj K) x) = x := by
+    intro x
+    apply RingOfIntegers.ext_iff.mpr
+    calc
+      ((IsCMField.ringOfIntegersComplexConj K)
+          ((IsCMField.ringOfIntegersComplexConj K) x) : K)
+          = IsCMField.complexConj K (((IsCMField.ringOfIntegersComplexConj K) x : K)) := by
+        rw [IsCMField.coe_ringOfIntegersComplexConj]
+      _ = IsCMField.complexConj K (IsCMField.complexConj K (x : K)) := by
+        rw [IsCMField.coe_ringOfIntegersComplexConj]
+      _ = (x : K) := by rw [IsCMField.complexConj_apply_apply]
+  have h_inv : ∀ x : 𝓞 K, φ (φ x) = x := by
+    intro x; dsimp [φ]; exact h_alg x
+  have h_comp : φ.comp φ = RingHom.id _ :=
+    RingHom.ext h_inv
+  calc
+    Ideal.map φ (Ideal.map φ I) = (I.map φ).map φ := rfl
+    _ = I.map (φ.comp φ) := by rw [Ideal.map_map φ φ]
+    _ = I.map (RingHom.id _) := by rw [h_comp]
+    _ = I := by rw [Ideal.map_id]
+
 
 lemma conjIdeal_injective : Function.Injective (conjIdeal K) := by
   intro I J h
@@ -71,15 +69,16 @@ lemma conjIdeal_injective : Function.Injective (conjIdeal K) := by
 /-- The conjugate of a nonzero prime ideal is again a nonzero prime ideal. -/
 lemma conjIdeal_isPrime {P : Ideal (𝓞 K)} (hP : P.IsPrime) :
     (conjIdeal K P).IsPrime := by
-  rw [conjIdeal]
-  exact Ideal.map_isPrime_of_equiv
-    (IsCMField.ringOfIntegersComplexConj K).toRingEquiv hP
+  dsimp [conjIdeal]
+  haveI : Ideal.IsPrime P := hP
+  exact Ideal.map_isPrime_of_equiv (IsCMField.ringOfIntegersComplexConj K)
 
 lemma conjIdeal_ne_bot {P : Ideal (𝓞 K)} (hP : P ≠ ⊥) :
     conjIdeal K P ≠ ⊥ := by
-  contrapose! hP
-  apply_fun conjIdeal K at hP
-  simpa using hP
+  intro h_eq
+  apply hP
+  apply conjIdeal_injective K
+  rw [h_eq, conjIdeal, Ideal.map_bot]
 
 /-- Data for m split-prime ideal pairs 𝔭ⱼ, c(𝔭ⱼ) in a CM field K.
 
@@ -104,23 +103,5 @@ structure SplitPrimeData (K : Type*) [Field K] [NumberField K] [IsCMField K] (m 
 /-- The conjugate prime `c(𝔭ⱼ)` as an ideal. -/
 def SplitPrimeData.conjPrime {m : ℕ} (sp : SplitPrimeData K m) (j : Fin m) : Ideal (𝓞 K) :=
   conjIdeal K (sp.primes j)
-
-/-- The total number of ideals in the set {𝔭ⱼ, c(𝔭ⱼ) : j < m} is 2×m, all distinct. -/
-lemma SplitPrimeData.card_total {m : ℕ} (sp : SplitPrimeData K m) :
-    Fintype.card { I : Ideal (𝓞 K) // ∃ (j : Fin m) (b : Bool),
-      I = if b then sp.primes j else sp.conjPrime j } = 2 * m := by
-  classical
-    have h_total : Fintype.card (Fin m × Bool) = 2 * m := by simp
-    refine (Fintype.card_congr ?_).trans h_total
-    apply Equiv.ofBijective
-      (λ ⟨j, b⟩ => ⟨if b then sp.primes j else sp.conjPrime j, ⟨j, b, rfl⟩⟩)
-    constructor
-    · rintro ⟨j₁, b₁⟩ ⟨j₂, b₂⟩ h_eq
-      have h_type_eq := congrArg Subtype.val h_eq
-      simp only at h_type_eq
-      have h_res := sp.h_distinct j₁ j₂ b₁ b₂ h_type_eq
-      exact Prod.ext (Fin.ext h_res.1) (Bool.ext h_res.2)
-    · rintro ⟨I, ⟨j, b, hI⟩⟩
-      exact ⟨⟨j, b⟩, by ext; exact hI⟩
 
 end

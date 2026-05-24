@@ -24,7 +24,9 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/DiscGeometry.lean` | Discrete geometry lemmas |
 | `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erdos90.lean` | Root import (imports all modules) |
+| `Erdos90.lean` | Root import (imports all modules including CMField) |
+| `Erdos90/CMField/Basic.lean` | `conjIdeal`, `SplitPrimeData` structure (fully proved, no sorries) |
+| `Erdos90/CMField/CyclotomicSplitPrimes.lean` | Split primes in cyclotomic fields ℚ(ζ_p); `find_t_primes_modEq_one` proved; 5 ANT lemmas sorried (ramification/inertia API); not in root import chain |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -39,7 +41,7 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.29.1` and mathlib (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings.
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 1 `sorry` warning.
 
 ## Proof state — zero axioms, 1 `sorry` gap
 
@@ -52,7 +54,7 @@ The remaining sorry is in 1 declaration:
 **`hmk_unit_inj`** within `exists_cm_class_group_data` in `NumberFieldDeep_CM.lean` — CM class-group data injectivity, Prop 2.2
 - `mk_unit` is currently a placeholder constant `v0 = φ(Φ(1))`, making injectivity provably FALSE for nontrivial fibers
 - Needs: split-prime ideal pairs (𝔓_j, c𝔓_j) in CM field K, D₀ = Q² scaling, valuation parity lemma, `mk_unit ε₁ ε₂ = Φ(α/c(α))` where α generates J_{ε₂}·J_{ε₁}⁻¹
-- Blocked by: `ClassGroup.mulEquiv` missing from Mathlib v4.29.1 (added in later versions), no split-prime API
+- Blocked by: split-prime API not in Mathlib.  `CMField/Basic.lean` provides `conjIdeal`, `SplitPrimeData` infrastructure.  `CMField/CyclotomicSplitPrimes.lean` provides Dirichlet-based prime finding for ℚ(ζ_p) and a framework for constructing `SplitPrimeData` instances (sorried factorization lemmas).  `ClassGroup.mulEquiv` is available in Mathlib v4.30.0-rc2.
 
 ### Proved (no sorry)
 
@@ -109,6 +111,11 @@ Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMFiel
 - `cm_norm_one_elements` — class-group pigeonhole → norm-one set U (NumberFieldDeep.lean §6, proved modulo `exists_cm_class_group_data`)
 - `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §7, proved modulo 1 sorry)
 - `mk_unit_from_cm_quotient` — for α/c(α) ∈ 𝓞_K, Minkowski image is in Λ with norm 1 (NumberFieldDeep_CM.lean, infrastructure lemma, fully proved)
+- `conjIdeal` — complex conjugation on ideals of 𝓞_K (CMField/Basic.lean, fully proved)
+- `conjIdeal_mul`, `conjIdeal_conjIdeal`, `conjIdeal_injective`, `conjIdeal_isPrime`, `conjIdeal_ne_bot` — basic conjIdeal lemmas (CMField/Basic.lean, all fully proved)
+- `SplitPrimeData` — structure for m split-prime ideal pairs (CMField/Basic.lean, fully defined)
+- `find_t_primes_modEq_one` — Dirichlet: t primes ≡ 1 (mod p) (CMField/CyclotomicSplitPrimes.lean, fully proved)
+- `cyclof_pos`, `cyclof_ge_one` — basic facts about f = (p-1)/2 (CMField/CyclotomicSplitPrimes.lean, proved)
 
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)
