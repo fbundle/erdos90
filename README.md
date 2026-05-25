@@ -40,7 +40,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 - please end your commit message with 
 
 ```
-Co-Authored-By: DeepSeek-V4-Pro with Claude Code
+Co-Authored-By: Claude Sonnet 4.6
 ```
 
 ## DISCLAIMER FOR AI USE
