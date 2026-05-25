@@ -109,7 +109,9 @@ end ringEquivOfRingEquiv_coeIdeal
 /-- Data for m split-prime ideal pairs 𝔭ⱼ, c(𝔭ⱼ) in a CM field K.
 
 Each 𝔭ⱼ is a nonzero prime ideal of 𝓞_K, distinct from its complex conjugate,
-and all 2m ideals (the primes and their conjugates) are pairwise distinct. -/
+and all 2m ideals (the primes and their conjugates) are pairwise distinct.
+`Q` is the product of the rational primes from which these split-prime pairs
+originate (used in the Q² scaling for the α/c(α) membership proof). -/
 structure SplitPrimeData (K : Type*) [Field K] [NumberField K] [IsCMField K] (m : ℕ) where
   /-- The m chosen primes; we take one from each conjugate pair. -/
   primes : Fin m → Ideal (𝓞 K)
@@ -125,6 +127,10 @@ structure SplitPrimeData (K : Type*) [Field K] [NumberField K] [IsCMField K] (m 
     (if b₁ then primes i else conjIdeal K (primes i)) =
     (if b₂ then primes j else conjIdeal K (primes j)) →
     i = j ∧ b₁ = b₂
+  /-- Product of the rational primes q₁,…,qₜ that give rise to these split prime pairs
+  (t = m / f where f = nrComplexPlaces).  Used for D₀ = Q² scaling. -/
+  Q : ℕ
+  h_Q_pos : Q > 0
 
 /-- The conjugate prime `c(𝔭ⱼ)` as an ideal. -/
 def SplitPrimeData.conjPrime {m : ℕ} (sp : SplitPrimeData K m) (j : Fin m) : Ideal (𝓞 K) :=

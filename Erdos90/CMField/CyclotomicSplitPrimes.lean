@@ -674,7 +674,11 @@ def splitPrimeData_from_prime_list (t : ℕ) (qs : List ℕ)
     -- Define primes from the enumeration
     let primes (j : Fin m) : Ideal (𝓞 K) := (h_equiv.symm j).val
 
-    refine ⟨primes, ?_, ?_, ?_, ?_⟩
+    -- Compute Q = product of the rational primes qs
+    let Q : ℕ := qs.prod
+    have h_Q_pos : Q > 0 := by
+      refine List.prod_pos (fun q hq => Nat.Prime.pos (_hqs_prime q hq))
+    refine ⟨primes, ?_, ?_, ?_, ?_, Q, h_Q_pos⟩
     · -- h_prime
       intro j
       dsimp [primes]
@@ -732,11 +736,10 @@ def splitPrimeData_from_prime_list (t : ℕ) (qs : List ℕ)
 /-- **Main construction**: For K = ℚ(ζ_p) with odd prime p > 2, and any t ∈ ℕ,
 construct `SplitPrimeData K (t * ((p-1)/2))` using Dirichlet's theorem. -/
 def splitPrimeData_of_cyclotomic (t : ℕ) : SplitPrimeData K (t * cyclof p) :=
-  have h_nonempty : Nonempty (SplitPrimeData K (t * cyclof p)) := by
-    have r := find_t_primes_modEq_one (p := p) t
-    rcases r with ⟨qs, h_len, h_prime, h_mod, h_ne_p, h_nodup⟩
-    exact ⟨splitPrimeData_from_prime_list (p := p) t qs
-      h_len h_prime h_mod h_ne_p h_nodup⟩
-  h_nonempty.some
+  let r := find_t_primes_modEq_one (p := p) t
+  let qs := Classical.choose r
+  let h_spec := Classical.choose_spec r
+  splitPrimeData_from_prime_list (p := p) t qs
+    (h_spec.1) (h_spec.2.1) (h_spec.2.2.1) (h_spec.2.2.2.1) (h_spec.2.2.2.2)
 
 end Erdos90.CMField.Cyclotomic
