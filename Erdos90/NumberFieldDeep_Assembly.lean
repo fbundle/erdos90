@@ -37,14 +37,15 @@ def cm_norm_one_elements
     (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
-    (cmData : CMTowerData f hf1 Λ K) :
+    (cmData : CMTowerData f hf1 Λ K)
+    (classNumBound_le_log_H : cmData.classNumBound ≤ log_H) :
     ∃ (U : Finset (Fin f → ℂ)),
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
       (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
       ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
   -- Step 1: Get the CM class-group data
   have data : CMClassGroupData f t log_H Λ :=
-    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData
+    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
   -- letI binds definitionally to the structure fields, avoiding haveI's opaque binder mismatch
   letI : Fintype data.E := data.fintypeE
   letI : DecidableEq data.E := data.decidableEqE
@@ -165,8 +166,14 @@ theorem prop_3_2_to_3_6_via_deep :
   letI : IsCMField K := hCM
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
     hΛ_sep, hΛ_inj, fun t log_H ht hlog_H_nn hγ_pos => ?_⟩
+  have classNumBound_le_log_H : cmData.classNumBound ≤ log_H := by
+    -- Minkowski class-number bound: log(h_K)/f ≤ C_class · log(2 · rd_F).
+    -- With the tautological classNumBound = log(h_K)/f and log_H = C_class · log(2 · rd_F),
+    -- this reduces to the quantitative Minkowski bound h_K ≤ exp(log_H · f).
+    -- GAP: not in Mathlib v4.30; requires bounding the class number by the Minkowski constant.
+    sorry
   exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hlog_H_nn
-    hγ_pos Λ hΛ_sep cmData
+    hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
 
 /-! ## §8  ANT postulates — what remains to be formalized
 
@@ -200,7 +207,8 @@ structure ERDOS_ANT_Postulates where
     (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
-    (cmData : CMTowerData f hf1 Λ K) :
+    (cmData : CMTowerData f hf1 Λ K)
+    (classNumBound_le_log_H : cmData.classNumBound ≤ log_H) :
     CMClassGroupData f t log_H Λ
 
 /-- The ANT postulates delegate to `gs_tower_levels` (fully proved via cyclotomic

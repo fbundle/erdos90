@@ -414,9 +414,10 @@ def exists_cm_class_group_data_v2
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     {K : Type} [Field K] [NumberField K] [IsCMField K]
-    (cmData : CMTowerData f hf1 Λ K) :
+    (cmData : CMTowerData f hf1 Λ K)
+    (classNumBound_le_log_H : cmData.classNumBound ≤ log_H) :
     CMClassGroupData f t log_H Λ :=
   -- Delegates to v1; v2 would use Sawin tower K + CM class-group API.
-  exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData
+  exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
 
 end NewCMClassGroup

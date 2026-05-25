@@ -353,10 +353,11 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     h_div_conj_mem_Λ := by
       intro _t' _ε₁ _ε₂ _α _hα _hα_eq
       sorry
-    -- The class number h_K satisfies h_K ≤ exp(log(h_K)/f · f) = h_K (tautology).
-    -- classNumBound = log(h_K)/f is the exact bound; classNumBound_nonpos (log(h_K)/f ≤ 0,
-    -- i.e., h_K ≤ 1) is the remaining GAP — requires restricting to primes where ℚ(ζ_p) has
-    -- class number 1 (Vandiver's conjecture) or a quantitative Minkowski bound not in Mathlib.
+    -- classNumBound = log(h_K)/f is the tautological bound.
+    -- hClassNum proves h_K ≤ exp(log(h_K)/f · f) = h_K (tautology).
+    -- The Minkowski bound classNumBound ≤ log_H is now a postulate at the call site
+    -- (prop_3_2_to_3_6_via_deep) rather than a CMTowerData field, since it depends on
+    -- the tower's log_H parameter which is not available at the CMTowerData level.
     classNumBound := Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ)
     hClassNum := by
       have hf_ne : (f : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
@@ -365,11 +366,6 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
           Fintype.card_pos (α := ClassGroup (𝓞 K))
         exact_mod_cast h
       rw [div_mul_cancel₀ _ hf_ne, Real.exp_log hcard_pos]
-    classNumBound_nonpos := by
-      -- GAP: log(h_K)/f ≤ 0 requires h_K ≤ 1.  The Minkowski bound gives
-      -- log h_K ≤ C·f·log(p-1) > 0 for large p, so this cannot be proved without
-      -- either restricting p or restructuring the bound relative to log_H.
-      sorry
   }
   refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩

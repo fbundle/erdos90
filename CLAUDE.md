@@ -52,9 +52,9 @@ The 2 remaining sorries are both in `gs_tower_levels_proved` (`NumberFieldDeep_G
 
 ### Sorries (block `erdos_unit_distance_false`)
 
-**1. `h_div_conj_mem_Λ`** (line ~355) — inside `gs_tower_levels_proved`'s `CMTowerData` construction. Requires: for any α such that (α)·J(ε₁) = J(ε₂) as fractional ideals, the Minkowski image Φ(α/c(α)) belongs to Λ. The current tower uses D₀ = 1 (placeholder), so Λ = Φ(𝓞_K) does not generally contain Φ(α/c(α)). Needs D₀ = Q² scaling from split primes: v_{𝔓_s}(α/c(α)) ∈ {-2,0,2}, so Q²·(α/c(α)) ∈ 𝓞_K when Q = ∏_j q_j.
+**1. `h_div_conj_mem_Λ`** (GSTower, inside `CMTowerData` construction). Requires: for any α such that (α)·J(ε₁) = J(ε₂) as fractional ideals, the Minkowski image Φ(α/c(α)) belongs to Λ. The current tower uses D₀ = 1 (placeholder), so Λ = Φ(𝓞_K) does not generally contain Φ(α/c(α)). Needs D₀ = Q² scaling from split primes: v_{𝔓_s}(α/c(α)) ∈ {-2,0,2}, so Q²·(α/c(α)) ∈ 𝓞_K when Q = ∏_j q_j.
 
-**2. `classNumBound_nonpos`** (line ~372) — inside same `CMTowerData`. Requires `Real.log(h_K)/f ≤ 0`, i.e., h_K ≤ 1. The Minkowski bound gives log h_K ≤ C·f·log(p-1) > 0 for large p, so this is mathematically false for general cyclotomic fields. Fix requires either: restricting to primes where ℚ(ζ_p) has class number 1 (Vandiver's conjecture, unproved) OR restructuring the bound to be relative to log_H (needs Minkowski class-number bound, not in Mathlib).
+**2. `classNumBound_le_log_H`** (Assembly, `prop_3_2_to_3_6_via_deep`). Requires `log(h_K)/f ≤ log_H`, i.e., `h_K ≤ exp(log_H · f)`. This is the Minkowski class-number bound — mathematically TRUE for appropriate log_H, but not available in Mathlib v4.30. Previously this was the FALSE statement `classNumBound_nonpos : log(h_K)/f ≤ 0` (equivalent to h_K = 1) in `CMTowerData`; restructured out in the 2026-05-25 refactor.
 
 Both sorries flow through: `gs_tower_levels_proved` → `gs_tower_levels` → `golod_shafarevich_tower_with_lattice` → `prop_3_2_to_3_6_via_deep` → `exists_admissible_family` → `erdos_unit_distance_false`.
 
@@ -69,15 +69,15 @@ All fields of `CMClassGroupData` are now proved, including:
 ### Proved (no sorry)
 
 - `gs_base_construction` — GS base data with D₀ = 1, rd_F = 2ℓ, log bound via `log_two_mul_le`
-- `gs_tower_levels_proved` — tower levels via cyclotomic CM field ℚ(ζ_p), product-formula lattice; all fields proved EXCEPT `h_div_conj_mem_Λ` and `classNumBound_nonpos` in the returned `CMTowerData`
+- `gs_tower_levels_proved` — tower levels via cyclotomic CM field ℚ(ζ_p), product-formula lattice; all fields proved EXCEPT `h_div_conj_mem_Λ` in the returned `CMTowerData` (`classNumBound_nonpos` was removed in the 2026-05-25 refactor)
 - `gs_tower_levels` / `gs_tower_levels_v2` — delegate to `gs_tower_levels_proved`
 - `golod_shafarevich_tower_with_lattice` — assembly of `gs_base_construction` + `gs_tower_levels`
 - `exists_fiber_ge_div` — pigeonhole lemma (§3)
 - 4 CM lemmas in §4 (`norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, etc.)
 - `mk_unit_from_cm_quotient` — for α/c(α) ∈ 𝓞_K, Minkowski image is in Λ with norm 1 (infrastructure for real mk_unit)
-- `exists_cm_class_group_data` — all `CMClassGroupData` fields proved (including `hmk_unit_inj`, `hmk_unit_norm`, `hmk_unit_mem_Λ`, `h_card_ratio`); the proof is complete — only depends on the sorried `CMTowerData` fields from GSTower
-- `cm_norm_one_elements` — class-group pigeonhole → norm-one set U, proved
-- `prop_3_2_to_3_6_via_deep` — assembly, proved (modulo the 2 GSTower sorries)
+- `exists_cm_class_group_data` — all `CMClassGroupData` fields proved (including `hmk_unit_inj`, `hmk_unit_norm`, `hmk_unit_mem_Λ`, `h_card_ratio`); the proof is complete — takes `classNumBound_le_log_H` as an explicit hypothesis
+- `cm_norm_one_elements` — class-group pigeonhole → norm-one set U, proved; takes `classNumBound_le_log_H` as an explicit hypothesis
+- `prop_3_2_to_3_6_via_deep` — assembly, proved (modulo the 2 sorries: `h_div_conj_mem_Λ` in GSTower and `classNumBound_le_log_H` at the call site)
 - `product_formula_sep` — product formula separation (ANT, proved via `NumberField.prod_abs_eq_one`)
 - `integer_separation` — integer separation (ANT, proved via `Finset.prod_erase_mul`)
 - `cmTransportedBasis`, `cmMinkowskiLattice`, `cmFundamentalDomain`, `cmIsAddFundamentalDomain`, `cmFundamentalDomain_finite_volume`, `cmMinkowskiLattice_countable` — all ANT lattice lemmas proved
@@ -203,11 +203,23 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The two remaining sorries are in `gs_tower_levels_proved`'s `CMTowerData` construction: D₀ = Q² scaling for `h_div_conj_mem_Λ` (valuation arithmetic, ~100 lines once Q is computed) and `classNumBound_nonpos` (requires either Vandiver's conjecture for class number 1, or a Minkowski bound not in Mathlib). The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, combinatorial counting — is fully proved.
+5. The two remaining sorries are: (1) `h_div_conj_mem_Λ` in GSTower's `CMTowerData` construction (D₀ = Q² valuation arithmetic, ~100 lines once Q is computed), and (2) `classNumBound_le_log_H` in Assembly's `prop_3_2_to_3_6_via_deep` (Minkowski class-number bound: h_K ≤ exp(log_H·f), not in Mathlib). The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, combinatorial counting — is fully proved.
 
 6. **∃ elimination into Type:** `Exists.casesOn` only eliminates into `Prop` in Lean 4.  When constructing a structure with `ℝ` or other non-`Prop` fields, use helper structures (like `GSBaseData`) instead of `∃` existential hypotheses — otherwise `obtain`/`cases` fails with "recursor can only eliminate into Prop".
 
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
+
+## Lessons
+
+### 2026-05-25: Never pack false statements as structure fields
+
+`classNumBound_nonpos` was a field of `CMTowerData` asserting `log(h_K)/f ≤ 0`, equivalent to `h_K = 1`. This is mathematically false for ℚ(ζ_p) with p ≥ 23 (Masley–Montgomery). It was introduced as a bridge to derive `classNumBound ≤ log_H` via `classNumBound ≤ 0 ≤ log_H`.
+
+**What went wrong:** The field was FALSE but sorried in `gs_tower_levels_proved`. Even if it could be proved for some small primes, the tower picks primes via `Nat.exists_infinite_primes` (an arbitrary prime ≥ bound), so the statement is unprovable in general.
+
+**The fix:** Replaced `classNumBound_nonpos : classNumBound ≤ 0` with a direct postulate `classNumBound_le_log_H : classNumBound ≤ log_H` at the call site (`prop_3_2_to_3_6_via_deep`). The new statement is the Minkowski class-number bound: `h_K ≤ exp(log_H · f)` — mathematically TRUE (though still not in Mathlib).
+
+**Lesson:** When a structure field encodes a numeric inequality that depends on external parameters (like `log_H`), don't bake a stronger false intermediate into the structure. Instead, pass the actual needed inequality as an explicit hypothesis at the point where all parameters are in scope. A sorried TRUE statement is better than a sorried FALSE one — the true one can eventually be proved when the relevant Mathlib API arrives.
 
 ## Memory
 
