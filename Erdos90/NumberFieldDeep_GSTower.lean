@@ -2,6 +2,7 @@ import Mathlib
 import Erdos90.Arithmetic
 import Erdos90.NumberFieldDeep_Analytic
 import Erdos90.NumberFieldDeep_CM
+import Erdos90.CMField.CyclotomicSplitPrimes
 
 open Real Filter NumberField InfinitePlace Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex Pointwise BigOperators
@@ -326,6 +327,17 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     rw [mixedSpace_equiv_pi_fin_of_card_norm_apply h_nrRealPlaces f h_nrComplexPlaces_card
       (α / IsCMField.complexConj K α) r]
     exact normAtPlace_mixedEmbedding_cm_div_conj_eq_one α hα _
+  haveI : Fact (Nat.Prime p) := ⟨hp_prime⟩
+  haveI : Fact (2 < p) := ⟨hp_gt_two⟩
+  let splitPrimesFor (t' : ℕ) : SplitPrimeData K (t' * f) := by
+    have h_f_eq : (p - 1) / 2 = f := by
+      rw [hf_def]
+    have sp := Erdos90.CMField.Cyclotomic.splitPrimeData_of_cyclotomic (p := p) t'
+    -- sp : SplitPrimeData K (t' * ((p - 1) / 2))
+    -- t' * ((p - 1) / 2) = t' * f by h_f_eq
+    have h_mul_eq : t' * ((p - 1) / 2) = t' * f := by rw [h_f_eq]
+    rw [h_mul_eq] at sp
+    exact sp
   let cmData : CMTowerData f hf1 Λ K := {
     φ := φ
     h_nrComplexPlaces := h_nrComplexPlaces_card
@@ -333,6 +345,7 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     mem_iff := mem_lattice_iff
     h_φ1_norm := h_φ1_norm
     h_φ_norm_div_conj := h_φ_norm_div_conj
+    splitPrimesFor := splitPrimesFor
   }
   refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩

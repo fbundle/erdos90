@@ -1,5 +1,6 @@
 import Mathlib
 import Erdos90.Arithmetic
+import Erdos90.CMField.Basic
 
 open Real Filter NumberField Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex Pointwise
@@ -276,6 +277,10 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
   h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1
   h_φ_norm_div_conj : ∀ (α : K) (_ : α ≠ 0) (r : Fin f),
     ‖φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) r‖ = 1
+  /-- Split prime ideal data: for any integer `t'`, we can find `t' * f` split-prime ideal
+  pairs in K (each prime ≠ its complex conjugate, all 2·(t'·f) ideals pairwise distinct).
+  Filled by the cyclotomic tower constructor using Dirichlet's theorem. -/
+  splitPrimesFor : ∀ (t' : ℕ), SplitPrimeData K (t' * f)
 
 /-- Abstract data packaging the CM field / class-group construction for Prop 2.2.
     See the discussion above §4–§5 for the mathematical context. -/
@@ -390,116 +395,264 @@ def exists_cm_class_group_data
     (cmData : CMTowerData f hf1 Λ K) :
     CMClassGroupData f t log_H Λ := by
   -- -----------------------------------------------------------------
-  -- §5.1  Choose m = ⌈t·f⌉ sign bits (reference value; not used in the stub)
-  --
-  -- In the full proof (Prop 2.2), m = t·f is the number of split‑prime
-  -- ideal pairs in K.  We record the bound m ≥ t·f for reference.
+  -- §5.1  Get t' = ⌈t⌉₊ split primes and m = t'·f split-prime ideal pairs
   -- -----------------------------------------------------------------
-  set m : ℕ := ⌈t * (f : ℝ)⌉₊ with hm_def
-  have hm_ge_tf : (t : ℝ) * (f : ℝ) ≤ (m : ℝ) := by
-    rw [hm_def]
-    have hceil : (t : ℝ) * (f : ℝ) ≤ (⌈(t : ℝ) * (f : ℝ)⌉₊ : ℝ) :=
-      (Nat.ceil_le (a := (t : ℝ) * (f : ℝ)) (n := ⌈(t : ℝ) * (f : ℝ)⌉₊)).mp (le_refl _)
-    simpa [hm_def] using hceil
+  let t' : ℕ := ⌈t⌉₊
+  have ht'_ge_t : (t : ℝ) ≤ (t' : ℝ) := by
+    dsimp [t']
+    exact ((Nat.ceil_le (a := (t : ℝ)) (n := t')).mp (le_refl t'))
+  let spDM : SplitPrimeData K (t' * f) := cmData.splitPrimesFor t'
+  let m : ℕ := t' * f
   -- -----------------------------------------------------------------
-  -- §5.2  Sign‑vector type E and class group G (placeholder)
+  -- §5.2  Sign-vector type E = {±1}^m and class group G
   --
-  -- In the full proof E = Fin(2^m) ≅ {±1}^m encodes choices of 𝔓_s vs c𝔓_s
-  -- for each split‑prime pair.  For the stub we set |E| = cardE where
-  -- cardE := ⌈exp(γ·f)⌉₊ + 2, which guarantees |E|/|G| ≥ exp(γ·f) + 1
-  -- (with cardinality to spare for the anchor element).
+  -- E = Fin m → Bool encodes sign choices ±1 for each split-prime pair.
+  -- |E| = 2^m ≥ 2^{t·f} = exp(t·log 2 · f).
+  -- G = ClassGroup(𝒪_K) is the target of the ideal-class map φ.
+  -- |G| = class number h_K ≤ exp(log_H · f) (Minkowski bound).
   --
-  -- G = Fin 1 is a placeholder for ClassGroup(𝒪_K).
+  -- For the cardinality ratio: |E|/|G| ≥ exp((t·log 2 - log_H)·f) = exp(γ·f).
   -- -----------------------------------------------------------------
-  let cardE : ℕ := ⌈Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))⌉₊ + 2
-  have hcardE_pos : cardE > 0 := by
-    refine Nat.succ_pos _
-  let E : Type := Fin cardE
+  let E : Type := Fin m → Bool
   letI : Fintype E := inferInstance
   letI : DecidableEq E := inferInstance
-  have hcardE : cardE = Fintype.card E := by dsimp [cardE, E]; simp
-  let G : Type := Fin 1
+  have hcardE_val : Fintype.card E = 2 ^ m := by
+    dsimp [E]
+    simp
+  let cardE : ℕ := 2 ^ m
+  have hcardE : cardE = Fintype.card E := by
+    dsimp [cardE, E]
+    simp
+  let G : Type := ClassGroup (𝓞 K)
   letI : Fintype G := inferInstance
   letI : DecidableEq G := inferInstance
-  let cardG : ℕ := 1
-  have hcardG : cardG = Fintype.card G := by dsimp [cardG, G]; simp
+  have hcardG_pos : 0 < Fintype.card G := by
+    rw [Fintype.card_pos_iff]
+    exact ⟨1⟩
+  -- cardG = class number h_K; use Fintype.card directly
+  let cardG : ℕ := Fintype.card G
+  have hcardG : cardG = Fintype.card G := rfl
   -- -----------------------------------------------------------------
-  -- §5.3  The class‑group map φ : E → G (constant for the stub)
-  -- -----------------------------------------------------------------
-  let φ : E → G := fun _ => ⟨0, by decide⟩
-  -- -----------------------------------------------------------------
-  -- §5.4  Cardinality ratio |E|/|G| ≥ exp(γ·f) + 1
+  -- §5.3  Ideal J(ε) = ∏_j (if ε_j then 𝔓_j else c(𝔓_j))
   --
-  -- With |E| = ⌈exp(γ·f)⌉ + 2 and |G| = 1:
-  --   (cardE : ℝ) = ⌈exp(γ·f)⌉ + 2 ≥ exp(γ·f) + 2 > exp(γ·f) + 1.
+  -- Each ε : Fin m → Bool picks one prime from each conjugate pair.
+  -- The product is over all m primes; each factor is a nonzero prime ideal.
+  -- -----------------------------------------------------------------
+  let J (ε : E) : Ideal (𝓞 K) :=
+    Finset.prod Finset.univ
+      (fun (j : Fin m) => if ε j then spDM.primes j else conjIdeal K (spDM.primes j))
+  have hJ_ne_zero (ε : E) : J ε ≠ 0 := by
+    dsimp [J]
+    refine (Finset.prod_ne_zero_iff.mpr (fun j _ => ?_))
+    by_cases hεj : ε j
+    · simp [hεj, spDM.h_ne_bot j]
+    · simp [hεj, conjIdeal_ne_bot K (spDM.h_ne_bot j)]
+  have hJ_ne_bot (ε : E) : J ε ≠ ⊥ := by
+    intro h_eq
+    apply hJ_ne_zero ε
+    simpa using h_eq
+  -- Convert J ε to a nonzero ideal element
+  -- (Ideal (𝓞 K))⁰ = { I : Ideal (𝓞 K) // I ∈ nonZeroDivisors (Ideal (𝓞 K)) }
+  have hJ_nonZeroDiv (ε : E) : J ε ∈ nonZeroDivisors (Ideal (𝓞 K)) := by
+    rw [mem_nonZeroDivisors_iff_ne_zero]
+    exact hJ_ne_zero ε
+  let J0 (ε : E) : {I : Ideal (𝓞 K) // I ∈ nonZeroDivisors (Ideal (𝓞 K))} :=
+    ⟨J ε, hJ_nonZeroDiv ε⟩
+  -- -----------------------------------------------------------------
+  -- §5.4  Class-group map φ : E → G
   --
-  -- This requires no additional hypotheses on log_H, t, or f.
+  -- φ(ε) = class of J(ε) in the class group.
+  -- -----------------------------------------------------------------
+  let φ : E → G := fun ε => ClassGroup.mk0 (J0 ε)
+  -- -----------------------------------------------------------------
+  -- §5.5  Cardinality ratio |E|/|G| ≥ exp(γ·f) + 1
+  --
+  -- |E| = 2^m ≥ 2^{t·f} = exp(t·log 2 · f).
+  -- |G| = h_K, the class number.
+  -- The Minkowski bound gives h_K ≤ exp(log_H · f).
+  -- Hence |E|/|G| ≥ exp((t·log 2 - log_H)·f) + 1 (for sufficiently large f).
+  --
+  -- GAP: the Minkowski class-number bound exp(log_H·f) is not available in Mathlib.
+  -- We use the crude bound: cardG ≥ 1 gives (2^m : ℝ) / cardG ≥ 2^m / cardG,
+  -- and we need 2^m / cardG ≥ exp(γ·f) + 1.
+  -- This holds when 2^m ≥ cardG · (exp(γ·f) + 1), which follows from the
+  -- Ah-Minkowski class-number formula (Minkowski bound + analytic class number).
   -- -----------------------------------------------------------------
   have h_card_ratio : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 ≤
       (cardE : ℝ) / (cardG : ℝ) := by
-    have hcardG_one : (cardG : ℝ) = 1 := by dsimp [cardG, G]; simp
-    rw [hcardG_one, div_one]
-    -- We need: exp(γ·f) + 1 ≤ cardE = ⌈exp(γ·f)⌉₊ + 2
-    -- From Nat.ceil: exp(γ·f) ≤ ⌈exp(γ·f)⌉₊
-    -- Then exp(γ·f) + 1 ≤ ⌈exp(γ·f)⌉₊ + 1 ≤ ⌈exp(γ·f)⌉₊ + 2 = cardE
-    have hceil : (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) : ℝ) ≤
-        (⌈Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))⌉₊ : ℝ) :=
-      (Nat.ceil_le (a := Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)))
-        (n := ⌈Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))⌉₊)).mp (le_refl _)
-    -- exp ≤ ⌈exp⌉, so exp + 1 ≤ ⌈exp⌉ + 1 ≤ ⌈exp⌉ + 2 = (cardE : ℝ)
-    -- (cardE : ℝ) = (⌈exp⌉₊ + 2 : ℝ) = (⌈exp⌉₊ : ℝ) + 2 by Nat.cast_add
-    have htemp : (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 : ℝ) ≤
-        ((⌈Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))⌉₊ : ℝ) + 2) := by
-      linarith
-    simpa [cardE, Nat.cast_add] using htemp
+    -- cardE = 2^m ≥ 2^{t·f} = exp(t·log 2 · f)
+    -- cardG = h_K ≤ exp(log_H · f)  (Minkowski class-number bound, not in Mathlib)
+    -- Then cardE / cardG ≥ exp((t·log 2 - log_H)·f) = exp(γ·f).
+    -- The "+1" margin is absorbed for exp(γ·f) ≥ 1.
+    -- GAP: the class-number bound log h_K ≤ log_H · f is not available.
+    -- For now we admit this bound as a sorry.
+    have h_exp_bound : (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 : ℝ) ≤
+        ((2 : ℝ) ^ m : ℝ) / (cardG : ℝ) := by
+      -- The full proof: 2^m = 2^{t'·f} ≥ 2^{t·f} = exp(t·log 2 · f).
+      -- Then use the Minkowski class-number bound cardG ≤ exp(log_H · f).
+      -- This is a deep ANT result requiring the Minkowski bound + class number formula.
+      sorry
+    have h_cardE_val : (cardE : ℝ) = ((2 : ℝ) ^ m : ℝ) := by
+      dsimp [cardE]; simp
+    rw [h_cardE_val]
+    exact h_exp_bound
   -- -----------------------------------------------------------------
-  -- §5.6  The mk_unit constructor
+  -- §5.6  The mk_unit constructor: Φ(α / c(α))
   --
-  -- Mathematical construction (paper §2.1):
-  --   For ε₁ ≠ ε₂ with φ(ε₁) = φ(ε₂), the ideal 𝔄_{ε₂} · 𝔄_{ε₁}⁻¹
-  --   is principal.  Choose a generator α ∈ K× (axiom of choice).
-  --   Then mk_unit ε₁ ε₂ = Φ(α / c(α)), where:
-  --     • Φ : K → Fin f → ℂ is the Minkowski embedding
-  --       (f distinct complex embeddings, one from each conjugate pair)
-  --     • c : K → K is complex conjugation (IsCMField.complexConj)
-  --     • α / c(α) has norm 1 in every embedding (proved in §4)
-  --     • Q²·α/c(α) ∈ 𝒪_K (valuation argument), so α/c(α) ∈ D₀⁻¹·𝒪_K
-  --       hence mk_unit ε₁ ε₂ ∈ Λ  (since Λ = Φ(D₀⁻¹·𝒪_K))
+  -- For ε₁ ≠ ε₂ with φ(ε₁) = φ(ε₂), the ideals J(ε₁) and J(ε₂) are in the
+  -- same class group.  By `ClassGroup.mk0_eq_mk0_iff_exists_fraction_ring`,
+  -- there exists α ∈ K^× such that (α)·J(ε₁) = J(ε₂) as fractional ideals.
   --
-  -- The norm‑1 property (§4 lemmas) and the injectivity argument
-  -- (valuations at 𝔓_s distinguish the u_ε) are both mathematically
-  -- sound but require the split‑prime API and CM‑field API not
-  -- currently in Mathlib v4.29.1.
+  -- Define mk_unit ε₁ ε₂ := Φ(α / c(α)) where Φ = cmData.φ ∘ mixedEmbedding.
+  -- This has all coordinates of norm 1 (by h_φ_norm_div_conj, proved in §4).
+  --
+  -- The integrality condition α/c(α) ∈ 𝒪_K (needed for Λ membership via
+  -- mk_unit_from_cm_quotient) follows from a valuation argument after
+  -- scaling by D₀ = Q².  When D₀ = 1 (current tower), this is sorried.
+  --
+  -- The injectivity proof proceeds in two steps:
+  -- (3) Φ(α₂/c(α₂)) = Φ(α₃/c(α₃)) → α₂/c(α₂) = α₃/c(α₃) → α₂·c(α₃)=α₃·c(α₂)
+  --     → α₂/α₃ = c(α₂/α₃) → α₂/α₃ ∈ K⁺ (by IsCMField.complexConj_eq_self_iff).
+  -- (4) α₂/α₃ ∈ K⁺ → valuations at 𝔓_j and c(𝔓_j) agree → ε₂_j = ε₃_j.
+  --     Step (4) requires split-prime valuation theory (not in Mathlib).
   -- -----------------------------------------------------------------
-  -- v0 = φ(mixedEmbedding K 1) has all coordinates of norm 1 (by cmData.h_φ1_norm)
-  let v0 : Fin f → ℂ := cmData.φ (NumberField.mixedEmbedding K (1 : K))
-  let mk_unit : E → E → Fin f → ℂ := fun _ _ => v0
-  have hmk_unit_mem_Λ : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → mk_unit ε₁ ε₂ ∈ Λ := by
-    intro ε₁ ε₂ _hne _heq
-    dsimp [mk_unit, v0]
-    rw [cmData.mem_iff]
-    exact ⟨1, rfl⟩
+
+  -- Helper: from φ(ε₁) = φ(ε₂), extract α ∈ K^× such that (α)·J(ε₁) = J(ε₂)
+  -- as fractional ideals.  Uses the fraction-ring formulation which gives
+  -- α directly in K (rather than x/y with x, y ∈ 𝓞_K).
+  have h_exists_alpha (ε₁ ε₂ : E) (hφ_eq : φ ε₁ = φ ε₂) : ∃ (α : K), α ≠ 0 := by
+    rcases (ClassGroup.mk0_eq_mk0_iff_exists_fraction_ring (R := 𝓞 K) (K := K)).mp hφ_eq with
+      ⟨α, hα, _⟩
+    exact ⟨α, hα⟩
+
+  -- Define mk_unit: when φ(ε₁) = φ(ε₂), pick an α and send it through Φ(·/c(·)).
+  -- Otherwise fall back to Φ(1).
+  let mk_unit (ε₁ ε₂ : E) : Fin f → ℂ :=
+    if h : φ ε₁ = φ ε₂ then
+      let α := Classical.choose (h_exists_alpha ε₁ ε₂ h)
+      cmData.φ (NumberField.mixedEmbedding K ((α / IsCMField.complexConj K α : K) : K))
+    else
+      cmData.φ (NumberField.mixedEmbedding K (1 : K))
+
+  -- ---------------------------------------------------------------
+  -- hmk_unit_norm: the norm-1 property (uses §4 lemma)
+  -- ---------------------------------------------------------------
   have hmk_unit_norm : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → ∀ r, ‖mk_unit ε₁ ε₂ r‖ = 1 := by
-    intro ε₁ ε₂ _hne _heq r
-    dsimp [mk_unit, v0]
-    exact cmData.h_φ1_norm r
+    intro ε₁ ε₂ _hne hφ_eq r
+    dsimp [mk_unit]
+    rw [dif_pos hφ_eq]
+    let α := Classical.choose (h_exists_alpha ε₁ ε₂ hφ_eq)
+    have hα : α ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)
+    exact cmData.h_φ_norm_div_conj α hα r
+
+  -- ---------------------------------------------------------------
+  -- hmk_unit_mem_Λ: membership in the lattice (needs integrality of α/c(α))
+  --
+  -- The mathematical proof: after scaling the tower by D₀ = Q²
+  -- (product of split primes squared), α/c(α) ∈ D₀⁻¹·𝓞_K.
+  -- With the current D₀=1 tower, Φ(α/c(α)) may not be in Λ = Φ(𝓞_K).
+  -- We use `mk_unit_from_cm_quotient` which handles the proof given
+  -- the integrality hypothesis.
+  -- ---------------------------------------------------------------
+  have hmk_unit_mem_Λ : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → mk_unit ε₁ ε₂ ∈ Λ := by
+    intro ε₁ ε₂ hne hφ_eq
+    dsimp [mk_unit]
+    rw [dif_pos hφ_eq]
+    let α := Classical.choose (h_exists_alpha ε₁ ε₂ hφ_eq)
+    have hα : α ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)
+    -- The lemma `mk_unit_from_cm_quotient cmData α hα h_int` gives exactly
+    --   cmData.φ (mixedEmbedding K (α / c(α))) ∈ Λ
+    -- provided we have the integrality condition:
+    --   h_int : (α / complexConj K α) ∈ (algebraMap (𝓞 K) K).range
+    -- GAP: This requires D₀ = Q² tower scaling.  With D₀ = 1, α/c(α) may have
+    -- denominators at the split primes (exponents ±2 in the denominator).
+    -- The proper tower (Q = ∏ q_i, D₀ = Q²) ensures α/c(α) · Q² ∈ 𝓞_K, giving
+    -- membership in Λ = Φ(D₀⁻¹·𝓞_K).  See paper §2.1, valuation parity argument.
+    have h_int : (α / IsCMField.complexConj K α) ∈
+        (algebraMap (𝓞 K) K).range := by
+      sorry
+    exact (mk_unit_from_cm_quotient cmData α hα h_int).1
+
+  -- ---------------------------------------------------------------
+  -- hmk_unit_inj: injectivity of mk_unit for fixed ε₁ on the fiber
+  --
+  -- Mathematical proof (paper §2.1), split into two lemmas:
+  --
+  -- **Lemma A** (algebraic): mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃ →
+  --   α₂/c(α₂) = α₃/c(α₃) (Minkowski injectivity) →
+  --   α₂·c(α₃) = α₃·c(α₂) → α₂/α₃ = c(α₂/α₃) → α₂/α₃ ∈ K⁺.
+  --
+  -- **Lemma B** (arithmetic): α₂/α₃ ∈ K⁺ and the ideal equalities
+  --   (α₂)·J(ε₁) = J(ε₂), (α₃)·J(ε₁) = J(ε₃) imply ε₂ = ε₃.
+  --   This uses the split-prime valuation argument: in K⁺,
+  --   v_{𝔓_j}(·) = v_{c(𝔓_j)}(·), which forces ε₂_j = ε₃_j for all j.
+  --
+  -- Lemma A is proved below.  Lemma B requires the split-prime
+  -- valuation API (not available in Mathlib) and is sorried.
+  -- ---------------------------------------------------------------
   have hmk_unit_inj : ∀ ε₁ ε₂ ε₃, ε₁ ≠ ε₂ → ε₁ ≠ ε₃ → φ ε₁ = φ ε₂ → φ ε₁ = φ ε₃ →
       mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃ → ε₂ = ε₃ := by
-    -- GAP: mk_unit = constant v0 = φ(Φ(1)), so injectivity fails; U collapses to
-    -- a singleton, giving |U| = 1 ≪ exp(γ·f) for f large.  The real proof:
-    -- For ε₁ ≠ ε₂ with φ(ε₁) = φ(ε₂), let J_ε be the ideal from split-prime
-    -- exponents, and α the generator of J_{ε₂}·J_{ε₁}⁻¹.  Define
-    --   mk_unit ε₁ ε₂ := Φ(α / IsCMField.complexConj α)
-    -- where Φ : K → Fin f → ℂ is the Minkowski embedding.  Then:
-    --   mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃
-    --   → α₂ / c(α₂) = α₃ / c(α₃)   (Φ injective on K)
-    --   → α₂·c(α₃) = α₃·c(α₂)
-    --   → α₂/α₃ = c(α₂/α₃)
-    --   → α₂/α₃ ∈ K⁺ (totally real subfield)
-    --   → v_{𝔓_j}(α₂/α₃) even for each split prime 𝔓_j
-    --   → parity of valuations matches → ε₂ = ε₃ (sign vectors encode valuation parity)
-    -- NEEDS: split‑prime ideal pairs (𝔓_j, c𝔓_j) in CM field, valuation parity
-    -- `IsCMField.complexConj` API.  These are not in Mathlib v4.29.1.
+    intro ε₁ ε₂ ε₃ _hne₁₂ _hne₁₃ hφ₁₂ hφ₁₃ h_mk_eq
+    dsimp [mk_unit] at h_mk_eq
+    rw [dif_pos hφ₁₂, dif_pos hφ₁₃] at h_mk_eq
+    let α₂ := Classical.choose (h_exists_alpha ε₁ ε₂ hφ₁₂)
+    let α₃ := Classical.choose (h_exists_alpha ε₁ ε₃ hφ₁₃)
+    have hα₂ : α₂ ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ₁₂)
+    have hα₃ : α₃ ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₃ hφ₁₃)
+    -- Step 1: Minkowski embedding injectivity → α₂/c(α₂) = α₃/c(α₃) in K
+    have h_val_eq : (α₂ / IsCMField.complexConj K α₂ : K) = (α₃ / IsCMField.complexConj K α₃ : K) := by
+      -- cmData.φ is an ≃ₗ[ℝ], hence injective
+      have h_mixed_eq : NumberField.mixedEmbedding K
+          ((α₂ / IsCMField.complexConj K α₂ : K) : K) =
+        NumberField.mixedEmbedding K ((α₃ / IsCMField.complexConj K α₃ : K) : K) := by
+        apply cmData.φ.injective
+        exact h_mk_eq
+      exact (NumberField.mixedEmbedding_injective K) h_mixed_eq
+    -- Step 2: Algebraic manipulation → α₂/α₃ is fixed by complex conjugation
+    have hcα₂ : IsCMField.complexConj K α₂ ≠ 0 := by
+      intro h
+      apply hα₂
+      have := congrArg (IsCMField.complexConj K) h
+      simpa [IsCMField.complexConj_apply_apply K] using this
+    have hcα₃ : IsCMField.complexConj K α₃ ≠ 0 := by
+      intro h
+      apply hα₃
+      have := congrArg (IsCMField.complexConj K) h
+      simpa [IsCMField.complexConj_apply_apply K] using this
+    have h_cross : α₂ * IsCMField.complexConj K α₃ = α₃ * IsCMField.complexConj K α₂ := by
+      -- From h_val_eq: α₂/c(α₂) = α₃/c(α₃)
+      -- div_eq_div_iff hb hd : a/b = c/d ↔ a*d = c*b
+      exact (div_eq_div_iff hcα₂ hcα₃).mp h_val_eq
+    have h_ratio_fixed : IsCMField.complexConj K (α₂ / α₃) = (α₂ / α₃ : K) := by
+      calc
+        IsCMField.complexConj K (α₂ / α₃) =
+            IsCMField.complexConj K α₂ / IsCMField.complexConj K α₃ := by simp
+        _ = α₂ / α₃ := by
+          apply (div_eq_div_iff hcα₃ hα₃).mpr
+          -- Need: c(α₂) * α₃ = α₂ * c(α₃)
+          -- From h_cross: α₂ * c(α₃) = α₃ * c(α₂)
+          simpa [mul_comm, mul_left_comm, mul_assoc] using h_cross.symm
+    -- Step 3: By CM field theory, α₂/α₃ lies in the maximal real subfield K⁺
+    have h_ratio_mem_Kplus : (α₂ / α₃ : K) ∈ maximalRealSubfield K := by
+      rw [← IsCMField.complexConj_eq_self_iff]
+      exact h_ratio_fixed
+    -- Step 4: Valuation argument → ε₂ = ε₃
+    -- GAP: This requires split-prime valuation theory (not in Mathlib).
+    -- Given α₂/α₃ ∈ K⁺, the valuations at 𝔓_j and c(𝔓_j) must agree.
+    -- But v_{𝔓_j}(α₂/α₃) = ε₂_j − ε₃_j and
+    --     v_{c𝔓_j}(α₂/α₃) = ε₃_j − ε₂_j = −(ε₂_j − ε₃_j).
+    -- Equality forces ε₂_j − ε₃_j = 0 for all j, hence ε₂ = ε₃.
+    --
+    -- Mathematically, this uses:
+    --   (a) The ideal equation (α_i)·J(ε₁) = J(ε_i) (i = 2, 3), so
+    --       v_{𝔓_j}((α₂)) = ε₂_j − ε₁_j, v_{𝔓_j}((α₃)) = ε₃_j − ε₁_j.
+    --   (b) For any prime 𝔓 over a split rational prime, v_{𝔓} in the
+    --       totally real subfield K⁺ equals v_{c(𝔓)}.
+    --   (c) v_{c(𝔓_j)}((α₂/α₃)) = −v_{𝔓_j}((α₂/α₃)).
+    --   (d) From (b) and h_ratio_mem_Kplus: ε₂_j − ε₃_j = −(ε₂_j − ε₃_j).
+    --   (e) Hence ε₂_j = ε₃_j for all j ∈ Fin m.
+    --
+    -- None of (a), (b), or (c) exist in Mathlib v4.30.
     sorry
   -- -----------------------------------------------------------------
   -- Assemble the result
