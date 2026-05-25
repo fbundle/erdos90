@@ -5,3 +5,49 @@ assets/ should hold the original sources: PDFs, tex files, etc.
 
 below is the instruction:
 
+We are formalizing Theorem 1.1 from the OpenAI paper "Planar Point Sets with Many Unit Distances" (2026) in Lean 4 / Mathlib. The build succeeds with 3 remaining sorries, all inside `exists_cm_class_group_data` in `Erdos90/NumberFieldDeep_CM.lean`. All three need algebraic number theory results that are not yet in Mathlib v4.30.
+
+## Context
+
+We have a CM field K (totally complex quadratic extension of a totally real field K⁺, [K:ℚ] = 2f). We have m = t'·f split-prime ideal pairs (𝔓_j, c(𝔓_j)) in 𝒪_K supplied by `SplitPrimeData`. The sign-vector type E = Fin m → Bool (encoding choices ±1) maps to the class group G = ClassGroup(𝒪_K) via φ(ε) = class of J(ε) = ∏_j (if ε_j then 𝔓_j else c(𝔓_j)).
+
+For ε₁ ≠ ε₂ with φ(ε₁) = φ(ε₂), there exists α ∈ K^× such that (α)·J(ε₁) = J(ε₂) as fractional ideals. We define mk_unit(ε₁, ε₂) = Φ(α / c(α)) where Φ is the Minkowski embedding and c is complex conjugation.
+
+## Search queries
+
+### 1. Minkowski class-number bound (for `h_card_ratio`: 2^m / h_K ≥ exp(γ·f) + 1)
+
+- "Minkowski bound class number inequality log h_K ≤ log |disc|^{1/2} + (n/2) log (4/π) + n log n"
+- "Minkowski's theorem ideal class group bound discriminant height Neukirch"
+- "class number upper bound in terms of root discriminant Golod Shafarevich tower"
+- "Brauer Siegel theorem class number growth field tower"
+
+### 2. Integrality of α/c(α) after D₀ scaling (for `hmk_unit_mem_Λ`)
+
+- "α/c(α) integral after multiplying by Q² where Q is product of split primes CM field"
+- "valuation exponent J(ε₂)/J(ε₁) at split prime pairs ±1 parity"
+- "principal ideal generator denominator bounded by square of prime product"
+- "Dedekind domain fractional ideal generator integrality denominator clearance"
+
+### 3. Valuation parity in CM fields (for `hmk_unit_inj` Lemma B: α₂/α₃ ∈ K⁺ ⇒ ε₂ = ε₃)
+
+- "valuation at 𝔓 equals valuation at c(𝔓) in totally real subfield of CM field"
+- "CM field split prime complex conjugation swaps prime ideals valuation parity"
+- "maximal real subfield prime ideal restriction valuation unchanged by complex conjugation"
+- "ideal factorization J(ε) exponents encode sign vector ε via valuations at 𝔓_j"
+
+### 4. Key references (best sources to retrieve)
+
+- **Neukirch, Algebraic Number Theory**, Ch. I §6-7 (valuations, Dedekind domains), Ch. I §11 (prime splitting), Ch. III §3 (Minkowski bound)
+- **Washington, Introduction to Cyclotomic Fields**, Ch. 1-4 (CM fields, prime splitting in cyclotomic fields)
+- **Lang, Algebraic Number Theory**, Ch. II §5 (Minkowski's theorem), Ch. III (splitting and ramification)
+- **OpenAI 2026 paper** "Planar Point Sets with Many Unit Distances" §2.1 (the specific construction we are formalizing)
+- **Sawin arXiv:2605.20579** (companion paper with number-theoretic details)
+- **Milne, Class Field Theory notes** Ch. V (CM fields)
+
+### 5. Mathlib-specific searches
+
+- Search mathlib docs for: `IsDedekindDomain.valuation`, `DiscreteValuationRing`, `maximalRealSubfield`, `IsCMField.complexConj`, `FractionalIdeal.spanSingleton`, `Ideal.IsPrime.liesOver`
+- Search Zulip/Lean community for: "CM field class group ideal", "complex conjugation class group", "split prime valuation"
+
+Please write findings into `assets/search_results/` as markdown files. Save original sources (PDFs, tex) into `assets/`.
