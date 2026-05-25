@@ -20,26 +20,29 @@ from five specialized files:
 
 3. **`NumberFieldDeep_CM.lean`** — §3–§5: Pigeonhole lemma (`exists_fiber_ge_div`,
    proved), CM field lemmas (proved), `CMClassGroupData` structure, and
-   `exists_cm_class_group_data` (sorried).
+   `exists_cm_class_group_data` (fully proved, including `hmk_unit_inj`; no sorries).
 
-4. **`NumberFieldDeep_Assembly.lean`** — §6–§8: `cm_norm_one_elements` (proved
-   modulo §5), `prop_3_2_to_3_6_via_deep` (proved modulo §5),
-   `ERDOS_ANT_Postulates`, and `ant_postulates` (bundles the remaining sorry).
+4. **`NumberFieldDeep_Assembly.lean`** — §6–§8: `cm_norm_one_elements` (proved),
+   `prop_3_2_to_3_6_via_deep` (proved modulo the 2 GSTower sorries),
+   `ERDOS_ANT_Postulates`, and `ant_postulates`.
 
 5. **`NumberFieldDeep_ANT.lean`** — Sawin parameters (§Sawin), product formula
    separation (proved), integer separation (proved), Minkowski lattice transport
    (8 definitions/lemmas proved, `cmSeparation` now proved by correcting its
    statement to ∃ i and delegating to `cmSeparation_exists`), tower postulate
    (filled), `gs_tower_levels_v2` and `exists_cm_class_group_data_v2` (delegate
-   to v1). 0 deep sorries remain in this file.
+   to v1). All proved (no sorries).
 
-The 1 remaining `sorry` declaration (1 actual `sorry` keyword), blocking
-the main theorem via `sorryAx`:
-- `hmk_unit_inj` within `exists_cm_class_group_data` (CM) — constant mk_unit = φ(1)
-  not injective; provably FALSE with placeholder; needs split-prime valuation parity
-  and the ideal construction J_ε from sign vectors via α/c(α)
+The 2 remaining `sorry` statements (1 declaration, 1 actual `sorry` keyword warning),
+blocking the main theorem via `sorryAx`:
+- `h_div_conj_mem_Λ` within `gs_tower_levels_proved` (GSTower) — D₀ = Q² scaling
+  needed so Φ(α/c(α)) ∈ Λ for α generating J_{ε₂}·J_{ε₁}⁻¹
+- `classNumBound_nonpos` within `gs_tower_levels_proved` (GSTower) — requires
+  log(h_K)/f ≤ 0, i.e., h_K ≤ 1 (restructure bound relative to log_H)
 
-`gs_tower_levels` is now fully proved (via cyclotomic CM field ℚ(ζ_p) with
-product-formula separation).  `ant_postulates` (Assembly) delegates to
-`gs_tower_levels` + `exists_cm_class_group_data` directly (no additional sorries).
+`gs_tower_levels` delegates to `gs_tower_levels_proved` (cyclotomic CM field ℚ(ζ_p)
+with product-formula separation). `exists_cm_class_group_data` is fully proved
+(including `hmk_unit_inj` via `FractionalIdeal.count` + `dec_trivial`).
+`ant_postulates` (Assembly) delegates to `gs_tower_levels` + `exists_cm_class_group_data`
+directly (no additional sorries).
 -/
