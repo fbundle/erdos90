@@ -281,6 +281,26 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
   pairs in K (each prime ≠ its complex conjugate, all 2·(t'·f) ideals pairwise distinct).
   Filled by the cyclotomic tower constructor using Dirichlet's theorem. -/
   splitPrimesFor : ∀ (t' : ℕ), SplitPrimeData K (t' * f)
+  /-- For any α ∈ K^× that generates the ratio J(ε₂)·J(ε₁)⁻¹ of ideal products from
+  `splitPrimesFor t'`, the CM quotient φ(Φ(α/c(α))) lies in Λ.
+
+  Mathematical content: the valuations of α/c(α) at split prime 𝔓_j are in {−2, 0, 2}.
+  In the paper's construction D₀ = Q² (Q = ∏ q_j), so Q²·(α/c(α)) ∈ 𝓞_K and
+  Λ = Φ(D₀⁻¹·𝓞_K), giving Φ(α/c(α)) ∈ Λ.  With the placeholder D₀ = 1 this is sorried
+  in `gs_tower_levels_proved`; the proof becomes available once the real GS Q is computed. -/
+  h_div_conj_mem_Λ : ∀ (t' : ℕ) (ε₁ ε₂ : Fin (t' * f) → Bool) (α : K) (_ : α ≠ 0),
+      FractionalIdeal.spanSingleton (𝓞 K)⁰ α * J_ideal K (splitPrimesFor t') ε₁ =
+      J_ideal K (splitPrimesFor t') ε₂ →
+      φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) ∈ Λ
+  /-- Minkowski class-number bound constant: log h_K ≤ classNumBound · f.
+  The Minkowski bound (Theorem of Minkowski, [Neukirch Ch. I §6]) gives an explicit
+  constant depending only on [K:ℚ] and the discriminant.  For the cyclotomic tower
+  K = ℚ(ζ_p) with rd(K) ≤ 2ℓ, a suitable choice is classNumBound = C_class · log(2 · rd_F)
+  (cf. NumberField.lean where log_H_base is computed this way).  Sorried in
+  `gs_tower_levels_proved`; unlocked once Mathlib has a quantitative class-number bound. -/
+  classNumBound : ℝ
+  /-- The class number satisfies h_K ≤ exp(classNumBound · f). -/
+  hClassNum : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤ Real.exp (classNumBound * (f : ℝ))
 
 /-- Abstract data packaging the CM field / class-group construction for Prop 2.2.
     See the discussion above §4–§5 for the mathematical context. -/
@@ -395,12 +415,19 @@ def exists_cm_class_group_data
     (cmData : CMTowerData f hf1 Λ K) :
     CMClassGroupData f t log_H Λ := by
   -- -----------------------------------------------------------------
-  -- §5.1  Get t' = ⌈t⌉₊ split primes and m = t'·f split-prime ideal pairs
+  -- §5.1  Get t' = ⌈t⌉₊ + 1 split primes and m = t'·f split-prime ideal pairs
+  -- We use t' = ⌈t⌉₊ + 1 (not just ⌈t⌉₊) so that (t' : ℝ) ≥ t + 1.
+  -- This gives 2^m = 2^{t'f} ≥ 2 · 2^{tf} which absorbs the "+1" in h_card_ratio.
   -- -----------------------------------------------------------------
-  let t' : ℕ := ⌈t⌉₊
+  let t' : ℕ := ⌈t⌉₊ + 1
   have ht'_ge_t : (t : ℝ) ≤ (t' : ℝ) := by
     dsimp [t']
-    exact ((Nat.ceil_le (a := (t : ℝ)) (n := t')).mp (le_refl t'))
+    push_cast
+    linarith [Nat.le_ceil t]
+  have ht'_ge_t_plus_one : t + 1 ≤ (t' : ℝ) := by
+    dsimp [t']
+    push_cast
+    linarith [Nat.le_ceil t]
   let spDM : SplitPrimeData K (t' * f) := cmData.splitPrimesFor t'
   let m : ℕ := t' * f
   -- -----------------------------------------------------------------
@@ -488,10 +515,74 @@ def exists_cm_class_group_data
     -- For now we admit this bound as a sorry.
     have h_exp_bound : (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 : ℝ) ≤
         ((2 : ℝ) ^ m : ℝ) / (cardG : ℝ) := by
-      -- The full proof: 2^m = 2^{t'·f} ≥ 2^{t·f} = exp(t·log 2 · f).
-      -- Then use the Minkowski class-number bound cardG ≤ exp(log_H · f).
-      -- This is a deep ANT result requiring the Minkowski bound + class number formula.
-      sorry
+      have hcardG_pos_r : (0 : ℝ) < (cardG : ℝ) := by exact_mod_cast hcardG_pos
+      rw [le_div_iff₀ hcardG_pos_r]
+      -- Minkowski class-number bound: cardG ≤ exp(log_H * f).
+      -- GAP: this requires cmData.classNumBound ≤ log_H, which holds in the
+      -- actual usage (log_H = C_class · log(2 · rd_F)) but is not derivable
+      -- from the abstract hypothesis t · log 2 - log_H > 0 alone.
+      have hBound_le : cmData.classNumBound ≤ log_H := by sorry
+      have h_cardG_le : (cardG : ℝ) ≤ Real.exp (log_H * (f : ℝ)) := by
+        have hclassNum : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤
+            Real.exp (cmData.classNumBound * (f : ℝ)) := cmData.hClassNum
+        have hcardG_cast : (cardG : ℝ) = (Fintype.card (ClassGroup (𝓞 K)) : ℝ) := by
+          norm_cast
+        linarith [Real.exp_le_exp.mpr
+          (mul_le_mul_of_nonneg_right hBound_le (Nat.cast_nonneg (n := f)))]
+      -- exp(γf) ≥ 1, so (exp(γf) + 1) is positive
+      have hγf_nonneg : (0 : ℝ) ≤ (t * Real.log 2 - log_H) * (f : ℝ) :=
+        mul_nonneg (le_of_lt hγ_pos) (Nat.cast_nonneg f)
+      have h_exp_ge_one : 1 ≤ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) :=
+        Real.one_le_exp_iff.mpr hγf_nonneg
+      -- Step 1: (exp(γf) + 1) * cardG ≤ (exp(γf) + 1) * exp(log_H * f)
+      have step1 : (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1) * (cardG : ℝ) ≤
+          (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1) * Real.exp (log_H * (f : ℝ)) :=
+        mul_le_mul_of_nonneg_left h_cardG_le (by linarith)
+      -- Step 2: (exp(γf) + 1) * exp(log_H*f) = exp(t*log2*f) + exp(log_H*f)
+      have hkey : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) * Real.exp (log_H * (f : ℝ)) =
+          Real.exp (t * Real.log 2 * (f : ℝ)) := by
+        rw [← Real.exp_add]; congr 1; ring
+      have step2 : (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1) * Real.exp (log_H * (f : ℝ)) =
+          Real.exp (t * Real.log 2 * (f : ℝ)) + Real.exp (log_H * (f : ℝ)) := by
+        have h_expand : (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1) * Real.exp (log_H * (f : ℝ)) =
+            Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) * Real.exp (log_H * (f : ℝ)) +
+            Real.exp (log_H * (f : ℝ)) := by ring
+        rw [h_expand, hkey]
+      -- Step 3: exp(log_H*f) ≤ exp(t*log2*f)  (since log_H < t*log2)
+      have step3 : Real.exp (log_H * (f : ℝ)) ≤ Real.exp (t * Real.log 2 * (f : ℝ)) :=
+        Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_right (by linarith) (Nat.cast_nonneg f))
+      -- Step 4: exp(t*log2*f) + exp(log_H*f) ≤ 2 * exp(t*log2*f)
+      have step4 : Real.exp (t * Real.log 2 * (f : ℝ)) + Real.exp (log_H * (f : ℝ)) ≤
+          2 * Real.exp (t * Real.log 2 * (f : ℝ)) := by linarith
+      -- Step 5: 2 * exp(t*log2*f) ≤ 2^m
+      -- Since t' = ⌈t⌉₊ + 1 ≥ t + 1, we have m = t'*f ≥ (t+1)*f ≥ 1 + t*f.
+      -- Then 2^m = exp(m * log 2) ≥ exp((1 + t*f) * log 2) = 2 * exp(t*f*log2).
+      have step5 : 2 * Real.exp (t * Real.log 2 * (f : ℝ)) ≤ ((2 : ℝ) ^ m : ℝ) := by
+        have h_2m : ((2 : ℝ) ^ m : ℝ) = Real.exp ((m : ℝ) * Real.log 2) := by
+          rw [← Real.rpow_natCast 2 m, Real.rpow_def_of_pos (by norm_num : (0:ℝ) < 2)]
+          ring
+        have hf1_r : (1 : ℝ) ≤ (f : ℝ) := by exact_mod_cast hf1
+        -- m = t' * f ≥ (t+1) * f ≥ 1 + t*f  (using t' ≥ t+1 and f ≥ 1)
+        have hm_ge : 1 + t * (f : ℝ) ≤ (m : ℝ) := by
+          have h_m_cast : (m : ℝ) = (t' : ℝ) * (f : ℝ) := by norm_cast
+          nlinarith [mul_le_mul_of_nonneg_right ht'_ge_t_plus_one (by linarith : (0:ℝ) ≤ f)]
+        rw [h_2m]
+        have h_lhs : 2 * Real.exp (t * Real.log 2 * (f : ℝ)) =
+            Real.exp (Real.log 2 + t * Real.log 2 * (f : ℝ)) := by
+          rw [Real.exp_add, Real.exp_log (by norm_num : (0:ℝ) < 2)]
+        rw [h_lhs]
+        apply Real.exp_le_exp.mpr
+        have hlog2_pos : (0 : ℝ) < Real.log 2 := Real.log_pos (by norm_num)
+        calc Real.log 2 + t * Real.log 2 * (f : ℝ)
+            = Real.log 2 * (1 + t * (f : ℝ)) := by ring
+          _ ≤ Real.log 2 * (m : ℝ) := mul_le_mul_of_nonneg_left hm_ge (le_of_lt hlog2_pos)
+          _ = (m : ℝ) * Real.log 2 := by ring
+      calc (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1) * (cardG : ℝ)
+          ≤ (Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1) * Real.exp (log_H * (f : ℝ)) :=
+              step1
+        _ = Real.exp (t * Real.log 2 * (f : ℝ)) + Real.exp (log_H * (f : ℝ)) := step2
+        _ ≤ 2 * Real.exp (t * Real.log 2 * (f : ℝ)) := step4
+        _ ≤ ((2 : ℝ) ^ m : ℝ) := step5
     have h_cardE_val : (cardE : ℝ) = ((2 : ℝ) ^ m : ℝ) := by
       dsimp [cardE]; simp
     rw [h_cardE_val]
@@ -548,32 +639,32 @@ def exists_cm_class_group_data
     exact cmData.h_φ_norm_div_conj α hα r
 
   -- ---------------------------------------------------------------
-  -- hmk_unit_mem_Λ: membership in the lattice (needs integrality of α/c(α))
+  -- hmk_unit_mem_Λ: membership in the lattice
   --
-  -- The mathematical proof: after scaling the tower by D₀ = Q²
-  -- (product of split primes squared), α/c(α) ∈ D₀⁻¹·𝓞_K.
-  -- With the current D₀=1 tower, Φ(α/c(α)) may not be in Λ = Φ(𝓞_K).
-  -- We use `mk_unit_from_cm_quotient` which handles the proof given
-  -- the integrality hypothesis.
+  -- Follows from `cmData.h_div_conj_mem_Λ`, which packages the D₀ = Q² scaling
+  -- guarantee that the tower constructor must supply.  We convert J0 ε to the
+  -- J_ideal form, then apply the field directly.
   -- ---------------------------------------------------------------
+  -- Helper: J0 ε (as a FractionalIdeal) equals J_ideal K spDM ε
+  have hJ0_eq_Jideal (ε : E) : (J0 ε : FractionalIdeal (𝓞 K)⁰ K) = J_ideal K spDM ε := by
+    dsimp [J0, J, J_ideal]
+    have h := map_prod (FractionalIdeal.coeIdealHom (𝓞 K)⁰ K)
+      (fun j => if ε j then spDM.primes j else conjIdeal K (spDM.primes j)) Finset.univ
+    dsimp [FractionalIdeal.coeIdealHom] at h
+    simp [apply_ite] at h
+    simpa using h
   have hmk_unit_mem_Λ : ∀ ε₁ ε₂, ε₁ ≠ ε₂ → φ ε₁ = φ ε₂ → mk_unit ε₁ ε₂ ∈ Λ := by
-    intro ε₁ ε₂ hne hφ_eq
+    intro ε₁ ε₂ _hne hφ_eq
     dsimp [mk_unit]
     rw [dif_pos hφ_eq]
     let α := Classical.choose (h_exists_alpha ε₁ ε₂ hφ_eq)
-    have hα : α ≠ 0 := (Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)).1
-    -- The lemma `mk_unit_from_cm_quotient cmData α hα h_int` gives exactly
-    --   cmData.φ (mixedEmbedding K (α / c(α))) ∈ Λ
-    -- provided we have the integrality condition:
-    --   h_int : (α / complexConj K α) ∈ (algebraMap (𝓞 K) K).range
-    -- GAP: This requires D₀ = Q² tower scaling.  With D₀ = 1, α/c(α) may have
-    -- denominators at the split primes (exponents ±2 in the denominator).
-    -- The proper tower (Q = ∏ q_i, D₀ = Q²) ensures α/c(α) · Q² ∈ 𝓞_K, giving
-    -- membership in Λ = Φ(D₀⁻¹·𝓞_K).  See paper §2.1, valuation parity argument.
-    have h_int : (α / IsCMField.complexConj K α) ∈
-        (algebraMap (𝓞 K) K).range := by
-      sorry
-    exact (mk_unit_from_cm_quotient cmData α hα h_int).1
+    have hα_ne : α ≠ 0 := (Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)).1
+    have hα_eq : FractionalIdeal.spanSingleton (𝓞 K)⁰ α *
+        (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) =
+        (J0 ε₂ : FractionalIdeal (𝓞 K)⁰ K) :=
+      (Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)).2
+    rw [hJ0_eq_Jideal ε₁, hJ0_eq_Jideal ε₂] at hα_eq
+    exact cmData.h_div_conj_mem_Λ t' ε₁ ε₂ α hα_ne hα_eq
 
   -- ---------------------------------------------------------------
   -- hmk_unit_inj: injectivity of mk_unit for fixed ε₁ on the fiber

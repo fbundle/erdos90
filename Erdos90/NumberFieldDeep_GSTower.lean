@@ -346,6 +346,20 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     h_φ1_norm := h_φ1_norm
     h_φ_norm_div_conj := h_φ_norm_div_conj
     splitPrimesFor := splitPrimesFor
+    -- GAP: requires D₀ = Q² scaling.  α/c(α) has val ∈ {-2,0,2} at split primes,
+    -- so Q²·(α/c(α)) ∈ 𝓞_K when Q = ∏_j q_j.  The current tower uses D₀ = 1 (placeholder),
+    -- so Λ = Φ(𝓞_K) does not generally contain Φ(α/c(α)).  Unlocked when the real
+    -- GS tower computes Q from split primes and updates D₀ and Λ accordingly.
+    h_div_conj_mem_Λ := by
+      intro _t' _ε₁ _ε₂ _α _hα _hα_eq
+      sorry
+    -- GAP: quantitative Minkowski class-number bound for ℚ(ζ_p).
+    -- The Minkowski bound gives h_K ≤ (2/π)^{r₂} · (n!/n^n) · √|disc K|.
+    -- For K = ℚ(ζ_p) totally complex with f = (p-1)/2, this gives
+    -- log h_K ≤ C · f · log(rd_K) ≤ C · f · log(p-1).
+    -- Not available in Mathlib v4.30.0-rc2 in quantitative form.
+    classNumBound := 0
+    hClassNum := by sorry
   }
   refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩
