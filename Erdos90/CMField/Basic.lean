@@ -80,6 +80,10 @@ lemma conjIdeal_ne_bot {P : Ideal (𝓞 K)} (hP : P ≠ ⊥) :
   apply conjIdeal_injective K
   rw [h_eq, conjIdeal, Ideal.map_bot]
 
+section ringEquivOfRingEquiv_coeIdeal
+
+variable (K : Type*) [Field K] [NumberField K]
+
 /-- `ringEquivOfRingEquiv` applied to a coefficient ideal equals
     `(Ideal.map c I : FractionalIdeal ...)`. -/
 lemma ringEquivOfRingEquiv_coeIdeal (c : (𝓞 K) ≃+* (𝓞 K)) (I : Ideal (𝓞 K)) :
@@ -87,21 +91,20 @@ lemma ringEquivOfRingEquiv_coeIdeal (c : (𝓞 K) ≃+* (𝓞 K)) (I : Ideal (�
     (Ideal.map (c : (𝓞 K) →+* (𝓞 K)) I : FractionalIdeal (𝓞 K)⁰ K) := by
   ext x
   simp only [FractionalIdeal.ringEquivOfRingEquiv_apply, FractionalIdeal.val_eq_coe,
-    FractionalIdeal.coe_coeIdeal, FractionalIdeal.mem_coeIdeal,
-    IsLocalization.coeSubmodule, Submodule.mem_mk, Submodule.mem_map]
+    FractionalIdeal.coe_coeIdeal, FractionalIdeal.mem_coeIdeal]
   constructor
   · rintro ⟨y, ⟨z, hz, rfl⟩, hy⟩
     refine ⟨c z, Ideal.mem_map_of_mem (c : (𝓞 K) →+* (𝓞 K)) hz, ?_⟩
-    simpa [IsFractionRing.semilinearEquivOfRingEquiv_apply,
-      IsFractionRing.semilinearEquivOfRingEquiv_algebraMap] using hy
+    simpa [IsFractionRing.semilinearEquivOfRingEquiv_apply] using hy
   · rintro ⟨y, hy, rfl⟩
     have h_surj : Function.Surjective (c : (𝓞 K) →+* (𝓞 K)) := by
       intro x; refine ⟨c.symm x, ?_⟩; simp
     rcases (Ideal.mem_map_iff_of_surjective (c : (𝓞 K) →+* (𝓞 K)) h_surj).mp hy with
       ⟨z, hz, rfl⟩
     refine ⟨algebraMap (𝓞 K) K z, ⟨z, hz, rfl⟩, ?_⟩
-    simp [IsFractionRing.semilinearEquivOfRingEquiv_apply,
-      IsFractionRing.semilinearEquivOfRingEquiv_algebraMap]
+    simp [IsFractionRing.semilinearEquivOfRingEquiv_apply]
+
+end ringEquivOfRingEquiv_coeIdeal
 
 /-- Data for m split-prime ideal pairs 𝔭ⱼ, c(𝔭ⱼ) in a CM field K.
 
@@ -181,8 +184,7 @@ lemma count_conj_swap (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (a : �
     dsimp [Ic, I, fc]
     rw [FractionalIdeal.ringEquivOfRingEquiv_spanSingleton K K c (a : K)]
     congr 1
-    simp [c, IsFractionRing.ringEquivOfRingEquiv_algebraMap,
-      IsCMField.coe_ringOfIntegersComplexConj K]
+    simp [c, IsCMField.coe_ringOfIntegersComplexConj K]
   -- fc maps (v'.asIdeal : FractionalIdeal) to (conj v').asIdeal
   -- The key fact: ringEquivOfRingEquiv K K c applied to a coefficient ideal gives
   -- the conjugate ideal (Ideal.map c v'.asIdeal) as a fractional ideal.
@@ -229,7 +231,7 @@ lemma count_conj_swap (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (a : �
       _ = ∏ v' ∈ s, (fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) ^
           (FractionalIdeal.count K v' I : ℤ) := by
         refine Finset.prod_congr rfl (fun v' _hv' => ?_)
-        simp [map_pow]
+        simpa using map_zpow fc _ _ ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) (FractionalIdeal.count K v' I : ℤ)
       _ = ∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
           (FractionalIdeal.count K v' I : ℤ)) := by
         simp [h_fc_v]
@@ -276,7 +278,9 @@ lemma count_conj_swap (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (a : �
       calc
         (∑ v' ∈ s, ((FractionalIdeal.count K v' I : ℤ) * (if v' = v then (1 : ℤ) else 0 : ℤ))) = 0 := by
           apply Finset.sum_eq_zero; intro v' hv'
-          simp [show v' ≠ v from fun h => hv (h ▸ hv'), hv]
+          have hne : v' ≠ v := by
+            intro h; subst h; exact hv hv'
+          simp [hne]
         _ = FractionalIdeal.count K v I := by rw [hzero]
   calc
     FractionalIdeal.count K (conjHeightOneSpectrum K v) Ic
@@ -344,7 +348,7 @@ lemma count_conj_swap' (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
       _ = ∏ v' ∈ s, (fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) ^
           (FractionalIdeal.count K v' I : ℤ) := by
         refine Finset.prod_congr rfl (fun v' _hv' => ?_)
-        simp [map_pow]
+        simpa using map_zpow fc _ _ ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) (FractionalIdeal.count K v' I : ℤ)
       _ = ∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
           (FractionalIdeal.count K v' I : ℤ)) := by
         simp [h_fc_v]
@@ -391,7 +395,9 @@ lemma count_conj_swap' (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
       calc
         (∑ v' ∈ s, ((FractionalIdeal.count K v' I : ℤ) * (if v' = v then (1 : ℤ) else 0 : ℤ))) = 0 := by
           apply Finset.sum_eq_zero; intro v' hv'
-          simp [show v' ≠ v from fun h => hv (h ▸ hv'), hv]
+          have hne : v' ≠ v := by
+            intro h; subst h; exact hv hv'
+          simp [hne]
         _ = FractionalIdeal.count K v I := by rw [hzero]
   calc
     FractionalIdeal.count K (conjHeightOneSpectrum K v)
@@ -582,8 +588,7 @@ lemma count_eq_count_conj_of_fixed {γ : K} (hγ : γ ≠ 0) (h_fixed : IsCMFiel
       (IsCMField.complexConj K : K →+* K) := by
     apply IsFractionRing.ringHom_ext (A := 𝓞 K) (K := K) (L := K)
     intro a
-    simp [c, IsCMField.coe_ringOfIntegersComplexConj K,
-      IsFractionRing.ringEquivOfRingEquiv_algebraMap]
+    simp [c, IsCMField.coe_ringOfIntegersComplexConj K]
   have h_cγ : IsFractionRing.ringEquivOfRingEquiv (A := 𝓞 K) (K := K) (B := 𝓞 K) (L := K) c γ = γ := by
     calc
       IsFractionRing.ringEquivOfRingEquiv (A := 𝓞 K) (K := K) (B := 𝓞 K) (L := K) c γ

@@ -412,11 +412,11 @@ noncomputable def classGroupComplexConj (K : Type) [Field K] [NumberField K] [Is
 
 def exists_cm_class_group_data
     {K : Type} [Field K] [NumberField K] [IsCMField K]
-    (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
-    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_nn : 0 ≤ log_H)
+    (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (_hD₀ : D₀ > 0)
+    (t log_H : ℝ) (_ht : t ≥ 0) (hlog_H_nn : 0 ≤ log_H)
     (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
-    (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
+    (_hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     (cmData : CMTowerData f hf1 Λ K) :
     CMClassGroupData f t log_H Λ := by
   -- -----------------------------------------------------------------
@@ -567,7 +567,7 @@ def exists_cm_class_group_data
       have step5 : 2 * Real.exp (t * Real.log 2 * (f : ℝ)) ≤ ((2 : ℝ) ^ m : ℝ) := by
         have h_2m : ((2 : ℝ) ^ m : ℝ) = Real.exp ((m : ℝ) * Real.log 2) := by
           rw [← Real.rpow_natCast 2 m, Real.rpow_def_of_pos (by norm_num : (0:ℝ) < 2)]
-          ring
+          ring_nf
         have hf1_r : (1 : ℝ) ≤ (f : ℝ) := by exact_mod_cast hf1
         -- m = t' * f ≥ (t+1) * f ≥ 1 + t*f  (using t' ≥ t+1 and f ≥ 1)
         have hm_ge : 1 + t * (f : ℝ) ≤ (m : ℝ) := by
