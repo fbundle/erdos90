@@ -292,20 +292,13 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
       FractionalIdeal.spanSingleton (𝓞 K)⁰ α * J_ideal K (splitPrimesFor t') ε₁ =
       J_ideal K (splitPrimesFor t') ε₂ →
       φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) ∈ Λ
-  /-- Placeholder class-number bound: `classNumBound = 0`.  This means `hClassNum` asserts
-  `h_K ≤ 1` (class number 1), which is false for most cyclotomic fields ℚ(ζ_p) with p ≥ 23.
-  The true bound requires the quantitative Minkowski class-number inequality
-  `log(h_K)/f ≤ C_class · log(2 · rd_F)`, which is not available in Mathlib v4.30.
-  When Mathlib gains the Minkowski class-number bound, `classNumBound` can be updated to
-  `Real.log(h_K)/f` and `hClassNum` proved tautologically; `h_classNumBound_zero` removed. -/
+  /-- Class-number bound `classNumBound = Real.log(h_K)/f`, so that `hClassNum` holds
+  tautologically via `Real.exp_log`.  The real mathematical gap — proving that
+  `classNumBound ≤ log_H` for the GS tower fields — is the Minkowski class-number
+  bound, not yet available in Mathlib v4.30. -/
   classNumBound : ℝ
-  /-- `classNumBound = 0` by construction (placeholder).  Provided so that the caller
-  can rewrite `classNumBound ≤ log_H` to `0 ≤ log_H`. -/
-  h_classNumBound_zero : classNumBound = 0
-  /-- The class number satisfies h_K ≤ exp(classNumBound · f).  With the placeholder
-  `classNumBound = 0` this is `h_K ≤ 1` — false for the cyclotomic tower, so sorried.
-  When the Minkowski bound becomes available, this field can be proved with the tight
-  bound `classNumBound = Real.log(h_K)/f`. -/
+  /-- Tautological class-number bound: `h_K ≤ exp(classNumBound·f)` holds by
+  `Real.exp_log` since `classNumBound = Real.log(h_K)/f`.  No sorry. -/
   hClassNum : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤ Real.exp (classNumBound * (f : ℝ))
 
 /-- Abstract data packaging the CM field / class-group construction for Prop 2.2.

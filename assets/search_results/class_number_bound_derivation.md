@@ -1,128 +1,49 @@
-# Class Number Bound Derivation: h(K_j) ≤ H_ℓ^{f_j}
+# Minkowski Class-Number Bound for Cyclotomic Fields
 
-Source: OpenAI paper `unit-distance-proof.pdf`, pages 12–14 (Step 4)
+## 1. Mathematical Background
 
----
+For a number field $K$ of degree $n = [K : \mathbb{Q}]$, let $r_1$ be the number of real embeddings and $r_2$ the number of pairs of complex embeddings ($n = r_1 + 2r_2$). Let $|\Delta_K|$ be the absolute discriminant of $K$.
 
-## The Chain of Bounds (paper page 14)
+### Minkowski Bound ($M_K$)
+The Minkowski bound $M_K$ is defined such that every ideal class in $\text{Cl}(K)$ contains an integral ideal $\mathfrak{a}$ with norm:
+$$N(\mathfrak{a}) \le M_K = \frac{n!}{n^n} \left( \frac{4}{\pi} \right)^{r_2} \sqrt{|\Delta_K|}$$
 
-### Step 1: Relative discriminant of K_j/F_j
+### Cyclotomic Field $\mathbb{Q}(\zeta_p)$
+For $K = \mathbb{Q}(\zeta_p)$ (where $p$ is an odd prime):
+- Degree: $n = p-1$.
+- Signature: $r_1 = 0$, $r_2 = (p-1)/2$.
+- Discriminant: $|\Delta_K| = p^{p-2}$.
+- $f = (p-1)/2$ (number of complex places).
 
-The CM field K_j = F_j(i). The relative discriminant 𝔡_{K_j/F_j} divides 4𝓞_{F_j}:
-```
-|D_{K_j}| = |D_{F_j}|^2 · N_{F_j/ℚ}(𝔡_{K_j/F_j}) ≤ |D_{F_j}|^2 · 4^{f_j}
-```
+Substituting these into the Minkowski bound:
+$$M_K = \frac{(p-1)!}{(p-1)^{p-1}} \left( \frac{4}{\pi} \right)^{(p-1)/2} \sqrt{p^{p-2}}$$
 
-### Step 2: Root discriminant of K_j
+Using Stirling's approximation $(n! \approx (n/e)^n \sqrt{2\pi n})$:
+$$M_K \approx \sqrt{2\pi(p-1)} \left( \frac{4}{\pi e^2} \right)^{(p-1)/2} p^{(p-2)/2}$$
+Since $4 / (\pi e^2) \approx 4 / (3.14 \cdot 7.39) \approx 0.17$, the factor $(0.17)^{f}$ is very small, but $p^f$ grows quickly.
+$$M_K \approx \sqrt{2\pi(2f)} (0.17)^f p^{f - 1/2}$$
 
-Taking 2f_j-th roots ([K_j:ℚ] = 2f_j):
-```
-rd(K_j) = |D_{K_j}|^{1/(2f_j)} ≤ |D_{F_j}|^{1/f_j} · 4^{1/2} = rd(F_j) · 2
-```
+## 2. Quantitative Class Number Bound
 
-Since the tower is everywhere unramified, rd(F_j) = rd(F) for all j. So:
-```
-rd(K_j) ≤ 2 rd(F)
-```
+The class number $h_K$ is bounded by the number of integral ideals with norm $\le M_K$.
+A refined bound for the number of ideals $A(X)$ with norm $\le X$ in a field of degree $n$ is:
+$$h_K \le \frac{1}{(n-1)!} M_K (\log M_K + n - 1)^{n-1}$$
 
-### Step 3: Class number bound (Proposition 3.7)
+For $K = \mathbb{Q}(\zeta_p)$, we have $\log M_K \approx f \log p$.
+Plugging this in:
+$$h_K \le \frac{1}{(2f-1)!} M_K (f \log p + 2f - 1)^{2f-1} \approx \frac{1}{(2f/e)^{2f}} M_K (f (\log p + 2))^{2f} = \left( \frac{e f (\log p + 2)}{2f} \right)^{2f} M_K = \left( \frac{e}{2} (\log p + 2) \right)^{2f} M_K$$
+Since $M_K \approx (0.41 \sqrt{p})^{2f}$, we get:
+$$h_K \le ( 0.55 \sqrt{p} (\log p + 2) )^{p-1}$$
+$$\log h_K \le (p-1) \left( \frac{1}{2} \log p + \log \log p + \text{const} \right)$$
+Dividing by $f = (p-1)/2$:
+$$\frac{\log h_K}{f} \le \log p + 2 \log \log p + C'$$
 
-There exists an absolute constant C_class > 0 such that for any number field K:
-```
-h(K) ≤ max{2, rd(K)}^{C_class · [K:ℚ]}
-```
+This shows that $h_K \le \exp(C \cdot f \log f)$ is a more natural bound, but since the paper uses a sequence of fields where $\text{rd}_F$ is related to $p$ (for cyclotomic fields), the bound $\log h_K / f \le \log_H$ where $\log_H$ depends on the root discriminant is exactly what is needed.
 
-Applied to K = K_j with [K_j:ℚ] = 2f_j and rd(K_j) ≤ 2rd(F):
-```
-h(K_j) ≤ (2 rd(F))^{C_class · 2f_j}
-        = ((2 rd(F))^{2C_class})^{f_j}
-        = H_ℓ^{f_j}
-```
-where H_ℓ := (2 rd(F))^{2C_class} and log H_ℓ = 2C_class · log(2 rd(F)).
+## 3. Mathlib API (v4.30)
 
-### Step 4: log H_ℓ = O(ℓ log ℓ)
-
-From the tower construction (equation (6), page 13):
-```
-log rd(F) = (1/3) log |D_F| = (2/3) ∑_i log r_i = O(ℓ log ℓ)
-```
-where r_1,...,r_ℓ are the first ℓ primes ≡ 1 (mod 3) and D = ∏ r_i.
-
-So log H_ℓ = 2C_class · log(2rd(F)) = O(ℓ log ℓ). ✓
-
----
-
-## What This Means for the Lean Sorry
-
-### Current Lean code structure (line 481-498)
-
-```lean
-have h_card_ratio : Real.exp ((t * Real.log 2 - log_H) * (f : ℝ)) + 1 ≤
-    (cardE : ℝ) / (cardG : ℝ) := by
-  -- cardE = 2^m = 2^{t·f} (exact)
-  -- cardG = h(K) ≤ H^f (sorry'd — needs Prop 3.7)
-  -- Then: cardE / cardG ≥ 2^{t·f} / H^f = exp((t log 2 - log H)·f)
-  sorry
-```
-
-### Proof structure (if sorry'd helpers were available)
-
-```lean
--- Helper 1: the class number bound (sorry — needs Minkowski + Neukirch I.5)
-have h_classnum : (cardG : ℝ) ≤ Real.exp (log_H * f) := by
-  -- cardG = h(K_j) ≤ H_ℓ^{f_j} = exp(log_H · f)
-  -- This is Proposition 3.7 of the OpenAI paper
-  -- References: [Neu99, Ch. I §5], [Lan94, Ch. V]
-  sorry
-
--- Helper 2: cardE = 2^m (trivial computation)
-have h_cardE : (cardE : ℝ) = (2 : ℝ) ^ m := by
-  simp [cardE]  -- E = Fin m → Bool, |E| = 2^m
-
--- Helper 3: 2^m ≥ 2^{t·f} (since m = t'·f ≥ t·f)
-have h_m_ge_tf : t * f ≤ m := by ...
-
--- Combine:
-have h_ratio : (2 : ℝ)^(t*f) / Real.exp (log_H * f) ≥ 
-    Real.exp ((t * Real.log 2 - log_H) * f) := by
-  rw [div_ge_iff (Real.exp_pos _)]
-  rw [← Real.exp_add, ← Real.exp_mul]
-  ring_nf
-  -- (t·log 2 - log_H)·f + log_H·f = t·log 2·f = log(2^{tf})
-  ...
-```
-
----
-
-## Proposition 3.7 Proof Sketch (for reference)
-
-**Minkowski's theorem**: Every ideal class in Cl(𝓞_K) contains a representative ideal I with:
-```
-N(I) = Ideal.absNorm I ≤ (C_Mink · √|D_K|)^{1/n}   where n = [K:ℚ]
-```
-(Here C_Mink = (4/π)^{r_2} · (n!/n^n) is the Minkowski constant.)
-
-**Counting ideals of bounded norm**: The number of ideals of norm ≤ X in 𝓞_K is at most:
-```
-∑_{m≤X} d_n(m) ≤ C^n · X · (1 + log X)^{n-1} / (n-1)!
-```
-where d_n(m) = n-fold divisor function.
-
-**Combined**: h(K) ≤ (number of ideals of norm ≤ Minkowski bound) ≤ C(rd(K))^{O(n)}.
-
-**Mathlib status**: `NumberField.exists_ideal_in_class_of_norm_le` gives existence of ideal with norm ≤ Minkowski bound (available). The counting bound is NOT in Mathlib.
-
----
-
-## Alternative: Use the `GSTowerData` Bound Directly
-
-The `GSTowerData` structure (from `gs_tower_levels`) already provides the bound as an *assumption*:
-```lean
-structure GSTowerData (ℓ : ℕ) where
-  ...
-  h_classnum : h(K_j) ≤ exp(log_H · f_j)  -- supplied by the tower
-```
-
-If the `CMClassGroupData` structure is populated from `GSTowerData`, then `hcardG` can directly carry this bound, and `h_card_ratio` becomes a numerical consequence, not a deep ANT fact.
-
-**Check**: Look at whether `CMClassGroupData.hcardG` already encodes `cardG ≤ exp(log_H * f)` as a field.
+- **Minkowski Bound Definition**: `M K` in `NumberTheory/NumberField/ClassNumber.lean`.
+- **Minkowski Bound Theorem**: `exists_ideal_in_class_of_norm_le` in `NumberTheory/NumberField/ClassNumber.lean`.
+- **Cyclotomic Discriminant**: `IsCyclotomicExtension.discr_odd_prime` in `NumberTheory/Cyclotomic/Discriminant.lean`.
+  - Signature: `discr K (hζ.powerBasis K).basis = (-1) ^ ((p - 1) / 2) * p ^ (p - 2)`
+- **Class Number Formula**: Not directly available as a bound, but `Fintype (ClassGroup (𝓞 K))` is proved in `NumberTheory/ClassNumber/Finite.lean`.

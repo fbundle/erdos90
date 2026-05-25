@@ -338,6 +338,23 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     have h_mul_eq : t' * ((p - 1) / 2) = t' * f := by rw [h_f_eq]
     rw [h_mul_eq] at sp
     exact sp
+  -- Tautological class-number bound
+  let classNumBound_val : ℝ := Real.log ((Fintype.card (ClassGroup (𝓞 K)) : ℝ)) / (f : ℝ)
+  have hClassNum_val : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤ Real.exp (classNumBound_val * (f : ℝ)) := by
+    have hpos : 0 < (Fintype.card (ClassGroup (𝓞 K)) : ℝ) := by
+      have h := NumberField.classNumber_pos K
+      exact_mod_cast h
+    have hf_pos : (f : ℝ) ≠ 0 := by
+      have hf_pos_nat : f ≠ 0 := by omega
+      exact_mod_cast hf_pos_nat
+    have h_eq : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) = Real.exp (classNumBound_val * (f : ℝ)) := by
+      dsimp [classNumBound_val]
+      calc
+        (Fintype.card (ClassGroup (𝓞 K)) : ℝ) = Real.exp (Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ)) := by
+          rw [Real.exp_log hpos]
+        _ = Real.exp ((Real.log ((Fintype.card (ClassGroup (𝓞 K)) : ℝ)) / (f : ℝ)) * (f : ℝ)) := by
+          field_simp [hf_pos]
+    exact h_eq.le
   let cmData : CMTowerData f hf1 Λ K := {
     φ := φ
     h_nrComplexPlaces := h_nrComplexPlaces_card
@@ -353,15 +370,8 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     h_div_conj_mem_Λ := by
       intro _t' _ε₁ _ε₂ _α _hα _hα_eq
       sorry
-    -- classNumBound = 0 is the placeholder class-number bound.
-    -- h_classNumBound_zero records this value so the Assembly can rewrite.
-    -- hClassNum asserts h_K ≤ 1 (class number 1) — false for cyclotomic fields
-    -- with p ≥ 23, so sorried.  When Mathlib gains the quantitative Minkowski bound,
-    -- classNumBound can be updated to Real.log(h_K)/f (tautological hClassNum) and
-    -- h_classNumBound_zero removed.
-    classNumBound := 0
-    h_classNumBound_zero := rfl
-    hClassNum := by sorry
+    classNumBound := classNumBound_val
+    hClassNum := hClassNum_val
   }
   refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩

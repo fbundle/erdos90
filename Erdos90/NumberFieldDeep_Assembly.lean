@@ -167,8 +167,12 @@ theorem prop_3_2_to_3_6_via_deep :
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
     hΛ_sep, hΛ_inj, fun t log_H ht hlog_H_nn hγ_pos => ?_⟩
   have classNumBound_le_log_H : cmData.classNumBound ≤ log_H := by
-    rw [cmData.h_classNumBound_zero]
-    exact hlog_H_nn
+    -- classNumBound = Real.log(h_K)/f (tautological, set in gs_tower_levels_proved).
+    -- We need the Minkowski class-number bound: log(h_K)/f ≤ log_H.
+    -- This holds for the real GS tower (bounded root discriminant rd_F = rd(K_j)
+    -- independent of j, so Brauer–Siegel gives log h_K / f ∼ log rd_K ≤ log rd_F ≤ log_H).
+    -- For the placeholder ℚ(ζ_p) tower, this bound is not available in Mathlib v4.30.
+    sorry
   exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hlog_H_nn
     hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
 
