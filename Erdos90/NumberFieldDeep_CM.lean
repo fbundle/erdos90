@@ -274,16 +274,10 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
   h_nrComplexPlaces : InfinitePlace.nrComplexPlaces K = f
   h_nrRealPlaces : InfinitePlace.nrRealPlaces K = 0
   mem_iff (v : Fin f → ℂ) : v ∈ Λ ↔ ∃ a : 𝓞 K,
-    φ (NumberField.mixedEmbedding K (a : K)) = ((spData.Q : ℕ) : ℝ) ^ 2 • v
+    φ (NumberField.mixedEmbedding K (a : K)) = v
   h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1
   h_φ_norm_div_conj : ∀ (α : K) (_ : α ≠ 0) (r : Fin f),
     ‖φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) r‖ = 1
-  /-- Number of split-prime ideal pairs stored in `spData`. -/
-  m : ℕ
-  /-- Split prime data: `m` split-prime ideal pairs in K (each ≠ its complex conjugate,
-  all 2·m ideals pairwise distinct).  Computed once per tower level; its Q field
-  determines the lattice scaling factor D₀' = Q². -/
-  spData : SplitPrimeData K m
   /-- Split prime data for any size `t' * f`.  Allows `exists_cm_class_group_data`
   to request split primes of arbitrary size independently of the tower's stored `spData`.
   Derived from Dirichlet's theorem on primes ≡ 1 (mod p). -/
@@ -425,7 +419,7 @@ def exists_cm_class_group_data
     simp
   let G : Type := ClassGroup (𝓞 K)
   letI : Fintype G := inferInstance
-  letI : DecidableEq G := inferInstance
+  letI : DecidableEq G := Classical.decEq G
   have hcardG_pos : 0 < Fintype.card G := by
     rw [Fintype.card_pos_iff]
     exact ⟨1⟩

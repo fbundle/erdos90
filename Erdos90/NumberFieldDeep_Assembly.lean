@@ -140,10 +140,11 @@ def cm_norm_one_elements
 theorem prop_3_2_to_3_6_via_deep :
     ∃ (C_rd : ℝ), C_rd > 0 ∧
     ∀ (ℓ : ℕ), ℓ ≥ 2 →
+    ∃ (D₀ : ℝ), D₀ > 0 ∧
     ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
       ∀ (M : ℕ),
-      ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (Λ : AddSubgroup (Fin f → ℂ))
+      ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
         IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
         Bornology.IsBounded F ∧
@@ -156,15 +157,15 @@ theorem prop_3_2_to_3_6_via_deep :
           ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
   refine ⟨1, one_pos, fun ℓ hℓ => ?_⟩
   let tower : GSTowerData ℓ := golod_shafarevich_tower_with_lattice ℓ hℓ
-  refine ⟨tower.rd_F, tower.hrd_F_ge1, by
+  refine ⟨tower.D₀, tower.hD₀_pos, tower.rd_F, tower.hrd_F_ge1, by
     -- log rd_F ≤ ℓ·log ℓ, and C_rd = 1
     simpa using tower.hlog_rd, fun M => ?_⟩
-  obtain ⟨f, hf_ge, hf1, D₀', hD₀'_pos, Λ, K, hField, hNF, hCM, cmData, hΛ_countable, F, hF_fund, hF_fin,
+  obtain ⟨f, hf_ge, hf1, Λ, K, hField, hNF, hCM, cmData, hΛ_countable, F, hF_fund, hF_fin,
     hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩ := tower.getTowerLevel M
   letI : Field K := hField
   letI : NumberField K := hNF
   letI : IsCMField K := hCM
-  refine ⟨f, hf_ge, hf1, D₀', hD₀'_pos, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
+  refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
     hΛ_sep, hΛ_inj, fun t log_H ht hlog_H_nn hγ_pos => ?_⟩
   have classNumBound_le_log_H : cmData.classNumBound ≤ log_H := by
     -- classNumBound = Real.log(h_K)/f (tautological, set in gs_tower_levels_proved).
@@ -173,7 +174,7 @@ theorem prop_3_2_to_3_6_via_deep :
     -- independent of j, so Brauer–Siegel gives log h_K / f ∼ log rd_K ≤ log rd_F ≤ log_H).
     -- For the placeholder ℚ(ζ_p) tower, this bound is not available in Mathlib v4.30.
     sorry
-  exact cm_norm_one_elements f hf1 D₀' hD₀'_pos tower.rd_F t log_H ht hlog_H_nn
+  exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hlog_H_nn
     hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
 
 /-! ## §8  ANT postulates — what remains to be formalized

@@ -65,15 +65,15 @@ def gs_base_construction (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSBaseData ℓ := {
     Λ = Φ(𝒪_K) ⊂ ℂ^f.  Uses `mixedSpace_equiv_pi_fin_of_card` for the type bridge
     and the product formula for separation.  All properties are proved (no sorry). -/
 def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
-    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (D₀' : ℝ) (hD₀'_pos : D₀' > 0)
-      (Λ : AddSubgroup (Fin f → ℂ))
+    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (_ : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
-      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀'⁻¹) ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) := by
+  -- -----------------------------------------------------------------
   -- -----------------------------------------------------------------
   -- §1  Choose a prime p with (p-1)/2 ≥ M
   -- -----------------------------------------------------------------
@@ -119,61 +119,13 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
       IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := p) (K := K)
     rw [h_complex, h_totient]
   -- -----------------------------------------------------------------
-  -- §3  Split prime data and Q-scaling
-  -- -----------------------------------------------------------------
-  haveI : Fact (Nat.Prime p) := ⟨hp_prime⟩
-  haveI : Fact (2 < p) := ⟨hp_gt_two⟩
-  let splitPrimesFor (t' : ℕ) : SplitPrimeData K (t' * f) := by
-    have h_f_eq : (p - 1) / 2 = f := by
-      rw [hf_def]
-    have sp := Erdos90.CMField.Cyclotomic.splitPrimeData_of_cyclotomic (p := p) t'
-    have h_mul_eq : t' * ((p - 1) / 2) = t' * f := by rw [h_f_eq]
-    rw [h_mul_eq] at sp
-    exact sp
-  -- Use t' = 1 to get the stored split prime data and Q for lattice scaling
-  let m : ℕ := 1 * f
-  let spData : SplitPrimeData K m := splitPrimesFor 1
-  have hm_eq : m = f := by ring
-  have hQ_pos : spData.Q > 0 := spData.h_Q_pos
-  let Qℝ : ℝ := (spData.Q : ℝ)
-  have hQℝ_pos : Qℝ > 0 := by exact_mod_cast hQ_pos
-  have hQ_sq_pos : Qℝ ^ 2 > 0 := pow_pos hQℝ_pos 2
-  have hQ_sq_ne_zero : Qℝ ^ 2 ≠ 0 := by linarith
-  -- D₀' = Q² is the level-specific denominator for separation
-  let D₀' : ℝ := Qℝ ^ 2
-  have hD₀'_pos : D₀' > 0 := hQ_sq_pos
-  -- -----------------------------------------------------------------
-  -- §4  Type bridge: mixedSpace K ≃ₗ[ℝ] Fin f → ℂ
+  -- §3  Type bridge: mixedSpace K ≃ₗ[ℝ] Fin f → ℂ
   -- -----------------------------------------------------------------
   let φ : mixedEmbedding.mixedSpace K ≃ₗ[ℝ] (Fin f → ℂ) :=
     mixedSpace_equiv_pi_fin_of_card h_nrRealPlaces f h_nrComplexPlaces_card
   -- Transport the lattice basis
-  let basis_unscaled : Module.Basis (Module.Free.ChooseBasisIndex ℤ (𝓞 K)) ℝ (Fin f → ℂ) :=
-    (mixedEmbedding.latticeBasis K).map φ
-  -- Scale the basis by Q⁻² to get the Q-scaled lattice Λ = Φ(Q⁻²·𝓞_K)
-  let scale_equiv : (Fin f → ℂ) ≃ₗ[ℝ] (Fin f → ℂ) := by
-    refine
-    { toFun := fun x => (Qℝ ^ 2)⁻¹ • x
-      map_add' := fun x y => by simp [add_smul]
-      map_smul' := fun r x => by
-        calc
-          (Qℝ ^ 2)⁻¹ • (r • x) = ((Qℝ ^ 2)⁻¹ * r) • x := by rw [smul_smul]
-          _ = (r * (Qℝ ^ 2)⁻¹) • x := by rw [mul_comm]
-          _ = r • ((Qℝ ^ 2)⁻¹ • x) := by rw [smul_smul]
-      invFun := fun x => (Qℝ ^ 2) • x
-      left_inv := fun x => by
-        calc
-          (Qℝ ^ 2)⁻¹ • ((Qℝ ^ 2) • x) = ((Qℝ ^ 2)⁻¹ * (Qℝ ^ 2)) • x := by rw [smul_smul]
-          _ = 1 • x := by field_simp [hQ_sq_ne_zero]
-          _ = x := by simp
-      right_inv := fun x => by
-        calc
-          (Qℝ ^ 2) • ((Qℝ ^ 2)⁻¹ • x) = ((Qℝ ^ 2) * (Qℝ ^ 2)⁻¹) • x := by rw [smul_smul]
-          _ = 1 • x := by field_simp [hQ_sq_ne_zero]
-          _ = x := by simp
-    }
   let basis : Module.Basis (Module.Free.ChooseBasisIndex ℤ (𝓞 K)) ℝ (Fin f → ℂ) :=
-    basis_unscaled.map scale_equiv
+    (mixedEmbedding.latticeBasis K).map φ
   haveI : Finite (Module.Free.ChooseBasisIndex ℤ (𝓞 K)) := inferInstance
   -- -----------------------------------------------------------------
   -- §5  The scaled lattice Λ = Φ(Q⁻²·𝓞_K) and fundamental domain F
@@ -214,10 +166,9 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
   have hD₀_inv_le_one : base.D₀⁻¹ ≤ (1 : ℝ) := by
     simpa [one_div, div_one] using
       (one_div_le_one_div base.hD₀_pos (by norm_num : (0 : ℝ) < 1)).mpr base.hD₀_ge_one
-  -- First, prove membership for the unscaled lattice Λ₀ = Φ(𝓞_K)
-  have mem_unscaled_iff (v : Fin f → ℂ) : v ∈ (Submodule.span ℤ (Set.range basis_unscaled)).toAddSubgroup ↔
+  have mem_lattice_iff (v : Fin f → ℂ) : v ∈ Λ ↔
       ∃ a : 𝓞 K, φ (NumberField.mixedEmbedding K (a : K)) = v := by
-    dsimp [basis_unscaled]
+    dsimp [Λ, basis]
     have h_range_eq : Set.range ((mixedEmbedding.latticeBasis K).map φ) =
         (φ.restrictScalars ℤ).toLinearMap '' Set.range (mixedEmbedding.latticeBasis K) := by
       ext x
@@ -247,71 +198,17 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     · rintro ⟨a, ha⟩
       refine ⟨NumberField.mixedEmbedding K (a : K), ⟨a, by simp⟩, ?_⟩
       simpa [LinearEquiv.restrictScalars_apply] using ha
-  -- Now membership for the scaled lattice Λ = Q⁻² · Λ₀
-  -- v ∈ Λ ↔ Q² · v ∈ Λ₀ (since scale_equiv is multiplication by Q⁻²)
-  have mem_lattice_iff (v : Fin f → ℂ) : v ∈ Λ ↔
-      ∃ a : 𝓞 K, φ (NumberField.mixedEmbedding K (a : K)) = (Qℝ ^ 2) • v := by
-    dsimp [Λ, basis, scale_equiv]
-    -- Submodule.span ℤ (Set.range (basis_unscaled.map scale_equiv))
-    -- = Submodule.map scale_equiv.toLinearMap (Submodule.span ℤ (Set.range basis_unscaled))
-    have h_map_span : Submodule.span ℤ (Set.range (basis_unscaled.map scale_equiv)) =
-        Submodule.map (scale_equiv : (Fin f → ℂ) →ₗ[ℝ] (Fin f → ℂ)).restrictScalars ℤ
-          (Submodule.span ℤ (Set.range basis_unscaled)) := by
-      -- Basis.map f applied to basis b: (b.map f) i = f (b i)
-      -- So Set.range (b.map f) = f '' Set.range b
-      -- Then Submodule.span ℤ (f '' S) = Submodule.map f (Submodule.span ℤ S) for linear f
-      rw [Set.range_comp, ← Submodule.map_span]
-      rfl
-    rw [Submodule.mem_toAddSubgroup, h_map_span, Submodule.mem_map]
-    constructor
-    · rintro ⟨u, hu, rfl⟩
-      -- u ∈ span(basis_unscaled), and v = scale_equiv u = Q⁻² • u
-      rcases (mem_unscaled_iff u).mp hu with ⟨a, ha⟩
-      refine ⟨a, ?_⟩
-      -- Need: φ(mixedEmbedding(a)) = Q² • v = Q² • (Q⁻² • u) = u
-      -- But we have φ(mixedEmbedding(a)) = u from ha, so done
-      rw [← ha]
-      dsimp
-      calc
-        (Qℝ ^ 2) • ((Qℝ ^ 2)⁻¹ • φ (NumberField.mixedEmbedding K (a : K))) =
-            ((Qℝ ^ 2) * (Qℝ ^ 2)⁻¹) • φ (NumberField.mixedEmbedding K (a : K)) := by rw [smul_smul]
-        _ = 1 • φ (NumberField.mixedEmbedding K (a : K)) := by field_simp [hQ_sq_ne_zero]
-        _ = φ (NumberField.mixedEmbedding K (a : K)) := by simp
-    · rintro ⟨a, ha⟩
-      -- ha: φ(mixedEmbedding(a)) = Q² • v
-      -- Need: v = Q⁻² • u for some u in the unscaled lattice
-      -- Take u = φ(mixedEmbedding(a)), then v = Q⁻² • u
-      have hu : φ (NumberField.mixedEmbedding K (a : K)) ∈
-          (Submodule.span ℤ (Set.range basis_unscaled)).toAddSubgroup :=
-        (mem_unscaled_iff _).mpr ⟨a, rfl⟩
-      refine ⟨φ (NumberField.mixedEmbedding K (a : K)), hu, ?_⟩
-      -- Need: Q⁻² • φ(mixedEmbedding(a)) = v
-      -- From ha: Q² • v = φ(mixedEmbedding(a))
-      calc
-        (Qℝ ^ 2)⁻¹ • φ (NumberField.mixedEmbedding K (a : K)) =
-            (Qℝ ^ 2)⁻¹ • ((Qℝ ^ 2) • v) := by rw [ha]
-        _ = ((Qℝ ^ 2)⁻¹ * (Qℝ ^ 2)) • v := by rw [smul_smul]
-        _ = 1 • v := by field_simp [hQ_sq_ne_zero]
-        _ = v := by simp
-  -- For the scaled lattice Λ = Φ(Q⁻²·𝓞_K), separation is ‖v i‖ ≥ Q⁻² = D₀'⁻¹
-  have hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀'⁻¹ := by
+  have hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹ := by
     intro v hv hv_nonzero
     rcases (mem_lattice_iff v).mp hv with ⟨a, ha⟩
-    -- ha: φ(mixedEmbedding(a)) = Q² • v
     have ha0 : a ≠ 0 := by
       intro hzero
       apply hv_nonzero
       have hzero_val : (a : K) = 0 := by
         simpa using congrArg (fun (x : 𝓞 K) => (x : K)) hzero
       rw [hzero_val] at ha
-      have : φ (NumberField.mixedEmbedding K (0 : K)) = 0 := by
-        simp
-      rw [this] at ha
-      have hQ_sq_pos' : (Qℝ : ℝ) ^ 2 > 0 := hQ_sq_pos
-      -- From Q² • v = 0 and Q² ≠ 0, get v = 0
-      apply smul_right_injective (Fin f → ℂ) (by linarith) at ha
-      exact ha
-    -- Product formula separation: find a complex place with absolute value ≥ 1
+      simp at ha
+      exact ha.symm
     have h_sep : ∃ w : InfinitePlace K,
         mixedEmbedding.normAtPlace w (NumberField.mixedEmbedding K (a : K)) ≥ 1 := by
       have ha0' : (a : K) ≠ 0 := by
@@ -375,58 +272,27 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
             _ < 1 := by simpa [mixedEmbedding.normAtPlace_apply] using h_all w₀
       linarith
     rcases h_sep with ⟨w, hw⟩
-    -- Map the complex place w to a Fin f index
     have hw_complex : InfinitePlace.IsComplex w := IsTotallyComplex.isComplex w
     let w' : {w : InfinitePlace K // InfinitePlace.IsComplex w} := ⟨w, hw_complex⟩
     let idx : Fin f := cmComplexPlaceEquiv K f h_nrComplexPlaces_card w'
-    have hnorm : ‖(Qℝ ^ 2) • v idx‖ ≥ 1 := by
+    have hnorm : ‖v idx‖ ≥ 1 := by
       rw [← ha]
       rw [mixedSpace_equiv_pi_fin_of_card_norm_apply h_nrRealPlaces f h_nrComplexPlaces_card (a : K) idx]
       have h_symm : (cmComplexPlaceEquiv K f h_nrComplexPlaces_card).symm idx = w' := by
-        dsimp [idx]
-        simp
+        dsimp [idx]; simp
       rw [h_symm]
       simpa [mixedEmbedding.normAtPlace_apply] using hw
-    -- ‖Q² • v idx‖ = Q² * ‖v idx‖ ≥ 1, so ‖v idx‖ ≥ Q⁻² = D₀'⁻¹
-    have hnorm_v : ‖v idx‖ ≥ D₀'⁻¹ := by
-      have : ‖((Qℝ : ℝ) ^ 2) • v idx‖ = (Qℝ ^ 2) * ‖v idx‖ := by
-        simp [norm_smul]
-      rw [this] at hnorm
-      have hQ_nonneg : 0 ≤ Qℝ ^ 2 := pow_nonneg (by positivity) 2
-      -- Q² * ‖v idx‖ ≥ 1, so ‖v idx‖ ≥ 1/Q² = D₀'⁻¹
-      have hQ_pos' : Qℝ ^ 2 > 0 := hQ_sq_pos
-      rw [one_div, div_eq_inv_mul]
-      calc
-        ‖v idx‖ = ((Qℝ ^ 2) * ‖v idx‖) / (Qℝ ^ 2) := by field_simp [ne_of_gt hQ_pos']
-        _ ≥ 1 / (Qℝ ^ 2) := by
-          refine (div_le_div_right hQ_pos').mpr ?_
-          -- Actually: (Q² * ‖v idx‖) / Q² ≥ 1 / Q²
-          -- Since Q² * ‖v idx‖ ≥ 1 and Q² > 0
-          -- Use (div_le_div_right hQ_pos').mpr hnorm
-          -- Wait, hnorm is Q² * ‖v idx‖ ≥ 1, not ‖v idx‖ ≥ ...
-          -- div_le_div_right is about denominators. We need:
-          -- x / c ≥ y / c when x ≥ y and c > 0
-          -- Here x = Q² * ‖v idx‖, y = 1, c = Q²
-          -- So (Q² * ‖v idx‖) / Q² ≥ 1 / Q²
-          -- And (Q² * ‖v idx‖) / Q² = ‖v idx‖ (since Q² > 0)
-          -- So we just need ‖v idx‖ = (Q² * ‖v idx‖) / Q² ≥ 1/Q²
-          nlinarith
-    refine ⟨idx, hnorm_v⟩
+    refine ⟨idx, le_trans hD₀_inv_le_one hnorm⟩
   have hΛ_inj : ∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0 := by
     intro v hv hzero
     rcases (mem_lattice_iff v).mp hv with ⟨a, ha⟩
-    -- ha: φ(mixedEmbedding(a)) = Q² • v
-    -- hzero: v(fin0) = 0, so (Q² • v)(fin0) = Q² * v(fin0) = 0
-    have hQ_sq_v_zero : ((Qℝ : ℝ) ^ 2 • v) (fin0 hf1) = 0 := by
-      simp [hzero]
-    rw [← ha] at hQ_sq_v_zero
-    -- Now φ(mixedEmbedding(a))(fin0) = 0, same as original proof
     let w₀ : {w : InfinitePlace K // InfinitePlace.IsComplex w} :=
       (cmComplexPlaceEquiv K f h_nrComplexPlaces_card).symm (fin0 hf1)
     have h_coord_zero : (NumberField.mixedEmbedding K (a : K)).2 w₀ = 0 := by
       rw [← mixedSpace_equiv_pi_fin_of_card_apply h_nrRealPlaces f h_nrComplexPlaces_card
         (NumberField.mixedEmbedding K (a : K)) (fin0 hf1)]
-      exact hQ_sq_v_zero
+      rw [ha]
+      exact hzero
     have h_embedding_zero : mixedEmbedding.normAtPlace (w₀ : InfinitePlace K)
         (NumberField.mixedEmbedding K (a : K)) = 0 := by
       rw [mixedEmbedding.normAtPlace_apply_of_isComplex w₀.prop, h_coord_zero, norm_zero]
@@ -436,13 +302,8 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
       have h_pos : 0 < (w₀ : InfinitePlace K) (a : K) :=
         AbsoluteValue.pos_iff (w₀ : InfinitePlace K).1 |>.mpr h_ne
       linarith
-    -- Now a = 0, so Q² • v = φ(mixedEmbedding(0)) = 0
-    rw [ha_eq_zero] at ha
-    have h_zero : φ (NumberField.mixedEmbedding K (0 : K)) = (0 : Fin f → ℂ) := by simp
-    rw [h_zero] at ha
-    -- Q² • v = 0, and Q² > 0, so v = 0
-    apply smul_right_injective (Fin f → ℂ) (by linarith [hQ_sq_pos]) at ha
-    exact ha
+    rw [ha_eq_zero, map_zero, map_zero] at ha
+    exact ha.symm
   have h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1 := by
     intro r
     rw [mixedSpace_equiv_pi_fin_of_card_norm_apply h_nrRealPlaces f h_nrComplexPlaces_card (1 : K) r]
@@ -453,51 +314,35 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     rw [mixedSpace_equiv_pi_fin_of_card_norm_apply h_nrRealPlaces f h_nrComplexPlaces_card
       (α / IsCMField.complexConj K α) r]
     exact normAtPlace_mixedEmbedding_cm_div_conj_eq_one α hα _
-  -- Tautological class-number bound
-  let classNumBound_val : ℝ := Real.log ((Fintype.card (ClassGroup (𝓞 K)) : ℝ)) / (f : ℝ)
-  have hClassNum_val : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤ Real.exp (classNumBound_val * (f : ℝ)) := by
-    have hpos : 0 < (Fintype.card (ClassGroup (𝓞 K)) : ℝ) := by
-      have h := NumberField.classNumber_pos K
-      exact_mod_cast h
-    have hf_pos : (f : ℝ) ≠ 0 := by
-      have hf_pos_nat : f ≠ 0 := by omega
-      exact_mod_cast hf_pos_nat
-    have h_eq : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) = Real.exp (classNumBound_val * (f : ℝ)) := by
-      dsimp [classNumBound_val]
-      calc
-        (Fintype.card (ClassGroup (𝓞 K)) : ℝ) = Real.exp (Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ)) := by
-          rw [Real.exp_log hpos]
-        _ = Real.exp ((Real.log ((Fintype.card (ClassGroup (𝓞 K)) : ℝ)) / (f : ℝ)) * (f : ℝ)) := by
-          field_simp [hf_pos]
-    exact h_eq.le
+  haveI : Fact (Nat.Prime p) := ⟨hp_prime⟩
+  haveI : Fact (2 < p) := ⟨hp_gt_two⟩
+  let splitPrimesFor (t' : ℕ) : SplitPrimeData K (t' * f) := by
+    have h_f_eq : (p - 1) / 2 = f := by rw [hf_def]
+    have sp := Erdos90.CMField.Cyclotomic.splitPrimeData_of_cyclotomic (p := p) t'
+    have h_mul_eq : t' * ((p - 1) / 2) = t' * f := by rw [h_f_eq]
+    rw [h_mul_eq] at sp
+    exact sp
   let cmData : CMTowerData f hf1 Λ K := {
     φ := φ
     h_nrComplexPlaces := h_nrComplexPlaces_card
     h_nrRealPlaces := h_nrRealPlaces
-    m := m
-    spData := spData
-    mem_iff := by
-      intro v
-      -- mem_lattice_iff uses Qℝ which is (spData.Q : ℝ); the structure field expects
-      -- ((spData.Q : ℕ) : ℝ) ^ 2 — these are definitionally the same Nat.cast.
-      exact mem_lattice_iff v
+    mem_iff := mem_lattice_iff
     h_φ1_norm := h_φ1_norm
     h_φ_norm_div_conj := h_φ_norm_div_conj
     splitPrimesFor := splitPrimesFor
-    -- GAP S1: requires valuation arithmetic to show Q²·(α/c(α)) ∈ 𝓞_K,
-    -- so Φ(α/c(α)) = Q⁻² • Φ(Q²·(α/c(α))) ∈ Q⁻²·Φ(𝓞_K) = Λ.
-    -- The lattice Λ is already scaled by Q⁻² (from spData at t'=1), but
-    -- splitPrimesFor t' may use different primes with different Q'.
-    -- In the real GS tower, all levels share the same split primes, so
-    -- Q is independent of t'.  Here each t' may get different Q — this is
-    -- a simplification gap that requires a unified split-prime source.
     h_div_conj_mem_Λ := by
-      intro t' ε₁ ε₂ α hα_ne hα_eq
+      intro _t' _ε₁ _ε₂ _α _hα _hα_eq
       sorry
-    classNumBound := classNumBound_val
-    hClassNum := hClassNum_val
+    classNumBound := Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ)
+    hClassNum := by
+      have hf_ne : (f : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+      have hcard_pos : (0 : ℝ) < (Fintype.card (ClassGroup (𝓞 K)) : ℝ) := by
+        have h : 0 < Fintype.card (ClassGroup (𝓞 K)) :=
+          Fintype.card_pos (α := ClassGroup (𝓞 K))
+        exact_mod_cast h
+      rw [div_mul_cancel₀ _ hf_ne, Real.exp_log hcard_pos]
   }
-  refine ⟨f, hf_ge_M, hf1, D₀', hD₀'_pos, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
+  refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩
 
 /-- **Prop 3.6 + Minkowski type bridge**: tower levels with lattice (fully proved).
@@ -507,16 +352,14 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     (hΛ_sep) follows from the product formula; injectivity (hΛ_inj) follows from
     absolute-value positivity.  Delegates to `gs_tower_levels_proved`. -/
 def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
-    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (D₀' : ℝ) (hD₀'_pos : D₀' > 0)
-      (Λ : AddSubgroup (Fin f → ℂ))
+    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (_ : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
-      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀'⁻¹) ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) :=
-  -- Delegates to the fully proved cyclotomic CM field construction
   gs_tower_levels_proved ℓ hℓ base M
 
 
@@ -572,14 +415,14 @@ structure GSTowerData (ℓ : ℕ) where
       such that ∃ i, ‖v i‖ ≥ D₀⁻¹ for all nonzero v ∈ Λ, and projection to fin0 is
       injective on Λ.  Encapsulates Prop 3.6 (Chebotarev split primes) + the Minkowski
       embedding type bridge. -/
-  getTowerLevel (M : ℕ) : ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (D₀' : ℝ) (hD₀'_pos : D₀' > 0)
+  getTowerLevel (M : ℕ) : ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1)
     (Λ : AddSubgroup (Fin f → ℂ))
     (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
     (_ : CMTowerData f hf1 Λ K)
     (_ : Countable Λ) (F : Set (Fin f → ℂ)),
     IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
     Bornology.IsBounded F ∧
-    (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀'⁻¹) ∧
+    (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
     (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
 
 /-- **Golod–Shafarevich tower with lattice** (Props 3.2–3.6).
