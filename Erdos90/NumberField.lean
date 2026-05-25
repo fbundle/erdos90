@@ -87,10 +87,10 @@ We state the output in terms of the concrete types used in `AdmissibleFamily`.
 def prop_3_2_to_3_6 :
     ∃ (C_rd : ℝ), C_rd > 0 ∧
     ∀ (ℓ : ℕ), ℓ ≥ 2 →
-    ∃ (D₀ : ℝ), D₀ > 0 ∧ ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
+    ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
       ∀ (M : ℕ),
-      ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
         IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
         Bornology.IsBounded F ∧

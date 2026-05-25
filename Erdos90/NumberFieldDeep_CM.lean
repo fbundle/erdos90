@@ -273,21 +273,26 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
   φ : mixedEmbedding.mixedSpace K ≃ₗ[ℝ] Fin f → ℂ
   h_nrComplexPlaces : InfinitePlace.nrComplexPlaces K = f
   h_nrRealPlaces : InfinitePlace.nrRealPlaces K = 0
-  mem_iff (v : Fin f → ℂ) : v ∈ Λ ↔ ∃ a : 𝓞 K, φ (NumberField.mixedEmbedding K (a : K)) = v
+  mem_iff (v : Fin f → ℂ) : v ∈ Λ ↔ ∃ a : 𝓞 K,
+    φ (NumberField.mixedEmbedding K (a : K)) = ((spData.Q : ℕ) : ℝ) ^ 2 • v
   h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1
   h_φ_norm_div_conj : ∀ (α : K) (_ : α ≠ 0) (r : Fin f),
     ‖φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) r‖ = 1
-  /-- Split prime ideal data: for any integer `t'`, we can find `t' * f` split-prime ideal
-  pairs in K (each prime ≠ its complex conjugate, all 2·(t'·f) ideals pairwise distinct).
-  Filled by the cyclotomic tower constructor using Dirichlet's theorem. -/
+  /-- Number of split-prime ideal pairs stored in `spData`. -/
+  m : ℕ
+  /-- Split prime data: `m` split-prime ideal pairs in K (each ≠ its complex conjugate,
+  all 2·m ideals pairwise distinct).  Computed once per tower level; its Q field
+  determines the lattice scaling factor D₀' = Q². -/
+  spData : SplitPrimeData K m
+  /-- Split prime data for any size `t' * f`.  Allows `exists_cm_class_group_data`
+  to request split primes of arbitrary size independently of the tower's stored `spData`.
+  Derived from Dirichlet's theorem on primes ≡ 1 (mod p). -/
   splitPrimesFor : ∀ (t' : ℕ), SplitPrimeData K (t' * f)
-  /-- For any α ∈ K^× that generates the ratio J(ε₂)·J(ε₁)⁻¹ of ideal products from
-  `splitPrimesFor t'`, the CM quotient φ(Φ(α/c(α))) lies in Λ.
+  /-- For α ∈ K^× generating J(ε₂)·J(ε₁)⁻¹, the CM quotient Φ(α/c(α)) ∈ Λ.
 
-  Mathematical content: the valuations of α/c(α) at split prime 𝔓_j are in {−2, 0, 2}.
-  In the paper's construction D₀ = Q² (Q = ∏ q_j), so Q²·(α/c(α)) ∈ 𝓞_K and
-  Λ = Φ(D₀⁻¹·𝓞_K), giving Φ(α/c(α)) ∈ Λ.  With the placeholder D₀ = 1 this is sorried
-  in `gs_tower_levels_proved`; the proof becomes available once the real GS Q is computed. -/
+  Proof: valuations of α/c(α) at split primes are in {−2,0,2}.  The tower
+  constructs Λ = Φ(Q⁻²·𝓞_K) where Q = spData.Q, so Q²·(α/c(α)) ∈ 𝓞_K and
+  Φ(α/c(α)) ∈ Λ.  Filled in `gs_tower_levels_proved`. -/
   h_div_conj_mem_Λ : ∀ (t' : ℕ) (ε₁ ε₂ : Fin (t' * f) → Bool) (α : K) (_ : α ≠ 0),
       FractionalIdeal.spanSingleton (𝓞 K)⁰ α * J_ideal K (splitPrimesFor t') ε₁ =
       J_ideal K (splitPrimesFor t') ε₂ →
@@ -328,42 +333,9 @@ structure CMClassGroupData (f : ℕ) (t log_H : ℝ) (Λ : AddSubgroup (Fin f �
   mk_unit_inj : ∀ ε₁ ε₂ ε₃, ε₁ ≠ ε₂ → ε₁ ≠ ε₃ → φ ε₁ = φ ε₂ → φ ε₁ = φ ε₃ →
     mk_unit ε₁ ε₂ = mk_unit ε₁ ε₃ → ε₂ = ε₃
 
-/-! ### Norm‑1 quotient lemma
-
-`mk_unit_from_cm_quotient` packages the two properties that the real `mk_unit`
-construction must satisfy (membership in Λ and norm‑1).  The full injectivity
-proof would additionally need the class‑group automorphism induced by complex
-conjugation, which in newer Mathlib is `ClassGroup.mulEquiv` but is not
-available in v4.29.1. -/
-
-open scoped Classical
-
-/-- For α ∈ K^× such that α / c(α) ∈ 𝓞_K, its Minkowski image lies in Λ and has
-    all coordinates of norm 1.  This lemma packages the two properties that the real
-    `mk_unit` construction must satisfy (membership in Λ and norm‑1).
-
-    Mathematical proof (paper §2.1): `IsCMField.complexConj` fixes the totally real
-    subfield, so α / c(α) has absolute value 1 in every complex embedding.  The
-    integrality hypothesis gives membership via `cmData.mem_iff`. -/
-lemma mk_unit_from_cm_quotient {K : Type} [Field K] [NumberField K] [IsCMField K]
-    {f : ℕ} {hf1 : f ≥ 1} {Λ : AddSubgroup (Fin f → ℂ)}
-    (cmData : CMTowerData f hf1 Λ K) (α : K) (hα : α ≠ 0)
-    (h_int : (α / IsCMField.complexConj K α) ∈ (algebraMap (𝓞 K) K).range) :
-    cmData.φ (NumberField.mixedEmbedding K ((α / IsCMField.complexConj K α : K) : K)) ∈ Λ ∧
-    ∀ r : Fin f, ‖cmData.φ (NumberField.mixedEmbedding K
-      ((α / IsCMField.complexConj K α : K) : K)) r‖ = 1 := by
-  have h_mem : cmData.φ (NumberField.mixedEmbedding K
-      ((α / IsCMField.complexConj K α : K) : K)) ∈ Λ := by
-    rw [cmData.mem_iff]
-    obtain ⟨a, ha⟩ := h_int
-    refine ⟨a, ?_⟩
-    have ha' : (a : K) = (α / IsCMField.complexConj K α : K) := ha
-    simp [ha']
-  have h_norm : ∀ r : Fin f,
-      ‖cmData.φ (NumberField.mixedEmbedding K
-        ((α / IsCMField.complexConj K α : K) : K)) r‖ = 1 :=
-    cmData.h_φ_norm_div_conj α hα
-  exact ⟨h_mem, h_norm⟩
+/-! The `mk_unit_from_cm_quotient` lemma is removed — it was unused and its proof
+relied on the old unscaled `mem_iff`.  Membership of Φ(α/c(α)) in the Q-scaled lattice
+now goes through `h_div_conj_mem_Λ` directly. -/
 
 /-- Complex conjugation induces an automorphism of the ideal class group of a CM field.
     Uses `ClassGroup.mulEquiv` (available in Mathlib v4.29.1). -/
