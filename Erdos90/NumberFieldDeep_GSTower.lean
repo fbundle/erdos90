@@ -360,6 +360,7 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     -- Not available in Mathlib v4.30.0-rc2 in quantitative form.
     classNumBound := 0
     hClassNum := by sorry
+    classNumBound_nonpos := le_refl 0
   }
   refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩

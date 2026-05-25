@@ -96,7 +96,7 @@ def prop_3_2_to_3_6 :
         Bornology.IsBounded F ∧
         (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
         (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
-        ∀ (t log_H : ℝ), t ≥ 0 → (t * Real.log 2 - log_H > 0) →
+        ∀ (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → (t * Real.log 2 - log_H > 0) →
         ∃ (U : Finset (Fin f → ℂ)),
           (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
           (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
@@ -285,6 +285,12 @@ theorem exists_admissible_family :
     have hP6' : t * Real.log 2 > 4 * C_class * C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) := by
       rw [ht_def]; exact hP6
     linarith [hlog_H_bound]
+  -- log_H_base ≥ 0: since rd_F ≥ 1 so 2*rd_F > 1 so log(2*rd_F) > 0
+  have hlog_H_base_nn : 0 ≤ log_H_base := by
+    show 0 ≤ 2 * C_class * Real.log (2 * rd_F)
+    have hlog_pos : Real.log (2 * rd_F) > 0 :=
+      Real.log_pos (by linarith [hrd_F_ge1])
+    nlinarith [C_class_pos]
   -- γ₀ = t * log 2 - log_H_base is the fixed exponent rate
   let γ₀ := t * Real.log 2 - log_H_base
   -- Step 7: For each M produce an AdmissibleFamily
@@ -293,7 +299,7 @@ theorem exists_admissible_family :
     hΛ_sep, hΛ_inj, hU_callback⟩ := h_levels M
   -- Use the Prop-2.2 callback to get U (requires the CM field K_j)
   obtain ⟨U, hU_mod, hU_in_Λ, hU_size⟩ :=
-    hU_callback t log_H_base ht_nonneg hγ_pos
+    hU_callback t log_H_base ht_nonneg hlog_H_base_nn hγ_pos
   -- Rewrite hU_size in terms of γ₀
   have hU_size' : (U.card : ℝ) ≥ Real.exp (γ₀ * (f : ℝ)) := by
     have : γ₀ = t * Real.log 2 - log_H_base := rfl

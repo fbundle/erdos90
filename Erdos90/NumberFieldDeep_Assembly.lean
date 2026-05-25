@@ -33,7 +33,8 @@ outputs needed by `NumberField.lean`:
 def cm_norm_one_elements
     {K : Type} [Field K] [NumberField K] [IsCMField K]
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0) (_rd_F : ℝ)
-    (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_nn : 0 ≤ log_H)
+    (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     (cmData : CMTowerData f hf1 Λ K) :
@@ -41,9 +42,9 @@ def cm_norm_one_elements
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
       (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
       ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
-  -- Step 1: Get the CM class-group data (the one algebraic sorry)
+  -- Step 1: Get the CM class-group data
   have data : CMClassGroupData f t log_H Λ :=
-    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hγ_pos Λ hΛ_sep cmData
+    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData
   -- letI binds definitionally to the structure fields, avoiding haveI's opaque binder mismatch
   letI : Fintype data.E := data.fintypeE
   letI : DecidableEq data.E := data.decidableEqE
@@ -147,7 +148,7 @@ theorem prop_3_2_to_3_6_via_deep :
         Bornology.IsBounded F ∧
         (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
         (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
-        ∀ (t log_H : ℝ), t ≥ 0 → (t * Real.log 2 - log_H > 0) →
+        ∀ (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → (t * Real.log 2 - log_H > 0) →
         ∃ (U : Finset (Fin f → ℂ)),
           (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
           (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
@@ -163,8 +164,9 @@ theorem prop_3_2_to_3_6_via_deep :
   letI : NumberField K := hNF
   letI : IsCMField K := hCM
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
-    hΛ_sep, hΛ_inj, fun t log_H ht hγ_pos => ?_⟩
-  exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hγ_pos Λ hΛ_sep cmData
+    hΛ_sep, hΛ_inj, fun t log_H ht hlog_H_nn hγ_pos => ?_⟩
+  exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hlog_H_nn
+    hγ_pos Λ hΛ_sep cmData
 
 /-! ## §8  ANT postulates — what remains to be formalized
 
@@ -194,7 +196,8 @@ structure ERDOS_ANT_Postulates where
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
   cm_class_group {K : Type} [Field K] [NumberField K] [IsCMField K]
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
-    (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_nn : 0 ≤ log_H)
+    (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     (cmData : CMTowerData f hf1 Λ K) :

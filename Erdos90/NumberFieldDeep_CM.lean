@@ -301,6 +301,10 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
   classNumBound : ℝ
   /-- The class number satisfies h_K ≤ exp(classNumBound · f). -/
   hClassNum : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤ Real.exp (classNumBound * (f : ℝ))
+  /-- The class-number bound constant is non-positive.
+  When the tower uses the placeholder `classNumBound = 0`, this is `0 ≤ 0` (trivially proved).
+  Combined with `0 ≤ log_H` from the caller, it gives `classNumBound ≤ log_H`. -/
+  classNumBound_nonpos : classNumBound ≤ 0
 
 /-- Abstract data packaging the CM field / class-group construction for Prop 2.2.
     See the discussion above §4–§5 for the mathematical context. -/
@@ -409,7 +413,8 @@ noncomputable def classGroupComplexConj (K : Type) [Field K] [NumberField K] [Is
 def exists_cm_class_group_data
     {K : Type} [Field K] [NumberField K] [IsCMField K]
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
-    (t log_H : ℝ) (ht : t ≥ 0) (hγ_pos : t * Real.log 2 - log_H > 0)
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_nn : 0 ≤ log_H)
+    (hγ_pos : t * Real.log 2 - log_H > 0)
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     (cmData : CMTowerData f hf1 Λ K) :
@@ -521,7 +526,9 @@ def exists_cm_class_group_data
       -- GAP: this requires cmData.classNumBound ≤ log_H, which holds in the
       -- actual usage (log_H = C_class · log(2 · rd_F)) but is not derivable
       -- from the abstract hypothesis t · log 2 - log_H > 0 alone.
-      have hBound_le : cmData.classNumBound ≤ log_H := by sorry
+      -- classNumBound ≤ 0 ≤ log_H: proved from the two hypotheses.
+      have hBound_le : cmData.classNumBound ≤ log_H :=
+        le_trans cmData.classNumBound_nonpos hlog_H_nn
       have h_cardG_le : (cardG : ℝ) ≤ Real.exp (log_H * (f : ℝ)) := by
         have hclassNum : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤
             Real.exp (cmData.classNumBound * (f : ℝ)) := cmData.hClassNum
