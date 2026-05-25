@@ -141,7 +141,7 @@ section factorization_lemmas
 
 variable (q : ℕ) [hq_prime : Fact (Nat.Prime q)]
 
-lemma inertiaDeg_eq_one (hq_mod : q ≡ 1 [MOD p]) (hq_ne_p : q ≠ p)
+omit hp_gt_two in lemma inertiaDeg_eq_one (hq_mod : q ≡ 1 [MOD p]) (hq_ne_p : q ≠ p)
     (P : Ideal (𝓞 K)) [hP_prime : P.IsPrime]
     [hP_lies : P.LiesOver (span {(q : ℤ)})] :
     inertiaDeg (span {(q : ℤ)}) P = 1 := by
@@ -154,7 +154,7 @@ lemma inertiaDeg_eq_one (hq_mod : q ≡ 1 [MOD p]) (hq_ne_p : q ≠ p)
       simpa using (ZMod.natCast_eq_natCast_iff q 1 p).mpr hq_mod
     rw [hq_mod_zmod, orderOf_one]
 
-lemma ramificationIdx_eq_one (hq_ne_p : q ≠ p)
+omit hp_gt_two in lemma ramificationIdx_eq_one (hq_ne_p : q ≠ p)
     (P : Ideal (𝓞 K)) [hP_prime : P.IsPrime]
     [hP_lies : P.LiesOver (span {(q : ℤ)})] :
     ramificationIdx (span {(q : ℤ)}) P = 1 := by
@@ -163,7 +163,7 @@ lemma ramificationIdx_eq_one (hq_ne_p : q ≠ p)
       exact hq_ne_p
     exact IsCyclotomicExtension.Rat.ramificationIdx_eq_of_not_dvd q K P hq_not_dvd_p
 
-lemma card_primesOver_eq (hq_mod : q ≡ 1 [MOD p]) (hq_ne_p : q ≠ p) :
+omit hp_gt_two in lemma card_primesOver_eq (hq_mod : q ≡ 1 [MOD p]) (hq_ne_p : q ≠ p) :
     Finset.card (IsDedekindDomain.primesOverFinset (Ideal.span {(q : ℤ)}) (𝓞 K)) = p - 1 := by
     letI : Fact (Nat.Prime q) := hq_prime
     set span_q := Ideal.span {(q : ℤ)} with hspan_q

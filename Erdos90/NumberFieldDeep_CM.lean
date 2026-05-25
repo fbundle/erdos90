@@ -3,7 +3,7 @@ import Erdos90.Arithmetic
 import Erdos90.CMField.Basic
 
 open Real Filter NumberField Set MeasureTheory MeasureTheory.Measure
-open scoped ENNReal NNReal Topology Complex Pointwise
+open scoped ENNReal NNReal Topology Complex Pointwise nonZeroDivisors
 
 noncomputable section
 
@@ -520,10 +520,12 @@ def exists_cm_class_group_data
   -- Helper: from φ(ε₁) = φ(ε₂), extract α ∈ K^× such that (α)·J(ε₁) = J(ε₂)
   -- as fractional ideals.  Uses the fraction-ring formulation which gives
   -- α directly in K (rather than x/y with x, y ∈ 𝓞_K).
-  have h_exists_alpha (ε₁ ε₂ : E) (hφ_eq : φ ε₁ = φ ε₂) : ∃ (α : K), α ≠ 0 := by
+  have h_exists_alpha (ε₁ ε₂ : E) (hφ_eq : φ ε₁ = φ ε₂) :
+      ∃ (α : K), α ≠ 0 ∧ FractionalIdeal.spanSingleton (𝓞 K)⁰ α * (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) =
+        (J0 ε₂ : FractionalIdeal (𝓞 K)⁰ K) := by
     rcases (ClassGroup.mk0_eq_mk0_iff_exists_fraction_ring (R := 𝓞 K) (K := K)).mp hφ_eq with
-      ⟨α, hα, _⟩
-    exact ⟨α, hα⟩
+      ⟨α, hα, h⟩
+    exact ⟨α, hα, h⟩
 
   -- Define mk_unit: when φ(ε₁) = φ(ε₂), pick an α and send it through Φ(·/c(·)).
   -- Otherwise fall back to Φ(1).
@@ -542,7 +544,7 @@ def exists_cm_class_group_data
     dsimp [mk_unit]
     rw [dif_pos hφ_eq]
     let α := Classical.choose (h_exists_alpha ε₁ ε₂ hφ_eq)
-    have hα : α ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)
+    have hα : α ≠ 0 := (Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)).1
     exact cmData.h_φ_norm_div_conj α hα r
 
   -- ---------------------------------------------------------------
@@ -559,7 +561,7 @@ def exists_cm_class_group_data
     dsimp [mk_unit]
     rw [dif_pos hφ_eq]
     let α := Classical.choose (h_exists_alpha ε₁ ε₂ hφ_eq)
-    have hα : α ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)
+    have hα : α ≠ 0 := (Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)).1
     -- The lemma `mk_unit_from_cm_quotient cmData α hα h_int` gives exactly
     --   cmData.φ (mixedEmbedding K (α / c(α))) ∈ Λ
     -- provided we have the integrality condition:
@@ -597,8 +599,14 @@ def exists_cm_class_group_data
     rw [dif_pos hφ₁₂, dif_pos hφ₁₃] at h_mk_eq
     let α₂ := Classical.choose (h_exists_alpha ε₁ ε₂ hφ₁₂)
     let α₃ := Classical.choose (h_exists_alpha ε₁ ε₃ hφ₁₃)
-    have hα₂ : α₂ ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ₁₂)
-    have hα₃ : α₃ ≠ 0 := Classical.choose_spec (h_exists_alpha ε₁ ε₃ hφ₁₃)
+    have hα₂_spec := Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ₁₂)
+    have hα₃_spec := Classical.choose_spec (h_exists_alpha ε₁ ε₃ hφ₁₃)
+    have hα₂ : α₂ ≠ 0 := hα₂_spec.1
+    have hα₃ : α₃ ≠ 0 := hα₃_spec.1
+    have hα₂_eq : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₂ * (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) =
+        (J0 ε₂ : FractionalIdeal (𝓞 K)⁰ K) := hα₂_spec.2
+    have hα₃_eq : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₃ * (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) =
+        (J0 ε₃ : FractionalIdeal (𝓞 K)⁰ K) := hα₃_spec.2
     -- Step 1: Minkowski embedding injectivity → α₂/c(α₂) = α₃/c(α₃) in K
     have h_val_eq : (α₂ / IsCMField.complexConj K α₂ : K) = (α₃ / IsCMField.complexConj K α₃ : K) := by
       -- cmData.φ is an ≃ₗ[ℝ], hence injective
@@ -629,31 +637,171 @@ def exists_cm_class_group_data
             IsCMField.complexConj K α₂ / IsCMField.complexConj K α₃ := by simp
         _ = α₂ / α₃ := by
           apply (div_eq_div_iff hcα₃ hα₃).mpr
-          -- Need: c(α₂) * α₃ = α₂ * c(α₃)
-          -- From h_cross: α₂ * c(α₃) = α₃ * c(α₂)
-          simpa [mul_comm, mul_left_comm, mul_assoc] using h_cross.symm
+          calc
+            IsCMField.complexConj K α₂ * α₃ = α₃ * IsCMField.complexConj K α₂ := mul_comm _ _
+            _ = α₂ * IsCMField.complexConj K α₃ := h_cross.symm
     -- Step 3: By CM field theory, α₂/α₃ lies in the maximal real subfield K⁺
     have h_ratio_mem_Kplus : (α₂ / α₃ : K) ∈ maximalRealSubfield K := by
       rw [← IsCMField.complexConj_eq_self_iff]
       exact h_ratio_fixed
-    -- Step 4: Valuation argument → ε₂ = ε₃
-    -- GAP: This requires split-prime valuation theory (not in Mathlib).
-    -- Given α₂/α₃ ∈ K⁺, the valuations at 𝔓_j and c(𝔓_j) must agree.
-    -- But v_{𝔓_j}(α₂/α₃) = ε₂_j − ε₃_j and
-    --     v_{c𝔓_j}(α₂/α₃) = ε₃_j − ε₂_j = −(ε₂_j − ε₃_j).
-    -- Equality forces ε₂_j − ε₃_j = 0 for all j, hence ε₂ = ε₃.
+    -- Step 4: Count-based argument → ε₂ = ε₃
     --
-    -- Mathematically, this uses:
-    --   (a) The ideal equation (α_i)·J(ε₁) = J(ε_i) (i = 2, 3), so
-    --       v_{𝔓_j}((α₂)) = ε₂_j − ε₁_j, v_{𝔓_j}((α₃)) = ε₃_j − ε₁_j.
-    --   (b) For any prime 𝔓 over a split rational prime, v_{𝔓} in the
-    --       totally real subfield K⁺ equals v_{c(𝔓)}.
-    --   (c) v_{c(𝔓_j)}((α₂/α₃)) = −v_{𝔓_j}((α₂/α₃)).
-    --   (d) From (b) and h_ratio_mem_Kplus: ε₂_j − ε₃_j = −(ε₂_j − ε₃_j).
-    --   (e) Hence ε₂_j = ε₃_j for all j ∈ Fin m.
-    --
-    -- None of (a), (b), or (c) exist in Mathlib v4.30.
-    sorry
+    -- Using the ideal equations (α_i)·J(ε₁) = J(ε_i) and the `count` API
+    -- on fractional ideals.  For each split-prime index s:
+    --   count at 𝔓_s of spanSingleton(α₂/α₃) = (ε₂_s − ε₃_s)
+    --   count at c(𝔓_s) of spanSingleton(α₂/α₃) = (ε₃_s − ε₂_s)
+    -- Since α₂/α₃ ∈ K⁺, count_eq_count_conj_of_fixed forces these equal,
+    -- hence ε₂_s = ε₃_s for all s.
+    have h_ratio_ne_zero : (α₂ / α₃ : K) ≠ 0 := by
+      intro hzero
+      have hzero' := div_eq_zero_iff.mp hzero
+      rcases hzero' with (h | h)
+      · exact hα₂ h
+      · exact hα₃ h
+    -- Connection: J0 ε coerces to J_ideal via FractionalIdeal.coeIdeal
+    -- Helper: coeIdeal distributes over Finset.prod
+    -- The equality is `map_prod` for `coeIdealHom` after pushing `↑` through the `if`.
+    have hJ0_to_ideal (ε : E) : (J0 ε : FractionalIdeal (𝓞 K)⁰ K) = J_ideal K spDM ε := by
+      dsimp [J0, J, J_ideal]
+      have h := map_prod (FractionalIdeal.coeIdealHom (𝓞 K)⁰ K)
+        (fun j => if ε j then spDM.primes j else conjIdeal K (spDM.primes j)) Finset.univ
+      dsimp [FractionalIdeal.coeIdealHom] at h
+      -- h RHS has ↑(if ...) outside; goal RHS has ↑ inside each branch
+      -- Use `simp` to push the coercion through the if
+      simp [apply_ite] at h
+      simpa using h
+    -- count(v, spanSingleton α) = if ε₂ s then 1 else 0 - if ε₁ s then 1 else 0
+    have h_count_α_v (ε' : E) (hφ_eq' : φ ε₁ = φ ε') (hα_eq' : FractionalIdeal.spanSingleton (𝓞 K)⁰
+        (Classical.choose (h_exists_alpha ε₁ ε' hφ_eq')) * (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) =
+        (J0 ε' : FractionalIdeal (𝓞 K)⁰ K)) (α' : K) (hα_spec : α' = Classical.choose
+        (h_exists_alpha ε₁ ε' hφ_eq')) (s : Fin m) :
+        FractionalIdeal.count K (spDM.toHeightOneSpectrum (j := s))
+          (FractionalIdeal.spanSingleton (𝓞 K)⁰ α') =
+        ((if ε' s then 1 else 0 : ℤ) - (if ε₁ s then 1 else 0 : ℤ)) := by
+      subst hα_spec
+      let α' := Classical.choose (h_exists_alpha ε₁ ε' hφ_eq')
+      have hα'_ne : α' ≠ 0 := (Classical.choose_spec (h_exists_alpha ε₁ ε' hφ_eq')).1
+      have hS_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ α' ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr hα'_ne
+      have hJ0_ne : (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) ≠ 0 := by
+        rw [hJ0_to_ideal ε₁]
+        exact J_ideal_ne_zero K spDM ε₁
+      have hcount_mul := congrArg (FractionalIdeal.count K
+        (spDM.toHeightOneSpectrum (j := s))) hα_eq'
+      rw [FractionalIdeal.count_mul K (spDM.toHeightOneSpectrum (j := s)) hS_ne hJ0_ne]
+        at hcount_mul
+      rw [hJ0_to_ideal ε₁, count_J_eq K spDM ε₁ s,
+        hJ0_to_ideal ε', count_J_eq K spDM ε' s] at hcount_mul
+      linarith
+    -- Compute count at conjugate prime
+    have h_count_α_cv (ε' : E) (hφ_eq' : φ ε₁ = φ ε') (hα_eq' : FractionalIdeal.spanSingleton (𝓞 K)⁰
+        (Classical.choose (h_exists_alpha ε₁ ε' hφ_eq')) * (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) =
+        (J0 ε' : FractionalIdeal (𝓞 K)⁰ K)) (α' : K) (hα_spec : α' = Classical.choose
+        (h_exists_alpha ε₁ ε' hφ_eq')) (s : Fin m) :
+        FractionalIdeal.count K (spDM.conj_toHeightOneSpectrum (j := s))
+          (FractionalIdeal.spanSingleton (𝓞 K)⁰ α') =
+        ((if ε' s then 0 else 1 : ℤ) - (if ε₁ s then 0 else 1 : ℤ)) := by
+      subst hα_spec
+      let α' := Classical.choose (h_exists_alpha ε₁ ε' hφ_eq')
+      have hα'_ne : α' ≠ 0 := (Classical.choose_spec (h_exists_alpha ε₁ ε' hφ_eq')).1
+      have hS_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ α' ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr hα'_ne
+      have hJ0_ne : (J0 ε₁ : FractionalIdeal (𝓞 K)⁰ K) ≠ 0 := by
+        rw [hJ0_to_ideal ε₁]
+        exact J_ideal_ne_zero K spDM ε₁
+      have hcount_mul := congrArg (FractionalIdeal.count K
+        (spDM.conj_toHeightOneSpectrum (j := s))) hα_eq'
+      rw [FractionalIdeal.count_mul K (spDM.conj_toHeightOneSpectrum (j := s)) hS_ne hJ0_ne]
+        at hcount_mul
+      rw [hJ0_to_ideal ε₁, count_J_conj_eq K spDM ε₁ s,
+        hJ0_to_ideal ε', count_J_conj_eq K spDM ε' s] at hcount_mul
+      linarith
+    -- Core: relate count of α₂/α₃ to counts of α₂ and α₃
+    have h_count_ratio_v (s : Fin m) : FractionalIdeal.count K
+        (spDM.toHeightOneSpectrum (j := s))
+        (FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K)) =
+        ((if ε₂ s then 1 else 0 : ℤ) - (if ε₃ s then 1 else 0 : ℤ)) := by
+      -- spanSingleton α₂ = spanSingleton α₃ * spanSingleton (α₂/α₃)
+      have h_mul : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₂ =
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ α₃ *
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K) := by
+        calc
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ α₂
+              = FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₃ * (α₂ / α₃ : K)) := by
+            field_simp [hα₃]
+          _ = FractionalIdeal.spanSingleton (𝓞 K)⁰ α₃ *
+              FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K) := by
+            rw [FractionalIdeal.spanSingleton_mul_spanSingleton]
+      have hS₂_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₂ ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr hα₂
+      have hS₃_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₃ ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr hα₃
+      have hS_ratio_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K) ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr h_ratio_ne_zero
+      have hcount_mul := congrArg (FractionalIdeal.count K
+        (spDM.toHeightOneSpectrum (j := s))) h_mul
+      rw [FractionalIdeal.count_mul K (spDM.toHeightOneSpectrum (j := s)) hS₃_ne hS_ratio_ne]
+        at hcount_mul
+      rw [h_count_α_v ε₂ hφ₁₂ hα₂_eq α₂ rfl s,
+        h_count_α_v ε₃ hφ₁₃ hα₃_eq α₃ rfl s] at hcount_mul
+      omega
+    have h_count_ratio_cv (s : Fin m) : FractionalIdeal.count K
+        (spDM.conj_toHeightOneSpectrum (j := s))
+        (FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K)) =
+        ((if ε₂ s then 0 else 1 : ℤ) - (if ε₃ s then 0 else 1 : ℤ)) := by
+      have h_mul : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₂ =
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ α₃ *
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K) := by
+        calc
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ α₂
+              = FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₃ * (α₂ / α₃ : K)) := by
+            field_simp [hα₃]
+          _ = FractionalIdeal.spanSingleton (𝓞 K)⁰ α₃ *
+              FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K) := by
+            rw [FractionalIdeal.spanSingleton_mul_spanSingleton]
+      have hS₂_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₂ ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr hα₂
+      have hS₃_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ α₃ ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr hα₃
+      have hS_ratio_ne : FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K) ≠ 0 :=
+        FractionalIdeal.spanSingleton_ne_zero_iff.mpr h_ratio_ne_zero
+      have hcount_mul := congrArg (FractionalIdeal.count K
+        (spDM.conj_toHeightOneSpectrum (j := s))) h_mul
+      rw [FractionalIdeal.count_mul K (spDM.conj_toHeightOneSpectrum (j := s)) hS₃_ne
+        hS_ratio_ne] at hcount_mul
+      rw [h_count_α_cv ε₂ hφ₁₂ hα₂_eq α₂ rfl s,
+        h_count_α_cv ε₃ hφ₁₃ hα₃_eq α₃ rfl s] at hcount_mul
+      omega
+    -- By count_eq_count_conj_of_fixed, counts at v and c(v) agree for α₂/α₃ ∈ K⁺
+    have h_conj_eq (s : Fin m) : FractionalIdeal.count K
+        (spDM.toHeightOneSpectrum (j := s))
+        (FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K)) =
+        FractionalIdeal.count K
+        (spDM.conj_toHeightOneSpectrum (j := s))
+        (FractionalIdeal.spanSingleton (𝓞 K)⁰ (α₂ / α₃ : K)) := by
+      have h := count_eq_count_conj_of_fixed K h_ratio_ne_zero h_ratio_fixed
+        (spDM.toHeightOneSpectrum (j := s))
+      -- h: count at v = count at conjHeightOneSpectrum K v
+      -- But conjHeightOneSpectrum K (toHeightOneSpectrum ...) = conj_toHeightOneSpectrum ... def-eq
+      simpa using h
+    -- Combine: (ε₂ s − ε₃ s) = −(ε₂ s − ε₃ s) → ε₂ s = ε₃ s
+    have h_forall_s (s : Fin m) : ε₂ s = ε₃ s := by
+      have h_eq := h_conj_eq s
+      rw [h_count_ratio_v s, h_count_ratio_cv s] at h_eq
+      -- h_eq: (if ε₂ s then 1 else 0) - (if ε₃ s then 1 else 0) =
+      --       (if ε₂ s then 0 else 1) - (if ε₃ s then 0 else 1)
+      -- Simplify: for any b ∈ {0,1}, (1-b) - (1-b') = -(b - b')
+      -- So b-b' = -(b-b') → 2(b-b') = 0 → b = b' → ε₂ s = ε₃ s
+      -- h_eq: (if ε₂ s then 1 else 0) - (if ε₃ s then 1 else 0) =
+      --       (if ε₂ s then 0 else 1) - (if ε₃ s then 0 else 1)
+      -- In ℤ, this forces ε₂ s = ε₃ s.  Decide handles all 4 Bool cases.
+      have h_forall : ∀ (b₁ b₂ : Bool),
+          (((if b₁ then (1 : ℤ) else 0) - (if b₂ then (1 : ℤ) else 0) =
+            (if b₁ then (0 : ℤ) else 1) - (if b₂ then (0 : ℤ) else 1)) →
+           b₁ = b₂) := by
+        decide
+      exact h_forall (ε₂ s) (ε₃ s) h_eq
+    ext s; exact h_forall_s s
   -- -----------------------------------------------------------------
   -- Assemble the result
   -- -----------------------------------------------------------------
