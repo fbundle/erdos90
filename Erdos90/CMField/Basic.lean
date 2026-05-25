@@ -1,6 +1,6 @@
 import Mathlib
 
-open Real Set NumberField
+open Real Set NumberField Function
 open scoped Complex Pointwise nonZeroDivisors
 
 noncomputable section
@@ -80,6 +80,29 @@ lemma conjIdeal_ne_bot {P : Ideal (𝓞 K)} (hP : P ≠ ⊥) :
   apply conjIdeal_injective K
   rw [h_eq, conjIdeal, Ideal.map_bot]
 
+/-- `ringEquivOfRingEquiv` applied to a coefficient ideal equals
+    `(Ideal.map c I : FractionalIdeal ...)`. -/
+lemma ringEquivOfRingEquiv_coeIdeal (c : (𝓞 K) ≃+* (𝓞 K)) (I : Ideal (𝓞 K)) :
+    FractionalIdeal.ringEquivOfRingEquiv K K c (I : FractionalIdeal (𝓞 K)⁰ K) =
+    (Ideal.map (c : (𝓞 K) →+* (𝓞 K)) I : FractionalIdeal (𝓞 K)⁰ K) := by
+  ext x
+  simp only [FractionalIdeal.ringEquivOfRingEquiv_apply, FractionalIdeal.val_eq_coe,
+    FractionalIdeal.coe_coeIdeal, FractionalIdeal.mem_coeIdeal,
+    IsLocalization.coeSubmodule, Submodule.mem_mk, Submodule.mem_map]
+  constructor
+  · rintro ⟨y, ⟨z, hz, rfl⟩, hy⟩
+    refine ⟨c z, Ideal.mem_map_of_mem (c : (𝓞 K) →+* (𝓞 K)) hz, ?_⟩
+    simpa [IsFractionRing.semilinearEquivOfRingEquiv_apply,
+      IsFractionRing.semilinearEquivOfRingEquiv_algebraMap] using hy
+  · rintro ⟨y, hy, rfl⟩
+    have h_surj : Function.Surjective (c : (𝓞 K) →+* (𝓞 K)) := by
+      intro x; refine ⟨c.symm x, ?_⟩; simp
+    rcases (Ideal.mem_map_iff_of_surjective (c : (𝓞 K) →+* (𝓞 K)) h_surj).mp hy with
+      ⟨z, hz, rfl⟩
+    refine ⟨algebraMap (𝓞 K) K z, ⟨z, hz, rfl⟩, ?_⟩
+    simp [IsFractionRing.semilinearEquivOfRingEquiv_apply,
+      IsFractionRing.semilinearEquivOfRingEquiv_algebraMap]
+
 /-- Data for m split-prime ideal pairs 𝔭ⱼ, c(𝔭ⱼ) in a CM field K.
 
 Each 𝔭ⱼ is a nonzero prime ideal of 𝓞_K, distinct from its complex conjugate,
@@ -141,7 +164,242 @@ lemma count_conj_swap (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (a : �
       (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((IsCMField.ringOfIntegersComplexConj K a : 𝓞 K) : K)) =
     FractionalIdeal.count K v
       (FractionalIdeal.spanSingleton (𝓞 K)⁰ (a : K)) := by
-  sorry
+  let c : (𝓞 K) ≃+* (𝓞 K) := (IsCMField.ringOfIntegersComplexConj K).toRingEquiv
+  let fc : FractionalIdeal (𝓞 K)⁰ K ≃+* FractionalIdeal (𝓞 K)⁰ K :=
+    FractionalIdeal.ringEquivOfRingEquiv K K c
+  let I : FractionalIdeal (𝓞 K)⁰ K :=
+    FractionalIdeal.spanSingleton (𝓞 K)⁰ (a : K)
+  have hI_ne_zero : I ≠ 0 := by
+    dsimp [I]
+    intro h
+    rw [FractionalIdeal.spanSingleton_eq_zero_iff] at h
+    have ha' : a = (0 : 𝓞 K) := Subtype.coe_injective h
+    exact ha ha'
+  let Ic : FractionalIdeal (𝓞 K)⁰ K :=
+    FractionalIdeal.spanSingleton (𝓞 K)⁰ ((IsCMField.ringOfIntegersComplexConj K a : 𝓞 K) : K)
+  have hIc_eq_fcI : Ic = fc I := by
+    dsimp [Ic, I, fc]
+    rw [FractionalIdeal.ringEquivOfRingEquiv_spanSingleton K K c (a : K)]
+    congr 1
+    simp [c, IsFractionRing.ringEquivOfRingEquiv_algebraMap,
+      IsCMField.coe_ringOfIntegersComplexConj K]
+  -- fc maps (v'.asIdeal : FractionalIdeal) to (conj v').asIdeal
+  -- The key fact: ringEquivOfRingEquiv K K c applied to a coefficient ideal gives
+  -- the conjugate ideal (Ideal.map c v'.asIdeal) as a fractional ideal.
+  have h_fc_v (v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :
+      fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) =
+      ((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) := by
+    dsimp [fc, conjHeightOneSpectrum, conjIdeal]
+    rw [ringEquivOfRingEquiv_coeIdeal K c v'.asIdeal]
+    simp [c]
+  have h_fin_I : Set.Finite {v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K) |
+      FractionalIdeal.count K v' I ≠ 0} :=
+    Filter.eventually_cofinite.mp (FractionalIdeal.finite_factors I)
+  let s : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K)) := h_fin_I.toFinset
+  have hs : ∀ v', v' ∉ s → FractionalIdeal.count K v' I = 0 := by
+    intro v' hv'
+    have : v' ∉ {v' | FractionalIdeal.count K v' I ≠ 0} := by
+      intro h; apply hv'; rw [h_fin_I.mem_toFinset]; exact h
+    simpa using this
+  have h_mulSupport_subset : mulSupport (fun (v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) =>
+      ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K v' I : ℤ))) ⊆ (s : Set _) := by
+    intro x hx
+    by_contra hxs
+    have hcount_zero : FractionalIdeal.count K x I = 0 := hs x hxs
+    have h_term_one : ((x.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K x I : ℤ)) = 1 := by
+      simp [hcount_zero]
+    exact hx (by dsimp only [mulSupport]; simp [h_term_one])
+  have h_factorization_I : I = ∏ v' ∈ s,
+      ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K v' I : ℤ)) := by
+    have h_finprod := (FractionalIdeal.finprod_heightOneSpectrum_factorization' (K := K)
+      hI_ne_zero).symm
+    rw [finprod_eq_prod_of_mulSupport_subset _ h_mulSupport_subset] at h_finprod
+    exact h_finprod
+  have h_factorization_Ic : Ic = ∏ v' ∈ s,
+      (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+        (FractionalIdeal.count K v' I : ℤ)) := by
+    calc
+      Ic = fc I := hIc_eq_fcI
+      _ = fc (∏ v' ∈ s, ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+          (FractionalIdeal.count K v' I : ℤ))) := congrArg fc h_factorization_I
+      _ = ∏ v' ∈ s, fc (((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+          (FractionalIdeal.count K v' I : ℤ))) :=
+        map_prod fc.toMonoidHom
+          (fun v' => ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K v' I : ℤ))) s
+      _ = ∏ v' ∈ s, (fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) ^
+          (FractionalIdeal.count K v' I : ℤ) := by
+        refine Finset.prod_congr rfl (fun v' _hv' => ?_)
+        simp [map_pow]
+      _ = ∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+          (FractionalIdeal.count K v' I : ℤ)) := by
+        simp [h_fc_v]
+  have h_count_sum : FractionalIdeal.count K (conjHeightOneSpectrum K v)
+      (∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+        (FractionalIdeal.count K v' I : ℤ))) =
+      FractionalIdeal.count K v I := by
+    rw [FractionalIdeal.count_prod K (conjHeightOneSpectrum K v) s
+      (fun v' => (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+        (FractionalIdeal.count K v' I : ℤ))) (by
+          intro v' _hv'
+          exact zpow_ne_zero (FractionalIdeal.count K v' I : ℤ)
+            (FractionalIdeal.coeIdeal_ne_zero.mpr (conjHeightOneSpectrum K v').ne_bot))]
+    simp_rw [FractionalIdeal.count_zpow]
+    classical
+    have h_count_conj : ∀ (v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K)),
+        FractionalIdeal.count K (conjHeightOneSpectrum K v)
+          ((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) =
+        if v' = v then (1 : ℤ) else 0 := by
+      intro v'
+      by_cases hv' : v' = v
+      · rw [← hv']
+        have h := FractionalIdeal.count_self (R := 𝓞 K) (K := K) (v := conjHeightOneSpectrum K v')
+        simpa using h
+      · have hne : conjHeightOneSpectrum K v' ≠ conjHeightOneSpectrum K v := by
+          intro h
+          apply hv'
+          apply IsDedekindDomain.HeightOneSpectrum.asIdeal_injective
+          apply conjIdeal_injective K
+          simpa [conjHeightOneSpectrum] using congrArg (fun x => x.asIdeal) h
+        rw [FractionalIdeal.count_maximal_coprime K (conjHeightOneSpectrum K v) hne]
+        simp [hv']
+    simp_rw [h_count_conj]
+    by_cases hv : v ∈ s
+    · calc
+        (∑ v' ∈ s, ((FractionalIdeal.count K v' I : ℤ) * (if v' = v then (1 : ℤ) else 0 : ℤ)))
+            = ((FractionalIdeal.count K v I : ℤ) * (1 : ℤ)) := by
+          refine (Finset.sum_eq_single v (fun v'' hv'' hvne => ?_) (fun hv_not => ?_)).trans ?_
+          · simp [hvne]
+          · exact absurd hv hv_not
+          · simp
+        _ = FractionalIdeal.count K v I := by simp
+    · have hzero : FractionalIdeal.count K v I = 0 := hs v hv
+      calc
+        (∑ v' ∈ s, ((FractionalIdeal.count K v' I : ℤ) * (if v' = v then (1 : ℤ) else 0 : ℤ))) = 0 := by
+          apply Finset.sum_eq_zero; intro v' hv'
+          simp [show v' ≠ v from fun h => hv (h ▸ hv'), hv]
+        _ = FractionalIdeal.count K v I := by rw [hzero]
+  calc
+    FractionalIdeal.count K (conjHeightOneSpectrum K v) Ic
+        = FractionalIdeal.count K (conjHeightOneSpectrum K v)
+            (∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+              (FractionalIdeal.count K v' I : ℤ))) := by rw [h_factorization_Ic]
+    _ = FractionalIdeal.count K v I := h_count_sum
+    _ = FractionalIdeal.count K v
+        (FractionalIdeal.spanSingleton (𝓞 K)⁰ (a : K)) := rfl
+
+/-- General version: `count` is invariant under the complex conjugation ring isomorphism
+    applied to both the prime and the ideal.
+
+    For any nonzero fractional ideal `I` and HeightOneSpectrum `v`,
+    `count` at the conjugate prime `c(v)` of the conjugate ideal `c(I)`
+    equals `count` at `v` of `I`. -/
+lemma count_conj_swap' (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
+    (I : FractionalIdeal (𝓞 K)⁰ K) (hI_ne_zero : I ≠ 0) :
+    FractionalIdeal.count K (conjHeightOneSpectrum K v)
+      (FractionalIdeal.ringEquivOfRingEquiv K K
+        ((IsCMField.ringOfIntegersComplexConj K).toRingEquiv) I) =
+    FractionalIdeal.count K v I := by
+  let c : (𝓞 K) ≃+* (𝓞 K) := (IsCMField.ringOfIntegersComplexConj K).toRingEquiv
+  let fc : FractionalIdeal (𝓞 K)⁰ K ≃+* FractionalIdeal (𝓞 K)⁰ K :=
+    FractionalIdeal.ringEquivOfRingEquiv K K c
+  have h_fc_v (v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :
+      fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) =
+      ((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) := by
+    dsimp [fc, conjHeightOneSpectrum, conjIdeal]
+    rw [ringEquivOfRingEquiv_coeIdeal K c v'.asIdeal]
+    simp [c]
+  have h_fin_I : Set.Finite {v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K) |
+      FractionalIdeal.count K v' I ≠ 0} :=
+    Filter.eventually_cofinite.mp (FractionalIdeal.finite_factors I)
+  let s : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 K)) := h_fin_I.toFinset
+  have hs : ∀ v', v' ∉ s → FractionalIdeal.count K v' I = 0 := by
+    intro v' hv'
+    have : v' ∉ {v' | FractionalIdeal.count K v' I ≠ 0} := by
+      intro h; apply hv'; rw [h_fin_I.mem_toFinset]; exact h
+    simpa using this
+  have h_mulSupport_subset : mulSupport (fun (v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) =>
+      ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K v' I : ℤ))) ⊆ (s : Set _) := by
+    intro x hx
+    by_contra hxs
+    have hcount_zero : FractionalIdeal.count K x I = 0 := hs x hxs
+    have h_term_one : ((x.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K x I : ℤ)) = 1 := by
+      simp [hcount_zero]
+    exact hx (by dsimp only [mulSupport]; simp [h_term_one])
+  have h_factorization_I : I = ∏ v' ∈ s,
+      ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K v' I : ℤ)) := by
+    have h_finprod := (FractionalIdeal.finprod_heightOneSpectrum_factorization' (K := K)
+      hI_ne_zero).symm
+    rw [finprod_eq_prod_of_mulSupport_subset _ h_mulSupport_subset] at h_finprod
+    exact h_finprod
+  have h_factorization_fcI : fc I = ∏ v' ∈ s,
+      (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+        (FractionalIdeal.count K v' I : ℤ)) := by
+    calc
+      fc I = fc (∏ v' ∈ s, ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+          (FractionalIdeal.count K v' I : ℤ))) := congrArg fc h_factorization_I
+      _ = ∏ v' ∈ s, fc (((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+          (FractionalIdeal.count K v' I : ℤ))) :=
+        map_prod fc.toMonoidHom
+          (fun v' => ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^ (FractionalIdeal.count K v' I : ℤ))) s
+      _ = ∏ v' ∈ s, (fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) ^
+          (FractionalIdeal.count K v' I : ℤ) := by
+        refine Finset.prod_congr rfl (fun v' _hv' => ?_)
+        simp [map_pow]
+      _ = ∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+          (FractionalIdeal.count K v' I : ℤ)) := by
+        simp [h_fc_v]
+  have h_count_sum : FractionalIdeal.count K (conjHeightOneSpectrum K v)
+      (∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+        (FractionalIdeal.count K v' I : ℤ))) =
+      FractionalIdeal.count K v I := by
+    rw [FractionalIdeal.count_prod K (conjHeightOneSpectrum K v) s
+      (fun v' => (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+        (FractionalIdeal.count K v' I : ℤ))) (by
+          intro v' _hv'
+          exact zpow_ne_zero (FractionalIdeal.count K v' I : ℤ)
+            (FractionalIdeal.coeIdeal_ne_zero.mpr (conjHeightOneSpectrum K v').ne_bot))]
+    simp_rw [FractionalIdeal.count_zpow]
+    classical
+    have h_count_conj : ∀ (v' : IsDedekindDomain.HeightOneSpectrum (𝓞 K)),
+        FractionalIdeal.count K (conjHeightOneSpectrum K v)
+          ((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) =
+        if v' = v then (1 : ℤ) else 0 := by
+      intro v'
+      by_cases hv' : v' = v
+      · rw [← hv']
+        have h := FractionalIdeal.count_self (R := 𝓞 K) (K := K) (v := conjHeightOneSpectrum K v')
+        simpa using h
+      · have hne : conjHeightOneSpectrum K v' ≠ conjHeightOneSpectrum K v := by
+          intro h
+          apply hv'
+          apply IsDedekindDomain.HeightOneSpectrum.asIdeal_injective
+          apply conjIdeal_injective K
+          simpa [conjHeightOneSpectrum] using congrArg (fun x => x.asIdeal) h
+        rw [FractionalIdeal.count_maximal_coprime K (conjHeightOneSpectrum K v) hne]
+        simp [hv']
+    simp_rw [h_count_conj]
+    by_cases hv : v ∈ s
+    · calc
+        (∑ v' ∈ s, ((FractionalIdeal.count K v' I : ℤ) * (if v' = v then (1 : ℤ) else 0 : ℤ)))
+            = ((FractionalIdeal.count K v I : ℤ) * (1 : ℤ)) := by
+          refine (Finset.sum_eq_single v (fun v'' hv'' hvne => ?_) (fun hv_not => ?_)).trans ?_
+          · simp [hvne]
+          · exact absurd hv hv_not
+          · simp
+        _ = FractionalIdeal.count K v I := by simp
+    · have hzero : FractionalIdeal.count K v I = 0 := hs v hv
+      calc
+        (∑ v' ∈ s, ((FractionalIdeal.count K v' I : ℤ) * (if v' = v then (1 : ℤ) else 0 : ℤ))) = 0 := by
+          apply Finset.sum_eq_zero; intro v' hv'
+          simp [show v' ≠ v from fun h => hv (h ▸ hv'), hv]
+        _ = FractionalIdeal.count K v I := by rw [hzero]
+  calc
+    FractionalIdeal.count K (conjHeightOneSpectrum K v)
+        (FractionalIdeal.ringEquivOfRingEquiv K K c I) =
+      FractionalIdeal.count K (conjHeightOneSpectrum K v)
+        (∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
+          (FractionalIdeal.count K v' I : ℤ))) := by rw [h_factorization_fcI]
+    _ = FractionalIdeal.count K v I := h_count_sum
 
 /-- The ideal product J(ε) = ∏_j (if ε_j then 𝔓_j else c(𝔓_j)), as a fractional ideal.
     Defined directly as a FractionalIdeal product for convenient use with `count_prod`. -/
@@ -306,12 +564,38 @@ lemma count_J_conj_eq {m : ℕ} (sp : SplitPrimeData K m) (ε : Fin m → Bool) 
 
 /-- For an element γ ∈ K^× fixed by complex conjugation, the `count` at a prime 𝔓
     equals the `count` at the conjugate prime c(𝔓).
-    Follows from `count_conj_swap` and the fact that c(γ) = γ. -/
+    Follows from `count_conj_swap'` and the fact that `c(γ) = γ` implies the
+    principal fractional ideal `(γ)` is fixed by the ring isomorphism. -/
 lemma count_eq_count_conj_of_fixed {γ : K} (hγ : γ ≠ 0) (h_fixed : IsCMField.complexConj K γ = γ)
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :
     FractionalIdeal.count K v (FractionalIdeal.spanSingleton (𝓞 K)⁰ γ) =
     FractionalIdeal.count K (conjHeightOneSpectrum K v)
       (FractionalIdeal.spanSingleton (𝓞 K)⁰ γ) := by
-  sorry
+  let c : (𝓞 K) ≃+* (𝓞 K) := (IsCMField.ringOfIntegersComplexConj K).toRingEquiv
+  let I : FractionalIdeal (𝓞 K)⁰ K := FractionalIdeal.spanSingleton (𝓞 K)⁰ γ
+  have hI_ne_zero : I ≠ 0 := by
+    dsimp [I]
+    intro h
+    rw [FractionalIdeal.spanSingleton_eq_zero_iff] at h
+    exact hγ h
+  have h_c_field_eq : (IsFractionRing.ringEquivOfRingEquiv (A := 𝓞 K) (K := K) (B := 𝓞 K) (L := K) c : K →+* K) =
+      (IsCMField.complexConj K : K →+* K) := by
+    apply IsFractionRing.ringHom_ext (A := 𝓞 K) (K := K) (L := K)
+    intro a
+    simp [c, IsCMField.coe_ringOfIntegersComplexConj K,
+      IsFractionRing.ringEquivOfRingEquiv_algebraMap]
+  have h_cγ : IsFractionRing.ringEquivOfRingEquiv (A := 𝓞 K) (K := K) (B := 𝓞 K) (L := K) c γ = γ := by
+    calc
+      IsFractionRing.ringEquivOfRingEquiv (A := 𝓞 K) (K := K) (B := 𝓞 K) (L := K) c γ
+          = ((IsFractionRing.ringEquivOfRingEquiv (A := 𝓞 K) (K := K) (B := 𝓞 K) (L := K) c : K →+* K)) γ := rfl
+      _ = (IsCMField.complexConj K : K →+* K) γ := by rw [h_c_field_eq]
+      _ = γ := h_fixed
+  have h_conj_I : FractionalIdeal.ringEquivOfRingEquiv K K c I = I := by
+    dsimp [I]
+    rw [FractionalIdeal.ringEquivOfRingEquiv_spanSingleton K K c γ]
+    simp [h_cγ]
+  have h_eq := count_conj_swap' K v I hI_ne_zero
+  rw [h_conj_I] at h_eq
+  exact h_eq.symm
 
 end
