@@ -3,6 +3,7 @@ import Erdos90.Arithmetic
 import Erdos90.DiscGeometry
 import Erdos90.CosetAveraging
 import Erdos90.CMField.Basic
+import Erdos90.CMField.CyclotomicSplitPrimes
 import Erdos90.NumberFieldDeep
 import Erdos90.NumberField
 import Erdos90.Geometric
