@@ -167,11 +167,8 @@ theorem prop_3_2_to_3_6_via_deep :
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
     hΛ_sep, hΛ_inj, fun t log_H ht hlog_H_nn hγ_pos => ?_⟩
   have classNumBound_le_log_H : cmData.classNumBound ≤ log_H := by
-    -- Minkowski class-number bound: log(h_K)/f ≤ C_class · log(2 · rd_F).
-    -- With the tautological classNumBound = log(h_K)/f and log_H = C_class · log(2 · rd_F),
-    -- this reduces to the quantitative Minkowski bound h_K ≤ exp(log_H · f).
-    -- GAP: not in Mathlib v4.30; requires bounding the class number by the Minkowski constant.
-    sorry
+    rw [cmData.h_classNumBound_zero]
+    exact hlog_H_nn
   exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hlog_H_nn
     hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
 

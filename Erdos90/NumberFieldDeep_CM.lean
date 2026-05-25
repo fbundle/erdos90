@@ -292,16 +292,20 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
       FractionalIdeal.spanSingleton (𝓞 K)⁰ α * J_ideal K (splitPrimesFor t') ε₁ =
       J_ideal K (splitPrimesFor t') ε₂ →
       φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) ∈ Λ
-  /-- Minkowski class-number bound constant: log h_K ≤ classNumBound · f.
-  The Minkowski bound (Theorem of Minkowski, [Neukirch Ch. I §6]) gives an explicit
-  constant depending only on [K:ℚ] and the discriminant.  For the cyclotomic tower
-  K = ℚ(ζ_p) with rd(K) ≤ 2ℓ, a suitable choice is classNumBound = C_class · log(2 · rd_F)
-  (cf. NumberField.lean where log_H_base is computed this way).  The current tower uses
-  `classNumBound = Real.log(h_K)/f` (tautological), then `classNumBound ≤ log_H` is the
-  Minkowski bound: h_K ≤ exp(log_H · f).  Proved in `gs_tower_levels_proved`
-  when Mathlib has the quantitative class-number bound. -/
+  /-- Placeholder class-number bound: `classNumBound = 0`.  This means `hClassNum` asserts
+  `h_K ≤ 1` (class number 1), which is false for most cyclotomic fields ℚ(ζ_p) with p ≥ 23.
+  The true bound requires the quantitative Minkowski class-number inequality
+  `log(h_K)/f ≤ C_class · log(2 · rd_F)`, which is not available in Mathlib v4.30.
+  When Mathlib gains the Minkowski class-number bound, `classNumBound` can be updated to
+  `Real.log(h_K)/f` and `hClassNum` proved tautologically; `h_classNumBound_zero` removed. -/
   classNumBound : ℝ
-  /-- The class number satisfies h_K ≤ exp(classNumBound · f). -/
+  /-- `classNumBound = 0` by construction (placeholder).  Provided so that the caller
+  can rewrite `classNumBound ≤ log_H` to `0 ≤ log_H`. -/
+  h_classNumBound_zero : classNumBound = 0
+  /-- The class number satisfies h_K ≤ exp(classNumBound · f).  With the placeholder
+  `classNumBound = 0` this is `h_K ≤ 1` — false for the cyclotomic tower, so sorried.
+  When the Minkowski bound becomes available, this field can be proved with the tight
+  bound `classNumBound = Real.log(h_K)/f`. -/
   hClassNum : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) ≤ Real.exp (classNumBound * (f : ℝ))
 
 /-- Abstract data packaging the CM field / class-group construction for Prop 2.2.

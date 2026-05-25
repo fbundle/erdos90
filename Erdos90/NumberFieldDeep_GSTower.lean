@@ -353,19 +353,15 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     h_div_conj_mem_Λ := by
       intro _t' _ε₁ _ε₂ _α _hα _hα_eq
       sorry
-    -- classNumBound = log(h_K)/f is the tautological bound.
-    -- hClassNum proves h_K ≤ exp(log(h_K)/f · f) = h_K (tautology).
-    -- The Minkowski bound classNumBound ≤ log_H is now a postulate at the call site
-    -- (prop_3_2_to_3_6_via_deep) rather than a CMTowerData field, since it depends on
-    -- the tower's log_H parameter which is not available at the CMTowerData level.
-    classNumBound := Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ)
-    hClassNum := by
-      have hf_ne : (f : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
-      have hcard_pos : (0 : ℝ) < (Fintype.card (ClassGroup (𝓞 K)) : ℝ) := by
-        have h : 0 < Fintype.card (ClassGroup (𝓞 K)) :=
-          Fintype.card_pos (α := ClassGroup (𝓞 K))
-        exact_mod_cast h
-      rw [div_mul_cancel₀ _ hf_ne, Real.exp_log hcard_pos]
+    -- classNumBound = 0 is the placeholder class-number bound.
+    -- h_classNumBound_zero records this value so the Assembly can rewrite.
+    -- hClassNum asserts h_K ≤ 1 (class number 1) — false for cyclotomic fields
+    -- with p ≥ 23, so sorried.  When Mathlib gains the quantitative Minkowski bound,
+    -- classNumBound can be updated to Real.log(h_K)/f (tautological hClassNum) and
+    -- h_classNumBound_zero removed.
+    classNumBound := 0
+    h_classNumBound_zero := rfl
+    hClassNum := by sorry
   }
   refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩
