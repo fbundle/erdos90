@@ -415,6 +415,15 @@ theorem rightPartial_apply_norm_le (f : 𝓢(ℝ × ℝ, ℂ)) (x_0 y : ℝ) :
   have := f.le_seminorm (𝕜 := ℝ) 0 0 (x_0, y)
   simpa using this
 
+/-- Polynomial bound: `‖(x_0, y)‖^k · ‖f(x_0, y)‖ ≤ ‖f‖_(k, 0)`.
+
+PROVED Lean via `SchwartzMap.le_seminorm` at (k, 0). -/
+theorem rightPartial_apply_polynomial_le (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x_0 y : ℝ) :
+    ‖((x_0, y) : ℝ × ℝ)‖ ^ k * ‖(f : ℝ × ℝ → ℂ) (x_0, y)‖ ≤
+      SchwartzMap.seminorm ℝ k 0 f := by
+  have := f.le_seminorm (𝕜 := ℝ) k 0 (x_0, y)
+  simpa using this
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
