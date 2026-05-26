@@ -17,17 +17,23 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + analytic lemmas (`prop_p6`, `hlog2_event`); calls `prop_3_2_to_3_6_via_deep` from NumberFieldDeep |
 | `Erdos90/NumberFieldDeep.lean` | Import hub: re-exports all deep number-theoretic components from the 4 split files below |
 | `Erdos90/NumberFieldDeep_Analytic.lean` | §1: Analytic helpers (`log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq`), all proved |
-| `Erdos90/NumberFieldDeep_GSTower.lean` | §2: GS tower — `GSBaseData`, `gs_base_construction` proved, `brd_cm_tower_postulate` (the single labeled sorry), `gs_tower_levels` and `golod_shafarevich_tower_with_lattice` forward to it; `_unused_gs_tower_levels_cyclo` (legacy ℚ(ζ_p) construction, kept as reference, no sorry) |
-| `Erdos90/NumberFieldDeep_ANT.lean` | ANT infrastructure: product formula separation, integer separation, Minkowski lattice lemmas, CM separation (`cmSeparation_exists`), tower postulate placeholder — all proved (no sorries) |
+| `Erdos90/NumberFieldDeep_GSTower.lean` | §2: GS tower — `BRDTowerData` structure, `brd_tower_data` postulate (one of two remaining sorries), `brd_cm_tower_postulate` body PROVED (assembles BRDTowerData + QScalingLattice + Phase A's lemma into the full lattice/cmData existential).  Also `GSBaseData` and `gs_base_construction` (proved, legacy compat). |
+| `Erdos90/NumberFieldDeep_ANT.lean` | ANT infrastructure: `sawin_tower_exists`, `gs_tower_levels_v2`, `exists_cm_class_group_data_v2`.  The Minkowski-lattice machinery (was here pre-Phase-C) is now in `CMField/MinkowskiLattice.lean`; ANT re-exports the names via `export`. |
 | `Erdos90/NumberFieldDeep_CM.lean` | §3–§5: Pigeonhole lemma (`exists_fiber_ge_div`, proved), CM lemmas (4 fully proved), `CMTowerData` with fixed `t'_param`/`spData`/`h_div_conj_mem_Λ`, `CMClassGroupData` structure + `exists_cm_class_group_data` (fully proved; takes `ht'_ge_t_plus_one` and `classNumBound_le_log_H` as explicit hypotheses) |
-| `Erdos90/NumberFieldDeep_Assembly.lean` | §6–§8: `cm_norm_one_elements` (proved; takes `ht'_ge_t_plus_one` + `classNumBound_le_log_H` hypotheses), `prop_3_2_to_3_6_via_deep` (proved, modulo `brd_cm_tower_postulate`), `ERDOS_ANT_Postulates` + `ant_postulates` |
+| `Erdos90/NumberFieldDeep_Assembly.lean` | §6–§8: `cm_norm_one_elements` (proved; takes `ht'_ge_t_plus_one` + `classNumBound_le_log_H` hypotheses), `prop_3_2_to_3_6_via_deep` (proved, modulo `brd_tower_data`), `ERDOS_ANT_Postulates` + `ant_postulates` |
 | `Erdos90/CosetAveraging.lean` | `lemma_2_4` — coset averaging (fully proved) |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/DiscGeometry.lean` | Discrete geometry lemmas |
 | `Erdos90/Main.lean` | Theorem 1.1 (`erdos_unit_distance_false`) + contrapositive |
-| `Erdos90.lean` | Root import (imports all modules including CMField) |
-| `Erdos90/CMField/Basic.lean` | `conjIdeal`, `SplitPrimeData` structure (fully proved, no sorries) |
-| `Erdos90/CMField/CyclotomicSplitPrimes.lean` | Split primes in cyclotomic fields ℚ(ζ_p); `find_t_primes_modEq_one` proved; used by `NumberFieldDeep_GSTower` |
+| `Erdos90.lean` | Root import (imports all modules including CMField, Mathlib4_Extra) |
+| `Erdos90/CMField/Basic.lean` | `conjIdeal`, `SplitPrimeData` structure with `h_Q_count_at_split`/`h_Q_count_at_conj` fields (Phase B), `count_conj_swap`, `J_ideal`, `count_J_eq`, `count_J_conj_eq` (all proved) |
+| `Erdos90/CMField/CyclotomicSplitPrimes.lean` | Split primes in ℚ(ζ_p); `find_t_primes_modEq_one` + `ramificationIdx_eq_one` + `inertiaDeg_eq_one` proved; `splitPrimeData_from_prime_list` has two sorried `h_Q_count` fields (Phase B; TRUE, count↔ramificationIdx bridge) |
+| `Erdos90/CMField/QScaling.lean` | Phase A — `Q_sq_div_conj_mem_integers` and `Q_sq_div_conj_mem_integers_of_spData` (the Q²-scaling integrality lemma, fully proved) |
+| `Erdos90/CMField/MinkowskiLattice.lean` | Unscaled CM Minkowski lattice (`cmMinkowskiEquiv`, `cmTransportedBasis`, `cmMinkowskiLattice`, `mem_cmMinkowskiLattice_iff`, `cmSeparation_exists`, `cmFundamentalDomain`, `cmIsAddFundamentalDomain`, etc.).  Moved out of ANT in Phase C to break an import cycle. |
+| `Erdos90/CMField/QScalingLattice.lean` | Q²-scaled CM Minkowski lattice built from `MinkowskiLattice`: `qInvSqEquiv`, `qScaledTransportedBasis`, `qScaledCMMinkowskiLattice`, `mem_qScaledCMMinkowskiLattice_iff`, fund domain + properties, `qScaledLattice_separation`, `qScaledLattice_first_coord_injective`.  All proved. |
+| `Erdos90/Mathlib4_Extra/Analytic.lean` | Mathlib-candidate analytic lemmas: `log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq` (all proved). |
+| `Erdos90/Mathlib4_Extra/FractionalIdealCount.lean` | Mathlib-candidate `FractionalIdeal.count` lemmas: `le_one_of_forall_count_nonneg`, `mem_range_of_spanSingleton_count_nonneg` (the integrality bridge). |
+| `Erdos90/Mathlib4_Extra/FractionalIdealRingEquiv.lean` | Mathlib-candidate `ringEquivOfRingEquiv_coeIdeal` lemma. |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -42,24 +48,30 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 1 `sorry` warning.
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` warnings (after Phase A+B+C).
 
-## Proof state — zero axioms, 1 labeled TRUE postulate (`brd_cm_tower_postulate`)
+## Proof state — zero axioms, 2 labelled TRUE postulates
 
-All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `[propext, sorryAx, Classical.choice, Quot.sound]` (foundational Lean axioms + `sorryAx`).
+All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords).  The build succeeds; `erdos_unit_distance_false` depends only on `[propext, sorryAx, Classical.choice, Quot.sound]` (foundational Lean axioms + `sorryAx`).
 
-### The single remaining sorry
+### The two remaining sorries
 
-**`brd_cm_tower_postulate`** (`Erdos90/NumberFieldDeep_GSTower.lean:86`). For each `(ℓ, base, M, t, log_H)`, asserts the existence of a CM tower level with degree `f ≥ M`, Minkowski lattice `Λ ⊂ ℂ^f`, and `CMTowerData` satisfying both `t + 1 ≤ cmData.t'_param` and `cmData.classNumBound ≤ log_H` (and the Q²-scaling `h_div_conj_mem_Λ`).
+**(1)** `splitPrimeData_from_prime_list` in `Erdos90/CMField/CyclotomicSplitPrimes.lean:320` — the cyclotomic instance of `h_Q_count_at_split` / `h_Q_count_at_conj` (Phase B fields added to `SplitPrimeData` in `CMField/Basic.lean`).  Claims: for `Q = qs.prod` and each split prime `𝔓_j` in `𝓞_{ℚ(ζ_p)}` lying over a chosen rational prime `q_j ≡ 1 (mod p)`, the count `FractionalIdeal.count K 𝔓_j ((Q : K)) = 1`.
 
-Mathematically TRUE per Hajir–Maire–Ramakrishna 2021 (tamely-ramified BRD towers with rd < 83.9, asymptotic; rd ≈ 50.097 for the best explicit example) combined with Brauer–Siegel and the Q²-scaling valuation argument:
-- HMR 2021 (`assets/hajir_maire_ramakrishna_2021.pdf` and `assets/tamely-ramified-towers-and-discriminant-bounds-for-number-fields.pdf`) gives an infinite CM tower with bounded root discriminant.
-- Brauer–Siegel (Louboutin 2000, `assets/louboutin_2000_class_number.pdf`) gives `log(h_K)/f` bounded, hence `≤ log_H` for the choice `log_H = 2·C_class·log(2·rd_F)` used by `exists_admissible_family`.
-- Q²-scaling: with `Λ = Φ(Q⁻²·𝒪_K)` for `Q = spData.Q`, the valuation `v_{𝔓_j}(α/c(α)) ∈ {-2,0,2}` together with `v_{𝔓_j}(Q) = 1` gives `Q²·(α/c(α)) ∈ 𝒪_K`, hence `Φ(α/c(α)) ∈ Λ`.
+TRUE; provable from existing infrastructure in the same file:
+- `ramificationIdx_eq_one` (lines 144–165, proved) gives `ramificationIdx 𝔓_j (Ideal.span {q_j}) = 1`
+- The needed Mathlib bridge is `FractionalIdeal.count K v (span q) = ramificationIdx v.asIdeal (Ideal.span {q})`, which goes through `FractionalIdeal.count_coe` + `Associates.count` + normalized factor count; ~50–100 LOC of careful Mathlib API work, plus a sum-decomposition for `Q = ∏ q_i` (only the matching `q_j` contributes 1; the others contribute 0).
 
-None of these are in Mathlib v4.30; would require substantial number-theory development (BRD tower construction, quantitative Brauer–Siegel, split-prime valuation API).
+**(2)** `brd_tower_data` in `Erdos90/NumberFieldDeep_GSTower.lean:105` — the BRD CM tower postulate (Phase C).  Asserts `BRDTowerData ℓ`: a tower-level constant `Q : ℕ` with `D₀ = Q²`, a root-discriminant bound `rd_F ≥ 1` with `log rd_F ≤ ℓ · log ℓ`, and a `getTowerLevel` callable that for each `(M, t, log_H)` returns a CM field `K` of complex degree `f ≥ M`, a `SplitPrimeData K (t' * f)` with `sp.Q = Q` (Q fixed across the tower), and the class-number bound `log(h_K)/f ≤ log_H`.
 
-Flow: `brd_cm_tower_postulate` → `gs_tower_levels` → `GSTowerData.getTowerLevel` → `prop_3_2_to_3_6_via_deep` → `exists_admissible_family` → `erdos_unit_distance_false`.
+TRUE per:
+- Hajir–Maire–Ramakrishna 2021 (`assets/hajir_maire_ramakrishna_2021.pdf` and `assets/tamely-ramified-towers-and-discriminant-bounds-for-number-fields.pdf`): infinite tamely-ramified pro-3 CM tower with `rd < 84`, `Q` fixed across the tower (page 7 of `assets/unit-distance-proof.pdf`).
+- Brauer–Siegel applied to BRD tower (Louboutin 2000, `assets/louboutin_2000_class_number.pdf`): bounded rd ⇒ `log(h_K)/f` bounded by an explicit constant.
+- Q²-scaling valuation argument: handled by Phase A's `Q_sq_div_conj_mem_integers_of_spData` (fully proved); appears inside `brd_cm_tower_postulate`'s body, which uses Phase A + `QScalingLattice` machinery to build the Q²-scaled lattice on top of any `BRDTowerData`.
+
+Neither HMR nor quantitative Brauer–Siegel is in Mathlib v4.30; closing this requires substantial Mathlib development (class field theory, pro-p group cohomology, Golod–Shafarevich inequality, quantitative Chebotarev, analytic class number formula).
+
+Flow: `brd_tower_data` → `brd_cm_tower_postulate` (PROVED body using QScalingLattice + Phase A) → `gs_tower_levels` → `GSTowerData.getTowerLevel` → `prop_3_2_to_3_6_via_deep` → `exists_admissible_family` → `erdos_unit_distance_false`.
 
 ### `exists_cm_class_group_data` is fully proved (no sorries)
 
@@ -71,19 +83,20 @@ All fields of `CMClassGroupData` are proved, including:
 
 ### Proved (no sorry)
 
-- `gs_base_construction` — GS base data with D₀ = 1, rd_F = 2ℓ, log bound via `log_two_mul_le`
+- `BRDTowerData ℓ` (structure) and `brd_cm_tower_postulate` (assembled, proved modulo `brd_tower_data`); the body uses `QScalingLattice` + Phase A's `Q_sq_div_conj_mem_integers_of_spData` + a coordinatewise `mixedEmbedding_apply_isComplex` step to discharge `h_div_conj_mem_Λ`.
+- `gs_base_construction` — GS base data with D₀ = 1, rd_F = 2ℓ, log bound via `log_two_mul_le` (legacy compat)
 - `gs_tower_levels` / `gs_tower_levels_v2` — take `(t, log_H)`, delegate to `brd_cm_tower_postulate`
-- `golod_shafarevich_tower_with_lattice` — assembly of `gs_base_construction` + `gs_tower_levels`; `getTowerLevel` takes `(M, t, log_H)`
-- `_unused_gs_tower_levels_cyclo` (private) — legacy ℚ(ζ_p) construction kept for reference; no `CMTowerData` field, no sorry, off the proof path
+- `golod_shafarevich_tower_with_lattice` — extracts `GSTowerData` from `brd_tower_data` and `gs_tower_levels`
 - `exists_fiber_ge_div` — pigeonhole lemma (§3)
 - 4 CM lemmas in §4 (`norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, etc.)
 - `exists_cm_class_group_data` — all `CMClassGroupData` fields proved (including `hmk_unit_inj`, `hmk_unit_norm`, `hmk_unit_mem_Λ`, `h_card_ratio`); takes `ht'_ge_t_plus_one` and `classNumBound_le_log_H` as explicit hypotheses
 - `cm_norm_one_elements` — class-group pigeonhole → norm-one set U, proved; takes `ht'_ge_t_plus_one` and `classNumBound_le_log_H` as explicit hypotheses
-- `prop_3_2_to_3_6_via_deep` — assembly, proved (modulo `brd_cm_tower_postulate`); signature pulls `(t, log_H)` to before the inner `∃ Λ`
-- `product_formula_sep` — product formula separation (ANT, proved via `NumberField.prod_abs_eq_one`)
-- `integer_separation` — integer separation (ANT, proved via `Finset.prod_erase_mul`)
-- `cmTransportedBasis`, `cmMinkowskiLattice`, `cmFundamentalDomain`, `cmIsAddFundamentalDomain`, `cmFundamentalDomain_finite_volume`, `cmMinkowskiLattice_countable` — all ANT lattice lemmas proved
-- `cmSeparation_exists` — CM Minkowski lattice separation (ANT, proved)
+- `prop_3_2_to_3_6_via_deep` — assembly, proved (modulo `brd_tower_data`); signature pulls `(t, log_H)` to before the inner `∃ Λ`
+- `product_formula_sep`, `integer_separation` — in `Erdos90.CMField.MinkowskiLattice`, proved
+- `cmMinkowskiEquiv`, `cmTransportedBasis`, `cmMinkowskiLattice`, `mem_cmMinkowskiLattice_iff`, `cmSeparation_exists`, `cmFundamentalDomain`, `cmIsAddFundamentalDomain`, `cmFundamentalDomain_finite_volume`, `cmMinkowskiLattice_countable`, `cmSeparation` — in `Erdos90.CMField.MinkowskiLattice`, all proved
+- `qInvSqEquiv`, `qScaledTransportedBasis`, `qScaledCMMinkowskiLattice`, `mem_qScaledCMMinkowskiLattice_iff`, `qScaledCMMinkowskiLattice_countable`, `qScaledFundamentalDomain`, `qScaledIsAddFundamentalDomain`, `qScaledFundamentalDomain_bounded`, `qScaledFundamentalDomain_volume_lt_top`, `qScaledFundamentalDomain_volume_pos`, `qScaledLattice_separation`, `qScaledLattice_first_coord_injective` — in `Erdos90.CMField.QScalingLattice`, all proved (Phase C lattice machinery)
+- `Q_sq_div_conj_mem_integers`, `Q_sq_div_conj_mem_integers_of_spData` — in `Erdos90.CMField.QScaling`, the Phase A integrality lemma, proved (~220 LOC)
+- `le_one_of_forall_count_nonneg`, `mem_range_of_spanSingleton_count_nonneg`, `ringEquivOfRingEquiv_coeIdeal` — in `Erdos90.Mathlib4_Extra.*`, all proved (Mathlib candidates)
 - `sawin_tower_exists`, `ant_postulates` — filled, delegate to `gs_tower_levels` + `exists_cm_class_group_data`
 
 Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMField`, `NumberField.classNumber`, `NumberField.exists_ideal_in_class_of_norm_le`, `IsCMField.complexConj`, `IsCMField.complexEmbedding_complexConj`, `fundamentalDomain_integerLattice`, `volume_fundamentalDomain_latticeBasis`, `ZSpan.isAddFundamentalDomain`
@@ -135,7 +148,8 @@ Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMFiel
 - `polydisc_measurable` — lemma (fully proved)
 - `GSTowerData ℓ` — structure abstracting the BRD tower output (fields: `D₀`, `hD₀_pos`, `rd_F`, `hrd_F_ge1`, `hlog_rd`, `getTowerLevel (M, t, log_H, ht, hlog_H_pos)`)
 - `GSBaseData ℓ` — structure for Props 3.2–3.5 base field data (fields: `D₀`, `hD₀_pos`, `rd_F`, `hrd_F_ge1`, `hlog_rd`)
-- `CMTowerData f hf1 Λ K` — fields: `φ`, `h_nrComplexPlaces`, `h_nrRealPlaces`, `mem_iff`, `h_φ1_norm`, `h_φ_norm_div_conj`, `t'_param : ℕ`, `spData : SplitPrimeData K (t'_param * f)`, `h_div_conj_mem_Λ` (non-universal: for the fixed `spData`), `classNumBound`, `hClassNum`
+- `CMTowerData f hf1 Λ K` — fields: `φ`, `h_nrComplexPlaces`, `h_nrRealPlaces`, `h_φ1_norm`, `h_φ_norm_div_conj`, `t'_param : ℕ`, `spData : SplitPrimeData K (t'_param * f)`, `h_div_conj_mem_Λ` (non-universal: for the fixed `spData`), `classNumBound`, `hClassNum`.  (The `mem_iff` field was removed in Phase C; it described an unscaled Λ characterization that is false for the Q²-scaled lattice.)
+- `BRDTowerData ℓ` — fields: `Q : ℕ`, `hQ_pos`, `D₀ : ℝ`, `hD₀_pos`, `hD₀_eq : D₀ = (Q : ℝ)^2`, `rd_F`, `hrd_F_ge1`, `hlog_rd`, `getTowerLevel (M, t, log_H, ht, hlog_H_pos)` returning `∃ K f sp ..., sp.Q = Q ∧ log(h_K)/f ≤ log_H`.
 - `CMClassGroupData f t log_H Λ` — structure abstracting the CM field / class-group input for Prop 2.2 (fields: `E`, `G`, `φ`, `cardE`, `cardG`, `hcardE`, `hcardG`, `h_card_ratio`, `mk_unit`, `mk_unit_mem_Λ`, `mk_unit_norm`, `mk_unit_inj`)
 
 ## Important types and notations
@@ -205,13 +219,34 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The single remaining sorry is `brd_cm_tower_postulate` in `Erdos90/NumberFieldDeep_GSTower.lean:86`. It bundles the BRD CM tower existence (HMR 2021), the quantitative class-number bound (Brauer–Siegel), and the Q²-scaled lattice membership into one labeled TRUE postulate. The entire rest of the formalization — geometry, coset averaging, CM field class-group construction (`exists_cm_class_group_data`), combinatorial counting — is fully proved.
+5. The two remaining sorries are:
+   - `splitPrimeData_from_prime_list` in `Erdos90/CMField/CyclotomicSplitPrimes.lean:320` (Phase B, the cyclotomic `h_Q_count` fields).  TRUE; closeable via the `count ↔ ramificationIdx` Mathlib bridge plus `ramificationIdx_eq_one` (already proved in the same file).
+   - `brd_tower_data` in `Erdos90/NumberFieldDeep_GSTower.lean:105` (Phase C, BRD tower postulate).  TRUE per HMR 2021 + Brauer–Siegel; bundles class field theory + Golod–Shafarevich + quantitative Brauer–Siegel.  Not in Mathlib v4.30.
+
+   The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, Q²-scaling, Q²-scaled lattice machinery, combinatorial counting — is fully proved.
 
 6. **∃ elimination into Type:** `Exists.casesOn` only eliminates into `Prop` in Lean 4.  When constructing a structure with `ℝ` or other non-`Prop` fields, use helper structures (like `GSBaseData`) instead of `∃` existential hypotheses — otherwise `obtain`/`cases` fails with "recursor can only eliminate into Prop".
 
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Lessons
+
+### 2026-05-26 (Phase A+B+C): Decompose the bundled postulate via paper insight
+
+The `brd_cm_tower_postulate` from the earlier "collapse" step was a single monolithic sorry hiding four sub-claims: HMR existence, Brauer–Siegel quantitative bound, Q²-scaled lattice membership, and the lattice-construction plumbing.  After re-reading the paper (page 7 of `assets/unit-distance-proof.pdf`), the architectural blocker was identified: the paper FIXES Q across the tower (the same rational primes `q_b` split in every `K_j`), so `D = Q²` is also fixed across the tower — matching the existing `AdmissibleFamily.D` (constant in `M`) without contradiction.
+
+With the architecture validated, the four sub-claims were separated:
+- **Phase A** (committed): Prove the Q²-scaling integrality lemma `Q² · (α / c(α)) ∈ 𝓞_K` as a standalone fact (`Erdos90/CMField/QScaling.lean`, ~220 LOC).  Uses `count_conj_swap` + `count_J_eq` + `count_J_conj_eq` for the case-analysis-on-prime argument.
+- **Phase B** (committed): Add `h_Q_count_at_split` and `h_Q_count_at_conj` fields to `SplitPrimeData` (in `CMField/Basic.lean`).  These are abstract hypotheses on any `SplitPrimeData`; the cyclotomic instance is sorried as a TRUE statement provable from `ramificationIdx_eq_one`.
+- **Phase C (b)** (committed): Introduce `BRDTowerData ℓ` structure + `brd_tower_data : BRDTowerData ℓ := sorry`, and prove `brd_cm_tower_postulate`'s body using `BRDTowerData` + `QScalingLattice` machinery + Phase A's lemma.  Result: the original monolithic sorry becomes proved Lean code modulo the single new `brd_tower_data` postulate.
+
+Net effect: 1 monolithic sorry → 2 narrow sorries, ~600 LOC of proved Lean code in between.  Each remaining sorry is a one-line statement with a clear Mathlib-citable provenance.
+
+**Lessons:**
+- Always read the paper before refactoring around a hard sorry — the architectural constraint that blocked me (Q "growing with M") turned out to be a misreading; the paper fixes Q once.
+- A "structural" postulate (HMR + BS together) is cleaner than splitting into N small but coupled postulates, especially when the coupling carries provability constraints (e.g., the `sp.Q = Q` equation that ties the per-M tower level to the fixed top-level constants).
+- Mathlib4-candidate generic lemmas belong in their own `Mathlib4_Extra/` folder, grouped by topic (`Analytic`, `FractionalIdealCount`, `FractionalIdealRingEquiv` so far).
+- When a Lean file would induce an import cycle, look for the architectural prerequisite: in Phase C, moving the unscaled Minkowski-lattice machinery from `ANT` to a new `CMField/MinkowskiLattice.lean` (earlier in the build graph) lets `QScalingLattice` and `GSTower` both use it without going through ANT.
 
 ### 2026-05-26: Collapse multiple false sorries into one true labeled postulate
 
