@@ -299,6 +299,69 @@ lemma dedekind_residue_upper_bound_cm
     NumberField.dedekindZeta_residue K ≤
       (4 * rd_F) ^ NumberField.InfinitePlace.nrComplexPlaces K := sorry
 
+/-! ## Phase E8 (D3.2.tors): torsionOrder polynomial bound
+
+For the D3.2d chain assembly (E5 + D3.2b + D3.2c), the `log(w_K)/f` term that
+appears after taking `log` of the analytic class number formula needs to be
+bounded.  Since `K ⊇ ℚ(ζ_{w_K})`, we have `φ(w_K) ≤ [K:ℚ] = 2f` for CM totally
+complex K of complex degree f.  Combining with `φ(n) ≥ n/(C · log log n)`
+gives `w_K ≤ O(f · log log f)`, but for a clean polynomial bound usable in the
+chain, we state `w_K ≤ 4 · (Module.finrank ℚ K)^2`.
+
+For specific small cases this is verified:
+- ℚ(i): `w_K = 4 ≤ 4·4 = 16 ✓`
+- ℚ(ζ_3): `w_K = 6 ≤ 4·4 = 16 ✓`
+- ℚ(ζ_5): `w_K = 10 ≤ 4·16 = 64 ✓`
+- ℚ(ζ_p) (p prime): `w_K = 2p ≤ 4(p-1)² = 4·[K:ℚ]² ✓` for p ≥ 3.
+
+**Mathlib status**: `torsionOrder` exists, but no polynomial-degree bound is
+packaged.  Closing this sorry needs `φ(n) ≥ √n / 2` or equivalent — a clean
+Mathlib PR target via `Nat.Totient` lemmas.
+-/
+
+/-- **D3.2.tors**: Polynomial bound on the number of roots of unity in a number
+field.  For any number field K of degree n, `torsionOrder K ≤ 4 · n²`.
+
+Cite: Standard exercise from `K ⊇ ℚ(ζ_{w_K})` ⇒ `φ(w_K) ≤ [K:ℚ]` plus the
+`φ(n) ≥ √n / 2` totient inequality.  Not packaged in Mathlib v4.30.
+
+This is a CLEAN Mathlib PR target — purely a number-theory fact about `Nat.totient`. -/
+lemma torsionOrder_bound :
+    NumberField.Units.torsionOrder K ≤ 4 * (Module.finrank ℚ K) ^ 2 := sorry
+
+/-! ## D3.2d (planned chain assembly)
+
+The four pieces above (E5, D3.2b, D3.2c, D3.2.tors) together with the
+hypothesis `rootDiscr K ≤ rd_F` would give `class_num_bound_of_brd`:
+`log(classNumber K) / f ≤ 2 · log(2 · rd_F)` for CM totally complex K with
+`f ≥ M₀` for some threshold M₀ depending on the constants.
+
+**The chain:**
+```
+1. classNumber K = R_K · w_K · √|disc K| / ((2π)^f · reg K)            [E5]
+2. log(classNumber K) = log R_K + log w_K + (1/2)·log|disc K|
+                      - f·log(2π) - log(reg K)
+3. (1/2)·log|disc K| = f·log(rootDiscr K)  (totally complex K, [K:ℚ] = 2f)
+4. Apply D3.2b:   log R_K ≤ f · log(4 · rd_F)
+   Apply D3.2c:  -log(reg K) ≤ log 8
+   Apply D3.2.tors: log w_K ≤ log(4f²)
+   Apply hyp.: log(rootDiscr K) ≤ log(rd_F)
+5. log(classNumber K) ≤ f·log(4·rd_F) + log(4f²) + f·log(rd_F)
+                       - f·log(2π) + log 8
+                     = f · log(2·rd_F²/π) + log(32·f²)
+6. Need ≤ 2f · log(2·rd_F) = f · log(4·rd_F²)
+7. Difference: f · log(4·rd_F²) - f · log(2·rd_F²/π) - log(32f²)
+             = f · log(2π) - log(32f²)
+   For f ≥ 4: f · log(2π) ≥ 4 · log(2π) ≈ 7.34, log(32f²) ≤ log(32·16) ≈ 6.24.
+   So chain holds for f ≥ 4.
+```
+
+The Lean implementation is non-trivial due to careful real-number arithmetic
+and `f` threshold management, plus threading the `f ≥ 4` hypothesis through
+`BRDTowerData.getTowerLevel`.  Tracked here as a comment; full implementation
+deferred.
+-/
+
 /-! ## Phase E2: discriminant chain and log inequality
 
 Goal: bound `log h_K / nrComplexPlaces K` by `2 · log(2 · rd_F)` for
