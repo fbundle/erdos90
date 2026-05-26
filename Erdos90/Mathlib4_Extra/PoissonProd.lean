@@ -684,6 +684,71 @@ theorem tsum_2d_schwartz_poisson (f : 𝓢(ℝ × ℝ, ℂ)) :
     convert h using 1
   rw [h_prod]
 
+/-! ## Roadmap: from `tsum_2d_schwartz_poisson` to dedekindZeta functional equation
+
+The 2-D Schwartz Poisson identity proved above is the analytic primitive
+underlying the modular transformation of the 2-D Gaussian theta function,
+which in turn (via Mellin transform) gives the dedekindZeta functional
+equation for quadratic and biquadratic CM fields.
+
+### Step A: Gaussian theta modular transformation (next concrete step)
+
+Apply `tsum_2d_schwartz_poisson` to the 2-D Gaussian
+  `g_t(x, y) := exp(-π · t · (x² + y²))`
+giving
+  `∑'_(m,n) g_t(m, n) = ∑'_(m,n) fourier2D(g_t)(m, n)`.
+
+By Mathlib's `fourier_gaussian_innerProductSpace` (via `WithLp 2 (ℝ × ℝ)`
+bridge), the Fourier of the 2-D Gaussian is itself a 2-D Gaussian:
+  `fourier2D(g_t)(m, n) = t⁻¹ · exp(-π · (m² + n²) / t)`.
+
+Combining:
+  `∑'_(m,n) exp(-πt(m²+n²)) = t⁻¹ · ∑'_(m,n) exp(-π(m²+n²)/t)`
+
+This is the 2-D Jacobi theta modular transformation `θ₂(1/t) = t · θ₂(t)`.
+
+### Step B: Lattice theta for CM fields (subsequent step)
+
+For a CM field K of complex degree f, the canonical embedding
+`mixedEmbedding K : 𝓞_K → ℂ^f` gives a lattice in ℝ^(2f).  The lattice
+theta function
+  `θ_K(t) := ∑'_(α ∈ 𝓞_K) exp(-π·t · ‖mixedEmbedding K α‖²)`
+is a multi-D Gaussian sum, generalizing Step A to dimension `2f`.
+
+Multi-D Poisson summation (the d-dim generalization of `tsum_2d_schwartz_poisson`)
+gives the modular transformation:
+  `θ_K(1/t) = √|d_K| · t^f · θ_K(t)`
+where `d_K = discr K`.
+
+### Step C: Mellin transform to dedekindZeta (final step)
+
+Mellin transform of `θ_K(t) - 1` produces the completed Dedekind zeta:
+  `Λ_K(s) = π^(-s·f) · Γ(s/2)^f · ∫₀^∞ (θ_K(t) - 1) · t^(s-1) dt
+         = (gamma factors) · dedekindZeta K`.
+
+Modular transformation of `θ_K` ⟹ symmetric form of Mellin integral ⟹
+functional equation `Λ_K(s) = Λ_K(1-s)`.
+
+Via Mathlib's `Mathlib/NumberTheory/LSeries/AbstractFuncEq.lean`, this
+gives analytic continuation past `s = 1` and the residue/regulator bounds
+that close `regulator_lower_bound_cm` + `dedekind_residue_upper_bound_cm`.
+
+### What's MISSING from Mathlib v4.30
+
+1. 2-D Gaussian `g_t : 𝓢(ℝ × ℝ, ℂ)` (definition + Schwartz proof).
+   Doable via `SchwartzMap.compCLM` + `exp_neg_sq_isLittleO`.
+2. `fourier_gaussian_innerProductSpace` bridged to `ℝ × ℝ` (Prod norm)
+   via `WithLp 2`.  Doable but requires the WithLp continuity bridge.
+3. Multi-D generalization of `tsum_2d_schwartz_poisson` (the d-dim version
+   currently sorried as `tsum_eq_tsum_fourier_multi_postulate`).
+4. Lattice theta `θ_K` definition + modular transformation.
+5. Mellin transform of `θ_K - 1` and identification with `Λ_K`.
+
+Each is a multi-week to multi-month Mathlib PR target.  The infrastructure
+already provided above (`tsum_2d_schwartz_poisson` and ancillary lemmas)
+is the foundation for Step A.
+-/
+
 /-! ## Schwartz seminorm bound on partial Schwartz
 
 The `rightPartial` of a 2-D Schwartz function has Schwartz seminorms
