@@ -104,7 +104,18 @@ theorem tsum_three_product_eq_fourier (g h k : 𝓢(ℝ, ℂ)) :
   rw [tsum_eq_tsum_fourier_zero g, tsum_eq_tsum_fourier_zero h,
     tsum_eq_tsum_fourier_zero k]
 
--- n-fold separable Poisson summation (induction on n) is left as future work.
--- See assets/search_results/closing_roadmap.md for the broader strategy.
+/-- **Separable n-D Poisson summation** (product form): for a finite family of
+Schwartz functions `f : ι → 𝓢(ℝ, ℂ)`,
+
+`∏ i, (∑' m : ℤ, f i m) = ∏ i, (∑' m : ℤ, 𝓕(f i) m)`.
+
+This is the general "tensor" version of the separable n-D Poisson summation,
+following directly from the 1-D case applied factor-wise. -/
+theorem tsum_finset_product_eq_fourier_product
+    {ι : Type*} [Fintype ι] (f : ι → 𝓢(ℝ, ℂ)) :
+    (∏ i, ∑' m : ℤ, ((f i : 𝓢(ℝ, ℂ)) : ℝ → ℂ) m) =
+      ∏ i, ∑' m : ℤ, 𝓕 ((f i : 𝓢(ℝ, ℂ)) : ℝ → ℂ) m := by
+  refine Finset.prod_congr rfl (fun i _ => ?_)
+  exact tsum_eq_tsum_fourier_zero (f i)
 
 end SchwartzMap
