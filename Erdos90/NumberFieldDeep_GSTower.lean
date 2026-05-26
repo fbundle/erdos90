@@ -6,6 +6,7 @@ import Erdos90.CMField.CyclotomicSplitPrimes
 import Erdos90.CMField.QScaling
 import Erdos90.CMField.QScalingLattice
 import Erdos90.Mathlib4_Extra.ClassNumberBound
+import Erdos90.Mathlib4_Extra.GolodShafarevich
 
 open Real Filter NumberField InfinitePlace Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex Pointwise BigOperators
@@ -129,8 +130,12 @@ Cite:
   GS construction over a base CM field with bounded rd.
 - Standard CM lift (tensor with `ℚ(i)` over the totally real subfield).
 
-Not in Mathlib v4.30; requires class field theory + Golod–Shafarevich inequality. -/
-def gs_cm_tower (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
+PROVED (Phase D5+, 2026-05-27) Lean code via `gs_unramified_tower_with_bounded_rd`
+from `Erdos90.Mathlib4_Extra.GolodShafarevich`, which in turn uses the labelled
+postulate `gs_cm_tower_infinite_postulate`.  The structural decomposition shifts
+the Mathlib gap from this monolithic `gs_cm_tower` to the more clearly-shaped
+`gs_cm_tower_infinite_postulate` (which states what GS+CFT collectively give). -/
+def gs_cm_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
     ∃ (rd_F : ℝ) (_ : 1 ≤ rd_F)
       (_ : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)),
       ∀ (M : ℕ),
@@ -138,7 +143,37 @@ def gs_cm_tower (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
           (_ : IsTotallyComplex K) (f : ℕ) (_ : f ≥ M) (_ : f ≥ 1)
           (_ : InfinitePlace.nrComplexPlaces K = f)
           (_ : InfinitePlace.nrRealPlaces K = 0),
-          NumberField.rootDiscr K ≤ rd_F := sorry
+          NumberField.rootDiscr K ≤ rd_F := by
+  -- Use the labelled postulate gs_unramified_tower_with_bounded_rd
+  -- (in Erdos90.Mathlib4_Extra.GolodShafarevich) which fixes rd_F = ℓ.
+  have htower :=
+    NumberField.gs_unramified_tower_with_bounded_rd 2 Nat.prime_two ℓ hℓ
+  refine ⟨(ℓ : ℝ), ?_, ?_, ?_⟩
+  · -- 1 ≤ ℓ
+    have : (1 : ℝ) ≤ (2 : ℝ) := by norm_num
+    exact this.trans (by exact_mod_cast hℓ)
+  · -- log ℓ ≤ ℓ · log ℓ for ℓ ≥ 2
+    have h_ℓ_ge_1 : (1 : ℝ) ≤ ℓ := by exact_mod_cast (by omega : 1 ≤ ℓ)
+    have h_log_ℓ_nonneg : 0 ≤ Real.log ℓ := Real.log_nonneg h_ℓ_ge_1
+    nlinarith
+  intro M
+  -- Call htower with N large enough to ensure nrComplexPlaces ≥ M
+  -- htower(2*M+2) gives L with finrank ℚ L ≥ 2*M+2.  Then
+  -- nrComplexPlaces L = finrank ℚ L / 2 ≥ M+1 ≥ M.
+  obtain ⟨L, fieldL, numL, cmL, tcL, h_finrank, h_rd_L⟩ := htower (2 * M + 2)
+  letI : Field L := fieldL
+  letI : NumberField L := numL
+  letI : IsCMField L := cmL
+  letI : IsTotallyComplex L := tcL
+  let f := InfinitePlace.nrComplexPlaces L
+  have h_finrank_eq : Module.finrank ℚ L = 2 * f :=
+    IsTotallyComplex.finrank (K := L)
+  have h_f_ge_M : f ≥ M := by
+    have : 2 * f ≥ 2 * M + 2 := by rw [← h_finrank_eq]; exact h_finrank
+    omega
+  have h_f_ge_1 : f ≥ 1 := by omega
+  refine ⟨L, fieldL, numL, cmL, tcL, f, h_f_ge_M, h_f_ge_1, rfl,
+    IsTotallyComplex.nrRealPlaces_eq_zero L, h_rd_L⟩
 
 /-- **D3.1.cheb**: Chebotarev / Ihara fixed split primes across the tower.  For each
 `ℓ ≥ 2` and root-discriminant bound `rd_F ≥ 1`, exists a tower constant `Q : ℕ` such

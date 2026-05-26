@@ -149,16 +149,12 @@ This packages GS's `gs_cm_tower_infinite_postulate` into the existential form
 that matches `gs_cm_tower` in `NumberFieldDeep_GSTower.lean`. -/
 theorem gs_unramified_tower_with_bounded_rd
     (p : ℕ) (hp : Nat.Prime p) (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
-    ∃ (rd_F : ℝ) (_ : 1 ≤ rd_F),
-      ∀ (M : ℕ),
-        ∃ (L : Type) (_ : Field L) (_ : NumberField L)
-          (_ : IsCMField L) (_ : IsTotallyComplex L),
-          Module.finrank ℚ L ≥ M ∧ NumberField.rootDiscr L ≤ rd_F := by
+    ∀ (M : ℕ),
+      ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+        (_ : IsCMField L) (_ : IsTotallyComplex L),
+        Module.finrank ℚ L ≥ M ∧ NumberField.rootDiscr L ≤ (ℓ : ℝ) := by
   obtain ⟨K, _, _, _, _, h_rd_K, htower⟩ :=
     GolodShafarevich.gs_cm_tower_infinite_postulate p hp ℓ hℓ
-  refine ⟨(ℓ : ℝ), ?_, ?_⟩
-  · have : (1 : ℝ) ≤ (2 : ℝ) := by norm_num
-    exact this.trans (by exact_mod_cast hℓ)
   intro M
   obtain ⟨L, _, _, _, _, _, h_finrank, h_rd_L⟩ := htower M
   refine ⟨L, inferInstance, inferInstance, inferInstance, inferInstance, ?_, ?_⟩
