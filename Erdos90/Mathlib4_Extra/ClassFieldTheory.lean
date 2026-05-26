@@ -897,6 +897,26 @@ theorem IsHilbertClassField.isTotallyComplex
     IsTotallyComplex H :=
   isTotallyComplex_of_algebra (F := K) (K := H)
 
+/-- `classNumber K = [H:K]` when `IsHilbertClassField K H`. -/
+theorem IsHilbertClassField.classNumber_eq_finrank
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    NumberField.classNumber K = Module.finrank K H :=
+  (IsHilbertClassField.finrank_eq (H := H)).symm
+
+/-- The finrank of H over ℚ when `IsHilbertClassField K H`:
+`[H:ℚ] = classNumber K · [K:ℚ]`. -/
+theorem IsHilbertClassField.finrank_over_Q
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    Module.finrank ℚ H = NumberField.classNumber K * Module.finrank ℚ K := by
+  rw [show Module.finrank ℚ H = Module.finrank ℚ K * Module.finrank K H from
+    (Module.finrank_mul_finrank ℚ K H).symm,
+    IsHilbertClassField.finrank_eq (H := H)]
+  ring
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
