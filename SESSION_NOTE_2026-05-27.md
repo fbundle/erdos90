@@ -17,6 +17,34 @@ Written by AI agent for the human maintainer to read on waking.
   - Structural corollaries: card_gal_hcf_eq_classNumber, discr_eq_pow,
     ramificationIdx_eq_one, differentIdeal_eq_top, finrank_over_Q,
     artinSymbol + mult + identity, identity_subsingleton_gal, etc.
+
+### NEW: 2-D Schwartz Poisson summation grind
+
+- **`Erdos90/Mathlib4_Extra/PoissonProd.lean`** (350+ LOC, 13 PROVED theorems):
+  - `Function.HasTemperateGrowth.{inr,inl}_partial` (PROVED): affine inclusions
+    have temperate growth.
+  - `SchwartzMap.{right,left}Partial` (PROVED): for `f : 𝓢(ℝ × ℝ, ℂ)`, the
+    partial Schwartz function is Schwartz on ℝ.
+  - `tsum_{right,left}Partial_eq_fourier` (PROVED): 1-D Poisson applied to
+    the partial Schwartz.
+  - `tsum_tsum_rightPartial_eq_fourier` (PROVED): first iteration of 2-D
+    Poisson.
+  - `summable_{row,col}_schwartz`, `summable_norm_{row,col}_schwartz`
+    (PROVED): row/column summability.
+  - `tsum_prod_eq_tsum_tsum` (PROVED modulo summability postulate): Fubini.
+  - `tsum_prod_eq_tsum_tsum_fourier_rightPartial` (PROVED modulo postulate):
+    combined chain `∑' p : ℤ × ℤ, f p = ∑' m, ∑' n, 𝓕(f.rightPartial m) n`.
+
+  POSTULATED (3 labelled steps, multi-week formalization):
+  - `partial_fourier_is_Schwartz_postulate`
+  - `iterated_fourier_eq_2d_postulate`
+  - `summable_2d_schwartz_postulate` (the easiest of the three; ~50-100 LOC).
+
+This is genuine LOAD-BEARING progress: 2-D Schwartz Poisson is the
+analytic primitive that unlocks the `dedekindZeta` functional equation,
+which closes 2 of the 4 proof-path sorries simultaneously
+(`regulator_lower_bound_cm` Friedman + `dedekind_residue_upper_bound_cm`
+Louboutin).
 - **Significant structural decomposition** of `gs_cm_tower`:
   - `rootDiscr_eq_of_unramifiedTower` FULLY PROVED (no sorry) in new file
     `Mathlib4_Extra/UnramifiedDiscriminant.lean`.
