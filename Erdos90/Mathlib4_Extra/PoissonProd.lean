@@ -389,6 +389,10 @@ theorem tsum_prod_eq_tsum_tsum_fourier_rightPartial
     ∑' m : ℤ, ∑' n : ℤ, 𝓕 ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) n := by
   rw [tsum_prod_eq_tsum_tsum, tsum_tsum_rightPartial_eq_fourier]
 
+-- (tsum_prod_eq_tsum_tsum_fourier_leftPartial omitted: the swap of tsum
+-- ordering via Equiv.prodComm hits a Lean typeclass timeout.  Mathematically
+-- straightforward but Lean-tricky.  The rightPartial form above suffices.)
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
