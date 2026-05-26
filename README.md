@@ -37,6 +37,8 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - one tip to speed up compilation is to split a big file into smaller files
 
+- since formalizing this project requires multiple mathlib contributions, please separate them into `Mathlib4_Extra`
+
 - please end your commit message with 
 
 ```
