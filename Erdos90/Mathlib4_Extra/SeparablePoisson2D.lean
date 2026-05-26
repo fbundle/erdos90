@@ -133,4 +133,21 @@ theorem tsum_empty_product_eq_fourier_product
 -- tsum on Fin n → ℤ.  Each step requires careful summability arguments
 -- via `tsum_mul_tsum_of_summable_norm`.
 
+/-- Variant: 1-D Schwartz Poisson summation at half-integer shift.
+For Schwartz `f : 𝓢(ℝ, ℂ)`,
+`∑' n : ℤ, f (1/2 + n) = ∑' n : ℤ, 𝓕f n · (-1)^n`. -/
+theorem tsum_eq_tsum_fourier_half (f : 𝓢(ℝ, ℂ)) :
+    (∑' n : ℤ, (f : ℝ → ℂ) (1/2 + n)) =
+      ∑' n : ℤ, 𝓕 (f : ℝ → ℂ) n * fourier n ((1/2 : ℝ) : UnitAddCircle) := by
+  exact SchwartzMap.tsum_eq_tsum_fourier f (1/2)
+
+/-- 2-D Schwartz Poisson at half-integer shift in one variable, separable case.
+For `g, h : 𝓢(ℝ, ℂ)`,
+`(∑' m, g(1/2 + m)) · (∑' n, h n) = ∑' (m, n), (𝓕g m · (-1)^m) · 𝓕h n`. -/
+theorem tsum_half_product_eq_fourier (g h : 𝓢(ℝ, ℂ)) :
+    ((∑' m : ℤ, (g : ℝ → ℂ) (1/2 + m)) * (∑' n : ℤ, (h : ℝ → ℂ) n) : ℂ) =
+      (∑' m : ℤ, 𝓕 (g : ℝ → ℂ) m * fourier m ((1/2 : ℝ) : UnitAddCircle)) *
+        (∑' n : ℤ, 𝓕 (h : ℝ → ℂ) n) := by
+  rw [tsum_eq_tsum_fourier_half g, tsum_eq_tsum_fourier_zero h]
+
 end SchwartzMap
