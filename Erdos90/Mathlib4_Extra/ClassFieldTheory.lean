@@ -208,6 +208,27 @@ theorem HilbertClassFieldExt.bijective_algebraMap_of_classNumber_one
   rw [← Algebra.finrank_eq_one_iff_bijective_algebraMap]
   rw [E.finrank_eq, h_classNumber]
 
+/-! ## Hilbert's principal ideal theorem (principalization)
+
+Every ideal of `𝓞_K` becomes principal in `𝓞_{H(K)}`.  This is **Hilbert
+94** (Furtwängler 1930, simplified by Iyanaga 1934, and re-proved by
+Tannaka 1934).  Classical CFT result; not in Mathlib v4.30.
+-/
+
+/-- **Postulate** (Hilbert principal ideal theorem):
+
+For any ideal `I` of `𝓞_K`, its extension `I · 𝓞_{H(K)}` to the HCF is
+principal.  In particular, the ideal-class extension map
+`ClassGroup (𝓞 K) → ClassGroup (𝓞 H(K))` is the zero map.
+
+Cite: Furtwängler 1930.  See Iyanaga's *Theory of Numbers* or Lang
+*Algebraic Number Theory*, Chapter X §1. -/
+@[reducible] def hilbert_principal_ideal_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K)
+    (I : Ideal (𝓞 K)) :
+    (I.map (algebraMap (𝓞 K) (𝓞 E.H))).IsPrincipal := sorry
+
 /-! ## The Hilbert class field tower (iterated HCF)
 
 The `n`-th level of the **Hilbert class field tower** would naturally be
