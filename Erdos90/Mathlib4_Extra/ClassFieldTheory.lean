@@ -774,6 +774,27 @@ theorem HilbertClassFieldExt.identity_subsingleton_gal
   -- Subsingleton (K ≃ₐ[K] K), which follows from algEquiv_self_unique.
   Unique.instSubsingleton (α := K ≃ₐ[K] K)
 
+/-- The Artin reciprocity isomorphism is a `MulEquiv`, so it's bijective. -/
+theorem HilbertClassFieldExt.artinReciprocity_bijective
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Function.Bijective E.artinReciprocity :=
+  E.artinReciprocity.bijective
+
+/-- Artin reciprocity is injective. -/
+theorem HilbertClassFieldExt.artinReciprocity_injective
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Function.Injective E.artinReciprocity :=
+  E.artinReciprocity.injective
+
+/-- Artin reciprocity is surjective. -/
+theorem HilbertClassFieldExt.artinReciprocity_surjective
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Function.Surjective E.artinReciprocity :=
+  E.artinReciprocity.surjective
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
