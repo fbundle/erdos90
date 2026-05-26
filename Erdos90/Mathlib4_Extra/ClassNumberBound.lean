@@ -19,9 +19,20 @@ in `Erdos90/NumberFieldDeep_GSTower.lean` (Phase E).
 
 * `Mathlib4_Extra.card_ideals_of_norm_le_bound` — for a number field of
   degree `n` and bound `N`, the number of ideals of `𝓞 K` with absolute
-  norm at most `N` is bounded by `N ^ n`.  Sorried; this is the Mathlib
-  gap (a crude polynomial bound that follows from the divisor-function
-  estimate but isn't packaged in Mathlib v4.30).
+  norm at most `N` is bounded by `2 ^ ((N!)^n)` (Phase E4, proved using a
+  crude subset-of-quotient injection).  The tight `O(N)` analytic estimate
+  remains a Mathlib gap.
+
+* `classNumber_eq_residue_formula` — Dirichlet class number formula in
+  algebraic-identity form (Phase E5, proved).
+
+* `regulator_lower_bound_cm` — Friedman 1989 regulator bound (sorried — D3.2c).
+
+* `dedekind_residue_upper_bound_cm` — Louboutin 2000 residue bound (sorried — D3.2b).
+
+* `torsionOrder_bound` — polynomial bound `torsionOrder K ≤ 4·[K:ℚ]²`
+  (Phase E10+E13, proved via `totient_torsionOrder_le_finrank` +
+  `nat_le_four_mul_totient_sq`).
 -/
 
 namespace Mathlib4_Extra
