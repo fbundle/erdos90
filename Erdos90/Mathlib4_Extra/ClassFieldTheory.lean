@@ -229,6 +229,68 @@ Cite: Furtwängler 1930.  See Iyanaga's *Theory of Numbers* or Lang
     (I : Ideal (𝓞 K)) :
     (I.map (algebraMap (𝓞 K) (𝓞 E.H))).IsPrincipal := sorry
 
+/-! ## The `p`-Hilbert class field
+
+For a prime `p`, the **`p`-Hilbert class field** `H_p(K)` is the maximal
+unramified abelian extension of `K` whose Galois group is a `p`-group.
+It corresponds to the `p`-Sylow subgroup of `ClassGroup (𝓞 K)` under
+Artin reciprocity.
+
+Used directly in the Golod–Shafarevich argument: we iterate `H_p` to get
+the **`p`-class field tower**, which is the object GS criterion is applied
+to.
+-/
+
+/-- **`p`-Hilbert class field** stub: the max unramified abelian `p`-extension. -/
+structure HilbertPClassFieldExt (K : Type u) [Field K] [NumberField K] (p : ℕ) where
+  /-- The `p`-HCF type. -/
+  H_p : Type v
+  /-- It's a field. -/
+  [fieldH_p : Field H_p]
+  /-- It's a number field. -/
+  [numberFieldH_p : NumberField H_p]
+  /-- It's an extension of `K`. -/
+  [algebraKH_p : Algebra K H_p]
+  /-- It's Galois. -/
+  [isGaloisKH_p : IsGalois K H_p]
+  /-- It's abelian. -/
+  [isAbelianGaloisKH_p : IsAbelianGalois K H_p]
+  /-- `H_p/K` is unramified at every nonzero prime. -/
+  unramified :
+    ∀ (P : Ideal (𝓞 H_p)) [P.IsPrime], P ≠ ⊥ →
+      Algebra.IsUnramifiedAt (𝓞 K) P
+  /-- `[H_p : K]` is a power of `p`. -/
+  finrank_is_pow_p : ∃ (n : ℕ), Module.finrank K H_p = p ^ n
+
+attribute [instance] HilbertPClassFieldExt.fieldH_p HilbertPClassFieldExt.numberFieldH_p
+  HilbertPClassFieldExt.algebraKH_p HilbertPClassFieldExt.isGaloisKH_p
+  HilbertPClassFieldExt.isAbelianGaloisKH_p
+
+/-- **Postulate**: the `p`-Hilbert class field exists.
+
+For any number field `K` and prime `p`, there is a maximal unramified
+abelian `p`-extension `H_p(K)/K`.
+
+Cite: standard CFT; equivalent to `p`-Sylow part of HCF via Artin
+reciprocity.  Not in Mathlib v4.30. -/
+def hilbertPClassField_exists (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p) : HilbertPClassFieldExt K p := sorry
+
+/-- `rootDiscr` is invariant under taking the `p`-HCF.
+
+PROVED Lean via `rootDiscr_eq_of_unramifiedTower`. -/
+theorem rootDiscr_pHCF_eq (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (E : HilbertPClassFieldExt K p) :
+    rootDiscr E.H_p = rootDiscr K :=
+  rootDiscr_eq_of_unramifiedTower K E.H_p E.unramified
+
+/-- The `p`-HCF of a totally complex number field is itself totally complex. -/
+instance HilbertPClassFieldExt.isTotallyComplex
+    (K : Type u) [Field K] [NumberField K] [IsTotallyComplex K]
+    (p : ℕ) (E : HilbertPClassFieldExt K p) :
+    IsTotallyComplex E.H_p :=
+  isTotallyComplex_of_algebra (F := K) (K := E.H_p)
+
 /-! ## The Hilbert class field tower (iterated HCF)
 
 The `n`-th level of the **Hilbert class field tower** would naturally be
