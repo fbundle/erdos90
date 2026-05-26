@@ -32,11 +32,24 @@ contributions.  See `assets/search_results/closing_roadmap.md` and
 
 ## What did get done
 
-### Code (1 file)
+### Code: actual proved Lean theorems
+- `Erdos90/Mathlib4_Extra/SeparablePoisson2D.lean` — multiple proved
+  Mathlib-PR-shape theorems:
+  - `SchwartzMap.tsum_eq_tsum_fourier_zero` — 1-D Schwartz Poisson at x=0
+  - `SchwartzMap.tsum_product_eq_tsum_fourier_product` — 2-D separable, product form
+  - `SchwartzMap.tsum_prod_eq_tsum_fourier_prod` — 2-D separable, sum-over-product form
+  - `SchwartzMap.tsum_three_product_eq_fourier` — 3-D separable
+  - `SchwartzMap.tsum_finset_product_eq_fourier_product` — n-D, product form (Fintype ι)
+  - `SchwartzMap.tsum_empty_product_eq_fourier_product` — base case for IsEmpty ι
+  - `SchwartzMap.tsum_eq_tsum_fourier_half` — Poisson at half-integer shift
+  - `SchwartzMap.tsum_half_product_eq_fourier` — 2-D separable with half-shift
+  All proved (no sorries).  ~150 LOC total.
+
+### Code: documentation-only files
 - `Erdos90/Mathlib4_Extra/MultiDimPoisson.lean` — Mathlib-PR-shape
-  documentation skeleton (no sorried declarations; documentation only).
-  Sets out the missing multi-D Poisson summation formula as a Mathlib
-  target.
+  documentation skeleton.
+- `Erdos90/Mathlib4_Extra/NumberFieldTheta.lean` — theta function for K.
+- `Erdos90/Mathlib4_Extra/DedekindZetaFE.lean` — functional equation chain.
 
 ### Docstring updates (4 files)
 - `Erdos90/NumberFieldDeep.lean` — full rewrite to reflect Phase D5+E9 state
