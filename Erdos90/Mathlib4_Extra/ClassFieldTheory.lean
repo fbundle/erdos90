@@ -614,6 +614,17 @@ theorem rootDiscr_hcf_cyclotomic_five
       NumberField.rootDiscr K :=
   rootDiscr_hcf_eq K (HilbertClassFieldExt.cyclotomic_five K)
 
+/-- For HCF, every nonzero prime of `𝓞 H` has ramification index 1.
+
+PROVED Lean via Mathlib's `Ideal.ramificationIdx_eq_one_of_isUnramifiedAt`. -/
+theorem HilbertClassFieldExt.ramificationIdx_eq_one
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K)
+    (P : Ideal (𝓞 E.H)) [P.IsPrime] (hP : P ≠ ⊥) :
+    Ideal.ramificationIdx (P.under (𝓞 K)) P = 1 := by
+  have := E.unramified P hP
+  exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt hP
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
