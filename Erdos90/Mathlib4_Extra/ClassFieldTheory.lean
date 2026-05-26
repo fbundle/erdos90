@@ -831,6 +831,36 @@ theorem HilbertClassFieldExt.cm_totally_complex_preserved
   ⟨HilbertClassFieldExt.isTotallyComplex K E,
    ⟨HilbertClassFieldExt.isCMField_postulate K E⟩⟩
 
+/-! ## Bridge from `IsHilbertClassField` to discriminant facts -/
+
+/-- If `IsHilbertClassField K H`, then the discriminant tower formula
+`|discr H| = |discr K|^[H:K]` holds. -/
+theorem IsHilbertClassField.discr_eq_pow
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    (NumberField.discr H).natAbs =
+      (NumberField.discr K).natAbs ^ Module.finrank K H :=
+  NumberField.natAbs_discr_eq_pow_of_unramifiedTower K H
+    IsHilbertClassField.unramified
+
+/-- If `IsHilbertClassField K H`, then `rootDiscr H = rootDiscr K`. -/
+theorem IsHilbertClassField.rootDiscr_eq
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    NumberField.rootDiscr H = NumberField.rootDiscr K :=
+  NumberField.rootDiscr_eq_of_unramifiedTower K H IsHilbertClassField.unramified
+
+/-- If `IsHilbertClassField K H`, the different ideal of H/K is `⊤`. -/
+theorem IsHilbertClassField.differentIdeal_eq_top
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    differentIdeal (𝓞 K) (𝓞 H) = ⊤ :=
+  NumberField.differentIdeal_eq_top_of_isUnramifiedAt K H
+    IsHilbertClassField.unramified
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
