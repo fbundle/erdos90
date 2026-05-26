@@ -156,18 +156,43 @@ instance HilbertClassFieldExt.finiteDimensional
 
 /-! ## The Hilbert class field tower (iterated HCF)
 
-We define the n-th level of the HCF tower by repeated application of
-`hilbertClassField_exists`, threading the algebra structure through each step.
+The `n`-th level of the **Hilbert class field tower** would naturally be
+defined by repeated application of `hilbertClassField_exists`, but the
+iteration requires careful universe + instance threading.  We package each
+level as a `HCFTowerLevel K n` structure carrying the field + its
+`Field`/`NumberField`/`Algebra K _` instances.
 -/
 
--- (HCFTower iteration omitted to keep the stub focused — it requires
--- dependent recursion threading Field/NumberField/Algebra instances at each
--- level, which adds significant complexity but no new mathematical content
--- beyond `rootDiscr_hcf_eq` applied repeatedly.)
+/-- The `n`-th step of the Hilbert class field tower over `K`.
 
--- (Field, NumberField, Algebra instances on HCFTower K n are non-trivial to
--- propagate through dependent recursion; we package them separately in
--- `HCFTowerData` below when needed.)
+Defined as a structure carrying the field and its instances.  At level 0,
+`F = K`; at level `n+1`, `F` is the HCF of the level-`n` field (via
+`hilbertClassField_exists`, which is currently sorried).
+
+Note: full iteration via `HCFTowerLevel.succ` is left for future work — it
+requires propagating typeclass instances through universe-polymorphic
+recursion.  For now, the base case is provided. -/
+structure HCFTowerLevel (K : Type u) [Field K] [NumberField K] (_n : ℕ) where
+  /-- The field at level `n`. -/
+  F : Type v
+  /-- `F` is a field. -/
+  [fieldF : Field F]
+  /-- `F` is a number field. -/
+  [numberFieldF : NumberField F]
+  /-- `F` is an extension of `K`. -/
+  [algebraKF : Algebra K F]
+
+attribute [instance] HCFTowerLevel.fieldF HCFTowerLevel.numberFieldF
+  HCFTowerLevel.algebraKF
+
+/-- The base case: `(HCFTowerLevel K 0).F = K` itself. -/
+def HCFTowerLevel.zero (K : Type u) [Field K] [NumberField K] :
+    HCFTowerLevel.{u, u} K 0 where
+  F := K
+
+-- Full inductive step `HCFTowerLevel.succ` is omitted to avoid universe
+-- complexity.  The mathematical content beyond level 0 is the same as
+-- repeated application of `rootDiscr_hcf_eq` and the corollaries above.
 
 /-! ## Future work
 
