@@ -239,6 +239,32 @@ theorem schwartz_integrable_2d (f : 𝓢(ℝ × ℝ, ℂ)) :
     MeasureTheory.Integrable (f : ℝ × ℝ → ℂ) :=
   f.integrable
 
+/-- The product `exp(-(2πi(mx+ny))) · f(x, y)` is integrable on `ℝ × ℝ` for
+any Schwartz `f`.
+
+PROVED Lean. -/
+theorem fourier_mul_schwartz_integrable_2d (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
+    MeasureTheory.Integrable (fun p : ℝ × ℝ =>
+      Complex.exp (-(2 * Real.pi * (m * p.1 + n * p.2)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (p.1, p.2)) := by
+  have h_f_int := schwartz_integrable_2d f
+  have h_exp_cts : Continuous fun p : ℝ × ℝ =>
+      Complex.exp (-(2 * Real.pi * (m * p.1 + n * p.2)) * Complex.I) := by
+    fun_prop
+  have h_exp_bd : ∀ p : ℝ × ℝ,
+      ‖Complex.exp (-(2 * Real.pi * (m * p.1 + n * p.2)) * Complex.I)‖ ≤ 1 := by
+    intro p
+    -- Reduce to Complex.norm_exp_ofReal_mul_I (norm of e^{i·r} = 1 for real r)
+    have : ‖Complex.exp (((-(2 * Real.pi * (m * p.1 + n * p.2))) : ℝ) * Complex.I)‖ = 1 :=
+      Complex.norm_exp_ofReal_mul_I _
+    convert this.le using 2
+    push_cast
+    ring
+  -- Apply bdd_mul: bounded multiplier times integrable = integrable
+  refine MeasureTheory.Integrable.bdd_mul h_f_int
+    h_exp_cts.aestronglyMeasurable
+    (MeasureTheory.ae_of_all _ h_exp_bd)
+
 theorem iterated_fourier_eq_2d_integral
     (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
     ∫ p : ℝ × ℝ,
