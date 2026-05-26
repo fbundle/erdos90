@@ -340,6 +340,10 @@ theorem p_HCF_trivial_of_p_not_dvd_classNumber
     have h_p_dvd_pow : p ∣ p ^ n := dvd_pow_self p hn_pos.ne'
     exact h_p_dvd_pow.trans h_dvd
 
+-- (p-HCF identity case omitted: requires `algebra_self_isUnramifiedAt` which
+-- is defined later in this file.  See `HilbertClassFieldExt.identity` for the
+-- analogous construction in the HCF case.)
+
 /-! ## The Hilbert class field tower (iterated HCF)
 
 The `n`-th level of the **Hilbert class field tower** would naturally be
@@ -501,6 +505,22 @@ noncomputable def HilbertClassFieldExt.cyclotomic_five
     HilbertClassFieldExt.{0, 0} K :=
   HilbertClassFieldExt.identity K
     (NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.five_pid (K := K)))
+
+/-- For classNumber K = 1, the p-HCF is K itself (analog of
+`HilbertClassFieldExt.identity` for the p-HCF).
+
+PROVED Lean construction (no sorry). -/
+noncomputable def HilbertPClassFieldExt.identity (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_h : NumberField.classNumber K = 1) :
+    HilbertPClassFieldExt.{u, u} K p where
+  H_p := K
+  unramified := by intro P _ _; exact algebra_self_isUnramifiedAt K P
+  finrank_is_pow_p := ⟨0, by rw [Module.finrank_self, pow_zero]⟩
+
+/-- Concrete p-HCF for `ℚ` (any prime p). -/
+noncomputable def HilbertPClassFieldExt.rat (p : ℕ) :
+    HilbertPClassFieldExt.{0, 0} ℚ p :=
+  HilbertPClassFieldExt.identity ℚ p Rat.classNumber_eq
 
 /-- Concrete sanity check: for the identity HCF of `ℚ`, the Galois group
 has cardinality 1 (=`classNumber ℚ`).  PROVED Lean. -/
