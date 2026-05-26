@@ -16,20 +16,26 @@ noncomputable section
 This file translates the proof of `exists_admissible_family` from the paper
 "Planar Point Sets with Many Unit Distances" (OpenAI, 2026) into Lean 4.
 
-The deep number-theoretic steps are `def`s with `sorry` in `NumberFieldDeep.lean`:
+`exists_admissible_family` is proved modulo `prop_3_2_to_3_6_via_deep`
+(in `NumberFieldDeep_Assembly.lean`), which is proved Lean code combining:
 
-1. `golod_shafarevich_tower_with_lattice` — Props 3.2–3.6: Golod–Shafarevich +
-   Chebotarev tower, Minkowski lattice, type bridge
-2. `cm_norm_one_elements` — Prop 2.2: norm-one set from class-group pigeonhole
+- `golod_shafarevich_tower_with_lattice` — proved Lean code extracting from
+  `brd_tower_data` (which depends on the two HMR sorries: `gs_cm_tower`
+  + `chebotarev_fixed_Q`)
+- `cm_norm_one_elements` — fully proved (Prop 2.2 norm-one set from
+  class-group pigeonhole)
+- `class_num_bound_of_brd` — proved Lean code (Phase E9 chain assembly,
+  modulo two off-path Mathlib-PR-shaped sorries in
+  `Mathlib4_Extra/ClassNumberBound.lean`)
 
-These are assembled as `prop_3_2_to_3_6` (this file) providing both the tower data
-and a Prop-2.2 callback.  Lemma 2.4 (coset averaging) is fully proved in
-`CosetAveraging.lean`.
+Lemma 2.4 (coset averaging) is fully proved in `CosetAveraging.lean`.
 
 The analytic estimate γ > 0 (Property P6) and `hlog2_event` are fully proved below.
 `C_class` is a concrete `def := 1`.
 
 Together these prove `exists_admissible_family` as a `theorem`.
+
+See `REPORT.md` and `assets/proof_outline.md` for the full breakdown.
 -/
 
 /-! ## Absolute constants -/
