@@ -1,86 +1,126 @@
 import Mathlib
 
 /-!
-# Multi-dimensional Poisson summation (skeleton)
+# Multi-dimensional Poisson summation (Mathlib-PR documentation)
 
-This file is a **Mathlib-PR-shape skeleton** for the multi-dimensional Poisson
-summation formula, the missing piece for closing several analytic sorries in
-this project.
+This file documents the multi-dimensional Poisson summation formula, which is
+the missing piece for closing several analytic sorries in this project:
+- `regulator_lower_bound_cm` (Friedman regulator bound)
+- `dedekind_residue_upper_bound_cm` (Louboutin residue bound)
 
-Mathlib v4.30 has:
-- 1-D Poisson summation: `Real.tsum_eq_tsum_fourier` (in `Mathlib/Analysis/Fourier/PoissonSummation.lean`)
-- Schwartz Poisson summation in 1-D: `SchwartzMap.tsum_eq_tsum_fourierIntegral`
-- Fourier transform on finite-dim spaces: `Real.fourierIntegral` (and generic
-  `fourierIntegral` on inner product spaces)
-- Schwartz functions on `EuclideanSpace ℝ ι`
+Both are blocked on the functional equation for `NumberField.dedekindZeta`,
+which in turn needs multi-D Poisson summation for the number-field lattice.
 
-**Gap:** No multi-D Poisson summation formula for lattices in finite-dim
-Euclidean spaces.  This file states the generalization but leaves the proof as
-a sorry, documenting the path forward.
+## Strategy: 2-D via iteration
 
-## What's needed
+For Schwartz `f : 𝓢(ℝ × ℝ, ℂ)`, iterate the 1-D Poisson formula
+(`SchwartzMap.tsum_eq_tsum_fourier`) twice via Fubini.
 
-For a `ZLattice L` in a finite-dim Euclidean space `V` and `f : V → ℂ` with
-suitable decay, the Poisson summation formula:
+Outline:
+1. Define φ(x) : ℝ → 𝓢(ℝ, ℂ) by `φ(x)(y) = f(x, y)`.  (Schwartz in y for each x.)
+2. By 1-D Poisson in y: `Σ_n f(x, n) = Σ_q 𝓕_y(f(x, ·))(q)`.
+3. Define ψ(q) : ℝ → ℂ by `ψ(q)(x) = 𝓕_y(f(x, ·))(q)`.
+   (Schwartz in x by smoothness + decay of f.)
+4. Sum over m: `Σ_m ψ(q)(m) = Σ_p 𝓕_x(ψ(q))(p)` by 1-D Poisson in x.
+5. `𝓕_x(ψ(q))(p) = ∫∫ f(x,y) e^{-2πi(px + qy)} dy dx = 𝓕(f)(p, q)` (Fubini).
+6. Combine: `Σ_{(m,n)} f(m,n) = Σ_{(p,q)} 𝓕f(p,q)`.
+
+## What Mathlib has
+
+- 1-D Schwartz Poisson summation: `SchwartzMap.tsum_eq_tsum_fourier`
+- Multi-D Fourier transform on inner product spaces: `Real.fourierIntegral`
+  (and `VectorFourier.fourierIntegral` generic)
+- Schwartz spaces on general normed real vector spaces: `SchwartzMap`
+- Fubini for integrals: `MeasureTheory.integral_prod`
+- Fubini for tsum: `tsum_prod` and friends
+- Jacobi theta functions in 1 and 2 variables (for L-function applications)
+
+## What's needed (Mathlib gap)
+
+1. **Schwartz multi-variable currying**: a Schwartz function `f : 𝓢(V × W, F)`
+   should give Schwartz `f(x, ·) : 𝓢(W, F)` for each `x : V`, and the family
+   should be jointly Schwartz.  This is true but may not be explicitly
+   packaged.
+
+2. **2-D Schwartz Poisson summation** (the target):
+   ```
+   theorem SchwartzMap.tsum_eq_tsum_fourier_two_d (f : 𝓢(ℝ × ℝ, ℂ)) :
+       ∑' (n : ℤ × ℤ), f (n.1, n.2) =
+       ∑' (n : ℤ × ℤ), Real.fourierIntegral f (n.1, n.2)
+   ```
+   (with the right notation for 2-D Fourier on the prod space).
+
+3. **n-D Schwartz Poisson summation**: induction on dimension.
+
+4. **Lattice Poisson summation**: for general ZLattices via change of basis.
+
+## Proof sketch (Lean-style pseudocode)
+
 ```
-Σ_{x ∈ L} f x = (1 / covolume L) · Σ_{ξ ∈ L^*} 𝓕f ξ
+theorem schwartzMap_two_d_tsum_eq_tsum_fourier (f : 𝓢(ℝ × ℝ, ℂ)) :
+    ∑' (n : ℤ × ℤ), f (n.1, n.2) =
+    ∑' (n : ℤ × ℤ), (2-D fourier integral of f) n := by
+  -- Step 1: Decompose product tsum into iterated tsum
+  rw [tsum_prod_of_summable_norm ...]
+  -- Goal: ∑ m, ∑ n, f(m, n) = ∑ p, ∑ q, 𝓕f(p, q)
+
+  -- Step 2: For each m, apply 1-D Poisson in y to f(m, ·)
+  conv_lhs =>
+    ext m
+    rw [SchwartzMap.tsum_eq_tsum_fourier (schwartz_partial_y f m)]
+  -- Goal: ∑ m, ∑ q, 𝓕_y(f(m, ·))(q) = ∑ p, ∑ q, 𝓕f(p, q)
+
+  -- Step 3: Swap sums
+  rw [tsum_comm ...]
+  -- Goal: ∑ q, ∑ m, 𝓕_y(f(m, ·))(q) = ∑ p, ∑ q, 𝓕f(p, q)
+
+  -- Step 4: Apply 1-D Poisson in x to x ↦ 𝓕_y(f(x, ·))(q)
+  conv_lhs =>
+    ext q
+    rw [SchwartzMap.tsum_eq_tsum_fourier (partial_fourier_y_schwartz f q)]
+  -- Goal: ∑ q, ∑ p, 𝓕_x(𝓕_y(f))(p, q) = ∑ p, ∑ q, 𝓕f(p, q)
+
+  -- Step 5: Identify iterated Fourier with 2-D Fourier via Fubini
+  rw [iterated_fourier_eq_two_d_fourier ...]
+  -- Goal: ∑ q, ∑ p, 𝓕f(p, q) = ∑ p, ∑ q, 𝓕f(p, q)
+
+  -- Step 6: Swap and recombine
+  rw [tsum_comm, tsum_prod_of_summable_norm ...]
 ```
-where `L^*` is the dual lattice (`{ξ : V | ∀ x ∈ L, ⟨ξ, x⟩ ∈ ℤ}`).
 
-## Use cases in this project
+## Connection to Dedekind zeta functional equation
 
-This lemma would directly unblock:
-- `regulator_lower_bound_cm` (Friedman 1989): via the theta function for the
-  number-field lattice in `mixedSpace K`.
-- `dedekind_residue_upper_bound_cm` (Louboutin 2000): same theta function +
-  Mellin transform machinery in `AbstractFuncEq.lean`.
+Once we have multi-D Schwartz Poisson summation, the path to
+`completedDedekindZeta`'s functional equation goes through:
 
-## Proof outline (for the Mathlib PR)
+1. Define `theta_K(t) : ℝ → ℂ` for `t > 0` by
+   ```
+   theta_K(t) = ∑_{a ∈ 𝓞_K} exp(-π · t · ‖canonicalEmbedding K a‖²)
+   ```
+   (sum over the number-field lattice in `mixedSpace K`).
 
-1. **For tensor products of lattices**: prove via the 1-D case + tensor
-   structure.  Mathlib's `Pi.lattice` and `EuclideanSpace` should suffice.
+2. Apply multi-D Poisson summation to get the modular transformation:
+   ```
+   theta_K(1/t) = √|d_K| · t^(d/2) · theta_K^*(t)
+   ```
+   where `theta_K^*` involves the dual lattice (or coincides with `theta_K` for
+   the appropriate normalization).
 
-2. **General Euclidean case via change of variables**: any lattice `L ⊂ V` is
-   isomorphic to `ℤ^n ⊂ ℝ^n` via a basis choice.  Transfer the 1-D Poisson
-   formula via this isomorphism.
+3. Wire into `Mathlib/NumberTheory/LSeries/AbstractFuncEq.lean`'s `WeakFEPair`
+   framework to get analytic continuation + functional equation for
+   `completedDedekindZeta`.
 
-3. **For Schwartz functions**: use Mathlib's `SchwartzMap` and the fact that
-   the Fourier transform of a Schwartz function is again Schwartz (already in
-   Mathlib via Gouëzel's contributions).
+This is the Loeffler–Stoll architecture (which they used for Riemann zeta and
+Dirichlet L-functions) extended to general number fields.
 
 ## References
 
-- Loeffler–Stoll 2025, *"Formalizing zeta and L-functions in Lean"*
-  (`assets/loeffler_formalizing_lfunctions.pdf`).
-- `assets/search_results/closing_roadmap.md` for the full strategy.
-- `assets/search_results/mathlib_lseries_infrastructure.md` for the Mathlib
-  inventory.
+- 1-D Mathlib version: `Mathlib/Analysis/Fourier/PoissonSummation.lean`
+- Loeffler–Stoll 2025: `assets/loeffler_formalizing_lfunctions.pdf`
+- Closing strategy: `assets/search_results/closing_roadmap.md`
 
-This file does NOT introduce a working sorry that affects any other Lean
-declarations in this project.  It exists as a documented placeholder for the
-future Mathlib contribution.
+This file is intentionally documentation-only (no sorried Lean declarations
+that would affect the project's sorry count).
 -/
 
-namespace Mathlib4_Extra
-
--- We do NOT define a sorried theorem here, because adding more sorries to the
--- project's build output would obscure the existing ones.  Instead we keep
--- this file as a documentation-only skeleton.
---
--- A future Mathlib PR for multi-D Poisson summation would have signature
--- approximately:
---
--- theorem tsum_eq_tsum_fourier_of_lattice
---     {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
---     [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
---     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
---     (f : SchwartzMap V ℂ) :
---     ∑' x : L, f (x : V) =
---       (1 / ZLattice.covolume L) •
---         ∑' ξ : Submodule.dual ℝ L, fourierIntegral f (ξ : V)
---
--- The exact form depends on Mathlib's conventions for `fourierIntegral`,
--- normalization (with or without 2π factors), and how dual lattices are
--- defined.
-
-end Mathlib4_Extra
+-- No Lean declarations in this file.  All content is documentation.
