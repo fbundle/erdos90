@@ -226,6 +226,41 @@ lemma classNumber_eq_residue_formula :
   rw [NumberField.dedekindZeta_residue_def]
   field_simp
 
+/-! ## Phase E6 (D3.2c): regulator lower bound
+
+For the Brauer–Siegel chain `log h_K / f ≤ 2 · log(2 · rd_F)` to go through, the
+analytic-class-number formula `classNumber_eq_residue_formula` (E5) needs to be
+combined with two more pieces:
+
+- D3.2b (Louboutin): upper bound on `dedekind_zeta_residue K` in terms of `rd_K`
+- **D3.2c (Friedman/Zimmert): lower bound on `regulator K`** ← this section
+
+Friedman 1989, *"Analytic formulas for the regulator of a number field"*,
+Inventiones 98:599–622 gives `R_K > 0.2052` for any number field K with unit
+rank ≥ 1.  Zimmert 1981 gives a comparable bound via a log-sieve method.
+
+For our purposes (CM totally complex K with `nrComplexPlaces K ≥ 1`, hence unit
+rank `f - 1 ≥ 0`), we want **any** positive lower bound independent of K's
+degree.  The constant `1/8` is a weaker version of Friedman's `0.2052` that
+suffices for the asymptotic chain.
+
+**Mathlib status**: only `regulator_pos K` (positivity) is available.  The
+quantitative lower bound is the remaining gap.
+-/
+
+/-- **D3.2c**: Friedman–Zimmert regulator lower bound for CM totally complex
+fields.  For a CM totally complex K with `nrComplexPlaces K ≥ 1` (i.e. unit
+rank `f - 1 ≥ 0`), `regulator K ≥ 1/8`.
+
+The constant `1/8` is a weakened form of Friedman's `R_K > 0.2052`.
+
+Cite: Friedman 1989 (`assets/` would be ideal but not currently in repo);
+Zimmert 1981.  Not in Mathlib v4.30. -/
+lemma regulator_lower_bound_cm
+    [IsCMField K] [IsTotallyComplex K]
+    (_hf : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces K) :
+    NumberField.Units.regulator K ≥ 1/8 := sorry
+
 /-! ## Phase E2: discriminant chain and log inequality
 
 Goal: bound `log h_K / nrComplexPlaces K` by `2 · log(2 · rd_F)` for
