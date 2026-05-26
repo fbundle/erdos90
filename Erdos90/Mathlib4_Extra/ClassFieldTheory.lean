@@ -696,6 +696,16 @@ class IsHilbertClassField (K : Type u) [Field K] [NumberField K]
 attribute [instance] IsHilbertClassField.is_galois
   IsHilbertClassField.is_abelian_galois
 
+/-- For `K` with classNumber 1, `K` is its own Hilbert class field
+(predicate version). -/
+instance IsHilbertClassField.self_of_classNumber_one
+    (K : Type u) [Field K] [NumberField K] (h : NumberField.classNumber K = 1) :
+    IsHilbertClassField K K where
+  finrank_eq := by rw [Module.finrank_self, h]
+  is_galois := inferInstance
+  is_abelian_galois := inferInstance
+  unramified := by intro P _ _; exact algebra_self_isUnramifiedAt K P
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
