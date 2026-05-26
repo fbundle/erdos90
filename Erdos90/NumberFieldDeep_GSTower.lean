@@ -239,7 +239,8 @@ bounded root discriminant, derived from the named pieces:
 - E5: `classNumber_eq_residue_formula` (proved)
 - D3.2b: `dedekind_residue_upper_bound_cm` (sorry — Louboutin 2000)
 - D3.2c: `regulator_lower_bound_cm` (sorry — Friedman 1989)
-- D3.2.tors: `torsionOrder_bound` (sorry — Nat.totient PR target)
+- D3.2.tors: `torsionOrder_bound` (PROVED via E10 cyclotomic bridge + E13 Nat
+  totient inequality)
 
 For CM totally complex K with `rootDiscr K ≤ rd_F` and `f ≥ 5`, the class
 number satisfies `log(h_K)/f ≤ 2 · log(2 · rd_F)`.  The threshold `f ≥ 5` comes
@@ -487,8 +488,11 @@ The lattice `Λ` and the separation constant `D₀ = Q²` come from
 (independent of `M`), so `D₀ = Q²` is also fixed — exactly what the
 `AdmissibleFamily` structure requires.
 
-All claims are proved Lean code; the only sorry on this path is the
-underlying `brd_tower_data` postulate (HMR 2021 + Brauer–Siegel). -/
+All claims are proved Lean code; the underlying sorries are in the bundled
+`brd_tower_data` (which depends on `gs_cm_tower` + `chebotarev_fixed_Q`,
+both HMR 2021 literature gaps).  The class-number bound `class_num_bound_of_brd`
+is itself PROVED Lean (Phase E9 chain assembly) modulo three off-path
+Mathlib-PR-shaped sorries in `Mathlib4_Extra/ClassNumberBound.lean`. -/
 def brd_cm_tower_postulate (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
     (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
     (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * (brd_tower_data ℓ hℓ).rd_F)) :
