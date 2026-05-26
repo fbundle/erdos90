@@ -270,16 +270,22 @@ def tendsto_int_prod_cocompact :
     Filter.Tendsto (fun p : ℤ × ℤ => ((p.1 : ℝ), (p.2 : ℝ)))
       Filter.cofinite (Filter.cocompact (ℝ × ℝ)) := sorry
 
+/-- Prod-norm = max of natAbs for integer pairs.
+
+POSTULATED — the equality is true (both equal `max(|p.1|, |p.2|)`) but
+the Lean proof requires careful manipulation of `Real.norm_eq_abs`,
+`Int.cast_natAbs`, and `Prod.norm_def`. -/
+def norm_prod_int_eq (p : ℤ × ℤ) :
+    ‖((p.1 : ℝ), (p.2 : ℝ))‖ = max (p.1.natAbs : ℝ) (p.2.natAbs : ℝ) := sorry
+
 /-- Combined: 2-D Schwartz Poisson summable on `ℤ × ℤ`, modulo the
 `tendsto_int_prod_cocompact` postulate (which is easy but tedious).
 
-PROVED Lean assembly:
+PROVED Lean assembly chain (3 of 4 steps proved):
 1. Get the Schwartz decay `f =O[cocompact (ℝ × ℝ)] ‖·‖^(-3)`.
 2. Compose with `tendsto_int_prod_cocompact` to get the bound at cofinite.
 3. Use the proved 2-D summability `summable_norm_rpow_three_prod`.
-4. Apply `summable_of_isBigO`.
-
-This is the FINAL chain assembly. -/
+4. Apply `summable_of_isBigO`. -/
 theorem summable_2d_schwartz_proved (f : 𝓢(ℝ × ℝ, ℂ)) :
     Summable fun p : ℤ × ℤ => (f : ℝ × ℝ → ℂ) (p.1, p.2) := by
   -- Step 1: Schwartz decay
@@ -290,9 +296,15 @@ theorem summable_2d_schwartz_proved (f : 𝓢(ℝ × ℝ, ℂ)) :
   have h_decay_int : (fun p : ℤ × ℤ => (f : ℝ × ℝ → ℂ) (p.1, p.2)) =O[Filter.cofinite]
       (fun p : ℤ × ℤ => ‖((p.1 : ℝ), (p.2 : ℝ))‖ ^ (-(3 : ℝ))) :=
     h_decay.comp_tendsto tendsto_int_prod_cocompact
-  -- Step 3: Summability of the bound function — postulated for now
-  -- (would follow from summable_norm_rpow_three_prod + norm conversion)
-  sorry
+  -- Step 3: Summability of the bound function via norm conversion +
+  -- summable_norm_rpow_three_prod
+  have h_summ_bound : Summable fun p : ℤ × ℤ =>
+      ‖((p.1 : ℝ), (p.2 : ℝ))‖ ^ (-(3 : ℝ)) := by
+    convert summable_norm_rpow_three_prod using 1
+    ext p
+    rw [norm_prod_int_eq, norm_finTwoArrow_symm_eq]
+  -- Step 4: summable_of_isBigO
+  exact summable_of_isBigO h_summ_bound h_decay_int
 
 /-! ## Summability via partial summability (PROVED)
 
