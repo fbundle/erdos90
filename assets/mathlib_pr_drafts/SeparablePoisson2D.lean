@@ -55,17 +55,24 @@ theorem tsum_product_eq_tsum_fourier_product (g h : 𝓢(ℝ, ℂ)) :
       (∑' p : ℤ, 𝓕 (g : ℝ → ℂ) p) * (∑' q : ℤ, 𝓕 (h : ℝ → ℂ) q) := by
   rw [tsum_eq_tsum_fourier_zero g, tsum_eq_tsum_fourier_zero h]
 
-/-- Summability on ℤ for Schwartz functions, via `|x|^(-2)` decay. -/
-private lemma schwartz_summable_int (f : 𝓢(ℝ, ℂ)) :
+/-- **Schwartz functions are summable on ℤ.**  For any Schwartz `f : 𝓢(ℝ, ℂ)`,
+the restriction to integers is summable.  Follows from the `|x|^(-2)` decay
+of Schwartz functions on ℝ. -/
+lemma summable_int (f : 𝓢(ℝ, ℂ)) :
     Summable fun n : ℤ => (f : ℝ → ℂ) n :=
   summable_of_isBigO (Real.summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2))
     ((f.isBigO_cocompact_rpow (-2)).comp_tendsto Int.tendsto_coe_cofinite)
 
-/-- Norm-summability on ℤ for Schwartz functions. -/
-private lemma schwartz_summable_norm_int (f : 𝓢(ℝ, ℂ)) :
+/-- **Schwartz functions are absolutely summable on ℤ.**  Stronger form of
+`SchwartzMap.summable_int`: the norm `‖f n‖` is also summable. -/
+lemma summable_norm_int (f : 𝓢(ℝ, ℂ)) :
     Summable fun n : ℤ => ‖(f : ℝ → ℂ) n‖ :=
   summable_of_isBigO (Real.summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2))
     (((f.isBigO_cocompact_rpow (-2)).comp_tendsto Int.tendsto_coe_cofinite).norm_left)
+
+-- Aliases for the private helpers used internally.
+private alias schwartz_summable_int := summable_int
+private alias schwartz_summable_norm_int := summable_norm_int
 
 /-- **Separable 2-D Poisson summation** (full form): for Schwartz `g, h : 𝓢(ℝ, ℂ)`,
 the sum over `ℤ × ℤ` of `g(m) · h(n)` equals the sum over `ℤ × ℤ` of
