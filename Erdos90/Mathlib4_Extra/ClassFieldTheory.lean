@@ -804,6 +804,21 @@ theorem HilbertClassFieldExt.card_classGroup_eq_card_gal
     Nat.card (ClassGroup (𝓞 K)) = Nat.card (E.H ≃ₐ[K] E.H) :=
   Nat.card_congr E.artinReciprocity.toEquiv
 
+/-- The algebra map `algebraMap K H` is injective (since K ↪ H is a field
+extension). -/
+theorem HilbertClassFieldExt.algebraMap_injective
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Function.Injective (algebraMap K E.H) :=
+  FaithfulSMul.algebraMap_injective K E.H
+
+/-- The algebra map `𝓞 K → 𝓞 H` is injective. -/
+theorem HilbertClassFieldExt.algebraMap_ringOfIntegers_injective
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Function.Injective (algebraMap (𝓞 K) (𝓞 E.H)) :=
+  FaithfulSMul.algebraMap_injective (𝓞 K) (𝓞 E.H)
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
