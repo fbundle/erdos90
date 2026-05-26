@@ -346,11 +346,21 @@ HCF existence is postulated** — the obstruction is class field theory's
 existence theorem, not discriminant arithmetic.
 -/
 
--- (Specific PROVED instance for PID base fields omitted: constructing
--- `HilbertClassFieldExt.identity K` requires explicit MulEquiv between
--- trivial ClassGroup and trivial Galois group + Algebra.IsUnramifiedAt
--- for the identity algebra.  Both are doable but require more typeclass
--- plumbing than the value provided.  Future work.)
+/-! ## Specific PROVED instances: PID base fields
+
+If `𝓞 K` is a PID (= classNumber K = 1), the HCF of K is K itself.  This case
+admits an explicit Lean construction modulo a single Mathlib-PR-shape sorry
+for `Algebra.IsUnramifiedAt (𝓞 K) P` on the identity algebra.
+-/
+
+/-- For classNumber K = 1, the class group has cardinality 1, hence is
+trivial as a group. -/
+@[reducible] noncomputable def classGroup_unique_of_classNumber_one
+    (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1) : Unique (ClassGroup (𝓞 K)) := by
+  classical
+  have hc : Fintype.card (ClassGroup (𝓞 K)) = 1 := h
+  exact Fintype.card_eq_one_iff_nonempty_unique.mp hc |>.some
 
 /-! ## Summary: proved vs. postulated
 
