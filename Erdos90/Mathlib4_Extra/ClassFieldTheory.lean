@@ -933,6 +933,26 @@ theorem IsHilbertClassField.algebraMap_ringOfIntegers_injective
     Function.Injective (algebraMap (𝓞 K) (𝓞 H)) :=
   FaithfulSMul.algebraMap_injective (𝓞 K) (𝓞 H)
 
+/-- If `classNumber K = 1` and `IsHilbertClassField K H`, then `[H:K] = 1`. -/
+theorem IsHilbertClassField.finrank_eq_one_of_classNumber_one
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H]
+    (h : NumberField.classNumber K = 1) :
+    Module.finrank K H = 1 := by
+  rw [IsHilbertClassField.finrank_eq (H := H), h]
+
+/-- For `IsHilbertClassField K H` with classNumber K = 1, algebraMap K → H
+is bijective.  PROVED via finrank=1 + Mathlib. -/
+theorem IsHilbertClassField.bijective_algebraMap_of_classNumber_one
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H]
+    (h : NumberField.classNumber K = 1) :
+    Function.Bijective (algebraMap K H) := by
+  rw [← Algebra.finrank_eq_one_iff_bijective_algebraMap]
+  exact IsHilbertClassField.finrank_eq_one_of_classNumber_one K H h
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
