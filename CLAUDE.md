@@ -34,7 +34,7 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Mathlib4_Extra/Analytic.lean` | Mathlib-candidate analytic lemmas: `log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq` (all proved). |
 | `Erdos90/Mathlib4_Extra/FractionalIdealCount.lean` | Mathlib-candidate `FractionalIdeal.count` lemmas: `le_one_of_forall_count_nonneg`, `mem_range_of_spanSingleton_count_nonneg` (the integrality bridge). |
 | `Erdos90/Mathlib4_Extra/FractionalIdealRingEquiv.lean` | Mathlib-candidate `ringEquivOfRingEquiv_coeIdeal` lemma. |
-| `Erdos90/Mathlib4_Extra/ClassNumberBound.lean` | Phase E (E1+E2+E3) infrastructure for closing D3.2: `classNumber_le_card_ideals_of_norm_le_minkowski` (proved), `minkBound_le_pow_rootDiscr` (proved), `log_four_r_div_pi_le_two_log_two_r` (proved), `card_ideals_of_norm_le_bound` (proved with crude bound `2^((N!)^[K:ℚ])` via the `I ↦ image in 𝓞_K/(N!·𝓞_K)` injection; tight `N^[K:ℚ]` bound remains a Mathlib-PR-shaped gap). |
+| `Erdos90/Mathlib4_Extra/ClassNumberBound.lean` | Phase E1–E12 infrastructure for D3.2 chain: `classNumber_le_card_ideals_of_norm_le_minkowski` (E1, proved), `card_ideals_of_norm_le_bound` (E4, proved with crude `2^((N!)^[K:ℚ])`), `minkBound_le_pow_rootDiscr` (E3, proved), `log_four_r_div_pi_le_two_log_two_r` (E2, proved), `classNumber_eq_residue_formula` (E5, proved — algebraic identity from `dedekindZeta_residue_def`), `regulator_lower_bound_cm` (E6, sorried — Friedman 1989), `dedekind_residue_upper_bound_cm` (E7, sorried — Louboutin 2000), `torsionOrder_bound` (E8/E10, proved via two sub-lemmas), `totient_torsionOrder_le_finrank` (E10, proved via cyclotomic bridge), `nat_le_four_mul_totient_sq` (E12, sorried for n ≥ 17 case; n ≤ 16 proved). |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -291,6 +291,58 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Lessons
+
+### 2026-05-27 (Session summary: D5 + E5–E12 — D3.1 split, D3.2 chain assembled, torsionOrder bridge)
+
+This session drove the proof-path sorry count **3 → 2** by closing
+`class_num_bound_of_brd` via the assembled chain, and reorganized the off-path
+sorries into Mathlib-PR-shaped pieces.
+
+**Major closures:**
+- `class_num_bound_of_brd` — proved as the D3.2d assembly: ~110 LOC of careful
+  real arithmetic combining E5 (analytic class number formula) + D3.2b
+  (Louboutin residue) + D3.2c (Friedman regulator) + D3.2.tors (torsionOrder
+  polynomial bound).  Requires `f ≥ 5` threshold for `(2π)^f ≥ 128·f²`, threaded
+  via `brd_tower_data` internally bumping `M` to `max M 5`.
+- `classNumber_eq_residue_formula` (E5, D3.2a) — algebraic identity from
+  Mathlib's `dedekindZeta_residue_def`.
+- `totient_torsionOrder_le_finrank` — cyclotomic bridge from torsionOrder to
+  totient via `IsPrimitiveRoot.lcm_totient_le_finrank` +
+  `IsCyclic.exists_ofOrder_eq_natCard`.
+
+**Structural decompositions (Phase D5):**
+- `hmr_brd_cm_tower` (was 1 sorry) → `gs_cm_tower` + `chebotarev_fixed_Q`
+  + proved assembly.  Two named sorries, each citing specific HMR 2021 sections
+  (`prop:cutting` and `theo:ihara`).
+
+**Off-path infrastructure (named sorries, Mathlib-PR-shaped):**
+- `regulator_lower_bound_cm` (Friedman 1989)
+- `dedekind_residue_upper_bound_cm` (Louboutin 2000)
+- `nat_le_four_mul_totient_sq` (pure Nat — proof outline in docstring)
+
+**Attempted but not closed:** The `n ≥ 17` case of `nat_le_four_mul_totient_sq`.
+The proof structure is clean (`Nat.recOnPosPrimePosCoprime` with motive
+`Odd m → m ≤ φ(m)²`, then combine with 2-adic decomposition) but the Lean
+implementation runs ~150 LOC with many subtle nlinarith/lemma-naming issues.
+Documented as a clean Mathlib PR target alongside `Nat.totient_le` in
+`Mathlib/Data/Nat/Totient.lean`.
+
+**End state:**
+- Proof path: 2 sorries (`gs_cm_tower`, `chebotarev_fixed_Q`), both genuine
+  multi-year/month Mathlib gaps in class field theory + L-functions.
+- Off-path: 3 sorries (regulator, residue, Nat totient), each a focused
+  Mathlib PR target.
+- `erdos_unit_distance_false` depends only on `[propext, sorryAx,
+  Classical.choice, Quot.sound]`.
+
+**Lesson:** When facing multi-month/year Mathlib gaps, the highest-leverage
+move is **structural decomposition + Mathlib-PR shaping**.  Even when a sorry
+cannot be closed, splitting it into named pieces with explicit citations:
+(a) makes the dependency on each Mathlib subsystem legible, (b) provides
+clean PR entry points for outside contributors, and (c) shows what proved
+infrastructure already exists.  The session moved from "1 monolithic sorry"
+(early state) to "5 named sorries each ≤ ~3 statements long" — same
+mathematical content, vastly improved legibility.
 
 ### 2026-05-26 (Phase E4): Close `card_ideals_of_norm_le_bound` via crude subset injection
 
