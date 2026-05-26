@@ -953,6 +953,19 @@ theorem IsHilbertClassField.bijective_algebraMap_of_classNumber_one
   rw [← Algebra.finrank_eq_one_iff_bijective_algebraMap]
   exact IsHilbertClassField.finrank_eq_one_of_classNumber_one K H h
 
+/-- The Galois group of H/K has cardinality dividing `[H:K] = classNumber K`.
+
+For HCF, equality holds (Artin reciprocity).  Without that, only the
+inequality (from Galois theory).  PROVED via Mathlib's
+`AlgEquiv.card_le_finrank`. -/
+theorem IsHilbertClassField.card_gal_le_classNumber
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    Nat.card (H ≃ₐ[K] H) ≤ NumberField.classNumber K := by
+  rw [← IsHilbertClassField.finrank_eq (H := H)]
+  exact_mod_cast IsGalois.card_aut_eq_finrank K H |>.le
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
