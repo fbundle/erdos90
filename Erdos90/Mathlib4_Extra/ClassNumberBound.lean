@@ -122,6 +122,90 @@ count (`|{ideals norm ≤ N}| ≤ O(N)`, not `≤ N^n`), which is the
 remaining Mathlib gap.
 -/
 
+/-- Bound the Minkowski bound by a power of the root discriminant.
+
+For totally complex `K` with `nrComplexPlaces K = f` (so `[K:ℚ] = 2f`),
+`minkBound K ≤ (4 · rootDiscr K / π) ^ f`.
+
+Proof: `minkBound K = (4/π)^f · (n!/n^n) · √|disc K|` (the Minkowski bound formula),
+`n!/n^n ≤ 1` for `n ≥ 1`, and `√|disc K| = rootDiscr K ^ f` for totally complex K
+(since `rootDiscr K = |disc K|^(1/[K:ℚ]) = |disc K|^(1/(2f))`). -/
+lemma minkBound_le_pow_rootDiscr [IsTotallyComplex K] (hK : 1 ≤ Module.finrank ℚ K) :
+    minkBound K ≤ ((4 * NumberField.rootDiscr K) / Real.pi) ^
+      NumberField.InfinitePlace.nrComplexPlaces K := by
+  -- Spell out minkBound K
+  unfold minkBound
+  -- Notation: n = [K:ℚ], f = nrComplexPlaces K, for totally complex K, n = 2f
+  set n := Module.finrank ℚ K with hn_def
+  set f := NumberField.InfinitePlace.nrComplexPlaces K with hf_def
+  -- For totally complex K, n = 2f
+  have hn_eq_2f : n = 2 * f := by
+    rw [hn_def, hf_def]
+    have h_no_real : NumberField.InfinitePlace.nrRealPlaces K = 0 :=
+      NumberField.IsTotallyComplex.nrRealPlaces_eq_zero K
+    have h_rank := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
+    rw [h_no_real] at h_rank
+    omega
+  have hf_pos : 0 < f := by
+    by_contra hf_nonpos
+    push_neg at hf_nonpos
+    interval_cases f
+    rw [hn_eq_2f] at hK
+    simp at hK
+  have hn_pos : 0 < n := by rw [hn_eq_2f]; omega
+  -- n!/n^n ≤ 1
+  have h_factorial_le : (Nat.factorial n : ℝ) / (n : ℝ) ^ n ≤ 1 := by
+    have hn_real_pos : (0 : ℝ) < (n : ℝ) ^ n := by
+      have : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn_pos
+      positivity
+    rw [div_le_one hn_real_pos]
+    exact_mod_cast n.factorial_le_pow
+  -- √|disc K| = rootDiscr K ^ f
+  have h_sqrt_disc : Real.sqrt |(NumberField.discr K : ℝ)| =
+      NumberField.rootDiscr K ^ f := by
+    rw [NumberField.rootDiscr_def]
+    rw [← Real.rpow_natCast _ f, ← Real.rpow_mul (by positivity)]
+    have h_exp : ((n : ℝ))⁻¹ * (f : ℝ) = 1/2 := by
+      rw [hn_eq_2f]
+      push_cast
+      have hf_ne : (f : ℝ) ≠ 0 := by exact_mod_cast hf_pos.ne'
+      field_simp
+    rw [h_exp, Real.sqrt_eq_rpow]
+    -- Now: |(disc K : ℝ)| ^ (1/2) = ((|disc K| : ℤ) : ℝ) ^ (1/2)
+    congr 1
+    push_cast
+    rfl
+  rw [h_sqrt_disc]
+  -- Goal: (4/π)^f * (n!/n^n * rootDiscr K^f) ≤ ((4·rootDiscr K)/π)^f
+  -- ≡ (4/π)^f * rootDiscr K^f * (n!/n^n) ≤ ((4·rootDiscr K)/π)^f
+  -- ((4·rootDiscr K)/π)^f = (4/π)^f * rootDiscr K^f, so reduce to (n!/n^n) ≤ 1
+  rw [show ((4 * NumberField.rootDiscr K) / Real.pi) ^ f =
+      (4 / Real.pi) ^ f * NumberField.rootDiscr K ^ f by
+    rw [show (4 * NumberField.rootDiscr K) / Real.pi =
+        (4 / Real.pi) * NumberField.rootDiscr K from by ring,
+      mul_pow]]
+  have h_4_div_pi_pos : (0 : ℝ) < 4 / Real.pi := by
+    have := Real.pi_pos; positivity
+  have h_rd_nonneg : 0 ≤ NumberField.rootDiscr K ^ f := by
+    rw [NumberField.rootDiscr_def]
+    positivity
+  have h_lhs_eq : (4 / Real.pi) ^ f *
+      ((Nat.factorial n : ℝ) / (n : ℝ) ^ n *
+        NumberField.rootDiscr K ^ f) =
+      (4 / Real.pi) ^ f * NumberField.rootDiscr K ^ f *
+        ((Nat.factorial n : ℝ) / (n : ℝ) ^ n) := by ring
+  rw [h_lhs_eq]
+  -- Goal: (4/π)^f * rootDiscr K^f * (n!/n^n) ≤ (4/π)^f * rootDiscr K^f * 1
+  have h_factor_nonneg : 0 ≤ (4 / Real.pi) ^ f * NumberField.rootDiscr K ^ f := by
+    apply mul_nonneg
+    · exact pow_nonneg (le_of_lt h_4_div_pi_pos) _
+    · exact h_rd_nonneg
+  calc (4 / Real.pi) ^ f * NumberField.rootDiscr K ^ f *
+        ((Nat.factorial n : ℝ) / (n : ℝ) ^ n)
+      ≤ (4 / Real.pi) ^ f * NumberField.rootDiscr K ^ f * 1 :=
+        mul_le_mul_of_nonneg_left h_factorial_le h_factor_nonneg
+    _ = (4 / Real.pi) ^ f * NumberField.rootDiscr K ^ f := by ring
+
 /-- Basic log inequality: for `r ≥ 1`, `log((4 · r) / π) ≤ 2 · log(2 · r)`.
 Used in the discriminant chain. -/
 lemma log_four_r_div_pi_le_two_log_two_r {r : ℝ} (hr : 1 ≤ r) :
