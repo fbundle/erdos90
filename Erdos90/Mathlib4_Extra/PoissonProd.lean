@@ -414,6 +414,36 @@ theorem tsum_partialFourier_eq_fourier2D (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
   refine tsum_congr (fun m => ?_)
   exact fourier_partialFourier_eq_fourier2D f n m
 
+/-! ## Towards full 2-D Schwartz Poisson summation
+
+We can now restate the row-Poisson chain in terms of `partialFourier`,
+then express the full 2-D Poisson identity modulo two Fubini swaps.
+-/
+
+/-- **Postulate** (summability of the partial-Fourier on `ℤ × ℤ`): the
+function `(m, n) ↦ (partialFourier f n) m` is summable on `ℤ × ℤ`.
+
+TRUE: the "intermediate" 2-D Fourier (Fourier in `y` only) of a Schwartz
+function on `ℝ × ℝ` is itself Schwartz on `ℝ × ℝ`; summability on `ℤ × ℤ`
+then follows from Schwartz decay (as in `summable_2d_schwartz_proved`).
+
+Cite: Stein–Shakarchi Ch. 4 (Fourier preserves Schwartz, multidim version).
+Not in Mathlib v4.30 for `ℝ × ℝ`. -/
+def summable_partialFourier_2d_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
+    Summable (Function.uncurry
+      fun m n : ℤ => (partialFourier f n : ℝ → ℂ) m) := sorry
+
+/-- **Postulate** (summability of `fourier2D` on `ℤ × ℤ`): the function
+`(m, n) ↦ fourier2D f m n` is summable on `ℤ × ℤ`.
+
+TRUE: the full 2-D Fourier of a Schwartz function on `ℝ × ℝ` is itself
+Schwartz on `ℝ × ℝ` (Plancherel); summability on `ℤ × ℤ` follows from
+Schwartz decay.
+
+Cite: Stein–Shakarchi Ch. 4.  Not in Mathlib v4.30. -/
+def summable_fourier2D_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
+    Summable (Function.uncurry fun m n : ℤ => fourier2D f m n) := sorry
+
 /-- Mathlib's `EisensteinSeries.summable_one_div_norm_rpow` applied to k=3:
 the `‖·‖^(-3)` series is summable over `Fin 2 → ℤ`.
 
@@ -577,6 +607,82 @@ theorem tsum_prod_eq_tsum_tsum_fourier_rightPartial
 -- (tsum_prod_eq_tsum_tsum_fourier_leftPartial omitted: the swap of tsum
 -- ordering via Equiv.prodComm hits a Lean typeclass timeout.  Mathematically
 -- straightforward but Lean-tricky.  The rightPartial form above suffices.)
+
+/-! ## Full 2-D Schwartz Poisson summation (modulo 2 summability postulates)
+
+We assemble the full 2-D Poisson identity
+  `∑' p : ℤ × ℤ, f p = ∑' p : ℤ × ℤ, fourier2D f p.1 p.2`
+modulo `partial_fourier_is_Schwartz_postulate` and the two summability
+postulates `summable_partialFourier_2d_postulate` and
+`summable_fourier2D_postulate`.
+-/
+
+/-- Rewrite of `tsum_prod_eq_tsum_tsum_fourier_rightPartial` via the
+value spec of `partialFourier`:
+
+`∑' p : ℤ × ℤ, f p = ∑' m, ∑' n, (partialFourier f n) m`
+
+PROVED Lean using `partialFourier_apply`. -/
+theorem tsum_prod_eq_tsum_tsum_partialFourier (f : 𝓢(ℝ × ℝ, ℂ)) :
+    (∑' p : ℤ × ℤ, (f : ℝ × ℝ → ℂ) (p.1, p.2)) =
+    ∑' m : ℤ, ∑' n : ℤ, (partialFourier f n : ℝ → ℂ) m := by
+  rw [tsum_prod_eq_tsum_tsum_fourier_rightPartial]
+  refine tsum_congr (fun m => ?_)
+  refine tsum_congr (fun n => ?_)
+  rw [partialFourier_apply]
+
+/-- Swap the order of summation `∑' m, ∑' n` ↔ `∑' n, ∑' m` for the
+partial-Fourier function, using `summable_partialFourier_2d_postulate`.
+
+PROVED modulo `summable_partialFourier_2d_postulate` via `Summable.tsum_comm`.
+-/
+theorem tsum_tsum_partialFourier_swap (f : 𝓢(ℝ × ℝ, ℂ)) :
+    (∑' m : ℤ, ∑' n : ℤ, (partialFourier f n : ℝ → ℂ) m) =
+    ∑' n : ℤ, ∑' m : ℤ, (partialFourier f n : ℝ → ℂ) m :=
+  (Summable.tsum_comm (f := fun m n : ℤ =>
+    (partialFourier f n : ℝ → ℂ) m) (summable_partialFourier_2d_postulate f)).symm
+
+/-- **Full 2-D Schwartz Poisson summation** (PROVED modulo 3 postulates):
+
+`∑' p : ℤ × ℤ, f p = ∑' p : ℤ × ℤ, fourier2D f p.1 p.2`
+
+Postulates consumed:
+1. `partial_fourier_is_Schwartz_postulate` (Schwartz preservation + value spec)
+2. `summable_partialFourier_2d_postulate`
+3. `summable_fourier2D_postulate`
+
+All three are TRUE Mathlib gaps with clear citations.  -/
+theorem tsum_2d_schwartz_poisson (f : 𝓢(ℝ × ℝ, ℂ)) :
+    (∑' p : ℤ × ℤ, (f : ℝ × ℝ → ℂ) (p.1, p.2)) =
+    ∑' p : ℤ × ℤ, fourier2D f p.1 p.2 := by
+  -- Step 1: LHS = ∑' m, ∑' n, (partialFourier f n) m  (PROVED above)
+  rw [tsum_prod_eq_tsum_tsum_partialFourier]
+  -- Step 2: swap to ∑' n, ∑' m  (Fubini, uses summable_partialFourier_2d_postulate)
+  rw [tsum_tsum_partialFourier_swap]
+  -- Step 3: ∑' n, ∑' m, (partialFourier f n) m = ∑' n, ∑' m, fourier2D f m n
+  -- (via tsum_partialFourier_eq_fourier2D per n).
+  conv_lhs => rw [show (∑' n : ℤ, ∑' m : ℤ, (partialFourier f n : ℝ → ℂ) m) =
+      ∑' n : ℤ, ∑' m : ℤ, fourier2D f m n from by
+    refine tsum_congr (fun n => ?_)
+    exact tsum_partialFourier_eq_fourier2D f n]
+  -- Step 4: swap ∑' n, ∑' m, fourier2D f m n = ∑' m, ∑' n, fourier2D f m n
+  -- (Fubini, uses summable_fourier2D_postulate + Summable.tsum_comm)
+  have h_swap : (∑' n : ℤ, ∑' m : ℤ, fourier2D f m n) =
+      ∑' m : ℤ, ∑' n : ℤ, fourier2D f m n :=
+    Summable.tsum_comm (f := fun m n : ℤ => fourier2D f m n)
+      (summable_fourier2D_postulate f)
+  rw [h_swap]
+  -- Step 5: ∑' m, ∑' n, fourier2D f m n = ∑' p : ℤ × ℤ, fourier2D f p.1 p.2
+  -- via Summable.tsum_prod (in reverse).
+  have h_prod : (∑' p : ℤ × ℤ, fourier2D f p.1 p.2) =
+      ∑' m : ℤ, ∑' n : ℤ, fourier2D f m n := by
+    have h := Summable.tsum_prod (f := Function.uncurry
+      fun m n : ℤ => fourier2D f m n) (summable_fourier2D_postulate f)
+    -- h : ∑' p, uncurry F p = ∑' m, ∑' n, uncurry F (m, n)
+    -- The LHS pattern is `∑' p, uncurry F p` = `∑' p, F p.1 p.2`
+    -- which matches our target.
+    convert h using 1
+  rw [h_prod]
 
 /-! ## Schwartz seminorm bound on partial Schwartz
 
