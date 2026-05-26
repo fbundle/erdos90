@@ -729,6 +729,27 @@ noncomputable def HilbertClassFieldExt.artinSymbol
     E.H ≃ₐ[K] E.H :=
   E.artinReciprocity (ClassGroup.mk0 I)
 
+/-- **Multiplicativity of the Artin symbol**: `σ_(I·J) = σ_I · σ_J`.
+
+PROVED Lean.  Follows from `MulEquiv.map_mul` + `ClassGroup.mk0` being a
+monoid hom. -/
+theorem HilbertClassFieldExt.artinSymbol_mul
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K)
+    (I J : nonZeroDivisors (Ideal (𝓞 K))) :
+    HilbertClassFieldExt.artinSymbol K E (I * J) =
+      HilbertClassFieldExt.artinSymbol K E I * HilbertClassFieldExt.artinSymbol K E J := by
+  unfold HilbertClassFieldExt.artinSymbol
+  rw [map_mul, map_mul]
+
+/-- **Artin symbol of 1 = identity**: `σ_(1) = id`. -/
+theorem HilbertClassFieldExt.artinSymbol_one
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    HilbertClassFieldExt.artinSymbol K E 1 = (1 : E.H ≃ₐ[K] E.H) := by
+  unfold HilbertClassFieldExt.artinSymbol
+  rw [map_one, map_one]
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
