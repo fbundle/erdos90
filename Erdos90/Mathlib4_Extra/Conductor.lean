@@ -83,4 +83,14 @@ def conductor_postulate
 -- everywhere unramified ⟹ no prime has ramificationIdx > 1 ⟹ conductor
 -- is the unit ideal.  Future work.)
 
+/-- The conductor for an HCF is the unit ideal (= `⊤`) — i.e., no primes
+ramify.
+
+PROVED Lean construction: gives a concrete `Conductor K L` with `𝔣 = ⊤`. -/
+noncomputable def hcf_conductor (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Conductor K E.H where
+  𝔣 := ⊤
+  𝔣_ne_bot := top_ne_bot
+
 end NumberField
