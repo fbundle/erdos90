@@ -1,2 +1,4 @@
 /.lake
 vendor
+# Claude Code local runtime files
+.claude/
