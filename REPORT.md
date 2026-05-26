@@ -4,21 +4,27 @@ This file is the **human-readable progress log** for the project.  Written by th
 - `CLAUDE.md` — agent instructions
 - `README.md` — human-maintained project description
 
-## Current state (last updated: 2026-05-27 evening session)
+## Current state (last updated: 2026-05-27 — Phase E14 decomposition)
 
-`erdos_unit_distance_false` (Theorem 1.1) is fully formalized **modulo 4 named sorries**, each cited with literature and decomposed into Mathlib-PR-shaped pieces.  The proof depends only on standard foundational axioms (`propext`, `sorryAx`, `Classical.choice`, `Quot.sound`) — no custom axioms.
+`erdos_unit_distance_false` (Theorem 1.1) is fully formalized **modulo 5 named sorries**, each cited with literature and decomposed into Mathlib-PR-shaped pieces.  The proof depends only on standard foundational axioms (`propext`, `sorryAx`, `Classical.choice`, `Quot.sound`) — no custom axioms.
 
-### The 4 sorries
+**Phase E14 (2026-05-27)** restructured the load-bearing `gs_cm_tower` into PROVED Lean code that delegates to a more cleanly-shaped labelled postulate `gs_cm_tower_infinite_postulate` living in `Mathlib4_Extra/GolodShafarevich.lean`.  The discriminant-control half is now fully proved via `rootDiscr_eq_of_unramifiedTower` in `Mathlib4_Extra/UnramifiedDiscriminant.lean`.
+
+### The 5 sorries (3 on proof path, 2 off-path)
 
 | # | Name | Location | Type | Mathlib gap |
 |---|---|---|---|---|
-| 1 | `gs_cm_tower` | `Erdos90/NumberFieldDeep_GSTower.lean:133` | proof path | class field theory + Golod–Shafarevich + pro-p cohomology (multi-year) |
-| 2 | `chebotarev_fixed_Q` | `Erdos90/NumberFieldDeep_GSTower.lean:185` | proof path | Chebotarev density theorem + L-function continuation (multi-month) |
-| 3 | `regulator_lower_bound_cm` | `Erdos90/Mathlib4_Extra/ClassNumberBound.lean:296` | off-path | Friedman 1989: analytic regulator formula via Mellin transforms |
-| 4 | `dedekind_residue_upper_bound_cm` | `Erdos90/Mathlib4_Extra/ClassNumberBound.lean:332` | off-path | Louboutin 2000: functional equation of ζ_K + L(1,χ) bounds |
+| 1 | `gs_cm_tower_infinite_postulate` | `Erdos90/Mathlib4_Extra/GolodShafarevich.lean:129` | proof path (NEW location; was `gs_cm_tower`) | class field theory + Golod–Shafarevich + pro-p cohomology (multi-year) |
+| 2 | `chebotarev_fixed_Q` | `Erdos90/NumberFieldDeep_GSTower.lean:220` | proof path | Chebotarev density theorem + L-function continuation (multi-month) |
+| 3 | `hilbertClassField_exists` | `Erdos90/Mathlib4_Extra/ClassFieldTheory.lean:106` | off-path | Artin reciprocity (multi-year Mathlib) |
+| 4 | `regulator_lower_bound_cm` | `Erdos90/Mathlib4_Extra/ClassNumberBound.lean:307` | off-path | Friedman 1989: analytic regulator formula via Mellin transforms |
+| 5 | `dedekind_residue_upper_bound_cm` | `Erdos90/Mathlib4_Extra/ClassNumberBound.lean:343` | off-path | Louboutin 2000: functional equation of ζ_K + L(1,χ) bounds |
 
 ### Recently closed (this session, 2026-05-26 → 2026-05-27)
 
+- `gs_cm_tower` — proof-path sorry, now PROVED Lean code via Phase E14 chain
+  (uses `gs_unramified_tower_with_bounded_rd` proved in `Mathlib4_Extra/GolodShafarevich.lean`).
+- `rootDiscr_eq_of_unramifiedTower` — fully proved in `Mathlib4_Extra/UnramifiedDiscriminant.lean`.
 - `class_num_bound_of_brd` — proof-path sorry, now proved via D3.2d chain assembly combining E5+D3.2b+D3.2c+torsion bound
 - `nat_le_four_mul_totient_sq` — pure-Nat inequality, fully proved
 - `totient_torsionOrder_le_finrank` — cyclotomic bridge, proved
