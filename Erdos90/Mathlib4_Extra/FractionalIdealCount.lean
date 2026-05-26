@@ -1,11 +1,11 @@
 import Mathlib
 
 /-!
-# Mathlib4 candidates: lemmas about `FractionalIdeal`
+# Mathlib4 candidates: count-based integrality characterizations
 
-Generic lemmas about `FractionalIdeal` in a Dedekind domain / number-field
-context, intended for upstreaming to Mathlib4.  Currently used by
-`Erdos90.CMField.QScaling` and `Erdos90.CMField.Basic`.
+Generic lemmas relating `FractionalIdeal.count` to integrality (membership in
+the image of `algebraMap R K`) in a Dedekind domain.  Intended for
+upstreaming to Mathlib4.  Currently used by `Erdos90.CMField.QScaling`.
 
 ## Main results
 
@@ -14,8 +14,9 @@ context, intended for upstreaming to Mathlib4.  Currently used by
 * `mem_range_of_spanSingleton_count_nonneg` — for `y : K` nonzero with
   `count K v (spanSingleton y) ≥ 0` at every height-one prime `v`, the
   element `y` lies in the image of `algebraMap R K`.
-* `ringEquivOfRingEquiv_coeIdeal` — `FractionalIdeal.ringEquivOfRingEquiv`
-  applied to a coefficient ideal equals the image-ideal coerced.
+
+Other `FractionalIdeal` lemmas live in sibling files (e.g.,
+`FractionalIdealRingEquiv` for `ringEquivOfRingEquiv_coeIdeal`).
 -/
 
 namespace Mathlib4_Extra
@@ -99,33 +100,5 @@ theorem mem_range_of_spanSingleton_count_nonneg {y : K} (hy : y ≠ 0)
   exact ⟨a, ha⟩
 
 end
-
-/-- `FractionalIdeal.ringEquivOfRingEquiv` applied to a coefficient ideal equals
-the image-ideal coerced.  Stated for number fields here but the proof is
-purely generic over an `IsFractionRing` setup. -/
-lemma ringEquivOfRingEquiv_coeIdeal (K : Type*) [Field K] [NumberField K]
-    (c : (NumberField.RingOfIntegers K) ≃+* (NumberField.RingOfIntegers K))
-    (I : Ideal (NumberField.RingOfIntegers K)) :
-    FractionalIdeal.ringEquivOfRingEquiv K K c
-        (I : FractionalIdeal (NumberField.RingOfIntegers K)⁰ K) =
-    (Ideal.map (c : (NumberField.RingOfIntegers K) →+* (NumberField.RingOfIntegers K)) I :
-      FractionalIdeal (NumberField.RingOfIntegers K)⁰ K) := by
-  ext x
-  simp only [FractionalIdeal.ringEquivOfRingEquiv_apply, FractionalIdeal.val_eq_coe,
-    FractionalIdeal.coe_coeIdeal, FractionalIdeal.mem_coeIdeal]
-  constructor
-  · rintro ⟨y, ⟨z, hz, rfl⟩, hy⟩
-    refine ⟨c z, Ideal.mem_map_of_mem
-      (c : (NumberField.RingOfIntegers K) →+* (NumberField.RingOfIntegers K)) hz, ?_⟩
-    simpa [IsFractionRing.semilinearEquivOfRingEquiv_apply] using hy
-  · rintro ⟨y, hy, rfl⟩
-    have h_surj : Function.Surjective
-        (c : (NumberField.RingOfIntegers K) →+* (NumberField.RingOfIntegers K)) := by
-      intro x; refine ⟨c.symm x, ?_⟩; simp
-    rcases (Ideal.mem_map_iff_of_surjective
-        (c : (NumberField.RingOfIntegers K) →+* (NumberField.RingOfIntegers K)) h_surj).mp hy with
-      ⟨z, hz, rfl⟩
-    refine ⟨algebraMap (NumberField.RingOfIntegers K) K z, ⟨z, hz, rfl⟩, ?_⟩
-    simp [IsFractionRing.semilinearEquivOfRingEquiv_apply]
 
 end Mathlib4_Extra

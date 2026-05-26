@@ -1,5 +1,5 @@
 import Mathlib
-import Erdos90.Mathlib4_Extra.FractionalIdealCount
+import Erdos90.Mathlib4_Extra.FractionalIdealRingEquiv
 
 open Real Set NumberField Function
 open scoped Complex Pointwise nonZeroDivisors
