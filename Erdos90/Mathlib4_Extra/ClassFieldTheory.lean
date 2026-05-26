@@ -369,6 +369,37 @@ instance algEquiv_self_unique (K : Type u) [Field K] : Unique (K ≃ₐ[K] K) wh
   default := AlgEquiv.refl
   uniq := fun a => by ext x; exact a.commutes' x
 
+/-- For any prime `P` of `𝓞 K`, the identity algebra `𝓞 K → 𝓞 K` is
+unramified at `P`.
+
+PROVED Lean via `FormallyUnramified.of_isLocalization`. -/
+instance algebra_self_isUnramifiedAt (K : Type u) [Field K] [NumberField K]
+    (P : Ideal (𝓞 K)) [P.IsPrime] :
+    Algebra.IsUnramifiedAt (𝓞 K) P := by
+  unfold Algebra.IsUnramifiedAt
+  exact Algebra.FormallyUnramified.of_isLocalization P.primeCompl
+
+/-- For classNumber K = 1, the HCF is K itself.
+
+PROVED Lean construction of `HilbertClassFieldExt K` for the classNumber=1
+case.  Uses:
+- `algebra_self_isUnramifiedAt`: identity algebra is everywhere unramified.
+- `classGroup_unique_of_classNumber_one`: ClassGroup is trivial.
+- `algEquiv_self_unique`: Gal(K/K) is trivial.
+- `MulEquiv.ofUnique`: the two trivial groups are isomorphic.
+
+This is a fully-proved instance (no sorry) of the HCF for any number field
+with class number 1. -/
+noncomputable def HilbertClassFieldExt.identity (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1) :
+    HilbertClassFieldExt.{u, u} K where
+  H := K
+  finrank_eq := by rw [h, Module.finrank_self]
+  unramified := by intro P _ _; exact algebra_self_isUnramifiedAt K P
+  artinReciprocity :=
+    letI := classGroup_unique_of_classNumber_one K h
+    MulEquiv.ofUnique
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
