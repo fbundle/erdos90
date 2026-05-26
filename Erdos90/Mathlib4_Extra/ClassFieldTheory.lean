@@ -819,6 +819,18 @@ theorem HilbertClassFieldExt.algebraMap_ringOfIntegers_injective
     Function.Injective (algebraMap (𝓞 K) (𝓞 E.H)) :=
   FaithfulSMul.algebraMap_injective (𝓞 K) (𝓞 E.H)
 
+/-- For a CM totally complex `K`, the HCF inherits BOTH properties modulo
+the `isCMField_postulate`.
+
+PROVED Lean modulo the CM preservation postulate.  The totally-complex
+preservation is PROVED unconditionally. -/
+theorem HilbertClassFieldExt.cm_totally_complex_preserved
+    (K : Type u) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
+    (E : HilbertClassFieldExt K) :
+    IsTotallyComplex E.H ∧ Nonempty (IsCMField E.H) :=
+  ⟨HilbertClassFieldExt.isTotallyComplex K E,
+   ⟨HilbertClassFieldExt.isCMField_postulate K E⟩⟩
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
