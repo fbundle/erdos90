@@ -200,10 +200,17 @@ def brd_cm_tower_postulate (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
       have h_cm_eq_φ :
           Erdos90.CMField.cmMinkowskiEquiv K f hcompl = φ := rfl
       rw [h_cm_eq_φ]
-      -- Algebraic bridge: (Q²)⁻¹ • φ(Φ β) = φ(Φ(α/c(α))), since (β:K) = Q²·α/c(α).
-      -- Detailed proof requires connecting mixedEmbedding's ring-hom structure
-      -- on K with the ℝ-scalar action on mixedSpace K via the rational coercion
-      -- of `Q² : ℕ ↪ K`.  Sorried; pure algebraic manipulation.
+      -- Algebraic bridge: (Q²)⁻¹ • φ(Φ β) = φ(Φ(α/c(α))), using (β:K) = Q²·α/c(α).
+      -- TRUE.  The bridge requires showing
+      --   φ(Φ((β:K)/Q²)) = ((Q:ℂ)²)⁻¹ • φ(Φ β)
+      -- which is the statement that the composite ring hom `φ ∘ Φ : K → Fin f → ℂ`,
+      -- evaluated at a quotient by a nonzero rational `Q²:K`, equals coordinatewise
+      -- division by `(Q:ℂ)²`.  `Φ` is a ring hom to `mixedSpace K` (a product of ℂ's
+      -- for totally-complex K), and `φ` is a linear-equiv permutation of the complex
+      -- coordinates.  The needed lemma is essentially that `φ ∘ Φ` is also a ring
+      -- hom (componentwise on the complex factors).  About 60-80 LOC of Mathlib
+      -- tactic work to spell out via `Pi.instInv` on the complex part of mixedSpace,
+      -- `map_mul`/`map_pow` on the embedding, and `Nat.cast` commutation.
       sorry
     classNumBound := Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ)
     hClassNum := by
