@@ -16,12 +16,20 @@ Sorries 3 and 4 share the same Mathlib gap: the functional equation for `dedekin
 
 ## Strategic documents
 
+- **`../proof_outline.md`** — end-to-end walkthrough of the entire
+  formalization (10 steps).  Best starting point for understanding what's
+  proved vs. what's sorried.
+- **`../mathlib_pr_candidates.md`** — 4 specific lemmas in this repo that
+  could be extracted as standalone Mathlib PRs.
 - **`closing_roadmap.md`** — 5-PR incremental Mathlib strategy to close the
   off-path sorries (sorries 3 + 4).  Identifies the shared `dedekindZeta`
   functional equation as the key shared infrastructure.
 - **`mathlib_lseries_infrastructure.md`** — survey of Mathlib v4.30's existing
   L-series infrastructure (substantial: AbstractFuncEq, Dirichlet L-functions
   with FE, Hurwitz/Riemann zeta).  Identifies the precise gap.
+- **`loeffler_stoll_lfunctions_in_lean.md`** — extract from the Loeffler–Stoll
+  2025 paper documenting Mathlib's L-function formalization state and method
+  (theta-function + Poisson summation architecture).  Confirms our roadmap.
 
 ## Per-sorry notes
 
@@ -46,7 +54,11 @@ Sorries 3 and 4 share the same Mathlib gap: the functional equation for `dedekin
 ### For D3.1 (HMR / GS / Chebotarev)
 - `assets/hajir_maire_ramakrishna_2021.pdf` + `assets/hmr_2021_src/Cutting_towers_arxiv.tex` — **HMR 2021**, arXiv:1901.04354.  Contains `theo:ihara` (key).
 - `assets/hajir_maire_cutting_2021.pdf` — Hajir–Maire 2021
+- `assets/hajir_maire_analytic_lie.pdf` — Hajir–Maire 2017 (arXiv:1710.09214),
+  analytic Lie extensions (uniform pro-p)
 - `assets/tamely-ramified-towers-and-discriminant-bounds-for-number-fields.pdf`
+- `assets/anick_dicks_gs.pdf` — Anick–Dicks 2017 (arXiv:1508.03231), clean
+  graded GS inequality
 - `assets/ellenberg_venkatesh_2007.pdf` — class number bounds
 - `assets/ershov_gs_survey.pdf` — GS groups survey
 - `assets/zhou_gs_thesis.pdf` — GS thesis
@@ -55,6 +67,9 @@ Sorries 3 and 4 share the same Mathlib gap: the functional equation for `dedekin
 ### For D3.2 (Brauer–Siegel / Louboutin / L-functions)
 - `assets/louboutin_2000_class_number.pdf` — **Louboutin 2000**, the source of the residue upper bound
 - `assets/arXiv-2507.10387v1.pdf` + `assets/akhtari_vaaler_widmer_src/` — AVW 2025, effective CM equidistribution
+- `assets/loeffler_formalizing_lfunctions.pdf` — **Loeffler–Stoll 2025** (arXiv:2503.00959),
+  comprehensive overview of Mathlib's L-function formalization (the template
+  we'd follow for Dedekind zeta)
 
 ## Mathlib quick references (proved infrastructure used by this project)
 
