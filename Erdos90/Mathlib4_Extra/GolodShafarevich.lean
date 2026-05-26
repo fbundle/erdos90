@@ -62,6 +62,8 @@ This route reduces the analytic content to combinatorics and may be more
 tractable for Mathlib.
 -/
 
+open NumberField
+
 namespace GolodShafarevich
 
 universe u
@@ -126,9 +128,11 @@ ramification theory".  Not in Mathlib v4.30 — postulates pro-p group
 infrastructure + class field theory. -/
 def gs_cm_tower_infinite_postulate
     (p : ℕ) (_hp : Nat.Prime p) (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
-    ∃ (K : Type) (_ : Field K) (_ : NumberField K),
+    ∃ (K : Type) (_ : Field K) (_ : NumberField K)
+      (_ : IsCMField K) (_ : IsTotallyComplex K),
       ∃ (_ : NumberField.rootDiscr K ≤ (ℓ : ℝ)),
         ∀ (N : ℕ), ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+          (_ : IsCMField L) (_ : IsTotallyComplex L)
           (_ : Algebra K L),
           Module.finrank K L ≥ p ^ N ∧
           NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
@@ -147,18 +151,17 @@ theorem gs_unramified_tower_with_bounded_rd
     (p : ℕ) (hp : Nat.Prime p) (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
     ∃ (rd_F : ℝ) (_ : 1 ≤ rd_F),
       ∀ (M : ℕ),
-        ∃ (L : Type) (_ : Field L) (_ : NumberField L),
+        ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+          (_ : IsCMField L) (_ : IsTotallyComplex L),
           Module.finrank ℚ L ≥ M ∧ NumberField.rootDiscr L ≤ rd_F := by
-  obtain ⟨K, _, _, h_rd_K, htower⟩ :=
+  obtain ⟨K, _, _, _, _, h_rd_K, htower⟩ :=
     GolodShafarevich.gs_cm_tower_infinite_postulate p hp ℓ hℓ
   refine ⟨(ℓ : ℝ), ?_, ?_⟩
   · have : (1 : ℝ) ≤ (2 : ℝ) := by norm_num
     exact this.trans (by exact_mod_cast hℓ)
   intro M
-  -- Choose N large enough that p^N ≥ M / [K:ℚ]
-  -- For simplicity, take N = M (since p ≥ 2, p^M ≥ M for all M).
-  obtain ⟨L, _, _, _, h_finrank, h_rd_L⟩ := htower M
-  refine ⟨L, inferInstance, inferInstance, ?_, ?_⟩
+  obtain ⟨L, _, _, _, _, _, h_finrank, h_rd_L⟩ := htower M
+  refine ⟨L, inferInstance, inferInstance, inferInstance, inferInstance, ?_, ?_⟩
   · have h_KL : Module.finrank ℚ L = Module.finrank ℚ K * Module.finrank K L :=
       (Module.finrank_mul_finrank ℚ K L).symm
     have h_K_pos : 1 ≤ Module.finrank ℚ K := Module.finrank_pos
