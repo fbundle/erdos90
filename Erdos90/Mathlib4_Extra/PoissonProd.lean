@@ -459,6 +459,28 @@ theorem rightPartial_seminorm_x_le (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x_0 y 
         · exact norm_nonneg _
     _ ≤ SchwartzMap.seminorm ℝ k 0 f := h_bound
 
+/-- Combined: `‖x_0‖^k · ‖y‖^k · ‖f(x_0, y)‖ ≤ (‖f‖_(2k, 0))`.
+
+Via the product bound `‖x_0‖^k · ‖y‖^k ≤ ‖(x_0, y)‖^(2k)` (using
+`‖(x_0, y)‖^2 = max(‖x_0‖, ‖y‖)² ≥ ‖x_0‖ · ‖y‖`). -/
+theorem rightPartial_seminorm_xy_le (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x_0 y : ℝ) :
+    ‖x_0‖ ^ k * ‖y‖ ^ k * ‖(f.rightPartial x_0 : 𝓢(ℝ, ℂ)) y‖ ≤
+      SchwartzMap.seminorm ℝ (2 * k) 0 f := by
+  rw [rightPartial_apply]
+  have h_bound := rightPartial_apply_polynomial_le f (2 * k) x_0 y
+  -- ‖(x_0, y)‖^(2k) ≥ ‖x_0‖^k · ‖y‖^k
+  have h_norm : ‖x_0‖ ^ k * ‖y‖ ^ k ≤ ‖((x_0, y) : ℝ × ℝ)‖ ^ (2 * k) := by
+    rw [two_mul, pow_add]
+    apply mul_le_mul (pow_le_pow_left₀ (norm_nonneg _)
+      (by simp [Prod.norm_def] : ‖x_0‖ ≤ _) k)
+      (pow_le_pow_left₀ (norm_nonneg _)
+        (by simp [Prod.norm_def] : ‖y‖ ≤ _) k)
+      (by positivity) (by positivity)
+  calc ‖x_0‖ ^ k * ‖y‖ ^ k * ‖f (x_0, y)‖
+      ≤ ‖((x_0, y) : ℝ × ℝ)‖ ^ (2 * k) * ‖f (x_0, y)‖ := by
+        apply mul_le_mul_of_nonneg_right h_norm (norm_nonneg _)
+    _ ≤ SchwartzMap.seminorm ℝ (2 * k) 0 f := h_bound
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
