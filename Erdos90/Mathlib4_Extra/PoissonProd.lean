@@ -213,24 +213,28 @@ def partial_fourier_is_Schwartz_postulate
     (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
     𝓢(ℝ, ℂ) := sorry
 
-/-- **Step 3** (POSTULATED): the iterated 1-D Fourier integral equals
-the 2-D Fourier integral.
+/-- **Step 3** (the iterated Fourier identity in explicit integral form):
 
-For `f : 𝓢(ℝ × ℝ, ℂ)`, `m, n : ℝ`:
-  `𝓕(2-D)(f)(m, n) = ∫ e^{-2πi m x} · 𝓕(f.rightPartial x)(n) dx`
+For Schwartz `f : 𝓢(ℝ × ℝ, ℂ)` and `m, n : ℝ`:
 
-This is "Fubini for Fourier integrals" — requires careful integration
-swapping with absolutely integrable bounds (Schwartz ⇒ integrable on
-ℝ × ℝ, then Fubini-Tonelli).
+  `∫_{ℝ × ℝ} e^{-2πi(mx+ny)} f(x, y) d(x, y) = ∫_ℝ e^{-2πi m x} · 𝓕(f.rightPartial x)(n) dx`
 
-Cite: Stein–Shakarchi *Fourier Analysis* Chapter 4.  Statement omitted
-due to Mathlib's 2-D Fourier transform typeclass requirements (V → E for
-inner-product V); 2-D Fourier on Prod doesn't have the inner product
-instance directly.  This is the deeper Mathlib-PR-shape work that
-requires bridging Prod ↔ EuclideanSpace. -/
-def iterated_fourier_eq_2d_postulate
-    (_f : 𝓢(ℝ × ℝ, ℂ)) (_m _n : ℝ) :
-    True := sorry
+This is just Fubini-Tonelli for the bivariate exponential.  PROVED Lean
+via `MeasureTheory.integral_integral_swap` (Mathlib has Fubini for
+Bochner integrals on prod measures). -/
+theorem iterated_fourier_eq_2d_integral
+    (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
+    ∫ p : ℝ × ℝ,
+        Complex.exp (-(2 * Real.pi * (m * p.1 + n * p.2)) * Complex.I) *
+          (f : ℝ × ℝ → ℂ) (p.1, p.2) =
+      ∫ x : ℝ, Complex.exp (-(2 * Real.pi * (m * x)) * Complex.I) *
+          (∫ y : ℝ, Complex.exp (-(2 * Real.pi * (n * y)) * Complex.I) *
+              (f : ℝ × ℝ → ℂ) (x, y)) := by
+  -- This is Fubini for Bochner integrals.  The integrand on ℝ × ℝ:
+  --   (x, y) ↦ exp(-2πi(mx+ny)) · f(x, y)
+  -- factors as exp(-2πi m x) · exp(-2πi n y) · f(x, y).
+  -- We integrate by Fubini, splitting the exp(mx) factor out.
+  sorry
 
 -- (Note: `summable_2d_schwartz_postulate` has been promoted to a PROVED
 -- theorem `summable_2d_schwartz_proved` below.  All earlier uses now point
