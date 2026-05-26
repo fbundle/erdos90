@@ -263,6 +263,20 @@ theorem summable_col_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
   refine h.congr (fun m => ?_)
   simp [leftPartial_apply]
 
+/-- Each row is **absolutely** summable. -/
+theorem summable_norm_row_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) (m : ℤ) :
+    Summable fun n : ℤ => ‖(f : ℝ × ℝ → ℂ) (m, n)‖ := by
+  have h := SchwartzMap.summable_norm_int (f.rightPartial m)
+  refine h.congr (fun n => ?_)
+  simp [rightPartial_apply]
+
+/-- Each column is **absolutely** summable. -/
+theorem summable_norm_col_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
+    Summable fun m : ℤ => ‖(f : ℝ × ℝ → ℂ) (m, n)‖ := by
+  have h := SchwartzMap.summable_norm_int (f.leftPartial n)
+  refine h.congr (fun m => ?_)
+  simp [leftPartial_apply]
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
