@@ -651,6 +651,27 @@ theorem HilbertPClassFieldExt.discr_eq_pow
       (NumberField.discr K).natAbs ^ Module.finrank K E.H_p :=
   NumberField.natAbs_discr_eq_pow_of_unramifiedTower K E.H_p E.unramified
 
+/-- For HCF, the different ideal `𝒟(H/K)` is the unit ideal (=⊤). -/
+theorem HilbertClassFieldExt.differentIdeal_eq_top
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    differentIdeal (𝓞 K) (𝓞 E.H) = ⊤ :=
+  NumberField.differentIdeal_eq_top_of_isUnramifiedAt K E.H E.unramified
+
+/-- For p-HCF, the different ideal is the unit ideal. -/
+theorem HilbertPClassFieldExt.differentIdeal_eq_top
+    (K : Type u) [Field K] [NumberField K] (p : ℕ)
+    (E : HilbertPClassFieldExt K p) :
+    differentIdeal (𝓞 K) (𝓞 E.H_p) = ⊤ :=
+  NumberField.differentIdeal_eq_top_of_isUnramifiedAt K E.H_p E.unramified
+
+/-- For HCF, the rootDiscr is preserved (alias for `rootDiscr_hcf_eq`). -/
+theorem HilbertPClassFieldExt.rootDiscr_eq
+    (K : Type u) [Field K] [NumberField K] (p : ℕ)
+    (E : HilbertPClassFieldExt K p) :
+    NumberField.rootDiscr E.H_p = NumberField.rootDiscr K :=
+  rootDiscr_pHCF_eq K p E
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
