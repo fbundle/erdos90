@@ -349,13 +349,32 @@ lemma totient_torsionOrder_le_finrank :
 /-- **D3.2.tors.b**: Pure-Nat reverse totient inequality.  For all `n : ℕ`,
 `n ≤ 4 · φ(n)²`.
 
-This is a self-contained number-theory fact.  Proof outline: for n ≤ 6, check
-by cases (φ(n) ∈ {0, 1, 2}); for n ≥ 7, use `φ(n) ≥ √n / 2` which follows from
-multiplicative analysis (Euler product `φ(n)/n = ∏ (1 - 1/p)`).
+Proof structure:
+- For `n ≤ 16`: direct check (`interval_cases + decide` works; `φ(n) ≥ 2` for
+  `n ≥ 3` gives `4·φ² ≥ 16 ≥ n`, and small cases verified directly).
+- For `n ≥ 17`: needs `φ(n) ≥ ⌈√(n/4)⌉`.  Reduces to the helper claim that
+  for odd `m`, `m ≤ φ(m)²` (which combined with `φ(2^a · m) = 2^(a-1) · φ(m)`
+  for `a ≥ 1` yields the bound).
+
+The helper claim, for odd `m ≥ 3`, is proved by strong induction on m:
+- m prime: φ(m) = m - 1, and `(m-1)² ≥ m` for m ≥ 3 (quadratic check).
+- m = p^k odd prime power, k ≥ 2: φ(p^k) = p^(k-1)·(p-1), and
+  `p^k ≤ p^(2k-2)·(p-1)²` reduces to `1 ≤ p^(k-2)·(p-1)²`, holding for k ≥ 2.
+- m composite with ≥ 2 distinct prime factors: write m = a·b with coprime
+  a, b ≥ 3 odd; by IH, a ≤ φ(a)² and b ≤ φ(b)²; multiplicativity gives
+  m = a·b ≤ φ(a)²·φ(b)² = φ(ab)² = φ(m)².
 
 Clean Mathlib PR target — `Nat.le_four_mul_totient_sq` would fit alongside
-existing lemmas like `Nat.totient_le` in `Mathlib/Data/Nat/Totient.lean`. -/
-lemma nat_le_four_mul_totient_sq (n : ℕ) : n ≤ 4 * n.totient ^ 2 := sorry
+existing lemmas like `Nat.totient_le` in `Mathlib/Data/Nat/Totient.lean`.
+
+The proof for `n ≤ 16` is concrete; for `n ≥ 17` we leave as sorry. -/
+lemma nat_le_four_mul_totient_sq (n : ℕ) : n ≤ 4 * n.totient ^ 2 := by
+  -- Case n ≤ 16: φ(n) ≥ 2 for n ≥ 3 (and direct check for n ≤ 2) gives 4·φ² ≥ 16 ≥ n
+  by_cases hn : n ≤ 16
+  · interval_cases n <;> decide
+  · -- n ≥ 17: needs the odd-helper + decomposition argument above.
+    -- Closing this is a clean Mathlib PR target.
+    sorry
 
 /-- **D3.2.tors**: Polynomial bound on the number of roots of unity in a number
 field.  For any number field K of degree n, `torsionOrder K ≤ 4 · n²`.
