@@ -79,4 +79,12 @@ def hasseBrauerNoether_postulate
     (K : Type u) [Field K] [NumberField K] :
     True := sorry
 
+/-- For algebraically closed fields, `Br(K) = 0`.
+
+PROVED Lean trivially: our `BrauerGroup` stub is `Unit`, so always
+"trivial".  This is a sanity check for the stub. -/
+theorem BrauerGroup_isUnit_unit (K : Type u) [Field K] :
+    Subsingleton (BrauerGroup K) :=
+  inferInstanceAs (Subsingleton Unit)
+
 end NumberField
