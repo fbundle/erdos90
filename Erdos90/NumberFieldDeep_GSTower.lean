@@ -201,17 +201,39 @@ def brd_cm_tower_postulate (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
           Erdos90.CMField.cmMinkowskiEquiv K f hcompl = φ := rfl
       rw [h_cm_eq_φ]
       -- Algebraic bridge: (Q²)⁻¹ • φ(Φ β) = φ(Φ(α/c(α))), using (β:K) = Q²·α/c(α).
-      -- TRUE.  The bridge requires showing
-      --   φ(Φ((β:K)/Q²)) = ((Q:ℂ)²)⁻¹ • φ(Φ β)
-      -- which is the statement that the composite ring hom `φ ∘ Φ : K → Fin f → ℂ`,
-      -- evaluated at a quotient by a nonzero rational `Q²:K`, equals coordinatewise
-      -- division by `(Q:ℂ)²`.  `Φ` is a ring hom to `mixedSpace K` (a product of ℂ's
-      -- for totally-complex K), and `φ` is a linear-equiv permutation of the complex
-      -- coordinates.  The needed lemma is essentially that `φ ∘ Φ` is also a ring
-      -- hom (componentwise on the complex factors).  About 60-80 LOC of Mathlib
-      -- tactic work to spell out via `Pi.instInv` on the complex part of mixedSpace,
-      -- `map_mul`/`map_pow` on the embedding, and `Nat.cast` commutation.
-      sorry
+      have hQ_K_ne : ((Q : ℕ) : K) ≠ 0 := by
+        have : Q ≠ 0 := Nat.pos_iff_ne_zero.mp hQ_pos
+        exact_mod_cast this
+      have hspQ_K : ((sp.Q : ℕ) : K) = ((Q : ℕ) : K) := by
+        have := hspQ; exact_mod_cast this
+      have h_α_eq : α / IsCMField.complexConj K α = (β : K) / (((Q : ℕ) : K)^2) := by
+        rw [hβ, hspQ_K]; field_simp
+      rw [h_α_eq]
+      -- Goal: (((Q : ℂ))^2)⁻¹ • φ(Φ β) = φ(Φ((β:K) / Q²))
+      -- Compute coordinate-by-coordinate
+      ext i
+      simp only [Pi.smul_apply, smul_eq_mul]
+      -- Unfold φ via mixedSpace_equiv_pi_fin_of_card_apply on both sides
+      rw [show (φ (NumberField.mixedEmbedding K (β : K)) i) =
+          (NumberField.mixedEmbedding K (β : K)).2
+            ((cmComplexPlaceEquiv K f hcompl).symm i) from
+        mixedSpace_equiv_pi_fin_of_card_apply hreal f hcompl _ i]
+      rw [show (φ (NumberField.mixedEmbedding K ((β : K) / (((Q : ℕ) : K))^2)) i) =
+          (NumberField.mixedEmbedding K ((β : K) / (((Q : ℕ) : K))^2)).2
+            ((cmComplexPlaceEquiv K f hcompl).symm i) from
+        mixedSpace_equiv_pi_fin_of_card_apply hreal f hcompl _ i]
+      -- Now apply mixedEmbedding_apply_isComplex
+      rw [mixedEmbedding.mixedEmbedding_apply_isComplex (K := K) (β : K)
+          ((cmComplexPlaceEquiv K f hcompl).symm i)]
+      rw [mixedEmbedding.mixedEmbedding_apply_isComplex (K := K)
+          ((β : K) / (((Q : ℕ) : K))^2)
+          ((cmComplexPlaceEquiv K f hcompl).symm i)]
+      -- Goal: ((Q:ℂ)²)⁻¹ * w.val.embedding (β:K) =
+      --        w.val.embedding ((β:K) / Q²)
+      -- w.val.embedding is a ring hom, so it commutes with /, pow, natCast
+      set w := ((cmComplexPlaceEquiv K f hcompl).symm i).val.embedding
+      rw [map_div₀ w, map_pow w, map_natCast w]
+      field_simp
     classNumBound := Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ)
     hClassNum := by
       have hf_ne : (f : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
