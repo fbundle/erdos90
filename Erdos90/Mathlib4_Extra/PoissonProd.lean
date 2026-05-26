@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Khanh Nguyen
 -/
 import Mathlib
+import Erdos90.Mathlib4_Extra.SeparablePoisson2D
 
 /-!
 # Multi-dimensional Schwartz Poisson summation — statement + partial PROVED pieces
@@ -233,6 +234,34 @@ Provable from Schwartz decay + 2-D `p`-series summability.  -/
 def summable_2d_schwartz_postulate
     (f : 𝓢(ℝ × ℝ, ℂ)) :
     Summable fun p : ℤ × ℤ => (f : ℝ × ℝ → ℂ) (p.1, p.2) := sorry
+
+/-! ## Summability via partial summability (PROVED)
+
+Even without the full 2-D summability above, we can prove summability of
+each ROW via 1-D Schwartz Poisson — i.e., for each fixed `m`,
+`Summable (fun n : ℤ => f(m, n))`.
+-/
+
+/-- For 2-D Schwartz `f` and any fixed `m : ℤ`, the row `n ↦ f(m, n)` is
+summable on `ℤ`.
+
+PROVED via 1-D Schwartz summability applied to `f.rightPartial m`. -/
+theorem summable_row_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) (m : ℤ) :
+    Summable fun n : ℤ => (f : ℝ × ℝ → ℂ) (m, n) := by
+  have h := SchwartzMap.summable_int (f.rightPartial m)
+  -- h : Summable fun n : ℤ => (f.rightPartial m) n
+  -- We need: Summable fun n => f (m, n)
+  -- Use rightPartial_apply
+  refine h.congr (fun n => ?_)
+  simp [rightPartial_apply]
+
+/-- For 2-D Schwartz `f` and any fixed `n : ℤ`, the column `m ↦ f(m, n)` is
+summable on `ℤ`. -/
+theorem summable_col_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
+    Summable fun m : ℤ => (f : ℝ × ℝ → ℂ) (m, n) := by
+  have h := SchwartzMap.summable_int (f.leftPartial n)
+  refine h.congr (fun m => ?_)
+  simp [leftPartial_apply]
 
 /-! ## Multi-dim Poisson summation (currently sorried)
 
