@@ -346,4 +346,37 @@ HCF existence is postulated** — the obstruction is class field theory's
 existence theorem, not discriminant arithmetic.
 -/
 
+/-! ## Summary: proved vs. postulated
+
+### PROVED Lean (no sorry)
+- `rootDiscr_hcf_eq`: rootDiscr H = rootDiscr K
+- `card_gal_hcf_eq_classNumber`: |Gal(H/K)| = h_K (via Artin reciprocity)
+- `HilbertClassFieldExt.finiteDimensional`: H/K is finite-dim
+- `HilbertClassFieldExt.isTotallyComplex`: K totally complex → H totally complex
+- `HilbertClassFieldExt.bijective_algebraMap_of_classNumber_one`: h_K=1 → H≃K
+- `rootDiscr_pHCF_eq`: rootDiscr H_p = rootDiscr K
+- `HilbertPClassFieldExt.isTotallyComplex`: K tot complex → H_p tot complex
+
+### POSTULATES (labelled sorries; each TRUE per classical CFT)
+- `hilbertClassField_exists` — HCF existence (Artin reciprocity)
+- `HilbertClassFieldExt.isCMField_postulate` — CM preserved by HCF
+- `hilbert_principal_ideal_postulate` — Hilbert 94 (Furtwängler 1930)
+- `hilbertPClassField_exists` — p-HCF existence
+
+### What's needed to close the postulates
+
+All four postulates would be closed by a Mathlib formalization of:
+- **Artin reciprocity** (the global class field correspondence)
+- **Hilbert 94 / Iyanaga's theorem** (Galois cohomology approach)
+
+This is a multi-year Mathlib effort.  The cleanest decomposition:
+- `Mathlib/NumberTheory/ClassFieldTheory/Hilbert.lean` (HCF + Artin)
+- `Mathlib/NumberTheory/ClassFieldTheory/Furtwangler.lean` (principalization)
+- `Mathlib/NumberTheory/ClassFieldTheory/PHilbert.lean` (p-HCF)
+
+See `Erdos90/Mathlib4_Extra/RayClassField.lean` for the ray class field
+and HMR's `K_S^{(p)}` stubs, and `Erdos90/Mathlib4_Extra/Chebotarev.lean`
+for the analytic side (density theorems).
+-/
+
 end NumberField
