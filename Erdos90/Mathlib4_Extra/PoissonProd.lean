@@ -252,6 +252,15 @@ theorem summable_norm_rpow_three_prod :
       (‖(finTwoArrowEquiv ℤ).symm p‖ : ℝ) ^ (-(3 : ℝ)) :=
   (finTwoArrowEquiv ℤ).symm.summable_iff.mpr summable_norm_rpow_three
 
+/-- Norm conversion: the Pi norm on `(finTwoArrowEquiv ℤ).symm p` equals the
+max of natAbs of components.
+
+PROVED Lean via `EisensteinSeries.norm_eq_max_natAbs`. -/
+theorem norm_finTwoArrow_symm_eq (p : ℤ × ℤ) :
+    (‖(finTwoArrowEquiv ℤ).symm p‖ : ℝ) = max (p.1.natAbs : ℝ) (p.2.natAbs : ℝ) := by
+  rw [EisensteinSeries.norm_eq_max_natAbs]
+  simp [finTwoArrowEquiv]
+
 /-! ## Summability via partial summability (PROVED)
 
 Even without the full 2-D summability above, we can prove summability of
