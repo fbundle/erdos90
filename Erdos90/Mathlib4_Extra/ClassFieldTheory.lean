@@ -614,6 +614,11 @@ theorem rootDiscr_hcf_cyclotomic_five
       NumberField.rootDiscr K :=
   rootDiscr_hcf_eq K (HilbertClassFieldExt.cyclotomic_five K)
 
+-- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
+-- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
+-- typeclass timeouts.  Pattern is the same as for HCF — see
+-- `rootDiscr_hcf_rat_eq_one` and `HilbertClassFieldExt.identity_finrank_eq`.)
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
