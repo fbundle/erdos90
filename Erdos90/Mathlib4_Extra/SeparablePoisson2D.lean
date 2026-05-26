@@ -91,8 +91,20 @@ theorem tsum_prod_eq_tsum_fourier_prod (g h : 𝓢(ℝ, ℂ)) :
     ← tsum_mul_tsum_of_summable_norm hFg_norm hFh_norm]
   exact tsum_product_eq_tsum_fourier_product g h
 
--- n-fold separable Poisson summation generalizing the 2-D case is left as
--- future work (induction on n via the binary case + Fin n decomposition).
+/-- **Separable 3-D Poisson summation** (product form): for Schwartz functions
+`g, h, k : 𝓢(ℝ, ℂ)`,
+
+`(∑' m, g m) · (∑' n, h n) · (∑' p, k p) =
+  (∑' m, 𝓕g m) · (∑' n, 𝓕h n) · (∑' p, 𝓕k p)`. -/
+theorem tsum_three_product_eq_fourier (g h k : 𝓢(ℝ, ℂ)) :
+    ((∑' m : ℤ, (g : ℝ → ℂ) m) * (∑' n : ℤ, (h : ℝ → ℂ) n) *
+        (∑' p : ℤ, (k : ℝ → ℂ) p) : ℂ) =
+      (∑' m : ℤ, 𝓕 (g : ℝ → ℂ) m) * (∑' n : ℤ, 𝓕 (h : ℝ → ℂ) n) *
+        (∑' p : ℤ, 𝓕 (k : ℝ → ℂ) p) := by
+  rw [tsum_eq_tsum_fourier_zero g, tsum_eq_tsum_fourier_zero h,
+    tsum_eq_tsum_fourier_zero k]
+
+-- n-fold separable Poisson summation (induction on n) is left as future work.
 -- See assets/search_results/closing_roadmap.md for the broader strategy.
 
 end SchwartzMap
