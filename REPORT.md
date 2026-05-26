@@ -116,8 +116,26 @@ arbitrary lattices in `mixedSpace K`.
 ## Outstanding tasks (for next session / contributor)
 
 In order of leverage:
-1. (Mathlib PR) Multi-D Poisson summation for ZLattice — see closing_roadmap.md
+1. (Mathlib PR) Multi-D Poisson summation for ZLattice — see
+   `assets/search_results/closing_roadmap.md` PR-A;
+   skeleton/placeholder file at `Erdos90/Mathlib4_Extra/MultiDimPoisson.lean`
 2. (Mathlib PR) Theta function for number field via `mixedSpace K`
 3. (Mathlib PR) Functional equation for `dedekindZeta` via AbstractFuncEq
 4. (Mathlib PR) Friedman/Louboutin bounds using #3
-5. (Local) Tighten / refactor existing proofs once Mathlib infrastructure lands
+5. (Mathlib PR — independently) Extract `Nat.le_four_mul_totient_sq` to Mathlib's
+   `Mathlib/Data/Nat/Totient.lean`.  Already proved in this codebase; just needs
+   cleanup + PR submission.  See `assets/mathlib_pr_candidates.md`.
+6. (Local) Tighten / refactor existing proofs once Mathlib infrastructure lands
+
+## Key docs for the next contributor
+
+In order of accessibility:
+1. **`assets/proof_outline.md`** — start here.  10-step walkthrough.
+2. **`REPORT.md`** (this file) — high-level state.
+3. **`CLAUDE.md`** — agent-targeted instructions but useful for humans too.
+4. **`assets/mathlib_pr_candidates.md`** — what can be extracted as Mathlib PRs.
+5. **`assets/search_results/INDEX.md`** — index to all research notes.
+6. **`assets/search_results/closing_roadmap.md`** — the 5-PR strategy.
+7. **`assets/search_results/mathlib_lseries_infrastructure.md`** — Mathlib gap analysis.
+8. **`assets/search_results/loeffler_stoll_lfunctions_in_lean.md`** — extract
+   from the Loeffler-Stoll 2025 paper.
