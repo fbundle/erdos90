@@ -127,4 +127,10 @@ theorem tsum_empty_product_eq_fourier_product
       ∑' z : ι → ℤ, ∏ i, 𝓕 ((f i : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (z i) := by
   simp only [Finset.univ_eq_empty, Finset.prod_empty]
 
+-- The full n-D sum-over-product version (a generalization of
+-- `tsum_prod_eq_tsum_fourier_prod` to Fin n) is left as future work.  It
+-- follows by induction on n, applying the 2-D version + Fubini for
+-- tsum on Fin n → ℤ.  Each step requires careful summability arguments
+-- via `tsum_mul_tsum_of_summable_norm`.
+
 end SchwartzMap
