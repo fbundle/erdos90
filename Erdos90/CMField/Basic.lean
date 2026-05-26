@@ -258,7 +258,7 @@ lemma count_conj_swap (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (a : �
       _ = ∏ v' ∈ s, (fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) ^
           (FractionalIdeal.count K v' I : ℤ) := by
         refine Finset.prod_congr rfl (fun v' _hv' => ?_)
-        simpa using map_zpow fc _ _ ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) (FractionalIdeal.count K v' I : ℤ)
+        exact map_zpow₀ fc ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) (FractionalIdeal.count K v' I : ℤ)
       _ = ∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
           (FractionalIdeal.count K v' I : ℤ)) := by
         simp [h_fc_v]
@@ -375,7 +375,7 @@ lemma count_conj_swap' (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
       _ = ∏ v' ∈ s, (fc (v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) ^
           (FractionalIdeal.count K v' I : ℤ) := by
         refine Finset.prod_congr rfl (fun v' _hv' => ?_)
-        simpa using map_zpow fc _ _ ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) (FractionalIdeal.count K v' I : ℤ)
+        exact map_zpow₀ fc ((v'.asIdeal : FractionalIdeal (𝓞 K)⁰ K)) (FractionalIdeal.count K v' I : ℤ)
       _ = ∏ v' ∈ s, (((conjHeightOneSpectrum K v').asIdeal : FractionalIdeal (𝓞 K)⁰ K) ^
           (FractionalIdeal.count K v' I : ℤ)) := by
         simp [h_fc_v]

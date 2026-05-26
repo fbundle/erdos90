@@ -17,10 +17,10 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/NumberField.lean` | Theorem `exists_admissible_family` + analytic lemmas (`prop_p6`, `hlog2_event`); calls `prop_3_2_to_3_6_via_deep` from NumberFieldDeep |
 | `Erdos90/NumberFieldDeep.lean` | Import hub: re-exports all deep number-theoretic components from the 4 split files below |
 | `Erdos90/NumberFieldDeep_Analytic.lean` | §1: Analytic helpers (`log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq`), all proved |
-| `Erdos90/NumberFieldDeep_GSTower.lean` | §2: GS tower (`GSBaseData`, `gs_base_construction` proved, `gs_tower_levels_proved` with 2 sorried `CMTowerData` fields, `GSTowerData`, `golod_shafarevich_tower_with_lattice`) |
+| `Erdos90/NumberFieldDeep_GSTower.lean` | §2: GS tower — `GSBaseData`, `gs_base_construction` proved, `brd_cm_tower_postulate` (the single labeled sorry), `gs_tower_levels` and `golod_shafarevich_tower_with_lattice` forward to it; `_unused_gs_tower_levels_cyclo` (legacy ℚ(ζ_p) construction, kept as reference, no sorry) |
 | `Erdos90/NumberFieldDeep_ANT.lean` | ANT infrastructure: product formula separation, integer separation, Minkowski lattice lemmas, CM separation (`cmSeparation_exists`), tower postulate placeholder — all proved (no sorries) |
-| `Erdos90/NumberFieldDeep_CM.lean` | §3–§5: Pigeonhole lemma (`exists_fiber_ge_div`, proved), CM lemmas (4 fully proved), `CMClassGroupData` structure + `exists_cm_class_group_data` (fully proved, including `hmk_unit_inj`; no sorries) |
-| `Erdos90/NumberFieldDeep_Assembly.lean` | §6–§8: `cm_norm_one_elements` (proved), `prop_3_2_to_3_6_via_deep` (proved, modulo the 2 GSTower sorries), `ERDOS_ANT_Postulates` + `ant_postulates` |
+| `Erdos90/NumberFieldDeep_CM.lean` | §3–§5: Pigeonhole lemma (`exists_fiber_ge_div`, proved), CM lemmas (4 fully proved), `CMTowerData` with fixed `t'_param`/`spData`/`h_div_conj_mem_Λ`, `CMClassGroupData` structure + `exists_cm_class_group_data` (fully proved; takes `ht'_ge_t_plus_one` and `classNumBound_le_log_H` as explicit hypotheses) |
+| `Erdos90/NumberFieldDeep_Assembly.lean` | §6–§8: `cm_norm_one_elements` (proved; takes `ht'_ge_t_plus_one` + `classNumBound_le_log_H` hypotheses), `prop_3_2_to_3_6_via_deep` (proved, modulo `brd_cm_tower_postulate`), `ERDOS_ANT_Postulates` + `ant_postulates` |
 | `Erdos90/CosetAveraging.lean` | `lemma_2_4` — coset averaging (fully proved) |
 | `Erdos90/Geometric.lean` | `GoodCoset`, `exists_good_coset` (def), lemmas, Theorems 2.3a/b |
 | `Erdos90/DiscGeometry.lean` | Discrete geometry lemmas |
@@ -44,40 +44,42 @@ lake build
 
 Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 1 `sorry` warning.
 
-## Proof state — zero axioms, 2 `sorry` gaps in 1 declaration
+## Proof state — zero axioms, 1 labeled TRUE postulate (`brd_cm_tower_postulate`)
 
-All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `sorryAx` + foundational Lean axioms (no custom axioms).
+All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords). The build succeeds; `erdos_unit_distance_false` depends only on `[propext, sorryAx, Classical.choice, Quot.sound]` (foundational Lean axioms + `sorryAx`).
 
-The 2 remaining sorries are both in `gs_tower_levels_proved` (`NumberFieldDeep_GSTower.lean`):
+### The single remaining sorry
 
-### Sorries (block `erdos_unit_distance_false`)
+**`brd_cm_tower_postulate`** (`Erdos90/NumberFieldDeep_GSTower.lean:86`). For each `(ℓ, base, M, t, log_H)`, asserts the existence of a CM tower level with degree `f ≥ M`, Minkowski lattice `Λ ⊂ ℂ^f`, and `CMTowerData` satisfying both `t + 1 ≤ cmData.t'_param` and `cmData.classNumBound ≤ log_H` (and the Q²-scaling `h_div_conj_mem_Λ`).
 
-**1. `h_div_conj_mem_Λ`** (GSTower, inside `CMTowerData` construction). Requires: for any α such that (α)·J(ε₁) = J(ε₂) as fractional ideals, the Minkowski image Φ(α/c(α)) belongs to Λ. The current tower uses D₀ = 1 (placeholder), so Λ = Φ(𝓞_K) does not generally contain Φ(α/c(α)). Needs D₀ = Q² scaling from split primes: v_{𝔓_s}(α/c(α)) ∈ {-2,0,2}, so Q²·(α/c(α)) ∈ 𝓞_K when Q = ∏_j q_j.
+Mathematically TRUE per Hajir–Maire–Ramakrishna 2021 (tamely-ramified BRD towers with rd < 83.9, asymptotic; rd ≈ 50.097 for the best explicit example) combined with Brauer–Siegel and the Q²-scaling valuation argument:
+- HMR 2021 (`assets/hajir_maire_ramakrishna_2021.pdf` and `assets/tamely-ramified-towers-and-discriminant-bounds-for-number-fields.pdf`) gives an infinite CM tower with bounded root discriminant.
+- Brauer–Siegel (Louboutin 2000, `assets/louboutin_2000_class_number.pdf`) gives `log(h_K)/f` bounded, hence `≤ log_H` for the choice `log_H = 2·C_class·log(2·rd_F)` used by `exists_admissible_family`.
+- Q²-scaling: with `Λ = Φ(Q⁻²·𝒪_K)` for `Q = spData.Q`, the valuation `v_{𝔓_j}(α/c(α)) ∈ {-2,0,2}` together with `v_{𝔓_j}(Q) = 1` gives `Q²·(α/c(α)) ∈ 𝒪_K`, hence `Φ(α/c(α)) ∈ Λ`.
 
-**2. `classNumBound_le_log_H`** (Assembly, `prop_3_2_to_3_6_via_deep`). Requires `log(h_K)/f ≤ log_H`, i.e., `h_K ≤ exp(log_H · f)`. This is the Minkowski class-number bound — mathematically TRUE for appropriate log_H, but not available in Mathlib v4.30. Previously this was the FALSE statement `classNumBound_nonpos : log(h_K)/f ≤ 0` (equivalent to h_K = 1) in `CMTowerData`; restructured out in the 2026-05-25 refactor.
+None of these are in Mathlib v4.30; would require substantial number-theory development (BRD tower construction, quantitative Brauer–Siegel, split-prime valuation API).
 
-Both sorries flow through: `gs_tower_levels_proved` → `gs_tower_levels` → `golod_shafarevich_tower_with_lattice` → `prop_3_2_to_3_6_via_deep` → `exists_admissible_family` → `erdos_unit_distance_false`.
+Flow: `brd_cm_tower_postulate` → `gs_tower_levels` → `GSTowerData.getTowerLevel` → `prop_3_2_to_3_6_via_deep` → `exists_admissible_family` → `erdos_unit_distance_false`.
 
 ### `exists_cm_class_group_data` is fully proved (no sorries)
 
-All fields of `CMClassGroupData` are now proved, including:
-- `hmk_unit_inj` (lines 693–902): injectivity of `mk_unit` on fibers, proved via `FractionalIdeal.count` API + `dec_trivial` for final Bool case analysis. Uses `count_eq_count_conj_of_fixed` for the split-prime valuation parity argument.
+All fields of `CMClassGroupData` are proved, including:
+- `hmk_unit_inj`: injectivity of `mk_unit` on fibers, proved via `FractionalIdeal.count` API + `dec_trivial` for final Bool case analysis. Uses `count_eq_count_conj_of_fixed` for the split-prime valuation parity argument.
 - `hmk_unit_norm`: proved via `cmData.h_φ_norm_div_conj`
-- `hmk_unit_mem_Λ`: proved via `cmData.h_div_conj_mem_Λ` (so it depends on the GSTower sorries, but the proof itself is complete)
-- `h_card_ratio`: proved conditional on `classNumBound_nonpos` (so depends on GSTower sorries, but proof is complete)
+- `hmk_unit_mem_Λ`: proved via `cmData.h_div_conj_mem_Λ` (so it depends on the BRD postulate, but the proof itself is complete)
+- `h_card_ratio`: proved conditional on `classNumBound_le_log_H` (passed as explicit hypothesis; supplied by `brd_cm_tower_postulate` at the call site)
 
 ### Proved (no sorry)
 
 - `gs_base_construction` — GS base data with D₀ = 1, rd_F = 2ℓ, log bound via `log_two_mul_le`
-- `gs_tower_levels_proved` — tower levels via cyclotomic CM field ℚ(ζ_p), product-formula lattice; all fields proved EXCEPT `h_div_conj_mem_Λ` in the returned `CMTowerData` (`classNumBound_nonpos` was removed in the 2026-05-25 refactor)
-- `gs_tower_levels` / `gs_tower_levels_v2` — delegate to `gs_tower_levels_proved`
-- `golod_shafarevich_tower_with_lattice` — assembly of `gs_base_construction` + `gs_tower_levels`
+- `gs_tower_levels` / `gs_tower_levels_v2` — take `(t, log_H)`, delegate to `brd_cm_tower_postulate`
+- `golod_shafarevich_tower_with_lattice` — assembly of `gs_base_construction` + `gs_tower_levels`; `getTowerLevel` takes `(M, t, log_H)`
+- `_unused_gs_tower_levels_cyclo` (private) — legacy ℚ(ζ_p) construction kept for reference; no `CMTowerData` field, no sorry, off the proof path
 - `exists_fiber_ge_div` — pigeonhole lemma (§3)
 - 4 CM lemmas in §4 (`norm_div_star_eq_one`, `cm_norm_div_conj_eq_one`, etc.)
-- `mk_unit_from_cm_quotient` — for α/c(α) ∈ 𝓞_K, Minkowski image is in Λ with norm 1 (infrastructure for real mk_unit)
-- `exists_cm_class_group_data` — all `CMClassGroupData` fields proved (including `hmk_unit_inj`, `hmk_unit_norm`, `hmk_unit_mem_Λ`, `h_card_ratio`); the proof is complete — takes `classNumBound_le_log_H` as an explicit hypothesis
-- `cm_norm_one_elements` — class-group pigeonhole → norm-one set U, proved; takes `classNumBound_le_log_H` as an explicit hypothesis
-- `prop_3_2_to_3_6_via_deep` — assembly, proved (modulo the 2 sorries: `h_div_conj_mem_Λ` in GSTower and `classNumBound_le_log_H` at the call site)
+- `exists_cm_class_group_data` — all `CMClassGroupData` fields proved (including `hmk_unit_inj`, `hmk_unit_norm`, `hmk_unit_mem_Λ`, `h_card_ratio`); takes `ht'_ge_t_plus_one` and `classNumBound_le_log_H` as explicit hypotheses
+- `cm_norm_one_elements` — class-group pigeonhole → norm-one set U, proved; takes `ht'_ge_t_plus_one` and `classNumBound_le_log_H` as explicit hypotheses
+- `prop_3_2_to_3_6_via_deep` — assembly, proved (modulo `brd_cm_tower_postulate`); signature pulls `(t, log_H)` to before the inner `∃ Λ`
 - `product_formula_sep` — product formula separation (ANT, proved via `NumberField.prod_abs_eq_one`)
 - `integer_separation` — integer separation (ANT, proved via `Finset.prod_erase_mul`)
 - `cmTransportedBasis`, `cmMinkowskiLattice`, `cmFundamentalDomain`, `cmIsAddFundamentalDomain`, `cmFundamentalDomain_finite_volume`, `cmMinkowskiLattice_countable` — all ANT lattice lemmas proved
@@ -119,10 +121,9 @@ Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMFiel
 - `normAtPlace_mixedEmbedding_cm_div_conj_eq_one` — normAtPlace = 1 under mixedEmbedding (NumberFieldDeep.lean §4, fully proved)
 - `mixedEmbedding_cm_div_conj_complex_norm_one` — concrete ‖.2 w‖ = 1 per complex place (NumberFieldDeep.lean §4, fully proved)
 - `cm_norm_one_elements` — class-group pigeonhole → norm-one set U (NumberFieldDeep.lean §6, proved)
-- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §7, proved modulo 2 GSTower sorries)
+- `prop_3_2_to_3_6_via_deep` — assembly theorem (NumberFieldDeep.lean §7, proved modulo `brd_cm_tower_postulate`)
 - `hmk_unit_inj` — mk_unit injectivity on fibers (§5, fully proved via `FractionalIdeal.count` + `dec_trivial`)
 - `exists_cm_class_group_data` — full `CMClassGroupData` construction (§5, fully proved, no sorries)
-- `mk_unit_from_cm_quotient` — for α/c(α) ∈ 𝓞_K, Minkowski image is in Λ with norm 1 (NumberFieldDeep_CM.lean, infrastructure lemma, fully proved)
 - `conjIdeal` — complex conjugation on ideals of 𝓞_K (CMField/Basic.lean, fully proved)
 - `conjIdeal_mul`, `conjIdeal_conjIdeal`, `conjIdeal_injective`, `conjIdeal_isPrime`, `conjIdeal_ne_bot` — basic conjIdeal lemmas (CMField/Basic.lean, all fully proved)
 - `SplitPrimeData` — structure for m split-prime ideal pairs (CMField/Basic.lean, fully defined)
@@ -132,8 +133,9 @@ Relevant Mathlib (available but incomplete): `IsCyclotomicExtension.Rat.isCMFiel
 ### Auxiliary defs
 - `C_class := 1` (concrete `def`)
 - `polydisc_measurable` — lemma (fully proved)
-- `GSTowerData ℓ` — structure abstracting the Golod–Shafarevich tower output (fields: `D₀`, `hD₀_pos`, `rd_F`, `hrd_F_ge1`, `hlog_rd`, `getTowerLevel`)
+- `GSTowerData ℓ` — structure abstracting the BRD tower output (fields: `D₀`, `hD₀_pos`, `rd_F`, `hrd_F_ge1`, `hlog_rd`, `getTowerLevel (M, t, log_H, ht, hlog_H_pos)`)
 - `GSBaseData ℓ` — structure for Props 3.2–3.5 base field data (fields: `D₀`, `hD₀_pos`, `rd_F`, `hrd_F_ge1`, `hlog_rd`)
+- `CMTowerData f hf1 Λ K` — fields: `φ`, `h_nrComplexPlaces`, `h_nrRealPlaces`, `mem_iff`, `h_φ1_norm`, `h_φ_norm_div_conj`, `t'_param : ℕ`, `spData : SplitPrimeData K (t'_param * f)`, `h_div_conj_mem_Λ` (non-universal: for the fixed `spData`), `classNumBound`, `hClassNum`
 - `CMClassGroupData f t log_H Λ` — structure abstracting the CM field / class-group input for Prop 2.2 (fields: `E`, `G`, `φ`, `cardE`, `cardG`, `hcardE`, `hcardG`, `h_card_ratio`, `mk_unit`, `mk_unit_mem_Λ`, `mk_unit_norm`, `mk_unit_inj`)
 
 ## Important types and notations
@@ -203,13 +205,28 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The two remaining sorries are: (1) `h_div_conj_mem_Λ` in GSTower's `CMTowerData` construction (D₀ = Q² valuation arithmetic, ~100 lines once Q is computed), and (2) `classNumBound_le_log_H` in Assembly's `prop_3_2_to_3_6_via_deep` (Minkowski class-number bound: h_K ≤ exp(log_H·f), not in Mathlib). The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, combinatorial counting — is fully proved.
+5. The single remaining sorry is `brd_cm_tower_postulate` in `Erdos90/NumberFieldDeep_GSTower.lean:86`. It bundles the BRD CM tower existence (HMR 2021), the quantitative class-number bound (Brauer–Siegel), and the Q²-scaled lattice membership into one labeled TRUE postulate. The entire rest of the formalization — geometry, coset averaging, CM field class-group construction (`exists_cm_class_group_data`), combinatorial counting — is fully proved.
 
 6. **∃ elimination into Type:** `Exists.casesOn` only eliminates into `Prop` in Lean 4.  When constructing a structure with `ℝ` or other non-`Prop` fields, use helper structures (like `GSBaseData`) instead of `∃` existential hypotheses — otherwise `obtain`/`cases` fails with "recursor can only eliminate into Prop".
 
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Lessons
+
+### 2026-05-26: Collapse multiple false sorries into one true labeled postulate
+
+Two sorried statements were both FALSE in the current Lean architecture:
+- `h_div_conj_mem_Λ` (with unscaled Λ = `Φ(𝒪_K)`): false because `α/c(α) ∉ 𝒪_K` whenever `v_𝔓(α/c(α)) = -2`.
+- `classNumBound_le_log_H` (for `K = ℚ(ζ_p)`): false because `log(h_K)/f → ∞` as `p → ∞` (Brauer–Siegel), while `log_H` is fixed.
+
+**Refactor:** Replaced both with a single TRUE postulate `brd_cm_tower_postulate (ℓ, base, M, t, log_H, ...) := sorry` that asserts the existence of a CM tower level with `cmData.t'_param ≥ ⌈t⌉ + 1` and `cmData.classNumBound ≤ log_H` and the Q²-scaled lattice. Mathematically TRUE per Hajir–Maire–Ramakrishna 2021 + Brauer–Siegel + Q²-scaling valuation argument; none in Mathlib v4.30.
+
+Architectural ripple to make this possible:
+- `CMTowerData` now carries fixed `t'_param`/`spData` (was: `splitPrimesFor : ∀ t' → SplitPrimeData K (t' * f)` with `h_div_conj_mem_Λ : ∀ t' → ...`). A fixed Λ can't simultaneously contain Q⁻²·𝒪_K for every Q indexed by `t'`, so `t'_param` had to be a structure field.
+- `prop_3_2_to_3_6_via_deep`, `gs_tower_levels`, `GSTowerData.getTowerLevel` all pull `(t, log_H)` to before the inner `∃ Λ` so that Λ can depend on `t`.
+- `exists_cm_class_group_data` and `cm_norm_one_elements` take `ht'_ge_t_plus_one : t + 1 ≤ cmData.t'_param` as an explicit hypothesis (was: derived internally from the universal `splitPrimesFor` callback).
+
+**Lesson:** When multiple sorries each encode FALSE intermediate statements that combine into one TRUE statement at a higher level, refactor to expose the TRUE statement as a single postulate at the boundary. A `∀` quantifier inside a structure field is a red flag if any single instance would need to be tied to a Λ choice that depends on the quantified value — convert to a fixed field with the binder lifted to the structure's parameters.
 
 ### 2026-05-25: Never pack false statements as structure fields
 
