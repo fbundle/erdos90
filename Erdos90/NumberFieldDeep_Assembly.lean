@@ -132,8 +132,9 @@ def cm_norm_one_elements
 /-- **Structured proof of `prop_3_2_to_3_6`** (assembly only; no new sorry).
 
     Chains `golod_shafarevich_tower_with_lattice` (§2, returns `GSTowerData`,
-    fully proved) and `cm_norm_one_elements` (§6, one sorry) together.  The log bound
-    (log rd_F ≤ C_rd·ℓ·log ℓ for C_rd = 1) is fully proved via `log_two_mul_le`.
+    proved modulo two HMR sorries in GSTower) and `cm_norm_one_elements`
+    (§6, fully proved) together.  The log bound (log rd_F ≤ C_rd·ℓ·log ℓ
+    for C_rd = 1) is fully proved via `log_two_mul_le`.
 
     The caller (`exists_admissible_family` in NumberField.lean) computes
     t and log_H from the tower's ℓ and rd_F, uses `prop_p6` to prove γ > 0,

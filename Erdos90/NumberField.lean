@@ -84,12 +84,13 @@ We state the output in terms of the concrete types used in `AdmissibleFamily`.
     `γ := t·log 2 − log_H > 0`, the callback returns the norm-one set `U`
     from the class-group pigeonhole on K_j.
 
-    **Lean gaps** (two sorries in NumberFieldDeep.lean):
-    (a) `golod_shafarevich_tower_with_lattice`: Golod–Shafarevich pro-3 tower +
-        Chebotarev split primes + type bridge `mixedSpace K_j ≃ Fin f_j → ℂ`
-        (not in Mathlib v4.29.1)
-    (b) `cm_norm_one_elements`: CM split-prime ideal pairs + class-group
-        pigeonhole for U (not in Mathlib v4.29.1) -/
+    **Lean gaps** (current 4 sorries, see REPORT.md and proof_outline.md):
+    Proof path (2): `gs_cm_tower` + `chebotarev_fixed_Q` in
+    `NumberFieldDeep_GSTower.lean` — HMR 2021 literature gaps requiring
+    Mathlib class field theory + Chebotarev density.
+    Off path (2): `regulator_lower_bound_cm` + `dedekind_residue_upper_bound_cm`
+    in `Mathlib4_Extra/ClassNumberBound.lean` — Friedman + Louboutin bounds,
+    both blocked on Mathlib's `dedekindZeta` functional equation. -/
 def prop_3_2_to_3_6 :
     ∃ (C_rd : ℝ), C_rd > 0 ∧
     ∀ (ℓ : ℕ), ℓ ≥ 2 →
