@@ -879,6 +879,24 @@ theorem IsHilbertClassField.finrank_eq_classNumber
     Module.finrank K H = NumberField.classNumber K :=
   IsHilbertClassField.finrank_eq
 
+/-- If `IsHilbertClassField K H`, then H/K is finite-dimensional. -/
+instance IsHilbertClassField.finiteDimensional
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    FiniteDimensional K H :=
+  .of_finrank_pos (by
+    rw [IsHilbertClassField.finrank_eq (H := H)]
+    exact NumberField.classNumber_pos K)
+
+/-- If `IsHilbertClassField K H` and K is totally complex, so is H. -/
+theorem IsHilbertClassField.isTotallyComplex
+    (K : Type u) [Field K] [NumberField K] [IsTotallyComplex K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    IsTotallyComplex H :=
+  isTotallyComplex_of_algebra (F := K) (K := H)
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
