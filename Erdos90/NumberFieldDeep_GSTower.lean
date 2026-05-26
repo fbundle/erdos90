@@ -151,6 +151,36 @@ Cite:
   pro-`ℓ` extension.  Pick `t'` of them, form `Q = ∏ qᵢ`.
 - Phase D2's `splitPrimeData_from_prime_list` packages these into `SplitPrimeData`.
 
+## Mathlib gap analysis (toward future closure)
+
+Closure of `chebotarev_fixed_Q` decomposes into three independent Mathlib gaps:
+
+- **D3.1.cheb.density** — Chebotarev density theorem.  For a Galois extension `L/ℚ`,
+  the set of primes with Frobenius in any conjugacy class `C ⊆ Gal(L/ℚ)` has Dirichlet
+  density `|C| / |Gal(L/ℚ)|`.  In particular, the set of split-completely primes has
+  density `1/[L:ℚ]` > 0, hence is infinite.
+
+  Mathlib status: NOT IN.  Requires L-function analytic continuation past `s = 1`
+  (Mathlib has `dirichletLSeries` for rank-1 case; general Hecke L-functions absent).
+  Estimated effort: 6–12 months.  See `assets/search_results/D31_class_field_theory_mathlib_gap.md`.
+
+- **D3.1.cheb.persist** — Going-up: a prime that splits completely in `F` also splits
+  completely in any algebraic extension `K/F` unramified at that prime.  Required to
+  conclude that the *same* finite set of split primes works for every tower level.
+
+  Mathlib status: PARTIAL.  `Mathlib/NumberTheory/RamificationInertia/` has
+  `ramificationIdx`, `inertiaDeg`, and the tower behavior of these in finite
+  extensions; the going-up theorem for "splits completely" follows but is not
+  packaged directly.  Estimated effort: ~weeks (after density theorem in place).
+
+- **D3.1.cheb.carrier** — `SplitPrimeData K m` carrier construction from a list of
+  splitting primes.  Mathlib status: PROVED in this project as
+  `splitPrimeData_from_prime_list` (Phase D2).  No gap.
+
+The first piece (Chebotarev density) is the genuine multi-month L-function gap that
+also affects `class_num_bound_of_brd`'s sub-pieces.  Closing it would simultaneously
+enable progress on both proof-path sorries' off-path infrastructure.
+
 Not in Mathlib v4.30; requires Chebotarev density theorem + L-function machinery. -/
 def chebotarev_fixed_Q (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 ≤ rd_F) :
     ∃ (Q : ℕ) (_ : 0 < Q),
