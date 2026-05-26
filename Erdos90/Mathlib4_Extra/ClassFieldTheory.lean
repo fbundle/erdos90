@@ -706,6 +706,29 @@ instance IsHilbertClassField.self_of_classNumber_one
   is_abelian_galois := inferInstance
   unramified := by intro P _ _; exact algebra_self_isUnramifiedAt K P
 
+/-! ## Artin symbol for HCF
+
+For an unramified prime `P` of `𝓞_K` in an abelian Galois extension `L/K`,
+the **Artin symbol** `σ_P ∈ Gal(L/K)` is the unique Frobenius element at
+any prime over `P` (well-defined for abelian L/K).
+
+For HCF specifically, every prime is unramified, so the Artin symbol is
+defined for every nonzero prime.  The map `P ↦ σ_P` induces the Artin
+reciprocity isomorphism `ClassGroup (𝓞 K) ≃* Gal(H/K)`.
+-/
+
+/-- **Artin symbol** for HCF: the image of an ideal class under the Artin
+reciprocity isomorphism.
+
+For an integral ideal `I` of `𝓞_K` (as an element of `nonZeroDivisors`),
+the Artin symbol is the corresponding Galois group element. -/
+noncomputable def HilbertClassFieldExt.artinSymbol
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K)
+    (I : nonZeroDivisors (Ideal (𝓞 K))) :
+    E.H ≃ₐ[K] E.H :=
+  E.artinReciprocity (ClassGroup.mk0 I)
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
