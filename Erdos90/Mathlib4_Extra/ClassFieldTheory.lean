@@ -963,6 +963,15 @@ theorem IsHilbertClassField.card_gal_eq_classNumber
     Nat.card (H ≃ₐ[K] H) = NumberField.classNumber K := by
   rw [IsGalois.card_aut_eq_finrank, IsHilbertClassField.finrank_eq (H := H)]
 
+/-- For `IsHilbertClassField K H` with classNumber K = 1, |Gal(H/K)| = 1. -/
+theorem IsHilbertClassField.card_gal_eq_one_of_classNumber_one
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H]
+    (h : NumberField.classNumber K = 1) :
+    Nat.card (H ≃ₐ[K] H) = 1 := by
+  rw [IsHilbertClassField.card_gal_eq_classNumber (K := K)]; exact h
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
