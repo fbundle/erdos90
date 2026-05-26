@@ -1,7 +1,7 @@
 import Mathlib
 import Erdos90.CMField.Basic
 import Erdos90.CMField.QScaling
-import Erdos90.NumberFieldDeep_ANT
+import Erdos90.CMField.MinkowskiLattice
 import Erdos90.NumberFieldDeep_CM
 
 open Real Filter NumberField InfinitePlace Set MeasureTheory MeasureTheory.Measure

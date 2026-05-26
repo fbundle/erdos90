@@ -3,6 +3,8 @@ import Erdos90.Arithmetic
 import Erdos90.NumberFieldDeep_Analytic
 import Erdos90.NumberFieldDeep_CM
 import Erdos90.CMField.CyclotomicSplitPrimes
+import Erdos90.CMField.QScaling
+import Erdos90.CMField.QScalingLattice
 
 open Real Filter NumberField InfinitePlace Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex Pointwise BigOperators
@@ -59,6 +61,48 @@ def gs_base_construction (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSBaseData ℓ := {
   hlog_rd := by
     simpa using log_two_mul_le ℓ hℓ
 }
+
+/-- **BRD CM tower data** (Phase C structure replacing `GSBaseData`).
+
+Bundles the ℓ-level constants (Q, D₀ = Q², rd_F, log_rd bound) with a
+per-(M, t, log_H) callable producing a BRD tower level: a CM number field
+`K` of complex degree `f ≥ M`, a `SplitPrimeData K (t' * f)` with `sp.Q = Q`
+fixed across the tower (per the paper's "Q is fixed" property — page 7 of
+`assets/unit-distance-proof.pdf`), and the class-number bound
+`log(h_K)/f ≤ log_H`.
+
+This structure is constructed by `brd_tower_data` (sorried), the single
+labeled HMR + Brauer–Siegel postulate of the formalization. -/
+structure BRDTowerData (ℓ : ℕ) where
+  Q : ℕ
+  hQ_pos : Q > 0
+  D₀ : ℝ
+  hD₀_pos : D₀ > 0
+  hD₀_eq : D₀ = ((Q : ℝ))^2
+  rd_F : ℝ
+  hrd_F_ge1 : rd_F ≥ 1
+  hlog_rd : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)
+  getTowerLevel (M : ℕ) (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    ∃ (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
+      (_ : IsTotallyComplex K) (f : ℕ) (_ : f ≥ M) (_ : f ≥ 1)
+      (_ : InfinitePlace.nrComplexPlaces K = f)
+      (_ : InfinitePlace.nrRealPlaces K = 0)
+      (t' : ℕ) (_ : t + 1 ≤ (t' : ℝ))
+      (sp : SplitPrimeData K (t' * f)),
+      sp.Q = Q ∧
+      Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ) ≤ log_H
+
+/-- **BRD CM tower existence** (the Phase C single labeled sorry).
+
+Mathematically TRUE per:
+- Hajir–Maire–Ramakrishna 2021 (`assets/hajir_maire_ramakrishna_2021.pdf`):
+  infinite tamely-ramified pro-3 CM tower with rd < 84, Q fixed across the tower.
+- Brauer–Siegel (`assets/louboutin_2000_class_number.pdf`): bounded rd → log(h_K)/f
+  bounded by an explicit constant depending only on rd.
+- Phase A's `Q_sq_div_conj_mem_integers_of_spData`: pure valuation arithmetic.
+
+Not in Mathlib v4.30. -/
+def brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ := sorry
 
 /-- **BRD CM tower postulate** (single number-theoretic sorry).
 
