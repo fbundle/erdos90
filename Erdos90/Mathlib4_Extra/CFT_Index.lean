@@ -59,6 +59,9 @@ class-field-theory-adjacent infrastructure files in `Erdos90/Mathlib4_Extra/`.
 |---|---|
 | `Iwasawa.lean` | Cyclotomic `ℤ_p`-extension + Iwasawa invariants (μ, λ, ν) + Ferrero–Washington μ=0 postulate.  The deeper framework around HMR-style towers. |
 | `ReciprocityLaws.lean` | Cubic + biquadratic reciprocity stubs.  Documents the CFT context for splitting-prime calculations. |
+| `ProPGalois.lean` | Pro-`p` Galois groups + GS inequality postulate + Tate's local formula `d - r = #S - r_1 - r_2 + δ`.  The group-theoretic side of HMR. |
+| `NormGroup.lean` | Norm group `N_{L/K}(L*)` + CFT index formula + Hasse norm theorem (stubs). |
+| `HilbertSymbol.lean` | Quadratic Hilbert symbol + product formula (stubs).  Connects to quadratic reciprocity. |
 
 ## Dependency graph
 
