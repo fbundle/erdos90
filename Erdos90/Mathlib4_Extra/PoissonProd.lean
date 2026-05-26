@@ -100,6 +100,40 @@ noncomputable def rightPartial (f : 𝓢(ℝ × ℝ, ℂ)) (x_0 : ℝ) : 𝓢(�
     f.rightPartial x_0 y = f (x_0, y) := by
   simp [rightPartial]
 
+/-- For a fixed `y_0 : ℝ`, the inclusion map `ι : ℝ → ℝ × ℝ, x ↦ (x, y_0)` is
+an affine map and has temperate growth. -/
+theorem _root_.Function.HasTemperateGrowth.inl_partial (y_0 : ℝ) :
+    Function.HasTemperateGrowth (fun x : ℝ => (x, y_0)) := by
+  have h_const : Function.HasTemperateGrowth (fun _ : ℝ => ((0 : ℝ), y_0)) :=
+    Function.HasTemperateGrowth.const _
+  have h_lin : Function.HasTemperateGrowth (ContinuousLinearMap.inl ℝ ℝ ℝ) :=
+    ContinuousLinearMap.hasTemperateGrowth _
+  have h_sum : Function.HasTemperateGrowth
+      (fun x : ℝ => ((0 : ℝ), y_0) + (ContinuousLinearMap.inl ℝ ℝ ℝ x)) :=
+    h_const.add h_lin
+  convert h_sum using 1
+  ext x
+  · simp [ContinuousLinearMap.inl]
+  · simp
+
+/-- The "left partial" of a 2-D Schwartz function: for fixed `y_0 : ℝ`,
+the function `x ↦ f(x, y_0)` is a Schwartz function on `ℝ`.
+
+PROVED via `SchwartzMap.compCLM`. -/
+noncomputable def leftPartial (f : 𝓢(ℝ × ℝ, ℂ)) (y_0 : ℝ) : 𝓢(ℝ, ℂ) :=
+  SchwartzMap.compCLM (𝕜 := ℝ)
+    (Function.HasTemperateGrowth.inl_partial y_0)
+    ⟨1, 1, fun x => by
+      have h : ‖x‖ ≤ ‖(x, y_0)‖ := by
+        simp [Prod.norm_def]
+      linarith⟩
+    f
+
+/-- Pointwise evaluation: `(f.leftPartial y_0) x = f (x, y_0)`. -/
+@[simp] theorem leftPartial_apply (f : 𝓢(ℝ × ℝ, ℂ)) (y_0 x : ℝ) :
+    f.leftPartial y_0 x = f (x, y_0) := by
+  simp [leftPartial]
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
