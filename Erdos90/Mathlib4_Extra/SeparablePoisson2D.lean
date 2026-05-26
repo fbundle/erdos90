@@ -44,7 +44,7 @@ lemma tsum_eq_tsum_fourier_zero (f : 𝓢(ℝ, ℂ)) :
   rw [fourier_eval_zero, mul_one]
   rfl
 
-/-- **Separable 2-D Poisson summation**: for Schwartz `g, h : 𝓢(ℝ, ℂ)`,
+/-- Product form: for Schwartz `g, h : 𝓢(ℝ, ℂ)`,
 
 `(∑' m : ℤ, g m) · (∑' n : ℤ, h n) = (∑' p : ℤ, 𝓕g p) · (∑' q : ℤ, 𝓕h q)`.
 
@@ -54,5 +54,41 @@ theorem tsum_product_eq_tsum_fourier_product (g h : 𝓢(ℝ, ℂ)) :
     ((∑' m : ℤ, (g : ℝ → ℂ) m) * (∑' n : ℤ, (h : ℝ → ℂ) n) : ℂ) =
       (∑' p : ℤ, 𝓕 (g : ℝ → ℂ) p) * (∑' q : ℤ, 𝓕 (h : ℝ → ℂ) q) := by
   rw [tsum_eq_tsum_fourier_zero g, tsum_eq_tsum_fourier_zero h]
+
+/-- Summability on ℤ for Schwartz functions, via `|x|^(-2)` decay. -/
+private lemma schwartz_summable_int (f : 𝓢(ℝ, ℂ)) :
+    Summable fun n : ℤ => (f : ℝ → ℂ) n :=
+  summable_of_isBigO (Real.summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2))
+    ((f.isBigO_cocompact_rpow (-2)).comp_tendsto Int.tendsto_coe_cofinite)
+
+/-- Norm-summability on ℤ for Schwartz functions. -/
+private lemma schwartz_summable_norm_int (f : 𝓢(ℝ, ℂ)) :
+    Summable fun n : ℤ => ‖(f : ℝ → ℂ) n‖ :=
+  summable_of_isBigO (Real.summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2))
+    (((f.isBigO_cocompact_rpow (-2)).comp_tendsto Int.tendsto_coe_cofinite).norm_left)
+
+/-- **Separable 2-D Poisson summation** (full form): for Schwartz `g, h : 𝓢(ℝ, ℂ)`,
+the sum over `ℤ × ℤ` of `g(m) · h(n)` equals the sum over `ℤ × ℤ` of
+`𝓕g(p) · 𝓕h(q)`.
+
+This is the 2-D Poisson summation formula in the separable case (i.e., for
+functions on `ℝ × ℝ` of the form `(x, y) ↦ g(x) · h(y)`).  The general
+non-separable case requires the multi-dimensional Fourier transform on
+`ℝ × ℝ` and corresponding multi-D Poisson summation. -/
+theorem tsum_prod_eq_tsum_fourier_prod (g h : 𝓢(ℝ, ℂ)) :
+    (∑' z : ℤ × ℤ, (g : ℝ → ℂ) z.1 * (h : ℝ → ℂ) z.2 : ℂ) =
+      ∑' z : ℤ × ℤ, 𝓕 (g : ℝ → ℂ) z.1 * 𝓕 (h : ℝ → ℂ) z.2 := by
+  -- Norm-summability on ℤ for g, h, 𝓕g, 𝓕h
+  have hg_norm := schwartz_summable_norm_int g
+  have hh_norm := schwartz_summable_norm_int h
+  have hFg_norm : Summable fun n : ℤ => ‖𝓕 (g : ℝ → ℂ) n‖ := by
+    have := schwartz_summable_norm_int (fourierTransformCLM ℝ g)
+    convert this using 1
+  have hFh_norm : Summable fun n : ℤ => ‖𝓕 (h : ℝ → ℂ) n‖ := by
+    have := schwartz_summable_norm_int (fourierTransformCLM ℝ h)
+    convert this using 1
+  rw [← tsum_mul_tsum_of_summable_norm hg_norm hh_norm,
+    ← tsum_mul_tsum_of_summable_norm hFg_norm hFh_norm]
+  exact tsum_product_eq_tsum_fourier_product g h
 
 end SchwartzMap
