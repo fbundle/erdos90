@@ -159,15 +159,98 @@ lemma count_spanSingleton_natCast_of_liesOver
     (_hP_lies : P.asIdeal.LiesOver (Ideal.span {(q : ℤ)})) :
     FractionalIdeal.count L P (FractionalIdeal.spanSingleton (𝓞 L)⁰ ((q : ℕ) : L)) =
       ((Ideal.span {(q : ℤ)}).ramificationIdx P.asIdeal : ℤ) := by
-  sorry
+  -- Step 1: spanSingleton ((q:ℕ):L) = ↑(Ideal.span {((q:ℕ):𝓞 L)})
+  have h_q_in_OL : ((q : ℕ) : L) = algebraMap (𝓞 L) L (((q : ℕ) : 𝓞 L)) := by
+    push_cast; rfl
+  rw [h_q_in_OL, ← FractionalIdeal.coeIdeal_span_singleton]
+  -- Step 2: count_coe
+  have hJ_ne : (Ideal.span {(((q : ℕ) : 𝓞 L))} : Ideal (𝓞 L)) ≠ 0 := by
+    rw [show (0 : Ideal (𝓞 L)) = ⊥ from rfl]
+    rw [Ne, Ideal.span_singleton_eq_bot]
+    exact_mod_cast Nat.pos_iff_ne_zero.mp hq_pos
+  classical
+  rw [FractionalIdeal.count_coe L P hJ_ne]
+  -- Step 3: convert Associates count to normalizedFactors count via count_associates_factors_eq
+  have hP_prime : P.asIdeal.IsPrime := P.isPrime
+  have hP_ne_bot : P.asIdeal ≠ ⊥ := P.ne_bot
+  rw [Ideal.count_associates_factors_eq hJ_ne hP_prime hP_ne_bot]
+  -- Step 4: relate `Ideal.span {((q:ℕ):𝓞 L)}` to `(Ideal.span {(q:ℤ)}).map (algebraMap ℤ (𝓞 L))`
+  have h_map_span : (Ideal.span {((q : ℕ) : 𝓞 L)} : Ideal (𝓞 L)) =
+      (Ideal.span {(q : ℤ)}).map (algebraMap ℤ (𝓞 L)) := by
+    rw [Ideal.map_span, Set.image_singleton]
+    congr 1; ext
+    push_cast
+    rfl
+  rw [h_map_span]
+  -- Step 5: ramificationIdx = (normalizedFactors (map f p)).count P
+  have h_map_ne : (Ideal.span {(q : ℤ)}).map (algebraMap ℤ (𝓞 L)) ≠ ⊥ := by
+    rw [← h_map_span]
+    exact hJ_ne
+  rw [(Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count h_map_ne
+    hP_prime hP_ne_bot).symm]
 
-/-- Count of a rational integer's span at a prime that doesn't lie over it is zero. -/
+/-- Count of a rational integer's span at a prime that doesn't lie over it is zero.
+Requires `Fact (Nat.Prime q)` so that `Ideal.span {(q : ℤ)}` is maximal. -/
 lemma count_spanSingleton_natCast_of_not_liesOver
-    {L : Type*} [Field L] [NumberField L] {q : ℕ} (hq_pos : 0 < q)
+    {L : Type*} [Field L] [NumberField L] {q : ℕ} [hq_prime : Fact (Nat.Prime q)]
     (P : IsDedekindDomain.HeightOneSpectrum (𝓞 L))
     (_h_not_lies : ¬ P.asIdeal.LiesOver (Ideal.span {(q : ℤ)})) :
     FractionalIdeal.count L P (FractionalIdeal.spanSingleton (𝓞 L)⁰ ((q : ℕ) : L)) = 0 := by
-  sorry
+  have hq_pos : 0 < q := Nat.Prime.pos hq_prime.1
+  -- Step 1: spanSingleton ((q:ℕ):L) = ↑(Ideal.span {((q:ℕ):𝓞 L)})
+  have h_q_in_OL : ((q : ℕ) : L) = algebraMap (𝓞 L) L (((q : ℕ) : 𝓞 L)) := by
+    push_cast; rfl
+  rw [h_q_in_OL, ← FractionalIdeal.coeIdeal_span_singleton]
+  -- Step 2: count_coe + count_associates_factors_eq
+  have hJ_ne : (Ideal.span {(((q : ℕ) : 𝓞 L))} : Ideal (𝓞 L)) ≠ 0 := by
+    rw [show (0 : Ideal (𝓞 L)) = ⊥ from rfl]
+    rw [Ne, Ideal.span_singleton_eq_bot]
+    exact_mod_cast Nat.pos_iff_ne_zero.mp hq_pos
+  classical
+  rw [FractionalIdeal.count_coe L P hJ_ne]
+  rw [Ideal.count_associates_factors_eq hJ_ne P.isPrime P.ne_bot]
+  -- Step 3: show Multiset.count P (normalizedFactors (span {q : 𝓞 L})) = 0
+  suffices h : Multiset.count P.asIdeal (UniqueFactorizationMonoid.normalizedFactors
+      (Ideal.span {((q : ℕ) : 𝓞 L)})) = 0 by
+    rw [h]; rfl
+  rw [Multiset.count_eq_zero]
+  intro hP_mem_factors
+  apply _h_not_lies
+  -- P_normalizedFactor ⇒ P divides span {q : 𝓞 L}
+  have h_dvd : P.asIdeal ∣ Ideal.span {((q : ℕ) : 𝓞 L)} := by
+    have := UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hP_mem_factors
+    exact this
+  -- Convert dvd → LiesOver
+  have h_map_eq : (Ideal.span {((q : ℕ) : 𝓞 L)} : Ideal (𝓞 L)) =
+      (Ideal.span {(q : ℤ)}).map (algebraMap ℤ (𝓞 L)) := by
+    rw [Ideal.map_span, Set.image_singleton]
+    congr 1; ext
+    push_cast; rfl
+  rw [h_map_eq] at h_dvd
+  -- P ⊇ map (algebraMap ℤ (𝓞 L)) (span {q : ℤ})
+  have h_le : (Ideal.span {(q : ℤ)}).map (algebraMap ℤ (𝓞 L)) ≤ P.asIdeal :=
+    Ideal.le_of_dvd h_dvd
+  -- Hence Ideal.under ℤ P ⊇ Ideal.span {q : ℤ}
+  have h_under_le : Ideal.span {(q : ℤ)} ≤ Ideal.under ℤ P.asIdeal := by
+    rw [Ideal.under, ← Ideal.map_le_iff_le_comap]
+    exact h_le
+  -- Ideal.under ℤ P is a prime ideal of ℤ; span {q : ℤ} is maximal (q is prime).
+  -- A maximal ideal ⊆ a proper prime ideal ⇒ equal.
+  haveI : (Ideal.span {(q : ℤ)}).IsMaximal := inferInstance
+  haveI hP_prime : P.asIdeal.IsPrime := P.isPrime
+  haveI : (Ideal.under ℤ P.asIdeal).IsPrime := Ideal.IsPrime.under ℤ P.asIdeal
+  have h_under_ne_top : Ideal.under ℤ P.asIdeal ≠ ⊤ := by
+    intro h_top
+    have h1 : (1 : 𝓞 L) ∈ P.asIdeal := by
+      have h_one_in_under : (1 : ℤ) ∈ Ideal.under ℤ P.asIdeal := by
+        rw [h_top]; trivial
+      rw [Ideal.under, Ideal.mem_comap] at h_one_in_under
+      simpa using h_one_in_under
+    have := P.asIdeal.eq_top_iff_one.mpr h1
+    exact hP_prime.ne_top this
+  have h_eq : Ideal.span {(q : ℤ)} = Ideal.under ℤ P.asIdeal :=
+    (Ideal.IsMaximal.eq_of_le inferInstance h_under_ne_top h_under_le)
+  exact ⟨h_eq⟩
 
 section factorization_lemmas
 
@@ -841,7 +924,7 @@ def splitPrimeData_from_prime_list (t : ℕ) (qs : List ℕ)
             exact_mod_cast h
           rw [this]
         · rw [if_neg h_eq]
-          apply count_spanSingleton_natCast_of_not_liesOver hq_pos P_j_HOS
+          apply count_spanSingleton_natCast_of_not_liesOver P_j_HOS
           intro hP_j_lies_q
           -- LiesOver.over : p = Ideal.under R P; so both spans equal under, hence equal.
           have h_under_q : Ideal.span {(q : ℤ)} = Ideal.under ℤ P_j := hP_j_lies_q.over
@@ -941,7 +1024,7 @@ def splitPrimeData_from_prime_list (t : ℕ) (qs : List ℕ)
             exact_mod_cast h
           rw [this]
         · rw [if_neg h_eq]
-          apply count_spanSingleton_natCast_of_not_liesOver hq_pos cP_j_HOS
+          apply count_spanSingleton_natCast_of_not_liesOver cP_j_HOS
           intro h_cP_lies_q
           have h_under_q : Ideal.span {(q : ℤ)} = Ideal.under ℤ (conjIdeal K P_j) :=
             h_cP_lies_q.over
