@@ -88,14 +88,25 @@ structure HilbertClassFieldExt (K : Type u) [Field K] [NumberField K] where
   [numberFieldH : NumberField H]
   /-- `H` is an extension of `K`. -/
   [algebraKH : Algebra K H]
+  /-- `H/K` is Galois. -/
+  [isGaloisHK : IsGalois K H]
+  /-- `H/K` is abelian Galois (i.e., `Gal(H/K)` is commutative). -/
+  [isAbelianGaloisHK : IsAbelianGalois K H]
   /-- `[H:K] = classNumber K` (the relative degree equals the class number). -/
   finrank_eq : Module.finrank K H = NumberField.classNumber K
   /-- `H/K` is unramified at every nonzero prime of `𝓞 H`. -/
   unramified :
     ∀ (P : Ideal (𝓞 H)) [P.IsPrime], P ≠ ⊥ → Algebra.IsUnramifiedAt (𝓞 K) P
+  /-- **Artin reciprocity isomorphism**: `Gal(H/K) ≃* ClassGroup (𝓞 K)`.
+
+  This is the heart of class field theory.  Note: we state the isomorphism
+  as `ClassGroup (𝓞 K) ≃* (H ≃ₐ[K] H)` to match Mathlib's `Gal(H/K)` notation
+  unfolding to `H ≃ₐ[K] H`. -/
+  artinReciprocity : ClassGroup (𝓞 K) ≃* (H ≃ₐ[K] H)
 
 attribute [instance] HilbertClassFieldExt.fieldH HilbertClassFieldExt.numberFieldH
-  HilbertClassFieldExt.algebraKH
+  HilbertClassFieldExt.algebraKH HilbertClassFieldExt.isGaloisHK
+  HilbertClassFieldExt.isAbelianGaloisHK
 
 /-- **Postulate** (TRUE per class field theory): every number field has a
 Hilbert class field.
@@ -118,6 +129,30 @@ theorem rootDiscr_hcf_eq (K : Type*) [Field K] [NumberField K]
     (E : HilbertClassFieldExt K) :
     rootDiscr E.H = rootDiscr K :=
   rootDiscr_eq_of_unramifiedTower K E.H E.unramified
+
+/-! ## Proved corollaries of `HilbertClassFieldExt`
+
+These follow directly from the structure fields + Mathlib.
+-/
+
+/-- The Galois group of `H/K` has cardinality equal to the class number of `K`.
+
+This combines the Artin reciprocity isomorphism (a structure field) with
+the finiteness of `ClassGroup (𝓞 K)`.  PROVED Lean. -/
+theorem card_gal_hcf_eq_classNumber (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Nat.card (E.H ≃ₐ[K] E.H) = NumberField.classNumber K := by
+  rw [← Nat.card_congr E.artinReciprocity.toEquiv]
+  simp [NumberField.classNumber, Nat.card_eq_fintype_card]
+
+/-- `H/K` is finite-dimensional.  Follows from `finrank_eq` and `classNumber_pos`.
+
+PROVED Lean. -/
+instance HilbertClassFieldExt.finiteDimensional
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    FiniteDimensional K E.H :=
+  .of_finrank_pos (by rw [E.finrank_eq]; exact NumberField.classNumber_pos K)
 
 /-! ## The Hilbert class field tower (iterated HCF)
 
