@@ -103,17 +103,69 @@ The single `brd_tower_data` sorry bundled three pieces:
 Phase D3 splits these into three labelled sorries, each a one-line statement
 with a clean Mathlib-PR shape and an explicit literature citation. -/
 
-/-- **D3.1**: Hajir–Maire–Ramakrishna 2021 + Chebotarev.  For each `ℓ ≥ 2`,
-there exists a tower constant `Q` (the product of `t` rational primes splitting
-in every tower level) and a sequence of CM tower levels of bounded root
-discriminant `rd_F` and growing degree.  See:
-- `assets/hajir_maire_ramakrishna_2021.pdf` (infinite tame BRD pro-3 tower)
-- `assets/tamely-ramified-towers-and-discriminant-bounds-for-number-fields.pdf`
-- Section 3 of `assets/unit-distance-proof.pdf` (the construction).
+/-! ### D3.1 decomposition (2026-05-26)
 
-Not in Mathlib v4.30; requires class field theory + Golod–Shafarevich +
-quantitative Chebotarev. -/
-def hmr_brd_cm_tower (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
+The single `hmr_brd_cm_tower` sorry was further split into two named sub-postulates,
+following the research notes in
+`assets/search_results/D31_hmr_brd_what_we_need.md`:
+
+- **D3.1.gs** (`gs_cm_tower`): Golod–Shafarevich existence — a tower of CM totally
+  complex fields with bounded root discriminant.  No split-prime data.
+- **D3.1.cheb** (`chebotarev_fixed_Q`): Chebotarev / Ihara — for any CM field with
+  `rootDiscr ≤ rd_F`, `SplitPrimeData K (t' * f)` exists with `sp.Q` equal to a
+  *fixed* tower constant `Q` (independent of `K, t'`).  Combined with Phase D2's
+  `splitPrimeData_from_prime_list`.
+
+`hmr_brd_cm_tower` is now PROVED Lean code combining these two. -/
+
+/-- **D3.1.gs**: Golod–Shafarevich existence of an infinite CM tower with bounded
+root discriminant.  For each `ℓ ≥ 2`, exists a root-discriminant bound `rd_F` and
+for each `M`, a CM totally-complex number field `K` of complex degree `f ≥ M` with
+`rootDiscr K ≤ rd_F`.
+
+Cite:
+- `assets/hmr_2021_src/Cutting_towers_arxiv.tex` §2–4 (`prop:cutting`, `prop;exponent`) —
+  GS construction over a base CM field with bounded rd.
+- Standard CM lift (tensor with `ℚ(i)` over the totally real subfield).
+
+Not in Mathlib v4.30; requires class field theory + Golod–Shafarevich inequality. -/
+def gs_cm_tower (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
+    ∃ (rd_F : ℝ) (_ : 1 ≤ rd_F)
+      (_ : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)),
+      ∀ (M : ℕ),
+        ∃ (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
+          (_ : IsTotallyComplex K) (f : ℕ) (_ : f ≥ M) (_ : f ≥ 1)
+          (_ : InfinitePlace.nrComplexPlaces K = f)
+          (_ : InfinitePlace.nrRealPlaces K = 0),
+          NumberField.rootDiscr K ≤ rd_F := sorry
+
+/-- **D3.1.cheb**: Chebotarev / Ihara fixed split primes across the tower.  For each
+`ℓ ≥ 2` and root-discriminant bound `rd_F ≥ 1`, exists a tower constant `Q : ℕ` such
+that for every CM totally complex `K` with `rootDiscr K ≤ rd_F` and every `t'`, there
+is `SplitPrimeData K (t' * f)` with `sp.Q = Q` (Q is fixed independent of `K, t'`).
+
+Cite:
+- `assets/hmr_2021_src/Cutting_towers_arxiv.tex` §3 (`theo:ihara`, line 729):
+  infinitely many primes split completely in `K_S(F)/F` for an asymptotically-good
+  pro-`ℓ` extension.  Pick `t'` of them, form `Q = ∏ qᵢ`.
+- Phase D2's `splitPrimeData_from_prime_list` packages these into `SplitPrimeData`.
+
+Not in Mathlib v4.30; requires Chebotarev density theorem + L-function machinery. -/
+def chebotarev_fixed_Q (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 ≤ rd_F) :
+    ∃ (Q : ℕ) (_ : 0 < Q),
+      ∀ (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
+        (t' f : ℕ),
+        InfinitePlace.nrComplexPlaces K = f →
+        NumberField.rootDiscr K ≤ rd_F →
+        ∃ (sp : SplitPrimeData K (t' * f)), sp.Q = Q := sorry
+
+/-- **D3.1 (assembly)**: Hajir–Maire–Ramakrishna 2021 + Chebotarev, PROVED modulo
+`gs_cm_tower` + `chebotarev_fixed_Q`.
+
+For each `ℓ ≥ 2`, exists a tower constant `Q` (the product of `t'` rational primes
+splitting in every tower level) and a sequence of CM tower levels of bounded root
+discriminant `rd_F` and growing degree. -/
+def hmr_brd_cm_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
     ∃ (Q : ℕ) (_ : 0 < Q) (rd_F : ℝ) (_ : 1 ≤ rd_F)
       (_ : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)),
       ∀ (M t' : ℕ),
@@ -123,7 +175,18 @@ def hmr_brd_cm_tower (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
           (_ : InfinitePlace.nrRealPlaces K = 0)
           (sp : SplitPrimeData K (t' * f))
           (_ : NumberField.rootDiscr K ≤ rd_F),
-          sp.Q = Q := sorry
+          sp.Q = Q := by
+  obtain ⟨rd_F, h_rd, hlog_rd, tower⟩ := gs_cm_tower ℓ hℓ
+  obtain ⟨Q, hQ_pos, cheb⟩ := chebotarev_fixed_Q ℓ hℓ rd_F h_rd
+  refine ⟨Q, hQ_pos, rd_F, h_rd, hlog_rd, ?_⟩
+  intro M t'
+  obtain ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, hrd_K⟩ := tower M
+  letI : Field K := hField
+  letI : NumberField K := hNF
+  letI : IsCMField K := hCM
+  letI : IsTotallyComplex K := hTC
+  obtain ⟨sp, hsp_Q⟩ := cheb K t' f hcompl hrd_K
+  exact ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, sp, hrd_K, hsp_Q⟩
 
 /-- **D3.2**: Quantitative Brauer–Siegel bound for CM fields with bounded root
 discriminant.  For every CM field `K` arising in the BRD tower above, the class
