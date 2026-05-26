@@ -522,6 +522,20 @@ noncomputable def HilbertPClassFieldExt.rat (p : ℕ) :
     HilbertPClassFieldExt.{0, 0} ℚ p :=
   HilbertPClassFieldExt.identity ℚ p Rat.classNumber_eq
 
+/-- Concrete p-HCF for `ℚ(ζ_3)` (any prime p). -/
+noncomputable def HilbertPClassFieldExt.cyclotomic_three (p : ℕ)
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    HilbertPClassFieldExt.{0, 0} K p :=
+  HilbertPClassFieldExt.identity K p
+    (NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.three_pid (K := K)))
+
+/-- Concrete p-HCF for `ℚ(ζ_5)` (any prime p). -/
+noncomputable def HilbertPClassFieldExt.cyclotomic_five (p : ℕ)
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    HilbertPClassFieldExt.{0, 0} K p :=
+  HilbertPClassFieldExt.identity K p
+    (NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.five_pid (K := K)))
+
 /-- Concrete sanity check: for the identity HCF of `ℚ`, the Galois group
 has cardinality 1 (=`classNumber ℚ`).  PROVED Lean. -/
 theorem card_gal_hcf_rat_eq_one :
