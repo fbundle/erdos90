@@ -2,34 +2,45 @@ import Mathlib
 import Erdos90.NumberFieldDeep
 
 /-!
-# Counterexample: `classNumBound_nonpos` is false for the GS tower
+# Counterexample: `classNumBound_nonpos` is false for the GS tower (HISTORICAL)
 
-## The issue
+**Status**: HISTORICAL — the architectural issue this file documents has
+already been resolved by the 2026-05-25 refactor.  `CMTowerData` no longer
+has a `classNumBound_nonpos` field; instead `cm_norm_one_elements` takes
+`classNumBound_le_log_H : cmData.classNumBound ≤ log_H` as an explicit
+hypothesis, which is supplied by `brd_cm_tower_postulate` from `brd_tower_data`.
 
-In `CMTowerData` (NumberFieldDeep_CM.lean), the field `classNumBound_nonpos`
-asserts `classNumBound ≤ 0`.  In `gs_tower_levels_proved`, the tower sets
+This file remains as documentation of the past architectural decision and
+why the previous design was rejected.
+
+## The historical issue
+
+In an earlier version of `CMTowerData`, the field `classNumBound_nonpos`
+asserted `classNumBound ≤ 0`.  Given the tower's
 
     classNumBound := Real.log (h_K : ℝ) / (f : ℝ)
 
-so `classNumBound_nonpos` means `log(h_K)/f ≤ 0`, i.e. `h_K = 1`.
+`classNumBound_nonpos` would mean `log(h_K)/f ≤ 0`, i.e. `h_K = 1`.
 
-The GS tower picks K = ℚ(ζ_p) for a prime p ≥ 2M+1.  Since M (hence p)
-must be large for the Golod–Shafarevich argument, `h_K > 1` for all
-feasible p — the class number of ℚ(ζ_p) exceeds 1 for all p ≥ 23
-(Masley–Montgomery, 1976).
+The GS tower picks K = ℚ(ζ_p) for large primes p.  By Masley–Montgomery
+(1976), `h_K > 1` for all p ≥ 23.  So `classNumBound_nonpos` was
+mathematically FALSE.
 
-## What this file proves
+## Resolution applied (2026-05-25)
 
-1. **Equivalence**: `classNumBound_nonpos` (with the tautological definition)
+Replaced `classNumBound_nonpos : classNumBound ≤ 0` with
+`classNumBound_le_log_H : classNumBound ≤ log_H` — the Minkowski class-number
+bound, which is mathematically TRUE.  See Phase D5 in CLAUDE.md for the
+refactor history.
+
+## What this file still proves
+
+1. **Equivalence**: `classNumBound ≤ 0` (with the tautological definition)
    ↔ `classNumber K = 1`. (Fully proved, no sorries.)
 
-2. **Masley–Montgomery gap**: `∃ p prime, p > 5, classNumber(ℚ(ζ_p)) ≠ 1`.
-
-## Plan for resolution
-
-Replace `classNumBound_nonpos : classNumBound ≤ 0` in `CMTowerData` with
-a direct bound `classNumBound ≤ log_H` proved via the Minkowski class-number
-inequality.  This avoids needing h_K = 1 and uses the actual tower parameters.
+2. **Masley–Montgomery gap (sorried)**: `∃ p prime, p > 5, classNumber(ℚ(ζ_p)) ≠ 1`.
+   Documented as a counterexample but not closed (Masley–Montgomery is not
+   in Mathlib v4.30).  Off the proof path of `erdos_unit_distance_false`.
 -/
 
 open NumberField
