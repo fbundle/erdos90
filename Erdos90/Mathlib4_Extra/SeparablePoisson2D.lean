@@ -91,4 +91,8 @@ theorem tsum_prod_eq_tsum_fourier_prod (g h : 𝓢(ℝ, ℂ)) :
     ← tsum_mul_tsum_of_summable_norm hFg_norm hFh_norm]
   exact tsum_product_eq_tsum_fourier_product g h
 
+-- n-fold separable Poisson summation generalizing the 2-D case is left as
+-- future work (induction on n via the binary case + Fin n decomposition).
+-- See assets/search_results/closing_roadmap.md for the broader strategy.
+
 end SchwartzMap
