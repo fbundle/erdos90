@@ -37,7 +37,7 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - if you need any online resource, please let me know - only end your response by either fully proved theorem or help needed
 
-- I am actively updating `assets/`, make sure to check it every hour
+- if a statement is not optimal but sufficient to our final goal, leave comments rather than spending time on that
 
 - usually paste code in one shot won't work due to syntax error, it's better to write a skeleton with sorries based on the original paper, then fill in the smaller sorries one by one
 
