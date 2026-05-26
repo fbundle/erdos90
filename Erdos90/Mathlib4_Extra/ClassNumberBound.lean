@@ -319,15 +319,60 @@ packaged.  Closing this sorry needs `φ(n) ≥ √n / 2` or equivalent — a cle
 Mathlib PR target via `Nat.Totient` lemmas.
 -/
 
+/-- **D3.2.tors.a**: Bridge from torsionOrder to the field's degree, via the
+cyclotomic structure of the torsion subgroup.
+
+Since `(𝓞 K)ˣ` contains a primitive `torsionOrder K`-th root of unity (the
+generator of the cyclic torsion subgroup), and the cyclotomic polynomial
+`cyclotomic n ℚ` is irreducible (Mathlib: `cyclotomic.irreducible_rat`), the
+field `K` contains `ℚ(ζ_n)` with `[ℚ(ζ_n) : ℚ] = φ(n)`.  Hence `φ(n) ≤ [K:ℚ]`. -/
+lemma totient_torsionOrder_le_finrank :
+    (NumberField.Units.torsionOrder K).totient ≤ Module.finrank ℚ K := by
+  set n := NumberField.Units.torsionOrder K with hn_def
+  have hn_pos : 0 < n := NumberField.Units.torsionOrder_pos K
+  -- Get a primitive n-th root of unity in K (pattern from Mathlib's
+  -- IsCyclotomicExtension.Rat.torsionOrder_eq)
+  obtain ⟨μ, hμ⟩ : ∃ μ : NumberField.Units.torsion K, orderOf μ = n := by
+    rw [hn_def, NumberField.Units.torsionOrder, Fintype.card_eq_nat_card]
+    exact IsCyclic.exists_ofOrder_eq_natCard
+  rw [← IsPrimitiveRoot.iff_orderOf, ← IsPrimitiveRoot.coe_submonoidClass_iff,
+    ← IsPrimitiveRoot.coe_units_iff] at hμ
+  replace hμ := hμ.map_of_injective (FaithfulSMul.algebraMap_injective (𝓞 K) K)
+  -- Now hμ : IsPrimitiveRoot ((μ : (𝓞 K)ˣ) : K) n in K
+  -- Apply lcm_totient_le_finrank with p = q = n
+  have hirr : Irreducible (Polynomial.cyclotomic n ℚ) :=
+    Polynomial.cyclotomic.irreducible_rat hn_pos
+  have h := IsPrimitiveRoot.lcm_totient_le_finrank hμ hμ
+    (by rw [Nat.lcm_self]; exact hirr)
+  rwa [Nat.lcm_self] at h
+
+/-- **D3.2.tors.b**: Pure-Nat reverse totient inequality.  For all `n : ℕ`,
+`n ≤ 4 · φ(n)²`.
+
+This is a self-contained number-theory fact.  Proof outline: for n ≤ 6, check
+by cases (φ(n) ∈ {0, 1, 2}); for n ≥ 7, use `φ(n) ≥ √n / 2` which follows from
+multiplicative analysis (Euler product `φ(n)/n = ∏ (1 - 1/p)`).
+
+Clean Mathlib PR target — `Nat.le_four_mul_totient_sq` would fit alongside
+existing lemmas like `Nat.totient_le` in `Mathlib/Data/Nat/Totient.lean`. -/
+lemma nat_le_four_mul_totient_sq (n : ℕ) : n ≤ 4 * n.totient ^ 2 := sorry
+
 /-- **D3.2.tors**: Polynomial bound on the number of roots of unity in a number
 field.  For any number field K of degree n, `torsionOrder K ≤ 4 · n²`.
 
-Cite: Standard exercise from `K ⊇ ℚ(ζ_{w_K})` ⇒ `φ(w_K) ≤ [K:ℚ]` plus the
-`φ(n) ≥ √n / 2` totient inequality.  Not packaged in Mathlib v4.30.
-
-This is a CLEAN Mathlib PR target — purely a number-theory fact about `Nat.totient`. -/
+Proved Lean code combining `totient_torsionOrder_le_finrank` (D3.2.tors.a, the
+Mathlib bridge) and `nat_le_four_mul_totient_sq` (D3.2.tors.b, the pure-Nat
+inequality). -/
 lemma torsionOrder_bound :
-    NumberField.Units.torsionOrder K ≤ 4 * (Module.finrank ℚ K) ^ 2 := sorry
+    NumberField.Units.torsionOrder K ≤ 4 * (Module.finrank ℚ K) ^ 2 := by
+  have h_a := totient_torsionOrder_le_finrank K
+  have h_b := nat_le_four_mul_totient_sq (NumberField.Units.torsionOrder K)
+  -- h_a : φ(torsionOrder K) ≤ [K:ℚ]
+  -- h_b : torsionOrder K ≤ 4 · φ(torsionOrder K)²
+  -- Combine: torsionOrder K ≤ 4 · φ²  ≤ 4 · [K:ℚ]²
+  have h_sq : (NumberField.Units.torsionOrder K).totient ^ 2 ≤
+      (Module.finrank ℚ K) ^ 2 := Nat.pow_le_pow_left h_a 2
+  linarith [h_b, h_sq, Nat.mul_le_mul_left 4 h_sq]
 
 /-! ## D3.2d (planned chain assembly)
 
