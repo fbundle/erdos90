@@ -861,6 +861,24 @@ theorem IsHilbertClassField.differentIdeal_eq_top
   NumberField.differentIdeal_eq_top_of_isUnramifiedAt K H
     IsHilbertClassField.unramified
 
+/-- If `IsHilbertClassField K H`, every nonzero prime has ramification index 1. -/
+theorem IsHilbertClassField.ramificationIdx_eq_one
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H]
+    (P : Ideal (𝓞 H)) [P.IsPrime] (hP : P ≠ ⊥) :
+    Ideal.ramificationIdx (P.under (𝓞 K)) P = 1 := by
+  have := IsHilbertClassField.unramified (K := K) P hP
+  exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt hP
+
+/-- If `IsHilbertClassField K H`, then [H:K] = classNumber K (alias). -/
+theorem IsHilbertClassField.finrank_eq_classNumber
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    Module.finrank K H = NumberField.classNumber K :=
+  IsHilbertClassField.finrank_eq
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
