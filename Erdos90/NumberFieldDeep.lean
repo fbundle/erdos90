@@ -10,43 +10,53 @@ import Erdos90.NumberFieldDeep_ANT
 This file is an import hub that re-exports all deep number-theoretic components
 from five specialized files:
 
-1. **`NumberFieldDeep_Analytic.lean`** — §1: Analytic helpers (`log_two_mul_le`,
-   `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq`), all proved.
+1. **`NumberFieldDeep_Analytic.lean`** — §1: Analytic helpers
+   (`log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq`),
+   all proved.
 
-2. **`NumberFieldDeep_GSTower.lean`** — §2: Golod–Shafarevich tower
-   (`GSBaseData`, `gs_base_construction`, `gs_tower_levels` [proved via
-   cyclotomic CM field ℚ(ζ_p)], `GSTowerData`,
-   `golod_shafarevich_tower_with_lattice`).  One sorry: `h_div_conj_mem_Λ`
-   (D₀ = Q² valuation scaling).
+2. **`NumberFieldDeep_GSTower.lean`** — §2: Golod–Shafarevich tower.
+   - `BRDTowerData ℓ` structure + `brd_tower_data ℓ hℓ : BRDTowerData ℓ`
+     proved Lean code modulo two literature gaps: `gs_cm_tower` (HMR 2021
+     GS+CM lift) and `chebotarev_fixed_Q` (HMR theo:ihara).
+   - `class_num_bound_of_brd` PROVED Lean code (Phase E9 chain assembly)
+     modulo three off-path sorries in `Mathlib4_Extra/ClassNumberBound.lean`.
+   - `brd_cm_tower_postulate` PROVED Lean code assembling the lattice +
+     `CMTowerData`.
 
-3. **`NumberFieldDeep_CM.lean`** — §3–§5: Pigeonhole lemma (`exists_fiber_ge_div`,
-   proved), CM field lemmas (proved), `CMTowerData` structure (no longer has
-   `classNumBound_nonpos`; removed in 2026-05-25 refactor), `CMClassGroupData`
-   structure, and `exists_cm_class_group_data` (fully proved, including
-   `hmk_unit_inj`; takes explicit `classNumBound_le_log_H` hypothesis, no sorries).
+3. **`NumberFieldDeep_CM.lean`** — §3–§5: Pigeonhole lemma
+   (`exists_fiber_ge_div`, proved), CM lemmas (proved), `CMTowerData`
+   structure with fixed `t'_param`/`spData`, `CMClassGroupData` +
+   `exists_cm_class_group_data` (fully proved, takes `ht'_ge_t_plus_one`
+   and `classNumBound_le_log_H` as hypotheses).
 
-4. **`NumberFieldDeep_Assembly.lean`** — §6–§8: `cm_norm_one_elements` (proved,
-   takes explicit `classNumBound_le_log_H`), `prop_3_2_to_3_6_via_deep` (proved
-   modulo 2 sorries: `h_div_conj_mem_Λ` in GSTower and `classNumBound_le_log_H`
-   at the call site), `ERDOS_ANT_Postulates`, and `ant_postulates`.
+4. **`NumberFieldDeep_Assembly.lean`** — §6–§8: `cm_norm_one_elements`
+   (proved), `prop_3_2_to_3_6_via_deep` (assembly theorem, proved
+   modulo the sorries listed below), `ERDOS_ANT_Postulates`, `ant_postulates`.
 
-5. **`NumberFieldDeep_ANT.lean`** — Sawin parameters (§Sawin), product formula
-   separation (proved), integer separation (proved), Minkowski lattice transport
-   (8 definitions/lemmas proved, `cmSeparation` proved), tower postulate
-   (filled), `gs_tower_levels_v2` and `exists_cm_class_group_data_v2` (delegate
-   to v1). All proved (no sorries).
+5. **`NumberFieldDeep_ANT.lean`** — Sawin parameters, product formula
+   separation, integer separation, Minkowski lattice machinery
+   (`cmMinkowskiEquiv`, `cmFundamentalDomain`, etc., all proved or
+   delegating to `CMField/MinkowskiLattice.lean`), `gs_tower_levels_v2`,
+   `exists_cm_class_group_data_v2`.  No sorries in this file.
 
-The 2 remaining `sorry` statements, blocking the main theorem via `sorryAx`:
-- `h_div_conj_mem_Λ` within `gs_tower_levels_proved` (GSTower) — D₀ = Q² scaling
-  needed so Φ(α/c(α)) ∈ Λ for α generating J_{ε₂}·J_{ε₁}⁻¹
-- `classNumBound_le_log_H` within `prop_3_2_to_3_6_via_deep` (Assembly) —
-  Minkowski class-number bound: log(h_K)/f ≤ log_H, i.e., h_K ≤ exp(log_H · f).
-  This is mathematically TRUE (unlike the previous `classNumBound_nonpos : log(h_K)/f ≤ 0`
-  which was false); requires the quantitative Minkowski bound not yet in Mathlib.
+## Current sorries on the proof path
 
-`gs_tower_levels` delegates to `gs_tower_levels_proved` (cyclotomic CM field ℚ(ζ_p)
-with product-formula separation). `exists_cm_class_group_data` is fully proved
-(including `hmk_unit_inj` via `FractionalIdeal.count` + `dec_trivial`).
-`ant_postulates` (Assembly) delegates to `gs_tower_levels` + `exists_cm_class_group_data`
-directly (no additional sorries).
+Two literature gaps:
+- `gs_cm_tower` (GSTower) — HMR 2021 GS-tower existence + CM lift
+- `chebotarev_fixed_Q` (GSTower) — HMR theo:ihara (fixed split primes
+  across the tower via effective Chebotarev)
+
+Both require Mathlib infrastructure not yet present (class field theory,
+Chebotarev density, L-function continuation).
+
+## Off-path infrastructure sorries
+
+Three Mathlib-PR-shaped sorries in `Mathlib4_Extra/ClassNumberBound.lean`:
+- `regulator_lower_bound_cm` (Friedman 1989)
+- `dedekind_residue_upper_bound_cm` (Louboutin 2000)
+
+Both blocked on Mathlib's `dedekindZeta` functional equation.
+
+See `REPORT.md` for the high-level human-readable progress log and
+`assets/search_results/closing_roadmap.md` for the 5-PR Mathlib strategy.
 -/
