@@ -87,4 +87,21 @@ def localNormGroup_postulate
     [IsGalois K L] [IsAbelianGalois K L] :
     Subgroup Kˣ := sorry
 
+/-! ## Trivial cases (PROVED Lean)
+
+For the trivial extension `K/K`, the local Artin map is the constant map
+sending everything to the identity.
+-/
+
+/-- The local Artin map for the trivial extension `K/K` (PROVED).
+
+For `L = K` (identity algebra), `Gal(K/K) = {1}` and the local Artin map
+is trivially the constant map to `1`. -/
+def trivialLocalArtinMap (K : Type u) [Field K] : Kˣ →* (K ≃ₐ[K] K) where
+  toFun := fun _ => AlgEquiv.refl
+  map_one' := rfl
+  map_mul' := fun _ _ => by
+    -- Both sides are AlgEquiv.refl, by Unique
+    exact Subsingleton.elim _ _
+
 end NumberField
