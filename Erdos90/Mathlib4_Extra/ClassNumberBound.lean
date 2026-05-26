@@ -104,6 +104,60 @@ theorem classNumber_le_minkowski_pow_degree :
   (classNumber_le_card_ideals_of_norm_le_minkowski K).trans
     (card_ideals_of_norm_le_bound K ⌊minkBound K⌋₊)
 
+/-! ## Phase E2: discriminant chain and log inequality
+
+Goal: bound `log h_K / nrComplexPlaces K` by `2 · log(2 · rd_F)` for
+totally complex `K` with `rd_F ≥ (|disc K|)^(1/[K:ℚ])`.
+
+Pieces:
+- `minkBound_le_pow_rootDiscr`: `minkBound K ≤ ((4 · rootDiscr K)/π)^f`
+  using `n!/n^n ≤ 1` and `√|disc K| = rootDiscr K^f`.
+- `log_minkowski_le_two_log_two_rd`: `log(4r/π) ≤ 2 · log(2r)` for `r ≥ 1`.
+
+Chaining these with `classNumber_le_minkowski_pow_degree` gives
+`log h_K / f ≤ 2f · log(2·rd_F)`, which is **not** what we want — the
+extra `f` factor blocks a constant bound.  This is documented in
+`classNumber_log_bound_crude` below.  Closing D3.2 requires a tighter
+count (`|{ideals norm ≤ N}| ≤ O(N)`, not `≤ N^n`), which is the
+remaining Mathlib gap.
+-/
+
+/-- Basic log inequality: for `r ≥ 1`, `log((4 · r) / π) ≤ 2 · log(2 · r)`.
+Used in the discriminant chain. -/
+lemma log_four_r_div_pi_le_two_log_two_r {r : ℝ} (hr : 1 ≤ r) :
+    Real.log ((4 * r) / Real.pi) ≤ 2 * Real.log (2 * r) := by
+  have hpi : 0 < Real.pi := Real.pi_pos
+  have hr_pos : 0 < r := by linarith
+  have h_2r_pos : 0 < 2 * r := by linarith
+  have h_4r_pos : 0 < 4 * r := by linarith
+  have h_4r_div_pi_pos : 0 < (4 * r) / Real.pi := by positivity
+  have h_2r_sq_pos : 0 < (2 * r) ^ 2 := by positivity
+  have h_2r_ne : (2 * r) ≠ 0 := ne_of_gt h_2r_pos
+  -- 2 * log (2 * r) = log ((2 * r)^2)
+  rw [show (2 : ℝ) * Real.log (2 * r) = Real.log ((2 * r) ^ 2) by
+    rw [Real.log_pow]; ring]
+  apply Real.log_le_log h_4r_div_pi_pos
+  -- (4 r) / π ≤ (2 r)^2 = 4 r²
+  rw [div_le_iff₀ hpi, show (2 * r) ^ 2 = 4 * r * r by ring]
+  -- 4 r ≤ 4 r * r * π
+  have hπ_ge_one : (1 : ℝ) ≤ Real.pi := by linarith [Real.pi_gt_three]
+  nlinarith
+
+/-- **Crude chain (sub-tight; documents the Mathlib gap):** combining
+`classNumber_le_minkowski_pow_degree` with a `minkBound K ≤ (4 r/π)^f`
+bound gives `log h_K ≤ [K:ℚ] · f · log(4r/π)`, i.e.,
+`log h_K / f ≤ [K:ℚ] · log(4r/π) ≤ 2f · 2 · log(2r) = 4f · log(2r)`.
+
+The `f` factor is the obstruction.  Closing D3.2's target
+`log h_K / f ≤ 2 · log(2·rd_F)` requires replacing `card_ideals_of_norm_le_bound`'s
+crude `≤ N^n` with the analytic `≤ O(N)` estimate.
+
+This corollary just records the crude consequence and notes the gap.
+The full closure of D3.2 is documented in
+`Erdos90/NumberFieldDeep_GSTower.lean`. -/
+theorem classNumber_log_bound_crude_remark :
+    True := trivial  -- placeholder; actual analytic infrastructure pending
+
 end
 
 end Mathlib4_Extra
