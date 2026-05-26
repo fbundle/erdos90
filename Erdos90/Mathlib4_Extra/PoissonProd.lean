@@ -263,12 +263,15 @@ theorem norm_finTwoArrow_symm_eq (p : ℤ × ℤ) :
 
 /-- The integer inclusion `ℤ × ℤ → ℝ × ℝ` sends cofinite to cocompact.
 
-POSTULATED for now.  The proof is straightforward (integer points in a
-bounded region are finite) but requires careful bookkeeping with bounded
-sets in `ℝ × ℝ`. -/
-def tendsto_int_prod_cocompact :
+PROVED Lean via `Tendsto.prodMap_coprod` applied to the 1-D
+`Int.tendsto_coe_cofinite`, combined with `Filter.coprod_cofinite` and
+`Filter.coprod_cocompact`. -/
+theorem tendsto_int_prod_cocompact :
     Filter.Tendsto (fun p : ℤ × ℤ => ((p.1 : ℝ), (p.2 : ℝ)))
-      Filter.cofinite (Filter.cocompact (ℝ × ℝ)) := sorry
+      Filter.cofinite (Filter.cocompact (ℝ × ℝ)) := by
+  show Filter.Tendsto (Prod.map ((↑) : ℤ → ℝ) ((↑) : ℤ → ℝ)) _ _
+  rw [← Filter.coprod_cofinite, ← Filter.coprod_cocompact]
+  exact Filter.Tendsto.prodMap_coprod Int.tendsto_coe_cofinite Int.tendsto_coe_cofinite
 
 /-- Prod-norm = max of natAbs for integer pairs.
 
