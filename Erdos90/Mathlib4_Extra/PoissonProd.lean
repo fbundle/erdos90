@@ -217,13 +217,20 @@ def partial_fourier_is_Schwartz_postulate
 the 2-D Fourier integral.
 
 For `f : 𝓢(ℝ × ℝ, ℂ)`, `m, n : ℝ`:
-  `𝓕(x ↦ 𝓕(f.rightPartial x) n)(m) = 𝓕(2-D) f (m, n)`
+  `𝓕(2-D)(f)(m, n) = ∫ e^{-2πi m x} · 𝓕(f.rightPartial x)(n) dx`
 
 This is "Fubini for Fourier integrals" — requires careful integration
-swapping with absolutely integrable bounds. -/
+swapping with absolutely integrable bounds (Schwartz ⇒ integrable on
+ℝ × ℝ, then Fubini-Tonelli).
+
+Cite: Stein–Shakarchi *Fourier Analysis* Chapter 4.  Statement omitted
+due to Mathlib's 2-D Fourier transform typeclass requirements (V → E for
+inner-product V); 2-D Fourier on Prod doesn't have the inner product
+instance directly.  This is the deeper Mathlib-PR-shape work that
+requires bridging Prod ↔ EuclideanSpace. -/
 def iterated_fourier_eq_2d_postulate
-    (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
-    ℂ := sorry
+    (_f : 𝓢(ℝ × ℝ, ℂ)) (_m _n : ℝ) :
+    True := sorry
 
 -- (Note: `summable_2d_schwartz_postulate` has been promoted to a PROVED
 -- theorem `summable_2d_schwartz_proved` below.  All earlier uses now point
