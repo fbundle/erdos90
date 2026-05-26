@@ -491,8 +491,9 @@ The lattice `Λ` and the separation constant `D₀ = Q²` come from
 All claims are proved Lean code; the underlying sorries are in the bundled
 `brd_tower_data` (which depends on `gs_cm_tower` + `chebotarev_fixed_Q`,
 both HMR 2021 literature gaps).  The class-number bound `class_num_bound_of_brd`
-is itself PROVED Lean (Phase E9 chain assembly) modulo three off-path
-Mathlib-PR-shaped sorries in `Mathlib4_Extra/ClassNumberBound.lean`. -/
+is itself PROVED Lean (Phase E9 chain assembly) modulo two off-path
+Mathlib-PR-shaped sorries in `Mathlib4_Extra/ClassNumberBound.lean`
+(`regulator_lower_bound_cm` + `dedekind_residue_upper_bound_cm`). -/
 def brd_cm_tower_postulate (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
     (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
     (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * (brd_tower_data ℓ hℓ).rd_F)) :

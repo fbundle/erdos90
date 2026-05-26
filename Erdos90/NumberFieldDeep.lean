@@ -19,7 +19,9 @@ from five specialized files:
      proved Lean code modulo two literature gaps: `gs_cm_tower` (HMR 2021
      GS+CM lift) and `chebotarev_fixed_Q` (HMR theo:ihara).
    - `class_num_bound_of_brd` PROVED Lean code (Phase E9 chain assembly)
-     modulo three off-path sorries in `Mathlib4_Extra/ClassNumberBound.lean`.
+     modulo two off-path sorries in `Mathlib4_Extra/ClassNumberBound.lean`
+     (`regulator_lower_bound_cm`, `dedekind_residue_upper_bound_cm`;
+     the third torsionOrder bound is now proved via E10+E13).
    - `brd_cm_tower_postulate` PROVED Lean code assembling the lattice +
      `CMTowerData`.
 
