@@ -418,6 +418,34 @@ theorem HilbertClassFieldExt.identity_isCMField (K : Type u) [Field K] [NumberFi
 -- unfolding the structure projection `(identity K h).H = K`, which is
 -- def-eq but doesn't propagate to the algebraMap typeclass resolution.)
 
+/-! ## Concrete HCF instances
+
+These provide actual `HilbertClassFieldExt` instances for specific number
+fields, validating that the postulated structure is constructible in
+concrete cases.
+-/
+
+/-- The Hilbert class field of `ℚ` is `ℚ` itself.  PROVED Lean. -/
+noncomputable def HilbertClassFieldExt.rat :
+    HilbertClassFieldExt.{0, 0} ℚ :=
+  HilbertClassFieldExt.identity ℚ Rat.classNumber_eq
+
+/-- The Hilbert class field of `ℚ(ζ_3)` is `ℚ(ζ_3)` itself (since `𝓞 ℚ(ζ_3)`
+is a PID).  PROVED Lean. -/
+noncomputable def HilbertClassFieldExt.cyclotomic_three
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    HilbertClassFieldExt.{0, 0} K :=
+  HilbertClassFieldExt.identity K
+    (NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.three_pid (K := K)))
+
+/-- The Hilbert class field of `ℚ(ζ_5)` is `ℚ(ζ_5)` itself (since `𝓞 ℚ(ζ_5)`
+is a PID).  PROVED Lean. -/
+noncomputable def HilbertClassFieldExt.cyclotomic_five
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    HilbertClassFieldExt.{0, 0} K :=
+  HilbertClassFieldExt.identity K
+    (NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.five_pid (K := K)))
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
