@@ -65,3 +65,59 @@ The complete proof flow goes through these without sorries; the four remaining g
 - Never force-push; that's the human's job
 - AI time estimates don't apply (an AI working 5 minutes ≥ a human's 6 hours)
 - For non-optimal but sufficient statements, leave comments rather than over-optimizing
+
+## Strategic docs
+
+The two key documents for incremental progress:
+1. **`assets/search_results/closing_roadmap.md`** — 5-PR Mathlib strategy
+   that closes off-path sorries 3 + 4 (via shared `dedekindZeta` functional
+   equation infrastructure).
+2. **`assets/search_results/mathlib_lseries_infrastructure.md`** — survey of
+   what Mathlib already has for L-series (substantial: AbstractFuncEq,
+   Dirichlet L-functions with functional equation, Mellin transforms,
+   1-D Poisson summation).  Identifies the precise multi-D Poisson summation
+   + theta function gap.
+
+## Recent session (2026-05-27) deliverables
+
+### Code
+- `nat_le_four_mul_totient_sq` — fully proved (closes the helper for
+  `torsionOrder_bound`).  Used `Nat.recOnPosPrimePosCoprime` + 2-adic
+  decomposition via `padicValNat`.
+- `class_num_bound_of_brd` — assembled chain via E5+D3.2b+D3.2c+torsion.
+  Sorry count on proof path dropped 3 → 2.
+- `totient_torsionOrder_le_finrank` — cyclotomic bridge, fully proved.
+- `regulator_lower_bound_cm` and `dedekind_residue_upper_bound_cm` — both
+  remain sorried but with improved docstrings + roadmap docs.
+
+### Research notes
+- Decomposition documents (D31/D32) extended
+- Mathlib L-series infrastructure survey
+- Closing roadmap with 5-PR strategy
+- Updated INDEX.md
+
+### Key insight discovered
+The shortest path to closing the off-path sorries is via **multi-dimensional
+Poisson summation + theta function on number-field lattice + functional
+equation for `dedekindZeta`**.  This SINGLE coherent infrastructure unblocks
+both sorries 3 and 4.  Mathlib has the foundations (`AbstractFuncEq`,
+1-D Poisson, Jacobi theta in 1+2 variables); the gap is generalizing to
+arbitrary lattices in `mixedSpace K`.
+
+## File map (key edits this session)
+
+- `Erdos90/Mathlib4_Extra/ClassNumberBound.lean` — Phase E5–E13 infrastructure
+- `Erdos90/NumberFieldDeep_GSTower.lean` — Phase D5 + E9 (chain assembly)
+- `CLAUDE.md` — agent instructions updated
+- `assets/search_results/` — 6 new/updated focused research notes
+- `assets/hmr_2021_src/` — HMR tex source (arXiv:1901.04354)
+- `assets/akhtari_vaaler_widmer_src/` — AVW tex source
+
+## Outstanding tasks (for next session / contributor)
+
+In order of leverage:
+1. (Mathlib PR) Multi-D Poisson summation for ZLattice — see closing_roadmap.md
+2. (Mathlib PR) Theta function for number field via `mixedSpace K`
+3. (Mathlib PR) Functional equation for `dedekindZeta` via AbstractFuncEq
+4. (Mathlib PR) Friedman/Louboutin bounds using #3
+5. (Local) Tighten / refactor existing proofs once Mathlib infrastructure lands
