@@ -137,4 +137,11 @@ Specializing `RayClassField K ⊤` gives an extension that is also a
 def hcfFromRayClassField (K : Type u) [Field K] [NumberField K]
     (_R : RayClassField K ⊤) : Type _ := Unit  -- placeholder
 
+/-- `MaxProPExt K p S` algebra map K → L is injective (PROVED). -/
+theorem MaxProPExt.algebraMap_injective
+    (K : Type u) [Field K] [NumberField K] (p : ℕ) (S : Set (Ideal (𝓞 K)))
+    (M : MaxProPExt K p S) :
+    Function.Injective (algebraMap K M.L) :=
+  FaithfulSMul.algebraMap_injective K M.L
+
 end NumberField
