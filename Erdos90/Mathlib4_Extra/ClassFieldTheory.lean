@@ -581,6 +581,23 @@ theorem HilbertClassFieldExt.identity_bijective
   HilbertClassFieldExt.bijective_algebraMap_of_classNumber_one K
     (HilbertClassFieldExt.identity K h) h
 
+/-- For the identity HCF, the rootDiscr of H equals the rootDiscr of K. -/
+theorem HilbertClassFieldExt.identity_rootDiscr_eq
+    (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1) :
+    NumberField.rootDiscr (HilbertClassFieldExt.identity K h).H =
+      NumberField.rootDiscr K :=
+  rootDiscr_hcf_eq K (HilbertClassFieldExt.identity K h)
+
+/-- For the identity HCF, the Galois group cardinality is 1. -/
+theorem HilbertClassFieldExt.identity_card_gal_eq_one
+    (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1) :
+    Nat.card ((HilbertClassFieldExt.identity K h).H ≃ₐ[K]
+      (HilbertClassFieldExt.identity K h).H) = 1 := by
+  rw [card_gal_hcf_eq_classNumber]
+  exact h
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
