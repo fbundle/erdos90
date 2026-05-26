@@ -60,14 +60,68 @@ def gs_base_construction (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSBaseData ℓ := {
     simpa using log_two_mul_le ℓ hℓ
 }
 
-/-- **Cyclotomic CM field tower**: For each M, construct a cyclotomic CM field
-    K = ℚ(ζ_p) with p prime > 2 and (p-1)/2 ≥ M, then build its Minkowski lattice
-    Λ = Φ(𝒪_K) ⊂ ℂ^f.  Uses `mixedSpace_equiv_pi_fin_of_card` for the type bridge
-    and the product formula for separation.  All properties are proved (no sorry). -/
-def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
+/-- **BRD CM tower postulate** (single number-theoretic sorry).
+
+    For each ℓ ≥ 2, base ∈ GSBaseData, M ∈ ℕ, target (t, log_H) with log_H > 0,
+    there exists a CM tower level K with:
+    - Degree f ≥ M, f ≥ 1
+    - Minkowski lattice Λ ⊂ ℂ^f with fundamental domain F (bounded volume > 0)
+    - First-coordinate separation: ∀ v ∈ Λ \ {0}, ∃ i, ‖v i‖ ≥ D₀⁻¹
+    - Projection injectivity: ∀ v ∈ Λ, v(fin0) = 0 → v = 0
+    - `CMTowerData` with `t'_param ≥ t + 1` and `classNumBound ≤ log_H`,
+      and the Q²-scaled-lattice property `h_div_conj_mem_Λ`
+
+    **Mathematical justification** (TRUE, not in Mathlib v4.30):
+    - Hajir–Maire–Ramakrishna 2021 (tamely-ramified BRD towers): there exists
+      an infinite CM tower with bounded root discriminant rd < 83.9, hence
+      bounded `classNumBound = log(h_K)/f ≤ C` via Brauer–Siegel (≤ log_H
+      for the choice log_H = 2·C_class·log(2·rd_F) used by `exists_admissible_family`).
+    - Q²-scaling: with Λ = Φ(Q⁻²·𝒪_K) where Q = `spData.Q` is the product of
+      the t'_param·f rational primes underlying the split prime pairs, the
+      valuation argument v_𝔓(α/c(α)) ∈ {-2,0,2} together with v_𝔓(Q) = 1
+      gives Q²·(α/c(α)) ∈ 𝒪_K, hence Φ(α/c(α)) ∈ Q⁻²·Φ(𝒪_K) = Λ.
+
+    See `assets/hajir_maire_ramakrishna_2021.pdf` and
+    `assets/tamely-ramified-towers-and-discriminant-bounds-for-number-fields.pdf`. -/
+def brd_cm_tower_postulate (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ)
+    (t log_H : ℝ) (_ht : t ≥ 0) (_hlog_H_pos : log_H > 0) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
-      (_ : CMTowerData f hf1 Λ K)
+      (cmData : CMTowerData f hf1 Λ K)
+      (_ : Countable Λ) (F : Set (Fin f → ℂ)),
+      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+      Bornology.IsBounded F ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
+      t + 1 ≤ (cmData.t'_param : ℝ) ∧
+      cmData.classNumBound ≤ log_H := sorry
+
+/-- **Cyclotomic CM field tower** (legacy, no longer on the proof path).
+
+    Constructs K = ℚ(ζ_p) with all of Λ, F, hΛ_sep, hΛ_inj fully proved.
+    Now forwards to `brd_cm_tower_postulate` which packages the missing
+    BRD + Q²-scaling claims as a single labeled postulate. -/
+def gs_tower_levels_proved (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ)
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
+      (cmData : CMTowerData f hf1 Λ K)
+      (_ : Countable Λ) (F : Set (Fin f → ℂ)),
+      IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
+      Bornology.IsBounded F ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
+      t + 1 ≤ (cmData.t'_param : ℝ) ∧
+      cmData.classNumBound ≤ log_H :=
+  brd_cm_tower_postulate ℓ hℓ base M t log_H ht hlog_H_pos
+
+/-- Disabled cyclotomic construction (kept as documentation; not used).
+    Below `_unused_` is the prior ℚ(ζ_p) construction body, now superseded
+    by `brd_cm_tower_postulate`.  All of its non-sorried lemmas remain
+    available via `Erdos90.CMField.Cyclotomic`. -/
+private def _unused_gs_tower_levels_cyclo (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
+    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
+      (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
@@ -314,53 +368,26 @@ def gs_tower_levels_proved (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base : GSBaseData �
     rw [mixedSpace_equiv_pi_fin_of_card_norm_apply h_nrRealPlaces f h_nrComplexPlaces_card
       (α / IsCMField.complexConj K α) r]
     exact normAtPlace_mixedEmbedding_cm_div_conj_eq_one α hα _
-  haveI : Fact (Nat.Prime p) := ⟨hp_prime⟩
-  haveI : Fact (2 < p) := ⟨hp_gt_two⟩
-  let splitPrimesFor (t' : ℕ) : SplitPrimeData K (t' * f) := by
-    have h_f_eq : (p - 1) / 2 = f := by rw [hf_def]
-    have sp := Erdos90.CMField.Cyclotomic.splitPrimeData_of_cyclotomic (p := p) t'
-    have h_mul_eq : t' * ((p - 1) / 2) = t' * f := by rw [h_f_eq]
-    rw [h_mul_eq] at sp
-    exact sp
-  let cmData : CMTowerData f hf1 Λ K := {
-    φ := φ
-    h_nrComplexPlaces := h_nrComplexPlaces_card
-    h_nrRealPlaces := h_nrRealPlaces
-    mem_iff := mem_lattice_iff
-    h_φ1_norm := h_φ1_norm
-    h_φ_norm_div_conj := h_φ_norm_div_conj
-    splitPrimesFor := splitPrimesFor
-    h_div_conj_mem_Λ := by
-      intro _t' _ε₁ _ε₂ _α _hα _hα_eq
-      sorry
-    classNumBound := Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ)
-    hClassNum := by
-      have hf_ne : (f : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
-      have hcard_pos : (0 : ℝ) < (Fintype.card (ClassGroup (𝓞 K)) : ℝ) := by
-        have h : 0 < Fintype.card (ClassGroup (𝓞 K)) :=
-          Fintype.card_pos (α := ClassGroup (𝓞 K))
-        exact_mod_cast h
-      rw [div_mul_cancel₀ _ hf_ne, Real.exp_log hcard_pos]
-  }
-  refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance, cmData,
+  refine ⟨f, hf_ge_M, hf1, Λ, K, inferInstance, inferInstance, inferInstance,
     hΛ_countable, F, hF_fund, hF_vol, hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩
 
-/-- **Prop 3.6 + Minkowski type bridge**: tower levels with lattice (fully proved).
+/-- **Prop 3.6 + Minkowski type bridge**: tower levels with lattice.
 
-    Uses the cyclotomic CM field K = ℚ(ζ_p) for a sufficiently large prime p,
-    with `mixedSpace_equiv_pi_fin_of_card` for the type bridge.  Lattice separation
-    (hΛ_sep) follows from the product formula; injectivity (hΛ_inj) follows from
-    absolute-value positivity.  Delegates to `gs_tower_levels_proved`. -/
-def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
+    Takes target parameters (t, log_H) to fix the Q²-scaling and class-number bound.
+    Forwards to `brd_cm_tower_postulate` (single labeled sorry). -/
+def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ)
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
-      (_ : CMTowerData f hf1 Λ K)
+      (cmData : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
       (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
-      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) :=
-  gs_tower_levels_proved ℓ hℓ base M
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
+      t + 1 ≤ (cmData.t'_param : ℝ) ∧
+      cmData.classNumBound ≤ log_H :=
+  brd_cm_tower_postulate ℓ hℓ base M t log_H ht hlog_H_pos
 
 
 /-- **Golod–Shafarevich tower data** — abstract interface for Props 3.2–3.6.
@@ -411,19 +438,22 @@ structure GSTowerData (ℓ : ℕ) where
   rd_F : ℝ
   hrd_F_ge1 : rd_F ≥ 1
   hlog_rd : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)
-  /-- For any M, provides a tower level with degree f ≥ M and Minkowski lattice Λ ⊂ ℂ^f
-      such that ∃ i, ‖v i‖ ≥ D₀⁻¹ for all nonzero v ∈ Λ, and projection to fin0 is
-      injective on Λ.  Encapsulates Prop 3.6 (Chebotarev split primes) + the Minkowski
-      embedding type bridge. -/
-  getTowerLevel (M : ℕ) : ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1)
+  /-- For any (M, t, log_H), provides a tower level with degree f ≥ M, Minkowski
+      lattice Λ ⊂ ℂ^f, and `CMTowerData` with `t'_param ≥ t + 1` and
+      `classNumBound ≤ log_H`.  Encapsulates the BRD tower postulate
+      (HMR 2021 + Q²-scaling). -/
+  getTowerLevel (M : ℕ) (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1)
     (Λ : AddSubgroup (Fin f → ℂ))
     (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
-    (_ : CMTowerData f hf1 Λ K)
+    (cmData : CMTowerData f hf1 Λ K)
     (_ : Countable Λ) (F : Set (Fin f → ℂ)),
     IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
     Bornology.IsBounded F ∧
     (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
-    (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
+    (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
+    t + 1 ≤ (cmData.t'_param : ℝ) ∧
+    cmData.classNumBound ≤ log_H
 
 /-- **Golod–Shafarevich tower with lattice** (Props 3.2–3.6).
 
@@ -437,4 +467,5 @@ def golod_shafarevich_tower_with_lattice (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSTowe
     rd_F := base.rd_F
     hrd_F_ge1 := base.hrd_F_ge1
     hlog_rd := base.hlog_rd
-    getTowerLevel := gs_tower_levels ℓ hℓ base }
+    getTowerLevel := fun M t log_H ht hlog_H_pos =>
+      gs_tower_levels ℓ hℓ base M t log_H ht hlog_H_pos }

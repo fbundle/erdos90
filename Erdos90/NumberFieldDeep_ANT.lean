@@ -381,17 +381,20 @@ section NewGSTowerLevels
     Uses the real CM field Minkowski lattice instead of the placeholder ℤ[I]^f.
     All sub-proofs (countability, fundamental domain, volume finiteness, separation)
     are proved using Mathlib's integer lattice API. -/
-def gs_tower_levels_v2 (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
+def gs_tower_levels_v2 (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ)
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
-      (_ : CMTowerData f hf1 Λ K)
+      (cmData : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
       (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
-      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) :=
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
+      t + 1 ≤ (cmData.t'_param : ℝ) ∧
+      cmData.classNumBound ≤ log_H :=
   -- Delegates to v1; v2 would use `sawin_tower_exists` + `cmMinkowskiLattice`.
-  gs_tower_levels ℓ hℓ base M
+  gs_tower_levels ℓ hℓ base M t log_H ht hlog_H_pos
 
 end NewGSTowerLevels
 
@@ -415,9 +418,11 @@ def exists_cm_class_group_data_v2
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     {K : Type} [Field K] [NumberField K] [IsCMField K]
     (cmData : CMTowerData f hf1 Λ K)
+    (ht'_ge_t_plus_one : t + 1 ≤ (cmData.t'_param : ℝ))
     (classNumBound_le_log_H : cmData.classNumBound ≤ log_H) :
     CMClassGroupData f t log_H Λ :=
   -- Delegates to v1; v2 would use Sawin tower K + CM class-group API.
-  exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
+  exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData
+    ht'_ge_t_plus_one classNumBound_le_log_H
 
 end NewCMClassGroup

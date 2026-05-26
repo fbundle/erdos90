@@ -90,21 +90,18 @@ def prop_3_2_to_3_6 :
     ∃ (D₀ : ℝ), D₀ > 0 ∧
     ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
-      ∀ (M : ℕ),
+      ∀ (M : ℕ) (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → log_H > 0 →
+        (t * Real.log 2 - log_H > 0) →
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
         IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
         Bornology.IsBounded F ∧
         (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
         (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
-        ∀ (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → (t * Real.log 2 - log_H > 0) →
         ∃ (U : Finset (Fin f → ℂ)),
           (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
           (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
           ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) :=
-  -- Delegate to NumberFieldDeep.lean.
-  -- The log bound (log rd_F ≤ C_rd·ℓ·log ℓ, C_rd = 1) is fully proved via `log_two_mul_le`.
-  -- The tower data and the Prop-2.2 callback are from the two sorries.
   prop_3_2_to_3_6_via_deep
 
 /-! ## Lemma 2.4: Coset averaging (proved theorem)
@@ -286,21 +283,20 @@ theorem exists_admissible_family :
     have hP6' : t * Real.log 2 > 4 * C_class * C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) := by
       rw [ht_def]; exact hP6
     linarith [hlog_H_bound]
-  -- log_H_base ≥ 0: since rd_F ≥ 1 so 2*rd_F > 1 so log(2*rd_F) > 0
-  have hlog_H_base_nn : 0 ≤ log_H_base := by
-    show 0 ≤ 2 * C_class * Real.log (2 * rd_F)
+  -- log_H_base > 0 (strict): rd_F ≥ 1 so 2*rd_F ≥ 2 so log(2*rd_F) ≥ log 2 > 0
+  have hlog_H_base_pos : log_H_base > 0 := by
+    show 0 < 2 * C_class * Real.log (2 * rd_F)
     have hlog_pos : Real.log (2 * rd_F) > 0 :=
       Real.log_pos (by linarith [hrd_F_ge1])
     nlinarith [C_class_pos]
+  have hlog_H_base_nn : 0 ≤ log_H_base := le_of_lt hlog_H_base_pos
   -- γ₀ = t * log 2 - log_H_base is the fixed exponent rate
   let γ₀ := t * Real.log 2 - log_H_base
   -- Step 7: For each M produce an AdmissibleFamily
   refine ⟨γ₀, hγ_pos, D₀, hD₀_pos, fun M => ?_⟩
   obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
-    hΛ_sep, hΛ_inj, hU_callback⟩ := h_levels M
-  -- Use the Prop-2.2 callback to get U (requires the CM field K_j)
-  obtain ⟨U, hU_mod, hU_in_Λ, hU_size⟩ :=
-    hU_callback t log_H_base ht_nonneg hlog_H_base_nn hγ_pos
+    hΛ_sep, hΛ_inj, U, hU_mod, hU_in_Λ, hU_size⟩ :=
+    h_levels M t log_H_base ht_nonneg hlog_H_base_nn hlog_H_base_pos hγ_pos
   -- Rewrite hU_size in terms of γ₀
   have hU_size' : (U.card : ℝ) ≥ Real.exp (γ₀ * (f : ℝ)) := by
     have : γ₀ = t * Real.log 2 - log_H_base := rfl

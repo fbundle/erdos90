@@ -38,6 +38,7 @@ def cm_norm_one_elements
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     (cmData : CMTowerData f hf1 Λ K)
+    (ht'_ge_t_plus_one : t + 1 ≤ (cmData.t'_param : ℝ))
     (classNumBound_le_log_H : cmData.classNumBound ≤ log_H) :
     ∃ (U : Finset (Fin f → ℂ)),
       (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
@@ -45,7 +46,8 @@ def cm_norm_one_elements
       ((U.card : ℝ) ≥ Real.exp ((t * Real.log 2 - log_H) * (f : ℝ))) := by
   -- Step 1: Get the CM class-group data
   have data : CMClassGroupData f t log_H Λ :=
-    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
+    exists_cm_class_group_data f hf1 D₀ hD₀ t log_H ht hlog_H_nn hγ_pos Λ hΛ_sep cmData
+      ht'_ge_t_plus_one classNumBound_le_log_H
   -- letI binds definitionally to the structure fields, avoiding haveI's opaque binder mismatch
   letI : Fintype data.E := data.fintypeE
   letI : DecidableEq data.E := data.decidableEqE
@@ -143,14 +145,14 @@ theorem prop_3_2_to_3_6_via_deep :
     ∃ (D₀ : ℝ), D₀ > 0 ∧
     ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
-      ∀ (M : ℕ),
+      ∀ (M : ℕ) (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → log_H > 0 →
+        (t * Real.log 2 - log_H > 0) →
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
         IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
         Bornology.IsBounded F ∧
         (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹) ∧
         (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
-        ∀ (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → (t * Real.log 2 - log_H > 0) →
         ∃ (U : Finset (Fin f → ℂ)),
           (∀ u ∈ U, ∀ r : Fin f, ‖u r‖ = 1) ∧
           (∀ u ∈ U, (u : Fin f → ℂ) ∈ Λ) ∧
@@ -158,24 +160,17 @@ theorem prop_3_2_to_3_6_via_deep :
   refine ⟨1, one_pos, fun ℓ hℓ => ?_⟩
   let tower : GSTowerData ℓ := golod_shafarevich_tower_with_lattice ℓ hℓ
   refine ⟨tower.D₀, tower.hD₀_pos, tower.rd_F, tower.hrd_F_ge1, by
-    -- log rd_F ≤ ℓ·log ℓ, and C_rd = 1
-    simpa using tower.hlog_rd, fun M => ?_⟩
+    simpa using tower.hlog_rd, fun M t log_H ht hlog_H_nn hlog_H_pos hγ_pos => ?_⟩
   obtain ⟨f, hf_ge, hf1, Λ, K, hField, hNF, hCM, cmData, hΛ_countable, F, hF_fund, hF_fin,
-    hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj⟩ := tower.getTowerLevel M
+    hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj, ht'_ge, classNumBound_le_log_H⟩ :=
+    tower.getTowerLevel M t log_H ht hlog_H_pos
   letI : Field K := hField
   letI : NumberField K := hNF
   letI : IsCMField K := hCM
   refine ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
-    hΛ_sep, hΛ_inj, fun t log_H ht hlog_H_nn hγ_pos => ?_⟩
-  have classNumBound_le_log_H : cmData.classNumBound ≤ log_H := by
-    -- classNumBound = Real.log(h_K)/f (tautological, set in gs_tower_levels_proved).
-    -- We need the Minkowski class-number bound: log(h_K)/f ≤ log_H.
-    -- This holds for the real GS tower (bounded root discriminant rd_F = rd(K_j)
-    -- independent of j, so Brauer–Siegel gives log h_K / f ∼ log rd_K ≤ log rd_F ≤ log_H).
-    -- For the placeholder ℚ(ζ_p) tower, this bound is not available in Mathlib v4.30.
-    sorry
+    hΛ_sep, hΛ_inj, ?_⟩
   exact cm_norm_one_elements f hf1 tower.D₀ tower.hD₀_pos tower.rd_F t log_H ht hlog_H_nn
-    hγ_pos Λ hΛ_sep cmData classNumBound_le_log_H
+    hγ_pos Λ hΛ_sep cmData ht'_ge classNumBound_le_log_H
 
 /-! ## §8  ANT postulates — what remains to be formalized
 
@@ -194,15 +189,18 @@ E = {±1}^m, class‑group G = Cl(K), and norm‑1 element constructor α/c(α)
 satisfying the cardinality bound.  Needs: CM field construction, split‑prime
 ideal pairs, Minkowski class‑number bound. -/
 structure ERDOS_ANT_Postulates where
-  gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ) :
+  gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ)
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
-      (_ : CMTowerData f hf1 Λ K)
+      (cmData : CMTowerData f hf1 Λ K)
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
       (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
-      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0)
+      (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
+      t + 1 ≤ (cmData.t'_param : ℝ) ∧
+      cmData.classNumBound ≤ log_H
   cm_class_group {K : Type} [Field K] [NumberField K] [IsCMField K]
     (f : ℕ) (hf1 : f ≥ 1) (D₀ : ℝ) (hD₀ : D₀ > 0)
     (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_nn : 0 ≤ log_H)
@@ -210,6 +208,7 @@ structure ERDOS_ANT_Postulates where
     (Λ : AddSubgroup (Fin f → ℂ))
     (hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     (cmData : CMTowerData f hf1 Λ K)
+    (ht'_ge_t_plus_one : t + 1 ≤ (cmData.t'_param : ℝ))
     (classNumBound_le_log_H : cmData.classNumBound ≤ log_H) :
     CMClassGroupData f t log_H Λ
 

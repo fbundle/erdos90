@@ -278,18 +278,23 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
   h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1
   h_φ_norm_div_conj : ∀ (α : K) (_ : α ≠ 0) (r : Fin f),
     ‖φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) r‖ = 1
-  /-- Split prime data for any size `t' * f`.  Allows `exists_cm_class_group_data`
-  to request split primes of arbitrary size independently of the tower's stored `spData`.
-  Derived from Dirichlet's theorem on primes ≡ 1 (mod p). -/
-  splitPrimesFor : ∀ (t' : ℕ), SplitPrimeData K (t' * f)
+  /-- The specific `t'` chosen by the tower constructor.  Together with `spData`,
+  this fixes the split-prime data on which `h_div_conj_mem_Λ` is asserted.
+  The caller (e.g., `exists_cm_class_group_data`) must arrange `t'_param ≥ t + 1`
+  so that the cardinality bound `2^m ≥ exp((t·log 2)·f) + cardG` holds. -/
+  t'_param : ℕ
+  /-- Split prime data for the fixed size `t'_param * f`.  Derived from Dirichlet's
+  theorem on primes ≡ 1 (mod p) in the cyclotomic construction, or from the BRD
+  tower postulate.  Carries the product Q = `spData.Q` used in the Q²-scaling. -/
+  spData : SplitPrimeData K (t'_param * f)
   /-- For α ∈ K^× generating J(ε₂)·J(ε₁)⁻¹, the CM quotient Φ(α/c(α)) ∈ Λ.
 
   Proof: valuations of α/c(α) at split primes are in {−2,0,2}.  The tower
-  constructs Λ = Φ(Q⁻²·𝓞_K) where Q = spData.Q, so Q²·(α/c(α)) ∈ 𝓞_K and
-  Φ(α/c(α)) ∈ Λ.  Filled in `gs_tower_levels_proved`. -/
-  h_div_conj_mem_Λ : ∀ (t' : ℕ) (ε₁ ε₂ : Fin (t' * f) → Bool) (α : K) (_ : α ≠ 0),
-      FractionalIdeal.spanSingleton (𝓞 K)⁰ α * J_ideal K (splitPrimesFor t') ε₁ =
-      J_ideal K (splitPrimesFor t') ε₂ →
+  constructs Λ = Φ(Q⁻²·𝓞_K) where Q = `spData.Q`, so Q²·(α/c(α)) ∈ 𝓞_K and
+  Φ(α/c(α)) ∈ Λ. -/
+  h_div_conj_mem_Λ : ∀ (ε₁ ε₂ : Fin (t'_param * f) → Bool) (α : K) (_ : α ≠ 0),
+      FractionalIdeal.spanSingleton (𝓞 K)⁰ α * J_ideal K spData ε₁ =
+      J_ideal K spData ε₂ →
       φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) ∈ Λ
   /-- Class-number bound `classNumBound = Real.log(h_K)/f`, so that `hClassNum` holds
   tautologically via `Real.exp_log`.  The real mathematical gap — proving that
@@ -379,23 +384,19 @@ def exists_cm_class_group_data
     (Λ : AddSubgroup (Fin f → ℂ))
     (_hΛ_sep : ∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ D₀⁻¹)
     (cmData : CMTowerData f hf1 Λ K)
+    (ht'_ge_t_plus_one : t + 1 ≤ (cmData.t'_param : ℝ))
     (classNumBound_le_log_H : cmData.classNumBound ≤ log_H) :
     CMClassGroupData f t log_H Λ := by
   -- -----------------------------------------------------------------
-  -- §5.1  Get t' = ⌈t⌉₊ + 1 split primes and m = t'·f split-prime ideal pairs
-  -- We use t' = ⌈t⌉₊ + 1 (not just ⌈t⌉₊) so that (t' : ℝ) ≥ t + 1.
+  -- §5.1  Use the tower's fixed t'_param and spData.  The caller (the BRD postulate
+  -- or the explicit tower constructor) supplies t'_param ≥ t + 1 via `ht'_ge_t_plus_one`.
   -- This gives 2^m = 2^{t'f} ≥ 2 · 2^{tf} which absorbs the "+1" in h_card_ratio.
   -- -----------------------------------------------------------------
-  let t' : ℕ := ⌈t⌉₊ + 1
+  let t' : ℕ := cmData.t'_param
   have ht'_ge_t : (t : ℝ) ≤ (t' : ℝ) := by
-    dsimp [t']
-    push_cast
-    linarith [Nat.le_ceil t]
-  have ht'_ge_t_plus_one : t + 1 ≤ (t' : ℝ) := by
-    dsimp [t']
-    push_cast
-    linarith [Nat.le_ceil t]
-  let spDM : SplitPrimeData K (t' * f) := cmData.splitPrimesFor t'
+    have : (0 : ℝ) ≤ 1 := by norm_num
+    linarith
+  let spDM : SplitPrimeData K (t' * f) := cmData.spData
   let m : ℕ := t' * f
   -- -----------------------------------------------------------------
   -- §5.2  Sign-vector type E = {±1}^m and class group G
@@ -632,7 +633,7 @@ def exists_cm_class_group_data
         (J0 ε₂ : FractionalIdeal (𝓞 K)⁰ K) :=
       (Classical.choose_spec (h_exists_alpha ε₁ ε₂ hφ_eq)).2
     rw [hJ0_eq_Jideal ε₁, hJ0_eq_Jideal ε₂] at hα_eq
-    exact cmData.h_div_conj_mem_Λ t' ε₁ ε₂ α hα_ne hα_eq
+    exact cmData.h_div_conj_mem_Λ ε₁ ε₂ α hα_ne hα_eq
 
   -- ---------------------------------------------------------------
   -- hmk_unit_inj: injectivity of mk_unit for fixed ε₁ on the fiber
