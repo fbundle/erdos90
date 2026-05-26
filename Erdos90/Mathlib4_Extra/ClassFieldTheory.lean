@@ -917,6 +917,22 @@ theorem IsHilbertClassField.finrank_over_Q
     IsHilbertClassField.finrank_eq (H := H)]
   ring
 
+/-- For `IsHilbertClassField K H`, the algebra map K → H is injective. -/
+theorem IsHilbertClassField.algebraMap_injective
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    Function.Injective (algebraMap K H) :=
+  FaithfulSMul.algebraMap_injective K H
+
+/-- For `IsHilbertClassField K H`, the algebra map 𝓞K → 𝓞H is injective. -/
+theorem IsHilbertClassField.algebraMap_ringOfIntegers_injective
+    (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H]
+    [IsHilbertClassField K H] :
+    Function.Injective (algebraMap (𝓞 K) (𝓞 H)) :=
+  FaithfulSMul.algebraMap_injective (𝓞 K) (𝓞 H)
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
