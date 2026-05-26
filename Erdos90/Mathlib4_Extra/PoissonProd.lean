@@ -194,6 +194,46 @@ theorem tsum_tsum_rightPartial_eq_fourier (f : 𝓢(ℝ × ℝ, ℂ)) :
   refine tsum_congr (fun m => ?_)
   exact tsum_rightPartial_eq_fourier f m
 
+/-! ## Remaining steps (documented sorries)
+
+The full 2-D Schwartz Poisson summation requires three more steps,
+each a multi-day Lean formalization on its own:
+-/
+
+/-- **Step 2** (POSTULATED): for `f : 𝓢(ℝ × ℝ, ℂ)` and `n : ℤ`,
+the function `x ↦ 𝓕(f.rightPartial x) n` is Schwartz in `x`.
+
+This is "partial Fourier preserves Schwartz".  Standard fact; requires
+careful derivation in Lean using Schwartz seminorm bounds and the
+smoothness/decay of `(x, y) ↦ 𝓕(f(x, ·))(y)`.
+
+Cite: Stein–Shakarchi *Fourier Analysis* Chapter 4.  Not in Mathlib v4.30. -/
+def partial_fourier_is_Schwartz_postulate
+    (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
+    𝓢(ℝ, ℂ) := sorry
+
+/-- **Step 3** (POSTULATED): the iterated 1-D Fourier integral equals
+the 2-D Fourier integral.
+
+For `f : 𝓢(ℝ × ℝ, ℂ)`, `m, n : ℝ`:
+  `𝓕(x ↦ 𝓕(f.rightPartial x) n)(m) = 𝓕(2-D) f (m, n)`
+
+This is "Fubini for Fourier integrals" — requires careful integration
+swapping with absolutely integrable bounds. -/
+def iterated_fourier_eq_2d_postulate
+    (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
+    ℂ := sorry
+
+/-- **Step 4** (PARTIALLY POSTULATED): Summability of 2-D Schwartz on
+`ℤ × ℤ`.
+
+For `f : 𝓢(ℝ × ℝ, ℂ)`, `Summable (fun p : ℤ × ℤ => f (p.1, p.2))`.
+
+Provable from Schwartz decay + 2-D `p`-series summability.  -/
+def summable_2d_schwartz_postulate
+    (f : 𝓢(ℝ × ℝ, ℂ)) :
+    Summable fun p : ℤ × ℤ => (f : ℝ × ℝ → ℂ) (p.1, p.2) := sorry
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
