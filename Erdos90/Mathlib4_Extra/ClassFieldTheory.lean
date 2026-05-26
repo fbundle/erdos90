@@ -400,6 +400,18 @@ noncomputable def HilbertClassFieldExt.identity (K : Type u) [Field K] [NumberFi
     letI := classGroup_unique_of_classNumber_one K h
     MulEquiv.ofUnique
 
+/-- If the HCF of `K` is `K` itself (because `classNumber K = 1`), then `H`
+trivially inherits any structure from `K`.
+
+In particular, if `K` is CM, then `H = K` is CM (no postulate needed).
+
+PROVED Lean. -/
+theorem HilbertClassFieldExt.identity_isCMField (K : Type u) [Field K] [NumberField K]
+    [IsCMField K] (h : NumberField.classNumber K = 1) :
+    IsCMField (HilbertClassFieldExt.identity K h).H := by
+  -- (HilbertClassFieldExt.identity K h).H = K, so IsCMField follows trivially.
+  exact inferInstanceAs (IsCMField K)
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
