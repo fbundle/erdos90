@@ -400,6 +400,21 @@ theorem tsum_prod_eq_tsum_tsum_fourier_rightPartial
 -- ordering via Equiv.prodComm hits a Lean typeclass timeout.  Mathematically
 -- straightforward but Lean-tricky.  The rightPartial form above suffices.)
 
+/-! ## Schwartz seminorm bound on partial Schwartz
+
+The `rightPartial` of a 2-D Schwartz function has Schwartz seminorms
+controlled by the 2-D Schwartz seminorms.  This is the key analytic fact
+underlying `partial_fourier_is_Schwartz`.
+-/
+
+/-- Pointwise bound: `‖f(x_0, y)‖ ≤ ‖f‖_(0, 0)` (L^∞ bound).
+
+PROVED Lean via Mathlib's `SchwartzMap.le_seminorm` at (0, 0). -/
+theorem rightPartial_apply_norm_le (f : 𝓢(ℝ × ℝ, ℂ)) (x_0 y : ℝ) :
+    ‖(f : ℝ × ℝ → ℂ) (x_0, y)‖ ≤ SchwartzMap.seminorm ℝ 0 0 f := by
+  have := f.le_seminorm (𝕜 := ℝ) 0 0 (x_0, y)
+  simpa using this
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
