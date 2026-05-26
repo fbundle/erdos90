@@ -160,4 +160,15 @@ theorem tsum_half_product_eq_fourier (g h : 𝓢(ℝ, ℂ)) :
         (∑' n : ℤ, 𝓕 (h : ℝ → ℂ) n) := by
   rw [tsum_eq_tsum_fourier_half g, tsum_eq_tsum_fourier_zero h]
 
+/-- 2-D Schwartz Poisson at arbitrary real shifts in both variables, separable case.
+For `g, h : 𝓢(ℝ, ℂ)` and `a, b : ℝ`,
+`(∑' m, g(a + m)) · (∑' n, h(b + n))`
+`= (∑' m, 𝓕g m · fourier m a) · (∑' n, 𝓕h n · fourier n b)`. -/
+theorem tsum_shift_product_eq_fourier (g h : 𝓢(ℝ, ℂ)) (a b : ℝ) :
+    ((∑' m : ℤ, (g : ℝ → ℂ) (a + m)) * (∑' n : ℤ, (h : ℝ → ℂ) (b + n)) : ℂ) =
+      (∑' m : ℤ, 𝓕 (g : ℝ → ℂ) m * fourier m ((a : ℝ) : UnitAddCircle)) *
+        (∑' n : ℤ, 𝓕 (h : ℝ → ℂ) n * fourier n ((b : ℝ) : UnitAddCircle)) := by
+  rw [SchwartzMap.tsum_eq_tsum_fourier g a, SchwartzMap.tsum_eq_tsum_fourier h b]
+  rfl
+
 end SchwartzMap
