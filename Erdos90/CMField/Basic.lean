@@ -1,4 +1,5 @@
 import Mathlib
+import Erdos90.Mathlib4_Extra.FractionalIdealCount
 
 open Real Set NumberField Function
 open scoped Complex Pointwise nonZeroDivisors
@@ -85,24 +86,13 @@ section ringEquivOfRingEquiv_coeIdeal
 variable (K : Type*) [Field K] [NumberField K]
 
 /-- `ringEquivOfRingEquiv` applied to a coefficient ideal equals
-    `(Ideal.map c I : FractionalIdeal ...)`. -/
+    `(Ideal.map c I : FractionalIdeal ...)`.
+    Backwards-compatibility shim; the canonical version lives in
+    `Erdos90.Mathlib4_Extra.FractionalIdealCount`. -/
 lemma ringEquivOfRingEquiv_coeIdeal (c : (𝓞 K) ≃+* (𝓞 K)) (I : Ideal (𝓞 K)) :
     FractionalIdeal.ringEquivOfRingEquiv K K c (I : FractionalIdeal (𝓞 K)⁰ K) =
-    (Ideal.map (c : (𝓞 K) →+* (𝓞 K)) I : FractionalIdeal (𝓞 K)⁰ K) := by
-  ext x
-  simp only [FractionalIdeal.ringEquivOfRingEquiv_apply, FractionalIdeal.val_eq_coe,
-    FractionalIdeal.coe_coeIdeal, FractionalIdeal.mem_coeIdeal]
-  constructor
-  · rintro ⟨y, ⟨z, hz, rfl⟩, hy⟩
-    refine ⟨c z, Ideal.mem_map_of_mem (c : (𝓞 K) →+* (𝓞 K)) hz, ?_⟩
-    simpa [IsFractionRing.semilinearEquivOfRingEquiv_apply] using hy
-  · rintro ⟨y, hy, rfl⟩
-    have h_surj : Function.Surjective (c : (𝓞 K) →+* (𝓞 K)) := by
-      intro x; refine ⟨c.symm x, ?_⟩; simp
-    rcases (Ideal.mem_map_iff_of_surjective (c : (𝓞 K) →+* (𝓞 K)) h_surj).mp hy with
-      ⟨z, hz, rfl⟩
-    refine ⟨algebraMap (𝓞 K) K z, ⟨z, hz, rfl⟩, ?_⟩
-    simp [IsFractionRing.semilinearEquivOfRingEquiv_apply]
+    (Ideal.map (c : (𝓞 K) →+* (𝓞 K)) I : FractionalIdeal (𝓞 K)⁰ K) :=
+  Mathlib4_Extra.ringEquivOfRingEquiv_coeIdeal K c I
 
 end ringEquivOfRingEquiv_coeIdeal
 
