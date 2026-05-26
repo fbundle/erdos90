@@ -171,4 +171,17 @@ theorem tsum_shift_product_eq_fourier (g h : 𝓢(ℝ, ℂ)) (a b : ℝ) :
   rw [SchwartzMap.tsum_eq_tsum_fourier g a, SchwartzMap.tsum_eq_tsum_fourier h b]
   rfl
 
+/-- 1-D Schwartz Poisson at integer shift: shifting by an integer leaves the
+sum invariant.  For `f : 𝓢(ℝ, ℂ)` and `k : ℤ`,
+`∑' n : ℤ, f(k + n) = ∑' n : ℤ, 𝓕f n`. -/
+theorem tsum_eq_tsum_fourier_int_shift (f : 𝓢(ℝ, ℂ)) (k : ℤ) :
+    (∑' n : ℤ, (f : ℝ → ℂ) ((k : ℝ) + n)) = ∑' n : ℤ, 𝓕 (f : ℝ → ℂ) n := by
+  have h := SchwartzMap.tsum_eq_tsum_fourier f (k : ℝ)
+  rw [h]
+  refine tsum_congr (fun n => ?_)
+  have hk : ((k : ℝ) : UnitAddCircle) = 0 :=
+    (AddCircle.coe_eq_zero_iff _).mpr ⟨k, by simp⟩
+  rw [hk, fourier_eval_zero, mul_one]
+  rfl
+
 end SchwartzMap
