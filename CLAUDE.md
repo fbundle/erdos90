@@ -34,7 +34,7 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Mathlib4_Extra/Analytic.lean` | Mathlib-candidate analytic lemmas: `log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq` (all proved). |
 | `Erdos90/Mathlib4_Extra/FractionalIdealCount.lean` | Mathlib-candidate `FractionalIdeal.count` lemmas: `le_one_of_forall_count_nonneg`, `mem_range_of_spanSingleton_count_nonneg` (the integrality bridge). |
 | `Erdos90/Mathlib4_Extra/FractionalIdealRingEquiv.lean` | Mathlib-candidate `ringEquivOfRingEquiv_coeIdeal` lemma. |
-| `Erdos90/Mathlib4_Extra/ClassNumberBound.lean` | Phase E (E1+E2+E3) infrastructure for closing D3.2: `classNumber_le_card_ideals_of_norm_le_minkowski` (proved), `minkBound_le_pow_rootDiscr` (proved), `log_four_r_div_pi_le_two_log_two_r` (proved), `card_ideals_of_norm_le_bound` (sorried; the genuine Mathlib gap — analytic ideal count). |
+| `Erdos90/Mathlib4_Extra/ClassNumberBound.lean` | Phase E (E1+E2+E3) infrastructure for closing D3.2: `classNumber_le_card_ideals_of_norm_le_minkowski` (proved), `minkBound_le_pow_rootDiscr` (proved), `log_four_r_div_pi_le_two_log_two_r` (proved), `card_ideals_of_norm_le_bound` (proved with crude bound `2^((N!)^[K:ℚ])` via the `I ↦ image in 𝓞_K/(N!·𝓞_K)` injection; tight `N^[K:ℚ]` bound remains a Mathlib-PR-shaped gap). |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -49,7 +49,7 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` warnings on the proof path of `erdos_unit_distance_false` (after Phase A+B+C+D1+D2+D3+D4+E1+E2+E3), plus 1 sorry in `Mathlib4_Extra/ClassNumberBound.lean` (a separate Mathlib-gap lemma that doesn't yet feed into the proof chain).
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` warnings on the proof path of `erdos_unit_distance_false` (after Phase A+B+C+D1+D2+D3+D4+E1+E2+E3+E4).  `Mathlib4_Extra/ClassNumberBound.lean` is now fully proved (Phase E4 closed `card_ideals_of_norm_le_bound` with a crude `2^((N!)^[K:ℚ])` bound; the lemma doesn't feed into the proof chain yet).
 
 ## Proof state — zero axioms, 2 labelled TRUE postulates (both literature gaps)
 
@@ -71,9 +71,10 @@ Phase E (E1, E2, E3) builds the named chain that would close D3.2 once the analy
 - `classNumber_le_card_ideals_of_norm_le_minkowski` (E1): `h_K ≤ |{ideals of 𝓞 K with absNorm ≤ ⌊M K⌋₊}|`.  Built from `NumberField.exists_ideal_in_class_of_norm_le` + the obvious injection.
 - `minkBound_le_pow_rootDiscr` (E3): `M K ≤ ((4 · rootDiscr K) / π)^f` for totally complex K.  Uses `Nat.factorial_le_pow` + `rootDiscr_def` + half-power simplification.
 - `log_four_r_div_pi_le_two_log_two_r` (E2): `log((4r)/π) ≤ 2·log(2r)` for `r ≥ 1`.
+- `card_ideals_of_norm_le_bound` (E4, 2026-05-26): `|{ideals norm ≤ N}| ≤ 2^((N!)^[K:ℚ])` via the injection `I ↦ image in 𝓞_K/(N!·𝓞_K)` (uses `absNorm I | N!` + `absNorm I ∈ I` ⇒ `(N!·𝓞_K) ⊆ I`).  The codomain is bounded by `Set R` with `|R| = (N!)^[K:ℚ]` (via `absNorm_span_natCast` + `RingOfIntegers.rank`); tight `N^[K:ℚ]` bound would need `# ideals R ≤ |R|` for the Dedekind quotient, which requires CRT + per-prime factorization not yet packaged in Mathlib v4.30.
 
-**Sorried (Mathlib gap):**
-- `card_ideals_of_norm_le_bound`: the crude polynomial form `|{ideals norm ≤ N}| ≤ N^[K:ℚ]`.  The *linear* form `|{ideals norm ≤ N}| ≤ C(K) · N` is the genuine analytic estimate needed to close D3.2 cleanly; the polynomial form is included as a sorried Mathlib-PR-shaped lemma documenting the gap.
+**Remaining Mathlib gap (would close D3.2 cleanly):**
+- The tight `|{ideals norm ≤ N}| ≤ C(K) · N` analytic estimate.  The crude `2^((N!)^[K:ℚ])` proved above is too loose to chain through the discriminant inequality and beat `f · log(rd_F)` asymptotically.
 
 **The complete D3.2 chain (modulo the Mathlib gap):**
 
@@ -277,6 +278,45 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Lessons
+
+### 2026-05-26 (Phase E4): Close `card_ideals_of_norm_le_bound` via crude subset injection
+
+The tight bound `|{ideals norm ≤ N}| ≤ N^[K:ℚ]` looked like a days-to-weeks
+combinatorial argument, but on analysis turned out to require either
+(a) Dedekind quotient CRT + per-prime factorization not in Mathlib v4.30,
+or (b) Hermite normal form for ℤ^n sublattices also not packaged.
+
+The naive shortcut "# ideals of finite ring R ≤ |R|" is FALSE for general
+finite commutative R (an F_p-vector-space of high dimension has more
+subspaces than elements).  It IS true for `𝓞_K/(m·𝓞_K)` via the
+Dedekind chain structure ∏ (a_𝔭 + 1) ≤ ∏ N(𝔭)^{a_𝔭} = m^n, but
+proving that requires the CRT+factorization chain above.
+
+Phase E4 closes the sorry with a much weaker but cleanly provable bound:
+`|{ideals norm ≤ N}| ≤ 2^((N!)^[K:ℚ])` via the injection
+`I ↦ image of I in 𝓞_K/(N!·𝓞_K)`.  Three pieces:
+
+- Well-defined: `absNorm I ≤ N` ⇒ `absNorm I | N!` (Nat.dvd_factorial) and
+  `absNorm I ∈ I` (Mathlib `Ideal.absNorm_mem`), so `(N!·𝓞_K) ⊆ I`.
+- Injective: `Ideal.comap_map_mk` applied with `J ≤ I` from above.
+- Codomain bound: `Set R` has cardinality `2^|R|` (`Fintype.card_set`),
+  and `|R| = (N!)^[K:ℚ]` via `Ideal.absNorm_span_natCast` (in S = 𝓞_K
+  gives `(N!)^Module.finrank ℤ (𝓞 K)`) + `RingOfIntegers.rank`
+  (=`Module.finrank ℚ K`).
+
+The bound is doubly-exponential and breaks the downstream Brauer–Siegel
+chain (was: `≤ ⌊minkBound⌋^[K:ℚ]`; now: `≤ 2^((⌊minkBound⌋!)^[K:ℚ])`).
+But `classNumber_le_minkowski_pow_degree` only feeds the trivial
+commentary `classNumber_log_bound_crude_remark`, which already
+documented falling short by a factor of `f`.  So no downstream proof
+breaks; the Mathlib gap is now clearly demarcated.
+
+**Lesson:** When a "crude polynomial" bound turns out to require
+substantial Mathlib infrastructure (CRT for Dedekind quotients,
+Hermite NF, etc.), back off to a `2^|R|` subset bound instead of
+chasing a tight `N^n`.  The proof of the structural injection is the
+same; only the codomain-size estimate differs.  Honest about the
+remaining gap is better than a fake proof.
 
 ### 2026-05-26 (Phase E1+E2+E3): Build the Brauer–Siegel chain infrastructure
 

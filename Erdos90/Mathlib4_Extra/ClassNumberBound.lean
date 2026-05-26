@@ -86,21 +86,98 @@ theorem classNumber_le_card_ideals_of_norm_le_minkowski :
     exact Fintype.card_le_of_injective f hf_inj
   exact h_card_le
 
-/-- **Mathlib gap (Phase E1 sorry):** For a number field `K` of degree `n` and
-a positive integer bound `N`, the number of nonzero ideals of `𝓞 K` with
-absolute norm at most `N` is bounded by `N ^ n`.
+/-- For a number field `K` of degree `n = [K:ℚ]` and a positive integer bound `N`,
+the number of nonzero ideals of `𝓞 K` with absolute norm at most `N` is bounded by
+`2 ^ ((N!)^n)`.
 
-This is a crude polynomial bound, looser than the standard analytic estimate
-`O(N · polylog N)`.  It follows from the divisor-function bound
-`|{ideals of norm = m}| ≤ d(m)^n ≤ m^n`, but is not packaged in Mathlib
-v4.30.  TRUE; a clean Mathlib-PR-shaped statement. -/
+This is a crude bound, much weaker than the tight `N^n` estimate (which would
+follow from `# ideals R ≤ |R|` for the Dedekind quotient `R = 𝓞_K/(N!·𝓞_K)`,
+itself requiring CRT + per-prime factorization not packaged in Mathlib v4.30).
+
+The proof uses the injection `I ↦ image of I in 𝓞_K/(N!·𝓞_K)`, well-defined
+because `absNorm I ≤ N` implies `absNorm I | N!` and `absNorm I ∈ I`. The codomain
+is bounded by `Set R` whose cardinality is `2^|R| = 2^((N!)^n)`. -/
 theorem card_ideals_of_norm_le_bound (N : ℕ) :
     Nat.card {I : (Ideal (𝓞 K))⁰ // Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N} ≤
-      N ^ (Module.finrank ℚ K) := sorry
+      2 ^ (N.factorial ^ Module.finrank ℚ K) := by
+  classical
+  set NF : ℕ := N.factorial with hNF_def
+  have hNF_pos : 0 < NF := N.factorial_pos
+  set J : Ideal (𝓞 K) := Ideal.span ({(NF : 𝓞 K)} : Set (𝓞 K)) with hJ_def
+  -- 𝓞_K / J is finite with cardinality NF^[K:ℚ]
+  have h_cardJ : Nat.card (𝓞 K ⧸ J) = NF ^ Module.finrank ℚ K := by
+    rw [show Nat.card (𝓞 K ⧸ J) = Submodule.cardQuot J from
+      (Submodule.cardQuot_apply J).symm]
+    rw [← Ideal.absNorm_apply, hJ_def, Ideal.absNorm_span_natCast,
+      RingOfIntegers.rank]
+  have h_finite_quot : Finite (𝓞 K ⧸ J) := by
+    have h_pos : 0 < Nat.card (𝓞 K ⧸ J) := by
+      rw [h_cardJ]; exact pow_pos hNF_pos _
+    exact (Nat.card_pos_iff.mp h_pos).2
+  -- For each I in our set, J ≤ I
+  have h_J_le : ∀ (I : (Ideal (𝓞 K))⁰),
+      Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N → J ≤ (I : Ideal (𝓞 K)) := by
+    intro I hI
+    rw [hJ_def, Ideal.span_le, Set.singleton_subset_iff, SetLike.mem_coe]
+    have h_mem : ((Ideal.absNorm (I : Ideal (𝓞 K)) : ℕ) : 𝓞 K) ∈ (I : Ideal (𝓞 K)) :=
+      Ideal.absNorm_mem _
+    have h_dvd : Ideal.absNorm (I : Ideal (𝓞 K)) ∣ NF := by
+      apply Nat.dvd_factorial
+      · exact Ideal.absNorm_pos_of_nonZeroDivisors I
+      · exact hI
+    obtain ⟨q, hq⟩ := h_dvd
+    have h_eq : (NF : 𝓞 K) =
+        ((Ideal.absNorm (I : Ideal (𝓞 K)) : ℕ) : 𝓞 K) * (q : 𝓞 K) := by
+      have := congrArg (Nat.cast (R := 𝓞 K)) hq
+      push_cast at this
+      exact this
+    rw [h_eq]
+    exact Ideal.mul_mem_right _ _ h_mem
+  -- Build injection Φ : {I // absNorm I ≤ N} → Ideal (𝓞 K ⧸ J)
+  let Φ : {I : (Ideal (𝓞 K))⁰ // Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N} →
+      Ideal (𝓞 K ⧸ J) :=
+    fun I => Ideal.map (Ideal.Quotient.mk J) (I.val : Ideal (𝓞 K))
+  have hΦ_inj : Function.Injective Φ := by
+    rintro ⟨I, hI⟩ ⟨I', hI'⟩ heq
+    apply Subtype.ext
+    apply Subtype.ext
+    have hJI : J ≤ (I.val : Ideal (𝓞 K)) := h_J_le I hI
+    have hJI' : J ≤ (I'.val : Ideal (𝓞 K)) := h_J_le I' hI'
+    have h1 : (I.val : Ideal (𝓞 K)) =
+        Ideal.comap (Ideal.Quotient.mk J) (Φ ⟨I, hI⟩) := by
+      simp only [Φ]; rw [Ideal.comap_map_mk hJI]
+    have h2 : (I'.val : Ideal (𝓞 K)) =
+        Ideal.comap (Ideal.Quotient.mk J) (Φ ⟨I', hI'⟩) := by
+      simp only [Φ]; rw [Ideal.comap_map_mk hJI']
+    rw [h1, h2, heq]
+  -- Compose Φ with Ideal → Set: still injective
+  let Ψ : {I : (Ideal (𝓞 K))⁰ // Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N} →
+      Set (𝓞 K ⧸ J) :=
+    fun I => (Φ I : Set _)
+  have hΨ_inj : Function.Injective Ψ := by
+    intro a b h
+    apply hΦ_inj
+    exact SetLike.coe_injective h
+  -- Total domain is finite (subset of Mathlib's finite_setOf_absNorm_le₀)
+  haveI : Finite {I : (Ideal (𝓞 K))⁰ // Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N} :=
+    (Ideal.finite_setOf_absNorm_le₀ (S := 𝓞 K) N).to_subtype
+  -- Cardinality: |dom| ≤ |Set (𝓞_K ⧸ J)| = 2^|𝓞_K ⧸ J| = 2^(NF^n)
+  have h_card_le : Nat.card {I : (Ideal (𝓞 K))⁰ //
+      Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N} ≤ Nat.card (Set (𝓞 K ⧸ J)) :=
+    Nat.card_le_card_of_injective Ψ hΨ_inj
+  -- Bound: Nat.card (Set R) = 2^Nat.card R for finite R
+  have h_set_card : Nat.card (Set (𝓞 K ⧸ J)) = 2 ^ Nat.card (𝓞 K ⧸ J) := by
+    haveI : Fintype (𝓞 K ⧸ J) := Fintype.ofFinite _
+    rw [Nat.card_eq_fintype_card, Nat.card_eq_fintype_card, Fintype.card_set]
+  calc Nat.card {I : (Ideal (𝓞 K))⁰ // Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N}
+      ≤ Nat.card (Set (𝓞 K ⧸ J)) := h_card_le
+    _ = 2 ^ Nat.card (𝓞 K ⧸ J) := h_set_card
+    _ = 2 ^ NF ^ Module.finrank ℚ K := by rw [h_cardJ]
 
-/-- Combined: `Fintype.card (ClassGroup (𝓞 K)) ≤ ⌊minkBound K⌋₊ ^ [K:ℚ]`. -/
+/-- Combined: `Fintype.card (ClassGroup (𝓞 K)) ≤ 2 ^ ((⌊minkBound K⌋₊)!^[K:ℚ])`. -/
 theorem classNumber_le_minkowski_pow_degree :
-    Fintype.card (ClassGroup (𝓞 K)) ≤ ⌊minkBound K⌋₊ ^ (Module.finrank ℚ K) :=
+    Fintype.card (ClassGroup (𝓞 K)) ≤
+      2 ^ ((⌊minkBound K⌋₊).factorial ^ Module.finrank ℚ K) :=
   (classNumber_le_card_ideals_of_norm_le_minkowski K).trans
     (card_ideals_of_norm_le_bound K ⌊minkBound K⌋₊)
 
