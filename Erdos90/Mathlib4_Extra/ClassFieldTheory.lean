@@ -625,6 +625,15 @@ theorem HilbertClassFieldExt.ramificationIdx_eq_one
   have := E.unramified P hP
   exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt hP
 
+/-- For p-HCF, every nonzero prime of `𝓞 H_p` has ramification index 1. -/
+theorem HilbertPClassFieldExt.ramificationIdx_eq_one
+    (K : Type u) [Field K] [NumberField K] (p : ℕ)
+    (E : HilbertPClassFieldExt K p)
+    (P : Ideal (𝓞 E.H_p)) [P.IsPrime] (hP : P ≠ ⊥) :
+    Ideal.ramificationIdx (P.under (𝓞 K)) P = 1 := by
+  have := E.unramified P hP
+  exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt hP
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
