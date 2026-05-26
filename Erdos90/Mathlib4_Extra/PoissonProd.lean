@@ -134,6 +134,53 @@ noncomputable def leftPartial (f : 𝓢(ℝ × ℝ, ℂ)) (y_0 : ℝ) : 𝓢(ℝ
     f.leftPartial y_0 x = f (x, y_0) := by
   simp [leftPartial]
 
+/-! ## Iterated 1-D Poisson on partial Schwartz (PROVED, no sorry)
+
+The 1-D Poisson summation applied to the partial Schwartz functions.
+-/
+
+/-- For each `x_0 : ℝ`, Poisson summation in the second variable:
+
+  `∑' n : ℤ, f(x_0, n) = ∑' n : ℤ, 𝓕(f.rightPartial x_0) n`
+
+PROVED via 1-D Schwartz Poisson applied to `f.rightPartial x_0`. -/
+theorem tsum_rightPartial_eq_fourier (f : 𝓢(ℝ × ℝ, ℂ)) (x_0 : ℝ) :
+    (∑' n : ℤ, (f : ℝ × ℝ → ℂ) (x_0, n)) =
+    ∑' n : ℤ, 𝓕 ((f.rightPartial x_0 : 𝓢(ℝ, ℂ)) : ℝ → ℂ) n := by
+  -- Switch LHS to use rightPartial form, then apply 1-D Poisson
+  have h_lhs : (∑' n : ℤ, (f : ℝ × ℝ → ℂ) (x_0, n)) =
+      ∑' n : ℤ, ((f.rightPartial x_0 : 𝓢(ℝ, ℂ)) : ℝ → ℂ) n := by
+    refine tsum_congr (fun n => ?_)
+    simp [rightPartial_apply]
+  rw [h_lhs]
+  -- Apply 1-D Schwartz Poisson at x = 0
+  have h := SchwartzMap.tsum_eq_tsum_fourier (f.rightPartial x_0) 0
+  simp only [zero_add] at h
+  rw [h]
+  refine tsum_congr (fun n => ?_)
+  rw [show ((0 : ℝ) : UnitAddCircle) = (0 : UnitAddCircle) from by
+    simp [QuotientAddGroup.mk_zero]]
+  rw [fourier_eval_zero, mul_one]
+  rfl
+
+/-- Symmetric form for `leftPartial`: Poisson summation in the first variable. -/
+theorem tsum_leftPartial_eq_fourier (f : 𝓢(ℝ × ℝ, ℂ)) (y_0 : ℝ) :
+    (∑' n : ℤ, (f : ℝ × ℝ → ℂ) (n, y_0)) =
+    ∑' n : ℤ, 𝓕 ((f.leftPartial y_0 : 𝓢(ℝ, ℂ)) : ℝ → ℂ) n := by
+  have h_lhs : (∑' n : ℤ, (f : ℝ × ℝ → ℂ) (n, y_0)) =
+      ∑' n : ℤ, ((f.leftPartial y_0 : 𝓢(ℝ, ℂ)) : ℝ → ℂ) n := by
+    refine tsum_congr (fun n => ?_)
+    simp [leftPartial_apply]
+  rw [h_lhs]
+  have h := SchwartzMap.tsum_eq_tsum_fourier (f.leftPartial y_0) 0
+  simp only [zero_add] at h
+  rw [h]
+  refine tsum_congr (fun n => ?_)
+  rw [show ((0 : ℝ) : UnitAddCircle) = (0 : UnitAddCircle) from by
+    simp [QuotientAddGroup.mk_zero]]
+  rw [fourier_eval_zero, mul_one]
+  rfl
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
