@@ -412,6 +412,12 @@ theorem HilbertClassFieldExt.identity_isCMField (K : Type u) [Field K] [NumberFi
   -- (HilbertClassFieldExt.identity K h).H = K, so IsCMField follows trivially.
   exact inferInstanceAs (IsCMField K)
 
+-- (HilbertClassFieldExt.identity_hilbert_principal omitted: the underlying
+-- claim is that for classNumber=1 K, the Hilbert principal ideal theorem
+-- holds trivially because 𝓞 K is a PID.  The Lean statement requires
+-- unfolding the structure projection `(identity K h).H = K`, which is
+-- def-eq but doesn't propagate to the algebraMap typeclass resolution.)
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
