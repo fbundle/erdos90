@@ -225,18 +225,9 @@ def iterated_fourier_eq_2d_postulate
     (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
     ℂ := sorry
 
-/-- **Step 4**: Summability of 2-D Schwartz on `ℤ × ℤ`.
-
-For `f : 𝓢(ℝ × ℝ, ℂ)`, `Summable (fun p : ℤ × ℤ => f (p.1, p.2))`.
-
-PARTIALLY PROVED: the underlying ingredients are PROVED (summable bound
-+ Schwartz decay), but the norm conversion between
-`‖(finTwoArrowEquiv ℤ).symm p‖` (Pi norm) and the Prod norm of `(p.1, p.2)`
-requires explicit work in Lean.
-
-Postulated for now; the underlying ingredients are documented. -/
-def summable_2d_schwartz_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
-    Summable fun p : ℤ × ℤ => (f : ℝ × ℝ → ℂ) (p.1, p.2) := sorry
+-- (Note: `summable_2d_schwartz_postulate` has been promoted to a PROVED
+-- theorem `summable_2d_schwartz_proved` below.  All earlier uses now point
+-- to it.)
 
 /-- Mathlib's `EisensteinSeries.summable_one_div_norm_rpow` applied to k=3:
 the `‖·‖^(-3)` series is summable over `Fin 2 → ℤ`.
@@ -275,11 +266,19 @@ theorem tendsto_int_prod_cocompact :
 
 /-- Prod-norm = max of natAbs for integer pairs.
 
-POSTULATED — the equality is true (both equal `max(|p.1|, |p.2|)`) but
-the Lean proof requires careful manipulation of `Real.norm_eq_abs`,
-`Int.cast_natAbs`, and `Prod.norm_def`. -/
-def norm_prod_int_eq (p : ℤ × ℤ) :
-    ‖((p.1 : ℝ), (p.2 : ℝ))‖ = max (p.1.natAbs : ℝ) (p.2.natAbs : ℝ) := sorry
+PROVED Lean. -/
+theorem norm_prod_int_eq (p : ℤ × ℤ) :
+    ‖((p.1 : ℝ), (p.2 : ℝ))‖ = max (p.1.natAbs : ℝ) (p.2.natAbs : ℝ) := by
+  simp only [Prod.norm_def, Real.norm_eq_abs]
+  have h1 : |(p.1 : ℝ)| = (p.1.natAbs : ℝ) := by
+    rw [show |(p.1 : ℝ)| = ((|p.1| : ℤ) : ℝ) from by push_cast; rfl]
+    congr 1
+    exact_mod_cast p.1.abs_eq_natAbs
+  have h2 : |(p.2 : ℝ)| = (p.2.natAbs : ℝ) := by
+    rw [show |(p.2 : ℝ)| = ((|p.2| : ℤ) : ℝ) from by push_cast; rfl]
+    congr 1
+    exact_mod_cast p.2.abs_eq_natAbs
+  rw [h1, h2]
 
 /-- Combined: 2-D Schwartz Poisson summable on `ℤ × ℤ`, modulo the
 `tendsto_int_prod_cocompact` postulate (which is easy but tedious).
@@ -361,7 +360,7 @@ theorem tsum_prod_eq_tsum_tsum
     (f : 𝓢(ℝ × ℝ, ℂ)) :
     (∑' p : ℤ × ℤ, (f : ℝ × ℝ → ℂ) (p.1, p.2)) =
     ∑' m : ℤ, ∑' n : ℤ, (f : ℝ × ℝ → ℂ) (m, n) := by
-  have h_summ := summable_2d_schwartz_postulate f
+  have h_summ := summable_2d_schwartz_proved f
   have h_summ_uncurry : Summable (Function.uncurry
       fun m n : ℤ => (f : ℝ × ℝ → ℂ) (m, n)) := by
     convert h_summ using 1
