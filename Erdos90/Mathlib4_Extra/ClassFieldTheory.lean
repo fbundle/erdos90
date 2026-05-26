@@ -154,6 +154,19 @@ instance HilbertClassFieldExt.finiteDimensional
     FiniteDimensional K E.H :=
   .of_finrank_pos (by rw [E.finrank_eq]; exact NumberField.classNumber_pos K)
 
+/-- The Hilbert class field of a totally complex number field is itself
+totally complex.
+
+This is the key "CM preservation" step in HMR: starting from a CM totally
+complex base field, every level of the HCF tower remains CM totally complex.
+
+PROVED Lean via `isTotallyComplex_of_algebra`. -/
+instance HilbertClassFieldExt.isTotallyComplex
+    (K : Type u) [Field K] [NumberField K] [IsTotallyComplex K]
+    (E : HilbertClassFieldExt K) :
+    IsTotallyComplex E.H :=
+  isTotallyComplex_of_algebra (F := K) (K := E.H)
+
 /-! ## The Hilbert class field tower (iterated HCF)
 
 The `n`-th level of the **Hilbert class field tower** would naturally be
