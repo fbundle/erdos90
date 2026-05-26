@@ -181,6 +181,19 @@ theorem tsum_leftPartial_eq_fourier (f : 𝓢(ℝ × ℝ, ℂ)) (y_0 : ℝ) :
   rw [fourier_eval_zero, mul_one]
   rfl
 
+/-- **Iterated 1-D Poisson** on a 2-D Schwartz function (PROVED).
+
+For `f : 𝓢(ℝ × ℝ, ℂ)`:
+  `∑' m, ∑' n, f(m, n) = ∑' m, ∑' n, 𝓕(f.rightPartial m) n`
+
+This is the FIRST iteration step in the 2-D Poisson proof.  PROVED by
+applying `tsum_rightPartial_eq_fourier` at each `m`. -/
+theorem tsum_tsum_rightPartial_eq_fourier (f : 𝓢(ℝ × ℝ, ℂ)) :
+    (∑' m : ℤ, ∑' n : ℤ, (f : ℝ × ℝ → ℂ) (m, n)) =
+    ∑' m : ℤ, ∑' n : ℤ, 𝓕 ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) n := by
+  refine tsum_congr (fun m => ?_)
+  exact tsum_rightPartial_eq_fourier f m
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
