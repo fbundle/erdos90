@@ -48,19 +48,28 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings (after Phase A+B+C+D1).
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 1 `sorry` warning (after Phase A+B+C+D1+D2).
 
-## Proof state — zero axioms, 3 labelled TRUE postulates
+## Proof state — zero axioms, 1 labelled TRUE postulate (`brd_tower_data`)
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords).  The build succeeds; `erdos_unit_distance_false` depends only on `[propext, sorryAx, Classical.choice, Quot.sound]` (foundational Lean axioms + `sorryAx`).
 
-### The three remaining sorries
+### Sorry (1) closed (Phase D1+D2)
 
-**(1a)** `count_spanSingleton_natCast_of_liesOver` in `Erdos90/CMField/CyclotomicSplitPrimes.lean:156` (Phase D1).  Mathlib-shaped count↔ramificationIdx bridge: for `P` lying over `Ideal.span {(q : ℤ)}` in `𝓞 L`, `count L P (spanSingleton ((q : ℕ) : L)) = (Ideal.span {(q : ℤ)}).ramificationIdx P.asIdeal`.  TRUE; provable via `FractionalIdeal.count_coe` + `Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count` plus the `(Associates.mk·).count (Associates.mk·).factors = (normalizedFactors·).count` bridge.  Generic enough to be a Mathlib PR.
+Both count↔ramificationIdx helpers in `Erdos90/CMField/CyclotomicSplitPrimes.lean`
+are fully proved:
+- `count_spanSingleton_natCast_of_liesOver` (line 156): the
+  bridge `count L P (spanSingleton ((q : ℕ) : L)) = ramificationIdx (Ideal.span {q : ℤ}) P.asIdeal`
+  when P lies over span {q}.  Proof uses `FractionalIdeal.count_coe` +
+  `Ideal.count_associates_factors_eq` (the key Mathlib bridge) +
+  `Ideal.map_span` + `Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count`.
+- `count_spanSingleton_natCast_of_not_liesOver` (line 195): count = 0
+  when P doesn't lie over span {q}.  Proof uses `Multiset.count_eq_zero` +
+  maximality of `Ideal.span {(q : ℤ)}` (requires `Fact (Nat.Prime q)`).
 
-**(1b)** `count_spanSingleton_natCast_of_not_liesOver` in `Erdos90/CMField/CyclotomicSplitPrimes.lean:165` (Phase D1).  Companion to (1a): for `P` *not* lying over `span {q}`, the count is 0.  TRUE; provable via the same Mathlib bridge plus uniqueness of the prime-below-P relation.
-
-`splitPrimeData_from_prime_list` (Phase B's old sorry) is **fully proved** as a sum over `qs.toFinset` using (1a) and (1b), via `FractionalIdeal.count_prod` and an explicit `Finset.sum_ite_eq'` collapse.
+Consequently `splitPrimeData_from_prime_list` (Phase B's sorry) is fully
+proved via a sum-over-`qs.toFinset` argument that collapses to 1 via
+`Finset.sum_ite_eq'`.
 
 **(2)** `brd_tower_data` in `Erdos90/NumberFieldDeep_GSTower.lean:105` — the BRD CM tower postulate (Phase C).  Asserts `BRDTowerData ℓ`: a tower-level constant `Q : ℕ` with `D₀ = Q²`, a root-discriminant bound `rd_F ≥ 1` with `log rd_F ≤ ℓ · log ℓ`, and a `getTowerLevel` callable that for each `(M, t, log_H)` returns a CM field `K` of complex degree `f ≥ M`, a `SplitPrimeData K (t' * f)` with `sp.Q = Q` (Q fixed across the tower), and the class-number bound `log(h_K)/f ≤ log_H`.
 
@@ -219,11 +228,9 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The three remaining sorries are:
-   - `count_spanSingleton_natCast_of_liesOver` / `count_spanSingleton_natCast_of_not_liesOver` in `Erdos90/CMField/CyclotomicSplitPrimes.lean:156, 165` (Phase D1).  Mathlib-shaped count↔ramificationIdx bridges.  TRUE; provable via `FractionalIdeal.count_coe` + `Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count` plus the `Associates.factors ↔ normalizedFactors` count bridge (a known Mathlib gap).
-   - `brd_tower_data` in `Erdos90/NumberFieldDeep_GSTower.lean:105` (Phase C, BRD tower postulate).  TRUE per HMR 2021 + Brauer–Siegel; bundles class field theory + Golod–Shafarevich + quantitative Brauer–Siegel.  Not in Mathlib v4.30.
+5. The single remaining sorry is `brd_tower_data` in `Erdos90/NumberFieldDeep_GSTower.lean:105` (Phase C, BRD tower postulate).  TRUE per HMR 2021 + Brauer–Siegel; bundles class field theory + Golod–Shafarevich + quantitative Brauer–Siegel.  Not in Mathlib v4.30.
 
-   The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, Q²-scaling, Q²-scaled lattice machinery, `splitPrimeData_from_prime_list` (proved using the helpers), combinatorial counting — is fully proved.
+   The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, Q²-scaling, Q²-scaled lattice machinery, cyclotomic split-prime data (`splitPrimeData_from_prime_list` and its `h_Q_count` fields, proved via the count↔ramificationIdx bridges), combinatorial counting — is fully proved.
 
 6. **∃ elimination into Type:** `Exists.casesOn` only eliminates into `Prop` in Lean 4.  When constructing a structure with `ℝ` or other non-`Prop` fields, use helper structures (like `GSBaseData`) instead of `∃` existential hypotheses — otherwise `obtain`/`cases` fails with "recursor can only eliminate into Prop".
 
@@ -231,30 +238,35 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 ## Lessons
 
-### 2026-05-26 (Phase D1): Decomposition vs closure
+### 2026-05-26 (Phase D1+D2): Close Sorry (1) — the count↔ramificationIdx bridges
 
-Attempted to close Sorry (1) (`splitPrimeData_from_prime_list`'s `h_Q_count`
-fields).  Replaced the two embedded sorries with a fully proved sum-over-`qs`
-argument relying on two abstracted helper lemmas:
-- `count_spanSingleton_natCast_of_liesOver`: count = ramificationIdx when P
-  lies over q
-- `count_spanSingleton_natCast_of_not_liesOver`: count = 0 when P doesn't
+Phase D1 decomposed `splitPrimeData_from_prime_list`'s `h_Q_count` sorries
+into a sum-over-`qs.toFinset` argument relying on two helper lemmas.
+Phase D2 then closed both helpers:
 
-The helpers are TRUE and structurally clean (generic Mathlib-shaped lemmas
-about Dedekind domains), but their proof requires the bridge
-`(Associates.mk v.asIdeal).count (Associates.mk J).factors = (normalizedFactors
-J).count v.asIdeal`, which is buried in Mathlib's `UniqueFactorizationMonoid`
-machinery.
+- `count_spanSingleton_natCast_of_liesOver`: the key Mathlib lemma is
+  `Ideal.count_associates_factors_eq` (in `DedekindDomain/Ideal/Lemmas.lean`),
+  which gives `(Associates.mk P).count (Associates.mk I).factors =
+  Multiset.count P (normalizedFactors I)`.  Combined with
+  `FractionalIdeal.count_coe`, `Ideal.map_span`, and
+  `Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count`,
+  the bridge falls out.
 
-Net effect: 2 sorries → 3 sorries.  The original sorry was 1 big embedded
-gap in 400+ LOC of project-specific code; the new sorries are 2 clean
-one-line statements that could potentially become standalone Mathlib
-contributions.
+- `count_spanSingleton_natCast_of_not_liesOver`: uses the same `count_coe`
+  + `count_associates_factors_eq` reduction, then `Multiset.count_eq_zero`:
+  if `P ∈ normalizedFactors (Ideal.span {q : 𝓞 L})`, then `P ∣ span {q}`,
+  so `span {q : ℤ} ⊆ Ideal.under ℤ P`; by maximality of `span {q : ℤ}`
+  (needs `Fact (Nat.Prime q)`) and properness of `Ideal.under ℤ P` (from
+  `P.asIdeal ≠ ⊤`), we get equality, contradicting `¬LiesOver`.
 
-**Lesson:** "Closing" a sorry sometimes means refactoring it into smaller,
-cleaner sorries that have clear Mathlib-PR shape, even if the count goes
-up.  The decomposition is the work; the actual Mathlib API closure can
-follow separately.
+Sorry count: 2 → 1.  The signature change to require `Fact (Nat.Prime q)`
+in the second helper propagates as a typeclass requirement; the cyclotomic
+caller already has `_hqs_prime` so the change is invisible.
+
+**Lesson:** When a "Mathlib API gap" feels insurmountable, search wider
+(`grep -rn` across multiple namespaces).  The needed
+`Ideal.count_associates_factors_eq` was in a less-obvious file
+(`DedekindDomain/Ideal/Lemmas.lean`, not `Factorization.lean`).
 
 ### 2026-05-26 (Phase A+B+C): Decompose the bundled postulate via paper insight
 
