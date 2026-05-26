@@ -248,14 +248,51 @@ suffices for the asymptotic chain.
 quantitative lower bound is the remaining gap.
 -/
 
+/-! ### Decomposition of D3.2c (Mathlib roadmap)
+
+Closing `regulator_lower_bound_cm` decomposes into the following Mathlib pieces:
+
+- **D3.2c.zeta_residue_formula**: Stark/Tate's formula relating `regulator K` to
+  the value of `ζ_K` at `s = 0`.  Specifically `ζ_K(s) ~ -h_K · R_K / w_K · s^r`
+  as `s → 0`, where `r = r₁ + r₂ - 1` is the unit rank.  Equivalent to the
+  Dedekind class number formula via the functional equation.
+
+  Mathlib status: NOT IN.  Requires functional equation for `dedekindZeta`
+  (Hecke gamma factors).  Estimated effort: substantial L-function machinery.
+
+- **D3.2c.zeta_at_zero_positive**: `ζ_K(0)` is positive in the appropriate sense.
+  This is what gives Friedman his lower bound when combined with the residue
+  formula.  Friedman's argument uses positivity of integrals.
+
+  Mathlib status: NOT IN.  Requires analytic continuation of `dedekindZeta`
+  past `s = 1` to `s = 0`.
+
+- **D3.2c.lehmer_bound** (alternative path): height bound on units, then
+  Hadamard-style inequality on the unit lattice.  Lehmer's conjecture
+  (height ≥ log(1.17628)) is OPEN; Dobrowolski 1979 gives an unconditional
+  bound `(log log d / log d)^3` for unit height.
+
+  Mathlib status: NOT IN.  Even Smyth's theorem (1971) on Mahler measure for
+  non-reciprocal polynomials isn't packaged.
+
+Neither path is feasible session-scale.  The genuine Mathlib gap is L-function
+infrastructure (functional equation for `dedekindZeta`, analytic continuation,
+residue evaluation at `s = 0`).
+-/
+
 /-- **D3.2c**: Friedman–Zimmert regulator lower bound for CM totally complex
 fields.  For a CM totally complex K with `nrComplexPlaces K ≥ 1` (i.e. unit
 rank `f - 1 ≥ 0`), `regulator K ≥ 1/8`.
 
 The constant `1/8` is a weakened form of Friedman's `R_K > 0.2052`.
 
-Cite: Friedman 1989 (`assets/` would be ideal but not currently in repo);
-Zimmert 1981.  Not in Mathlib v4.30. -/
+Cite: Friedman 1989, *"Analytic formulas for the regulator of a number field"*,
+Inventiones 98:599–622.  Zimmert 1981 gives a comparable bound via a log-sieve
+method.  Not in Mathlib v4.30.
+
+See the decomposition above for the Mathlib roadmap.  The closure of this
+lemma is shared infrastructure with `dedekind_residue_upper_bound_cm` — both
+need the analytic continuation of `dedekindZeta` and the functional equation. -/
 lemma regulator_lower_bound_cm
     [IsCMField K] [IsTotallyComplex K]
     (_hf : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces K) :
