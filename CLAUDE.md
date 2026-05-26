@@ -35,6 +35,10 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Mathlib4_Extra/FractionalIdealCount.lean` | Mathlib-candidate `FractionalIdeal.count` lemmas: `le_one_of_forall_count_nonneg`, `mem_range_of_spanSingleton_count_nonneg` (the integrality bridge). |
 | `Erdos90/Mathlib4_Extra/FractionalIdealRingEquiv.lean` | Mathlib-candidate `ringEquivOfRingEquiv_coeIdeal` lemma. |
 | `Erdos90/Mathlib4_Extra/ClassNumberBound.lean` | Phase E1–E12 infrastructure for D3.2 chain: `classNumber_le_card_ideals_of_norm_le_minkowski` (E1, proved), `card_ideals_of_norm_le_bound` (E4, proved with crude `2^((N!)^[K:ℚ])`), `minkBound_le_pow_rootDiscr` (E3, proved), `log_four_r_div_pi_le_two_log_two_r` (E2, proved), `classNumber_eq_residue_formula` (E5, proved — algebraic identity from `dedekindZeta_residue_def`), `regulator_lower_bound_cm` (E6, sorried — Friedman 1989), `dedekind_residue_upper_bound_cm` (E7, sorried — Louboutin 2000), `torsionOrder_bound` (E8/E10, proved via two sub-lemmas), `totient_torsionOrder_le_finrank` (E10, proved via cyclotomic bridge), `nat_le_four_mul_totient_sq` (E12, sorried for n ≥ 17 case; n ≤ 16 proved). |
+| `Erdos90/Mathlib4_Extra/UnramifiedDiscriminant.lean` | Phase E14 (2026-05-27) — `rootDiscr_eq_of_unramifiedTower` (PROVED): root discriminant is invariant under everywhere-unramified extensions.  Plus `differentIdeal_eq_top_of_isUnramifiedAt` (PROVED) and the discriminant-tower formula `natAbs_discr_eq_pow_of_unramifiedTower` (PROVED). |
+| `Erdos90/Mathlib4_Extra/ClassFieldTheory.lean` | Phase E14 — `HilbertClassFieldExt K` stub structure + `hilbertClassField_exists` labelled postulate (sorry) + `rootDiscr_hcf_eq` (PROVED corollary). |
+| `Erdos90/Mathlib4_Extra/GolodShafarevich.lean` | Phase E14 — `GolodShafarevich.Input` structure + `gs_cm_tower_infinite_postulate` labelled postulate (sorry, now the proof-path Mathlib gap) + `NumberField.gs_unramified_tower_with_bounded_rd` (PROVED bridge that powers `gs_cm_tower`). |
+| `Erdos90/Mathlib4_Extra/SeparablePoisson2D.lean` | Schwartz Poisson summation lemmas in the separable case — see file for details (all PROVED). |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -49,9 +53,11 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with **2 `sorry` warnings on the proof path of `erdos_unit_distance_false`** (after Phase A+B+C+D1+D2+D3+D4+D5+E1+…+E13).  `Mathlib4_Extra/ClassNumberBound.lean` has 2 named, off-path sorries (D3.2b, D3.2c) supporting the chain — D3.2.tors (`torsionOrder_bound`) is now fully proved Lean code via E10 + E13.
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  After Phase E14 (2026-05-27), the build succeeds with sorries restructured: `gs_cm_tower` is PROVED Lean code, and the load-bearing labelled postulate is now `gs_cm_tower_infinite_postulate` in `Mathlib4_Extra/GolodShafarevich.lean`.  Proof-path sorries (reaching `erdos_unit_distance_false`): `gs_cm_tower_infinite_postulate` + `chebotarev_fixed_Q`.  Off-path: `regulator_lower_bound_cm`, `dedekind_residue_upper_bound_cm`, `hilbertClassField_exists`.
 
 Phase D5 split `hmr_brd_cm_tower` into `gs_cm_tower` + `chebotarev_fixed_Q`.  Phase E9 (2026-05-26) closed `class_num_bound_of_brd` by assembling E5 (analytic class number formula) + D3.2b (Louboutin residue upper bound) + D3.2c (Friedman regulator lower bound) + D3.2.tors (torsionOrder polynomial bound) + numeric arithmetic.  The chain requires `f ≥ 5` (provided by `brd_tower_data` bumping `M` to `max M 5`).
+
+Phase E14 (2026-05-27) restructured `gs_cm_tower` into PROVED Lean code that delegates to a labelled postulate `gs_cm_tower_infinite_postulate` in the new file `Erdos90/Mathlib4_Extra/GolodShafarevich.lean`.  The discriminant-control half is now fully proved via `rootDiscr_eq_of_unramifiedTower` in the new file `Erdos90/Mathlib4_Extra/UnramifiedDiscriminant.lean`.  Both new files plus `Erdos90/Mathlib4_Extra/ClassFieldTheory.lean` (HCF stub) form a cleaner Mathlib-PR-shaped layer.
 
 ## Proof state — zero axioms, 2 labelled TRUE postulates on the proof path
 
