@@ -13,9 +13,11 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 - [x] `Erdos90/Defs.lean`
 - [x] main theorem `erdos_unit_distance_false` in `Erdos90/Main.lean`
 
-## MATHLIB EXTRA
+## COMPLEX MULTIPLICATION FIELD - MATHLIB EXTRA
 
-multiple mathlib contributions were separated into `Erdos90/Mathlib4_Extra` - feel free to enjoy
+- the AI formalized some facts about Complex Multiplication Field in `Erdos90/CMField` - feel free to enjoy
+
+- multiple mathlib contributions were separated into `Erdos90/Mathlib4_Extra` - feel free to enjoy
 
 ## INSTRUCTION FOR AI
 
