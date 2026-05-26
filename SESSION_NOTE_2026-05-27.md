@@ -4,9 +4,21 @@ Written by AI agent for the human maintainer to read on waking.
 
 ## TL;DR
 
-- **Sorry count went 4 → 4** during this overnight session (no new sorries
-  closed beyond `nat_le_four_mul_totient_sq` which was done before the
-  maintainer slept).
+- **Sorry count went 4 → 5**: `gs_cm_tower` (proof path) is now PROVED Lean
+  code; replaced by labelled `gs_cm_tower_infinite_postulate` in
+  `Mathlib4_Extra/GolodShafarevich.lean`.  Added `hilbertClassField_exists`
+  in `Mathlib4_Extra/ClassFieldTheory.lean` as a separate labelled stub
+  (currently off-path).
+- **Significant structural decomposition** of `gs_cm_tower`:
+  - `rootDiscr_eq_of_unramifiedTower` FULLY PROVED (no sorry) in new file
+    `Mathlib4_Extra/UnramifiedDiscriminant.lean`.
+  - `HilbertClassFieldExt K` structure + `rootDiscr_hcf_eq` proved
+    corollary in new file `Mathlib4_Extra/ClassFieldTheory.lean`.
+  - `GolodShafarevich.Input` + `gs_unramified_tower_with_bounded_rd` proved
+    bridge in new file `Mathlib4_Extra/GolodShafarevich.lean`.
+- `gs_cm_tower` itself is now ~30 lines of proved Lean assembling the
+  above.  The structural Mathlib gap (class field theory + GS infinite-tower
+  existence) is preserved but in a cleaner Mathlib-PR-shape location.
 - **Substantial documentation work**: stale docstrings refreshed across 5
   files, 4 new research notes in `assets/search_results/`, 3 new papers
   added to `assets/` (Anick–Dicks GS, Hajir–Maire 2017 analytic Lie,
