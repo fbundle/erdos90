@@ -225,15 +225,32 @@ def iterated_fourier_eq_2d_postulate
     (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
     ℂ := sorry
 
-/-- **Step 4** (PARTIALLY POSTULATED): Summability of 2-D Schwartz on
-`ℤ × ℤ`.
+/-- **Step 4**: Summability of 2-D Schwartz on `ℤ × ℤ`.
 
 For `f : 𝓢(ℝ × ℝ, ℂ)`, `Summable (fun p : ℤ × ℤ => f (p.1, p.2))`.
 
-Provable from Schwartz decay + 2-D `p`-series summability.  -/
-def summable_2d_schwartz_postulate
-    (f : 𝓢(ℝ × ℝ, ℂ)) :
+PARTIALLY PROVED: the underlying ingredients are PROVED (summable bound
++ Schwartz decay), but the norm conversion between
+`‖(finTwoArrowEquiv ℤ).symm p‖` (Pi norm) and the Prod norm of `(p.1, p.2)`
+requires explicit work in Lean.
+
+Postulated for now; the underlying ingredients are documented. -/
+def summable_2d_schwartz_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
     Summable fun p : ℤ × ℤ => (f : ℝ × ℝ → ℂ) (p.1, p.2) := sorry
+
+/-- Mathlib's `EisensteinSeries.summable_one_div_norm_rpow` applied to k=3:
+the `‖·‖^(-3)` series is summable over `Fin 2 → ℤ`.
+
+PROVED (just a wrapper). -/
+theorem summable_norm_rpow_three :
+    Summable fun (x : Fin 2 → ℤ) => (‖x‖ : ℝ) ^ (-(3 : ℝ)) :=
+  EisensteinSeries.summable_one_div_norm_rpow (by norm_num : (2 : ℝ) < 3)
+
+/-- Transferred to `ℤ × ℤ` via the canonical equivalence. -/
+theorem summable_norm_rpow_three_prod :
+    Summable fun (p : ℤ × ℤ) =>
+      (‖(finTwoArrowEquiv ℤ).symm p‖ : ℝ) ^ (-(3 : ℝ)) :=
+  (finTwoArrowEquiv ℤ).symm.summable_iff.mpr summable_norm_rpow_three
 
 /-! ## Summability via partial summability (PROVED)
 
@@ -278,7 +295,7 @@ theorem summable_norm_col_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
   simp [leftPartial_apply]
 
 /-- **Fubini for `tsum`** applied to 2-D Schwartz (PROVED modulo
-`summable_2d_schwartz_postulate`).
+`summable_2d_schwartz`).
 
 If `f` is absolutely summable on `ℤ × ℤ` (provable from Schwartz decay,
 currently postulated), then:
@@ -297,7 +314,7 @@ theorem tsum_prod_eq_tsum_tsum
   rw [h_summ.tsum_prod' h_row]
 
 /-- **Combined**: 2-D Poisson up to the partial-Fourier step (PROVED modulo
-`summable_2d_schwartz_postulate`).
+`summable_2d_schwartz`).
 
   `∑' (p : ℤ × ℤ), f p = ∑' m, ∑' n, 𝓕(f.rightPartial m) n`
 
