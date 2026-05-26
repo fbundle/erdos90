@@ -48,21 +48,19 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings (after Phase A+B+C+D1+D2+D3).
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` warnings (after Phase A+B+C+D1+D2+D3+D4).
 
-## Proof state — zero axioms, 3 labelled TRUE postulates
+## Proof state — zero axioms, 2 labelled TRUE postulates (both literature gaps)
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords).  The build succeeds; `erdos_unit_distance_false` depends only on `[propext, sorryAx, Classical.choice, Quot.sound]` (foundational Lean axioms + `sorryAx`).
 
-### Remaining sorries (Phase D3 decomposition)
+### The two remaining sorries (both literature gaps)
 
-**D3.1** `hmr_brd_cm_tower` in `Erdos90/NumberFieldDeep_GSTower.lean:115` — HMR 2021 BRD CM tower + Chebotarev for fixed Q.  TRUE; requires class field theory + Golod–Shafarevich + quantitative Chebotarev.  Not in Mathlib v4.30.
+**D3.1** `hmr_brd_cm_tower` in `Erdos90/NumberFieldDeep_GSTower.lean:116` — HMR 2021 BRD CM tower + Chebotarev for fixed Q.  TRUE; requires class field theory + Golod–Shafarevich + quantitative Chebotarev.  Not in Mathlib v4.30.  Multi-month formalization.
 
-**D3.2** `class_num_bound_of_brd` in `Erdos90/NumberFieldDeep_GSTower.lean:136` — Quantitative Brauer–Siegel bound `log(h_K)/f ≤ 2 · log(2 · rd_F)` for K in the BRD tower.  TRUE per Brauer–Siegel + Louboutin 2000.  Not in Mathlib v4.30.
+**D3.2** `class_num_bound_of_brd` in `Erdos90/NumberFieldDeep_GSTower.lean:137` — Quantitative Brauer–Siegel bound `log(h_K)/f ≤ 2 · log(2 · rd_F)` for K in the BRD tower.  TRUE per Brauer–Siegel + Louboutin 2000.  Not in Mathlib v4.30.  Multi-month formalization.
 
-**D3.3** `brd_log_H_threshold` in `Erdos90/NumberFieldDeep_GSTower.lean:155` — Architectural gap: from `log_H > 0` + `1 ≤ rd_F`, claims `log_H ≥ 2 · log(2 · rd_F)`.  TRUE-in-practice (the caller chain via `exists_admissible_family` sets `log_H := 2 · C_class · log(2 · rd_F)` with `C_class = 1`), but not from local hypotheses.  A "Phase D4" refactor would push this hypothesis into `BRDTowerData.getTowerLevel` and propagate, closing this sorry without introducing new content.
-
-`brd_tower_data` itself is now PROVED Lean code that assembles D3.1+D3.2+D3.3.
+`brd_tower_data` itself is PROVED Lean code that assembles D3.1+D3.2.  Phase D4 closed D3.3 (the `log_H ≥ 2 · log(2 · rd_F)` threshold) by threading the hypothesis through the entire signature chain from `BRDTowerData.getTowerLevel` up to `exists_admissible_family` (which proves it via `C_class = 1`).
 
 ### Sorry (1) closed (Phase D1+D2)
 
@@ -238,12 +236,11 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The three remaining sorries are (after Phase D3 decomposition):
-   - `hmr_brd_cm_tower` (`NumberFieldDeep_GSTower.lean:115`): HMR 2021 existence + Chebotarev.
-   - `class_num_bound_of_brd` (`NumberFieldDeep_GSTower.lean:136`): quantitative Brauer–Siegel.
-   - `brd_log_H_threshold` (`NumberFieldDeep_GSTower.lean:155`): architectural gap `log_H ≥ 2 · log(2 · rd_F)` (closeable by a "Phase D4" signature refactor — not new content).
+5. The two remaining sorries are (after Phase D3+D4):
+   - `hmr_brd_cm_tower` (`NumberFieldDeep_GSTower.lean:116`): HMR 2021 existence + Chebotarev.
+   - `class_num_bound_of_brd` (`NumberFieldDeep_GSTower.lean:137`): quantitative Brauer–Siegel.
 
-   `brd_tower_data` is now proved Lean code assembling all three.
+   Both are genuine multi-month Mathlib gaps with explicit literature citations.  `brd_tower_data` is proved Lean code assembling them.
 
    The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, Q²-scaling, Q²-scaled lattice machinery, cyclotomic split-prime data (`splitPrimeData_from_prime_list` and its `h_Q_count` fields, proved via the count↔ramificationIdx bridges), combinatorial counting — is fully proved.
 
@@ -252,6 +249,39 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Lessons
+
+### 2026-05-26 (Phase D4): Close the architectural gap by threading the hypothesis
+
+Phase D3 left 3 sorries; the third (`brd_log_H_threshold`) was an
+architectural gap, not a literature gap: claimed `log_H ≥ 2 · log(2 · rd_F)`
+from `log_H > 0`, which is false in general but true in the actual call
+chain via `exists_admissible_family`'s choice of `log_H_base = 2 · C_class
+· log(2 · rd_F)` with `C_class = 1`.
+
+Phase D4 closes this by threading the hypothesis through the signature
+chain (8 functions across 4 files):
+
+  BRDTowerData.getTowerLevel ──┐
+  brd_cm_tower_postulate       │
+  gs_tower_levels_proved       │  +(hlog_H_ge_rd : log_H ≥ 2·log(2·rd_F))
+  gs_tower_levels              │   added everywhere
+  GSTowerData.getTowerLevel    │
+  gs_tower_levels_v2           │
+  ERDOS_ANT_Postulates.gs_tower│
+  prop_3_2_to_3_6_via_deep ────┘
+  exists_admissible_family       proves it via C_class = 1
+
+The threading is straightforward: each function takes the hypothesis and
+passes it down (or, at the bottom, proves it).
+
+Sorry count: 3 → 2.  Both remaining sorries are now genuine literature
+gaps (HMR 2021, Brauer–Siegel quantitative).
+
+**Lesson:** Architectural sorries (where the statement is true-in-practice
+but not from local hypotheses) are often closeable by threading the
+needed hypothesis through the call chain.  This is mechanical work,
+not new mathematics, and is worth doing to keep the remaining sorries
+honest.
 
 ### 2026-05-26 (Phase D3): Decompose `brd_tower_data` into 3 Mathlib-PR-shaped sorries
 
