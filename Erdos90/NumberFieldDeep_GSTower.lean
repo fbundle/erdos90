@@ -121,7 +121,8 @@ def hmr_brd_cm_tower (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
           (_ : IsTotallyComplex K) (f : ℕ) (_ : f ≥ M) (_ : f ≥ 1)
           (_ : InfinitePlace.nrComplexPlaces K = f)
           (_ : InfinitePlace.nrRealPlaces K = 0)
-          (sp : SplitPrimeData K (t' * f)),
+          (sp : SplitPrimeData K (t' * f))
+          (_ : NumberField.rootDiscr K ≤ rd_F),
           sp.Q = Q := sorry
 
 /-- **D3.2**: Quantitative Brauer–Siegel bound for CM fields with bounded root
@@ -138,9 +139,7 @@ lemma class_num_bound_of_brd
     (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
     (f : ℕ) (_hf : InfinitePlace.nrComplexPlaces K = f) (_hf1 : f ≥ 1)
     (rd_F : ℝ) (_hrd_F : 1 ≤ rd_F)
-    -- (intended: K is a level of the BRD tower with the given rd_F; the explicit
-    -- root-discriminant hypothesis is bundled into the postulate)
-    (_h_K_from_brd_tower : True) :
+    (_hrd_K : NumberField.rootDiscr K ≤ rd_F) :
     Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ) ≤
       2 * Real.log (2 * rd_F) := sorry
 
@@ -182,7 +181,7 @@ def brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ :=
         dsimp [t']
         push_cast
         linarith [Nat.le_ceil t]
-      obtain ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, sp, hsp_Q⟩ :=
+      obtain ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, sp, hrd_K, hsp_Q⟩ :=
         h_tower M t'
       refine ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, t', ht'_ge, sp,
         hsp_Q, ?_⟩
@@ -192,7 +191,7 @@ def brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ :=
       letI : IsTotallyComplex K := hTC
       have h_BS : Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ) ≤
           2 * Real.log (2 * rd_F) :=
-        class_num_bound_of_brd K f hcompl hf1 rd_F hrd_F_ge1 trivial
+        class_num_bound_of_brd K f hcompl hf1 rd_F hrd_F_ge1 hrd_K
       linarith }
 
 /-- **BRD CM tower postulate** — Phase C (b) PROVED assembly.

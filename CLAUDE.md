@@ -59,7 +59,7 @@ All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` key
 
 **D3.1** `hmr_brd_cm_tower` in `Erdos90/NumberFieldDeep_GSTower.lean:116` — HMR 2021 BRD CM tower + Chebotarev for fixed Q.  TRUE; requires class field theory + Golod–Shafarevich + quantitative Chebotarev.  Not in Mathlib v4.30.  Multi-month formalization.
 
-**D3.2** `class_num_bound_of_brd` in `Erdos90/NumberFieldDeep_GSTower.lean:137` — Quantitative Brauer–Siegel bound `log(h_K)/f ≤ 2 · log(2 · rd_F)` for K in the BRD tower.  TRUE per Brauer–Siegel + Louboutin 2000.  Not in Mathlib v4.30.  Multi-month formalization.
+**D3.2** `class_num_bound_of_brd` in `Erdos90/NumberFieldDeep_GSTower.lean:138` — Quantitative Brauer–Siegel bound `log(h_K)/f ≤ 2 · log(2 · rd_F)` for K in the BRD tower with `rootDiscr K ≤ rd_F` (the previous `_h_K_from_brd_tower : True` placeholder was fixed 2026-05-26 by threading `rootDiscr K ≤ rd_F` through `hmr_brd_cm_tower`).  TRUE per Brauer–Siegel + Louboutin 2000.  Not in Mathlib v4.30.  Multi-month formalization.
 
 `brd_tower_data` itself is PROVED Lean code that assembles D3.1+D3.2.  Phase D4 closed D3.3 (the `log_H ≥ 2 · log(2 · rd_F)` threshold) by threading the hypothesis through the entire signature chain from `BRDTowerData.getTowerLevel` up to `exists_admissible_family` (which proves it via `C_class = 1`).
 
@@ -72,6 +72,7 @@ Phase E (E1, E2, E3) builds the named chain that would close D3.2 once the analy
 - `minkBound_le_pow_rootDiscr` (E3): `M K ≤ ((4 · rootDiscr K) / π)^f` for totally complex K.  Uses `Nat.factorial_le_pow` + `rootDiscr_def` + half-power simplification.
 - `log_four_r_div_pi_le_two_log_two_r` (E2): `log((4r)/π) ≤ 2·log(2r)` for `r ≥ 1`.
 - `card_ideals_of_norm_le_bound` (E4, 2026-05-26): `|{ideals norm ≤ N}| ≤ 2^((N!)^[K:ℚ])` via the injection `I ↦ image in 𝓞_K/(N!·𝓞_K)` (uses `absNorm I | N!` + `absNorm I ∈ I` ⇒ `(N!·𝓞_K) ⊆ I`).  The codomain is bounded by `Set R` with `|R| = (N!)^[K:ℚ]` (via `absNorm_span_natCast` + `RingOfIntegers.rank`); tight `N^[K:ℚ]` bound would need `# ideals R ≤ |R|` for the Dedekind quotient, which requires CRT + per-prime factorization not yet packaged in Mathlib v4.30.
+- `classNumber_eq_residue_formula` (E5, 2026-05-26): the Dirichlet class number formula in algebraic-identity form: `(classNumber K : ℝ) = dedekindZeta_residue K · (torsionOrder K · √|discr K|) / (2^r₁ · (2π)^r₂ · regulator K)`.  Pure rearrangement of Mathlib's `dedekindZeta_residue_def`; no analytic content (the genuine analytic input is in Mathlib's `tendsto_sub_one_mul_dedekindZeta_nhdsGT`).  This is D3.2a in the proposed Brauer–Siegel chain (see `assets/search_results/D32_brauer_siegel_what_we_need.md`); used to turn future upper bounds on the residue into upper bounds on `log h_K / f`.
 
 **Remaining Mathlib gap (would close D3.2 cleanly):**
 - The tight `|{ideals norm ≤ N}| ≤ C(K) · N` analytic estimate.  The crude `2^((N!)^[K:ℚ])` proved above is too loose to chain through the discriminant inequality and beat `f · log(rd_F)` asymptotically.
