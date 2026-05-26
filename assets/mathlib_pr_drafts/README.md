@@ -12,6 +12,24 @@ Each file has:
 
 ## Drafts
 
+### `SeparablePoisson2D.lean` — separable n-D Poisson summation
+
+**Target Mathlib location:** `Mathlib/Analysis/Fourier/PoissonSummation.lean`
+
+**Statements:**
+- `SchwartzMap.tsum_eq_tsum_fourier_zero (f : 𝓢(ℝ, ℂ)) : ∑' n : ℤ, f n = ∑' n : ℤ, 𝓕 f n`
+- `SchwartzMap.tsum_product_eq_tsum_fourier_product (g h : 𝓢(ℝ, ℂ))` — 2-D separable, product form
+- `SchwartzMap.tsum_prod_eq_tsum_fourier_prod (g h : 𝓢(ℝ, ℂ))` — 2-D separable, sum-over-product form
+- `SchwartzMap.tsum_three_product_eq_fourier (g h k : 𝓢(ℝ, ℂ))` — 3-D separable
+- `SchwartzMap.tsum_finset_product_eq_fourier_product {ι} [Fintype ι] (f : ι → 𝓢(ℝ, ℂ))` — n-D, product form
+- `SchwartzMap.tsum_empty_product_eq_fourier_product` — base case for IsEmpty ι
+
+**Lines:** ~140.
+
+**Status:** All PROVED.  Standalone Mathlib-compatible imports (`import Mathlib`).
+Could be split into multiple smaller PRs (1-D corollary, separable 2-D, n-D
+product form, etc.) for easier review.
+
 ### `Nat_TotientReverse.lean` — `Nat.le_four_mul_totient_sq`
 
 **Target Mathlib location:** `Mathlib/Data/Nat/Totient.lean`
