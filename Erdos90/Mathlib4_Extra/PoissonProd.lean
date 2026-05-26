@@ -277,6 +277,25 @@ theorem summable_norm_col_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
   refine h.congr (fun m => ?_)
   simp [leftPartial_apply]
 
+/-- **Fubini for `tsum`** applied to 2-D Schwartz (PROVED modulo
+`summable_2d_schwartz_postulate`).
+
+If `f` is absolutely summable on `ℤ × ℤ` (provable from Schwartz decay,
+currently postulated), then:
+  `∑' (p : ℤ × ℤ), f p = ∑' m, ∑' n, f (m, n)`. -/
+theorem tsum_prod_eq_tsum_tsum
+    (f : 𝓢(ℝ × ℝ, ℂ)) :
+    (∑' p : ℤ × ℤ, (f : ℝ × ℝ → ℂ) (p.1, p.2)) =
+    ∑' m : ℤ, ∑' n : ℤ, (f : ℝ × ℝ → ℂ) (m, n) := by
+  have h_summ := summable_2d_schwartz_postulate f
+  have h_summ_uncurry : Summable (Function.uncurry
+      fun m n : ℤ => (f : ℝ × ℝ → ℂ) (m, n)) := by
+    convert h_summ using 1
+  have h_row : ∀ m : ℤ, Summable fun n : ℤ => (f : ℝ × ℝ → ℂ) (m, n) :=
+    summable_row_schwartz f
+  -- Apply Summable.tsum_prod'
+  rw [h_summ.tsum_prod' h_row]
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
