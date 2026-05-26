@@ -61,6 +61,4 @@ This work is completed fully by the following AI systems (with human verificatio
 
 - `Gemini-3-Flash-Preview, Gemini-3.1-Flash-Lite-Preview` - web search
 
-- `DeepSeek-V4-Pro with Reasonix` - new main proof writer
-
-- `Claude Opus 4.7 with Claude Code` - new main proof writer
+- `Claude Opus 4.7 with Claude Code` - new main proof writer (both `DeepSeek-V4-Pro` and `Claude Sonnet 4.6` struggled with complex code/math - we need a stronger model)
