@@ -189,7 +189,7 @@ E = {±1}^m, class‑group G = Cl(K), and norm‑1 element constructor α/c(α)
 satisfying the cardinality bound.  Needs: CM field construction, split‑prime
 ideal pairs, Minkowski class‑number bound. -/
 structure ERDOS_ANT_Postulates where
-  gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (base : GSBaseData ℓ) (M : ℕ)
+  gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
     (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
@@ -197,7 +197,7 @@ structure ERDOS_ANT_Postulates where
       (_ : Countable Λ) (F : Set (Fin f → ℂ)),
       IsAddFundamentalDomain Λ F volume ∧ volume F < ∞ ∧ volume F > 0 ∧
       Bornology.IsBounded F ∧
-      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ base.D₀⁻¹) ∧
+      (∀ v ∈ Λ, v ≠ 0 → ∃ i : Fin f, ‖v i‖ ≥ (brd_tower_data ℓ hℓ).D₀⁻¹) ∧
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
       t + 1 ≤ (cmData.t'_param : ℝ) ∧
       cmData.classNumBound ≤ log_H
