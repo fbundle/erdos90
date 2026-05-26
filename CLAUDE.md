@@ -48,11 +48,21 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 1 `sorry` warning (after Phase A+B+C+D1+D2).
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings (after Phase A+B+C+D1+D2+D3).
 
-## Proof state — zero axioms, 1 labelled TRUE postulate (`brd_tower_data`)
+## Proof state — zero axioms, 3 labelled TRUE postulates
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords).  The build succeeds; `erdos_unit_distance_false` depends only on `[propext, sorryAx, Classical.choice, Quot.sound]` (foundational Lean axioms + `sorryAx`).
+
+### Remaining sorries (Phase D3 decomposition)
+
+**D3.1** `hmr_brd_cm_tower` in `Erdos90/NumberFieldDeep_GSTower.lean:115` — HMR 2021 BRD CM tower + Chebotarev for fixed Q.  TRUE; requires class field theory + Golod–Shafarevich + quantitative Chebotarev.  Not in Mathlib v4.30.
+
+**D3.2** `class_num_bound_of_brd` in `Erdos90/NumberFieldDeep_GSTower.lean:136` — Quantitative Brauer–Siegel bound `log(h_K)/f ≤ 2 · log(2 · rd_F)` for K in the BRD tower.  TRUE per Brauer–Siegel + Louboutin 2000.  Not in Mathlib v4.30.
+
+**D3.3** `brd_log_H_threshold` in `Erdos90/NumberFieldDeep_GSTower.lean:155` — Architectural gap: from `log_H > 0` + `1 ≤ rd_F`, claims `log_H ≥ 2 · log(2 · rd_F)`.  TRUE-in-practice (the caller chain via `exists_admissible_family` sets `log_H := 2 · C_class · log(2 · rd_F)` with `C_class = 1`), but not from local hypotheses.  A "Phase D4" refactor would push this hypothesis into `BRDTowerData.getTowerLevel` and propagate, closing this sorry without introducing new content.
+
+`brd_tower_data` itself is now PROVED Lean code that assembles D3.1+D3.2+D3.3.
 
 ### Sorry (1) closed (Phase D1+D2)
 
@@ -228,7 +238,12 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 4. The project uses `noncomputable` throughout (classical decidability for ℝ).  This is fine — `Finset.filter` works with classical `Decidable` instances.
 
-5. The single remaining sorry is `brd_tower_data` in `Erdos90/NumberFieldDeep_GSTower.lean:105` (Phase C, BRD tower postulate).  TRUE per HMR 2021 + Brauer–Siegel; bundles class field theory + Golod–Shafarevich + quantitative Brauer–Siegel.  Not in Mathlib v4.30.
+5. The three remaining sorries are (after Phase D3 decomposition):
+   - `hmr_brd_cm_tower` (`NumberFieldDeep_GSTower.lean:115`): HMR 2021 existence + Chebotarev.
+   - `class_num_bound_of_brd` (`NumberFieldDeep_GSTower.lean:136`): quantitative Brauer–Siegel.
+   - `brd_log_H_threshold` (`NumberFieldDeep_GSTower.lean:155`): architectural gap `log_H ≥ 2 · log(2 · rd_F)` (closeable by a "Phase D4" signature refactor — not new content).
+
+   `brd_tower_data` is now proved Lean code assembling all three.
 
    The entire rest of the formalization — geometry, coset averaging, CM field class-group construction, Q²-scaling, Q²-scaled lattice machinery, cyclotomic split-prime data (`splitPrimeData_from_prime_list` and its `h_Q_count` fields, proved via the count↔ramificationIdx bridges), combinatorial counting — is fully proved.
 
@@ -237,6 +252,24 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Lessons
+
+### 2026-05-26 (Phase D3): Decompose `brd_tower_data` into 3 Mathlib-PR-shaped sorries
+
+Phase D3 splits the single `brd_tower_data` postulate into three labelled
+one-line sorries:
+- `hmr_brd_cm_tower` (HMR 2021 + Chebotarev)
+- `class_num_bound_of_brd` (Brauer–Siegel quantitative)
+- `brd_log_H_threshold` (architectural gap)
+
+Each has a docstring citing the relevant literature.  `brd_tower_data`'s
+body is now proved Lean code assembling them via `Classical.choose` (the
+HMR existential returns Types, so `Exists.casesOn` can't eliminate
+directly — needs `Classical.choose` to pull out the data fields).
+
+**Lesson:** When a `def` returns a structure with Type-valued fields and
+you want to destructure an existential to construct it, prefer
+`Classical.choose` over `obtain`/`rcases` (which only eliminate into
+Prop).  The Type-valued pattern requires Type-eliminating extraction.
 
 ### 2026-05-26 (Phase D1+D2): Close Sorry (1) — the count↔ramificationIdx bridges
 
