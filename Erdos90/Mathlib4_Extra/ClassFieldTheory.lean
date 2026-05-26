@@ -157,8 +157,9 @@ instance HilbertClassFieldExt.finiteDimensional
 /-- The Hilbert class field of a totally complex number field is itself
 totally complex.
 
-This is the key "CM preservation" step in HMR: starting from a CM totally
-complex base field, every level of the HCF tower remains CM totally complex.
+This is the key "totally complex preservation" step in HMR: starting from
+a totally complex base field, every level of the HCF tower remains totally
+complex.
 
 PROVED Lean via `isTotallyComplex_of_algebra`. -/
 instance HilbertClassFieldExt.isTotallyComplex
@@ -166,6 +167,29 @@ instance HilbertClassFieldExt.isTotallyComplex
     (E : HilbertClassFieldExt K) :
     IsTotallyComplex E.H :=
   isTotallyComplex_of_algebra (F := K) (K := E.H)
+
+/-! ## CM preservation (postulated)
+
+The HCF of a CM number field is itself CM.  PROVED in classical CFT
+(Iwasawa, Lang).  The argument: `L = H(K) = K · L⁺` where `L⁺ = H(K⁺)`,
+so `[L : L⁺] = [K : K⁺] = 2`, hence `L/L⁺` is quadratic and `L` is CM.
+
+Implementing this in Lean requires:
+1. Definition of `maximalRealSubfield H(K)` and its relation to
+   `maximalRealSubfield K`.
+2. Lifting the CM quadratic extension structure through the HCF.
+
+Both pieces require additional CFT infrastructure not in Mathlib v4.30.
+We POSTULATE the preservation here as a labelled `def`. -/
+
+/-- **Postulate**: the HCF of a CM number field is CM.
+
+Cite: Iwasawa, *Local Class Field Theory* / Lang, *Algebraic Number Theory*.
+TRUE; not in Mathlib v4.30. -/
+@[reducible] def HilbertClassFieldExt.isCMField_postulate
+    (K : Type u) [Field K] [NumberField K] [IsCMField K]
+    (E : HilbertClassFieldExt K) :
+    IsCMField E.H := sorry
 
 /-! ## The Hilbert class field tower (iterated HCF)
 
