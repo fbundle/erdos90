@@ -91,6 +91,7 @@ def prop_3_2_to_3_6 :
     ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
       ∀ (M : ℕ) (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → log_H > 0 →
+        log_H ≥ 2 * Real.log (2 * rd_F) →
         (t * Real.log 2 - log_H > 0) →
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
@@ -290,13 +291,21 @@ theorem exists_admissible_family :
       Real.log_pos (by linarith [hrd_F_ge1])
     nlinarith [C_class_pos]
   have hlog_H_base_nn : 0 ≤ log_H_base := le_of_lt hlog_H_base_pos
+  -- log_H_base ≥ 2 · log(2·rd_F) (with equality, since C_class = 1)
+  have hlog_H_base_ge_rd : log_H_base ≥ 2 * Real.log (2 * rd_F) := by
+    show 2 * C_class * Real.log (2 * rd_F) ≥ 2 * Real.log (2 * rd_F)
+    have hlog_pos : 0 ≤ Real.log (2 * rd_F) :=
+      Real.log_nonneg (by linarith [hrd_F_ge1])
+    have hC : (1 : ℝ) ≤ C_class := by show (1 : ℝ) ≤ 1; rfl
+    nlinarith
   -- γ₀ = t * log 2 - log_H_base is the fixed exponent rate
   let γ₀ := t * Real.log 2 - log_H_base
   -- Step 7: For each M produce an AdmissibleFamily
   refine ⟨γ₀, hγ_pos, D₀, hD₀_pos, fun M => ?_⟩
   obtain ⟨f, hf_ge, hf1, Λ, hΛ_countable, F, hF_fund, hF_fin, hF_vol_pos, hF_bounded,
     hΛ_sep, hΛ_inj, U, hU_mod, hU_in_Λ, hU_size⟩ :=
-    h_levels M t log_H_base ht_nonneg hlog_H_base_nn hlog_H_base_pos hγ_pos
+    h_levels M t log_H_base ht_nonneg hlog_H_base_nn hlog_H_base_pos
+      hlog_H_base_ge_rd hγ_pos
   -- Rewrite hU_size in terms of γ₀
   have hU_size' : (U.card : ℝ) ≥ Real.exp (γ₀ * (f : ℝ)) := by
     have : γ₀ = t * Real.log 2 - log_H_base := rfl

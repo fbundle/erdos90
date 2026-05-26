@@ -146,6 +146,7 @@ theorem prop_3_2_to_3_6_via_deep :
     ∃ (rd_F : ℝ), rd_F ≥ 1 ∧
       Real.log rd_F ≤ C_rd * (ℓ : ℝ) * Real.log (ℓ : ℝ) ∧
       ∀ (M : ℕ) (t log_H : ℝ), t ≥ 0 → 0 ≤ log_H → log_H > 0 →
+        log_H ≥ 2 * Real.log (2 * rd_F) →
         (t * Real.log 2 - log_H > 0) →
       ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
         (_ : Countable Λ) (F : Set (Fin f → ℂ)),
@@ -160,10 +161,10 @@ theorem prop_3_2_to_3_6_via_deep :
   refine ⟨1, one_pos, fun ℓ hℓ => ?_⟩
   let tower : GSTowerData ℓ := golod_shafarevich_tower_with_lattice ℓ hℓ
   refine ⟨tower.D₀, tower.hD₀_pos, tower.rd_F, tower.hrd_F_ge1, by
-    simpa using tower.hlog_rd, fun M t log_H ht hlog_H_nn hlog_H_pos hγ_pos => ?_⟩
+    simpa using tower.hlog_rd, fun M t log_H ht hlog_H_nn hlog_H_pos hlog_H_ge_rd hγ_pos => ?_⟩
   obtain ⟨f, hf_ge, hf1, Λ, K, hField, hNF, hCM, cmData, hΛ_countable, F, hF_fund, hF_fin,
     hF_vol_pos, hF_bounded, hΛ_sep, hΛ_inj, ht'_ge, classNumBound_le_log_H⟩ :=
-    tower.getTowerLevel M t log_H ht hlog_H_pos
+    tower.getTowerLevel M t log_H ht hlog_H_pos hlog_H_ge_rd
   letI : Field K := hField
   letI : NumberField K := hNF
   letI : IsCMField K := hCM
@@ -190,7 +191,8 @@ satisfying the cardinality bound.  Needs: CM field construction, split‑prime
 ideal pairs, Minkowski class‑number bound. -/
 structure ERDOS_ANT_Postulates where
   gs_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
-    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
+    (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * (brd_tower_data ℓ hℓ).rd_F)) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (cmData : CMTowerData f hf1 Λ K)

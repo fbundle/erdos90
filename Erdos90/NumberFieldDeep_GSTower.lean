@@ -82,7 +82,8 @@ structure BRDTowerData (ℓ : ℕ) where
   rd_F : ℝ
   hrd_F_ge1 : rd_F ≥ 1
   hlog_rd : Real.log rd_F ≤ (ℓ : ℝ) * Real.log (ℓ : ℝ)
-  getTowerLevel (M : ℕ) (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+  getTowerLevel (M : ℕ) (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
+      (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * rd_F)) :
     ∃ (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (_ : IsTotallyComplex K) (f : ℕ) (_ : f ≥ M) (_ : f ≥ 1)
       (_ : InfinitePlace.nrComplexPlaces K = f)
@@ -143,18 +144,8 @@ lemma class_num_bound_of_brd
     Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ) ≤
       2 * Real.log (2 * rd_F) := sorry
 
-/-- **D3.3**: Bridge from caller's `log_H > 0` to the Brauer–Siegel threshold
-`log_H ≥ 2 · log(2 · rd_F)`.  This is TRUE-in-practice (the caller chain through
-`prop_3_2_to_3_6_via_deep → exists_admissible_family` sets
-`log_H := log_H_base := 2 · C_class · log(2 · rd_F)` with `C_class = 1`, so
-`log_H = 2 · log(2 · rd_F)` exactly), but the local hypothesis `log_H > 0`
-doesn't imply it.  To close this would require either:
-- adding `log_H ≥ 2 · log(2 · rd_F)` as a hypothesis to
-  `BRDTowerData.getTowerLevel` (rippling change), or
-- recasting `BRDTowerData` to expose `brd_classNum_C : ℝ` directly. -/
-lemma brd_log_H_threshold (rd_F log_H : ℝ) (_hlog_H_pos : log_H > 0)
-    (_hrd_F : 1 ≤ rd_F) :
-    log_H ≥ 2 * Real.log (2 * rd_F) := sorry
+-- (Phase D4: `brd_log_H_threshold` sorry removed; the hypothesis is now
+-- threaded through `BRDTowerData.getTowerLevel` as an explicit argument.)
 
 /-- **BRD CM tower data** (Phase D3 assembly — PROVED Lean code modulo D3.1, D3.2, D3.3).
 
@@ -185,7 +176,7 @@ def brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ :=
     rd_F := rd_F
     hrd_F_ge1 := hrd_F_ge1
     hlog_rd := hlog_rd
-    getTowerLevel := fun M t log_H ht hlog_H_pos => by
+    getTowerLevel := fun M t log_H ht hlog_H_pos hlog_H_ge_rd => by
       let t' : ℕ := ⌈t⌉₊ + 1
       have ht'_ge : t + 1 ≤ (t' : ℝ) := by
         dsimp [t']
@@ -202,8 +193,6 @@ def brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ :=
       have h_BS : Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ) ≤
           2 * Real.log (2 * rd_F) :=
         class_num_bound_of_brd K f hcompl hf1 rd_F hrd_F_ge1 trivial
-      have h_thresh : log_H ≥ 2 * Real.log (2 * rd_F) :=
-        brd_log_H_threshold rd_F log_H hlog_H_pos hrd_F_ge1
       linarith }
 
 /-- **BRD CM tower postulate** — Phase C (b) PROVED assembly.
@@ -223,7 +212,8 @@ The lattice `Λ` and the separation constant `D₀ = Q²` come from
 All claims are proved Lean code; the only sorry on this path is the
 underlying `brd_tower_data` postulate (HMR 2021 + Brauer–Siegel). -/
 def brd_cm_tower_postulate (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
-    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
+    (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * (brd_tower_data ℓ hℓ).rd_F)) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (cmData : CMTowerData f hf1 Λ K)
@@ -236,7 +226,7 @@ def brd_cm_tower_postulate (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
       cmData.classNumBound ≤ log_H := by
   set brd := brd_tower_data ℓ hℓ with hbrd_def
   obtain ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, t', ht'_ge, sp, hspQ,
-    h_classNum⟩ := brd.getTowerLevel M t log_H ht hlog_H_pos
+    h_classNum⟩ := brd.getTowerLevel M t log_H ht hlog_H_pos hlog_H_ge_rd
   letI : Field K := hField
   letI : NumberField K := hNF
   letI : IsCMField K := hCM
@@ -356,7 +346,8 @@ def brd_cm_tower_postulate (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
     Now forwards to `brd_cm_tower_postulate` which packages the missing
     BRD + Q²-scaling claims as a single labeled postulate. -/
 def gs_tower_levels_proved (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
-    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
+    (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * (brd_tower_data ℓ hℓ).rd_F)) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (cmData : CMTowerData f hf1 Λ K)
@@ -367,7 +358,7 @@ def gs_tower_levels_proved (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
       t + 1 ≤ (cmData.t'_param : ℝ) ∧
       cmData.classNumBound ≤ log_H :=
-  brd_cm_tower_postulate ℓ hℓ M t log_H ht hlog_H_pos
+  brd_cm_tower_postulate ℓ hℓ M t log_H ht hlog_H_pos hlog_H_ge_rd
 
 /-- Disabled cyclotomic construction (kept as documentation; not used).
     Below `_unused_` is the prior ℚ(ζ_p) construction body, now superseded
@@ -630,7 +621,8 @@ private def _unused_gs_tower_levels_cyclo (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (base 
     Takes target parameters (t, log_H) to fix the Q²-scaling and class-number bound.
     Forwards to `brd_cm_tower_postulate` (single labeled sorry). -/
 def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
-    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
+    (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * (brd_tower_data ℓ hℓ).rd_F)) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (cmData : CMTowerData f hf1 Λ K)
@@ -641,7 +633,7 @@ def gs_tower_levels (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
       t + 1 ≤ (cmData.t'_param : ℝ) ∧
       cmData.classNumBound ≤ log_H :=
-  brd_cm_tower_postulate ℓ hℓ M t log_H ht hlog_H_pos
+  brd_cm_tower_postulate ℓ hℓ M t log_H ht hlog_H_pos hlog_H_ge_rd
 
 
 /-- **Golod–Shafarevich tower data** — abstract interface for Props 3.2–3.6.
@@ -696,7 +688,8 @@ structure GSTowerData (ℓ : ℕ) where
       lattice Λ ⊂ ℂ^f, and `CMTowerData` with `t'_param ≥ t + 1` and
       `classNumBound ≤ log_H`.  Encapsulates the BRD tower postulate
       (HMR 2021 + Q²-scaling). -/
-  getTowerLevel (M : ℕ) (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+  getTowerLevel (M : ℕ) (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
+      (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * rd_F)) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1)
     (Λ : AddSubgroup (Fin f → ℂ))
     (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
@@ -721,5 +714,5 @@ def golod_shafarevich_tower_with_lattice (ℓ : ℕ) (hℓ : ℓ ≥ 2) : GSTowe
     rd_F := brd.rd_F
     hrd_F_ge1 := brd.hrd_F_ge1
     hlog_rd := brd.hlog_rd
-    getTowerLevel := fun M t log_H ht hlog_H_pos =>
-      gs_tower_levels ℓ hℓ M t log_H ht hlog_H_pos }
+    getTowerLevel := fun M t log_H ht hlog_H_pos hlog_H_ge_rd =>
+      gs_tower_levels ℓ hℓ M t log_H ht hlog_H_pos hlog_H_ge_rd }

@@ -135,7 +135,8 @@ section NewGSTowerLevels
     All sub-proofs (countability, fundamental domain, volume finiteness, separation)
     are proved using Mathlib's integer lattice API. -/
 def gs_tower_levels_v2 (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
-    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0) :
+    (t log_H : ℝ) (ht : t ≥ 0) (hlog_H_pos : log_H > 0)
+    (hlog_H_ge_rd : log_H ≥ 2 * Real.log (2 * (brd_tower_data ℓ hℓ).rd_F)) :
     ∃ (f : ℕ), f ≥ M ∧ ∃ (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ))
       (K : Type) (_ : Field K) (_ : NumberField K) (_ : IsCMField K)
       (cmData : CMTowerData f hf1 Λ K)
@@ -146,7 +147,7 @@ def gs_tower_levels_v2 (ℓ : ℕ) (hℓ : ℓ ≥ 2) (M : ℕ)
       (∀ v ∈ Λ, v (fin0 hf1) = 0 → v = 0) ∧
       t + 1 ≤ (cmData.t'_param : ℝ) ∧
       cmData.classNumBound ≤ log_H :=
-  gs_tower_levels ℓ hℓ M t log_H ht hlog_H_pos
+  gs_tower_levels ℓ hℓ M t log_H ht hlog_H_pos hlog_H_ge_rd
 
 end NewGSTowerLevels
 
