@@ -672,6 +672,30 @@ theorem HilbertPClassFieldExt.rootDiscr_eq
     NumberField.rootDiscr E.H_p = NumberField.rootDiscr K :=
   rootDiscr_pHCF_eq K p E
 
+/-! ## `IsHilbertClassField` predicate
+
+A predicate-style version of `HilbertClassFieldExt`: a field `H/K` is the
+Hilbert class field of `K` if it satisfies the universal properties.
+-/
+
+/-- **`IsHilbertClassField K H`**: a predicate-style version of
+`HilbertClassFieldExt K`.  Says that `H/K` has the HCF properties:
+finite Galois abelian, degree = `classNumber K`, everywhere unramified. -/
+class IsHilbertClassField (K : Type u) [Field K] [NumberField K]
+    (H : Type u) [Field H] [NumberField H] [Algebra K H] : Prop where
+  /-- The relative degree equals the class number. -/
+  finrank_eq : Module.finrank K H = NumberField.classNumber K
+  /-- `H/K` is Galois. -/
+  is_galois : IsGalois K H
+  /-- `H/K` is abelian Galois. -/
+  is_abelian_galois : IsAbelianGalois K H
+  /-- `H/K` is unramified at every nonzero prime. -/
+  unramified : ∀ (P : Ideal (𝓞 H)) [P.IsPrime], P ≠ ⊥ →
+    Algebra.IsUnramifiedAt (𝓞 K) P
+
+attribute [instance] IsHilbertClassField.is_galois
+  IsHilbertClassField.is_abelian_galois
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
