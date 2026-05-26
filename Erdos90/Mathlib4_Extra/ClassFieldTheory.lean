@@ -762,6 +762,18 @@ theorem HilbertClassFieldExt.finrank_over_Q
     E.finrank_eq]
   ring
 
+/-- For the identity HCF (classNumber=1), the Galois group is Subsingleton.
+
+PROVED Lean. -/
+theorem HilbertClassFieldExt.identity_subsingleton_gal
+    (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1) :
+    Subsingleton ((HilbertClassFieldExt.identity K h).H ≃ₐ[K]
+      (HilbertClassFieldExt.identity K h).H) :=
+  -- (HilbertClassFieldExt.identity K h).H = K, so this is just
+  -- Subsingleton (K ≃ₐ[K] K), which follows from algEquiv_self_unique.
+  Unique.instSubsingleton (α := K ≃ₐ[K] K)
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
