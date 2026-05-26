@@ -23,6 +23,8 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - this file is strictly for human: DO NOT EDIT, DO NOT COMMIT this README.md file
 
+- git push is strictly for human: DO NOT GIT PUSH
+
 - the main theorem must be put in `Erdos90/Main.lean`
 
 - all necessary definitions for the main theorem must be put in `Erdos90/Defs.lean`
