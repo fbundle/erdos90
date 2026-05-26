@@ -118,4 +118,13 @@ theorem tsum_finset_product_eq_fourier_product
   refine Finset.prod_congr rfl (fun i _ => ?_)
   exact tsum_eq_tsum_fourier_zero (f i)
 
+/-- For empty index types, the empty Schwartz family trivially satisfies
+Poisson summation: both sides equal 1.  Base case for the inductive
+sum-over-product version. -/
+theorem tsum_empty_product_eq_fourier_product
+    {ι : Type*} [Fintype ι] [IsEmpty ι] (f : ι → 𝓢(ℝ, ℂ)) :
+    (∑' z : ι → ℤ, ∏ i, ((f i : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (z i) : ℂ) =
+      ∑' z : ι → ℤ, ∏ i, 𝓕 ((f i : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (z i) := by
+  simp only [Finset.univ_eq_empty, Finset.prod_empty]
+
 end SchwartzMap
