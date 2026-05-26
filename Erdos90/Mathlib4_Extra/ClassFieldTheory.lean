@@ -795,6 +795,15 @@ theorem HilbertClassFieldExt.artinReciprocity_surjective
     Function.Surjective E.artinReciprocity :=
   E.artinReciprocity.surjective
 
+/-- |ClassGroup 𝓞_K| = |Gal(H/K)| (via Artin reciprocity).
+
+PROVED Lean. -/
+theorem HilbertClassFieldExt.card_classGroup_eq_card_gal
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    Nat.card (ClassGroup (𝓞 K)) = Nat.card (E.H ≃ₐ[K] E.H) :=
+  Nat.card_congr E.artinReciprocity.toEquiv
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
