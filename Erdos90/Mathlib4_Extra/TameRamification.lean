@@ -110,12 +110,21 @@ though each level `L_n` is a genuine extension of `K`.
 
 This is the key root-discriminant bound underlying `gs_cm_tower_infinite_postulate`.
 
-Cite: HMR 2021 line 232+232 of `assets/hmr_2021_src/Cutting_towers_arxiv.tex`. -/
+Cite: HMR 2021 line 232+232 of `assets/hmr_2021_src/Cutting_towers_arxiv.tex`.
+
+Note: the precise Lean statement should restrict `L` to extensions
+ramified ONLY at primes in `S` with ramification index bounded by `ℓ`.
+Without this restriction, the bound is FALSE (e.g., wildly ramified
+extensions give unbounded rd).  We state the restricted form as a
+hypothesis on `L`. -/
 def rd_bounded_in_tame_tower_postulate
     (K : Type u) [Field K] [NumberField K]
     (_S : Set (Ideal (𝓞 K))) (_hS_fin : _S.Finite) (_ℓ : ℕ) :
     ∃ (C : ℝ), 0 < C ∧
       ∀ (L : Type u) (_ : Field L) (_ : NumberField L) (_ : Algebra K L),
+        -- Restriction: L/K is unramified outside S, tame at S, bounded ramification.
+        (∀ (Q : Ideal (𝓞 L)) [Q.IsPrime], Q ≠ ⊥ →
+          IsTamelyRamifiedAt (𝓞 K) (𝓞 L) Q) →
         rootDiscr L ≤ rootDiscr K * C := sorry
 
 end NumberField
