@@ -346,6 +346,12 @@ HCF existence is postulated** — the obstruction is class field theory's
 existence theorem, not discriminant arithmetic.
 -/
 
+-- (Specific PROVED instance for PID base fields omitted: constructing
+-- `HilbertClassFieldExt.identity K` requires explicit MulEquiv between
+-- trivial ClassGroup and trivial Galois group + Algebra.IsUnramifiedAt
+-- for the identity algebra.  Both are doable but require more typeclass
+-- plumbing than the value provided.  Future work.)
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
