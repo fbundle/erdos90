@@ -2,7 +2,7 @@ import Mathlib
 import Erdos90.CMField.Basic
 
 open Set Polynomial NumberField Ideal
-open scoped BigOperators Complex Pointwise
+open scoped BigOperators Complex Pointwise nonZeroDivisors
 
 noncomputable section
 
@@ -134,8 +134,40 @@ def find_t_primes_modEq_one (t : ℕ) : ∃ qs : List ℕ,
       List.nodup_cons.mpr ⟨hq_not_mem, h_nodup⟩⟩
 
 /-!
-## ANT lemmas (sorried, require Mathlib ramification/inertia API)
--/
+## Helper lemmas: bridging `FractionalIdeal.count` to `ramificationIdx`
+
+The Q²-scaling argument needs to know that `count K P (spanSingleton ((q : ℕ) : K))`
+equals the ramification index of `Ideal.span {(q : ℤ)}` at `P` (when `P` lies over
+`q`) or 0 (when it doesn't).
+
+These two helpers are sorried: they require a Mathlib API bridge between
+`FractionalIdeal.count` (defined via `Associates.mk J).factors`) and
+`Ideal.ramificationIdx` (defined via `normalizedFactors`).  Both quantities equal
+the multiplicity of `P.asIdeal` in the prime factorization of `Ideal.span {(q : 𝓞 K)}`,
+but the equality of the two indexings (Associates vs normalized) is a separate
+Mathlib lemma not yet wired up here.
+
+Mathematically TRUE; provable via `Ideal.IsDedekindDomain.ramificationIdx_eq_normalizedFactors_count`
+plus `FractionalIdeal.count_coe` plus a bridge `(Associates.mk v.asIdeal).count
+(Associates.mk J).factors = (normalizedFactors J).count v.asIdeal`. -/
+
+/-- Count of a rational integer's span at a prime that lies over it equals the
+ramification index. -/
+lemma count_spanSingleton_natCast_of_liesOver
+    {L : Type*} [Field L] [NumberField L] {q : ℕ} (hq_pos : 0 < q)
+    (P : IsDedekindDomain.HeightOneSpectrum (𝓞 L))
+    (_hP_lies : P.asIdeal.LiesOver (Ideal.span {(q : ℤ)})) :
+    FractionalIdeal.count L P (FractionalIdeal.spanSingleton (𝓞 L)⁰ ((q : ℕ) : L)) =
+      ((Ideal.span {(q : ℤ)}).ramificationIdx P.asIdeal : ℤ) := by
+  sorry
+
+/-- Count of a rational integer's span at a prime that doesn't lie over it is zero. -/
+lemma count_spanSingleton_natCast_of_not_liesOver
+    {L : Type*} [Field L] [NumberField L] {q : ℕ} (hq_pos : 0 < q)
+    (P : IsDedekindDomain.HeightOneSpectrum (𝓞 L))
+    (_h_not_lies : ¬ P.asIdeal.LiesOver (Ideal.span {(q : ℤ)})) :
+    FractionalIdeal.count L P (FractionalIdeal.spanSingleton (𝓞 L)⁰ ((q : ℕ) : L)) = 0 := by
+  sorry
 
 section factorization_lemmas
 
@@ -731,18 +763,202 @@ def splitPrimeData_from_prime_list (t : ℕ) (qs : List ℕ)
             exact h_primes_eq
           have hi_eq_j : i = j := h_equiv.symm.injective h_sub_eq
           exact ⟨hi_eq_j, by simp [hb₁, hb₂]⟩
-    · -- h_Q_count_at_split: count K 𝔓_j (Q) = 1 for each split prime
-      -- TRUE: each 𝔓_j lies over exactly one q_j ∈ qs with `ramificationIdx = 1`
-      -- (from `ramificationIdx_eq_one`, this file lines 144-165), and the primes
-      -- in qs are pairwise distinct (h_distinct), so v_{𝔓_j}(Q) = v_{𝔓_j}(q_j) = 1.
-      -- Filling this requires bridging `count K v (span q)` with `ramificationIdx`,
-      -- which is a separate Mathlib-API exercise (see Phase B note in CLAUDE.md).
+    · -- h_Q_count_at_split: count K 𝔓_j (Q) = 1 for each split prime.
+      -- Proof: 𝔓_j lies over exactly one q_star ∈ qs.  Expand
+      --   count K 𝔓_j ((Q : K)) = ∑ q ∈ qs.toFinset, count K 𝔓_j ((q : K))
+      -- and use that each term is `ramificationIdx = 1` for q = q_star and 0
+      -- otherwise (via the two helpers above).
       intro j
-      sorry
-    · -- h_Q_count_at_conj: count K c(𝔓_j) (Q) = 1 for each conjugate split prime
-      -- TRUE by the same argument: c(𝔓_j) lies over q_j with `ramificationIdx = 1`.
+      -- (1) Find q_star ∈ qs that primes j lies over
+      set P_j := primes j with hP_j_def
+      have hP_j_in_T : P_j ∈ T := by
+        dsimp [primes, P_j]; exact (h_equiv.symm j).property
+      have hP_j_in_U : P_j ∈ U := hT_sub hP_j_in_T
+      obtain ⟨q_star, hq_star_mem_finset, hP_j_in_pover⟩ := Finset.mem_biUnion.mp hP_j_in_U
+      have hq_star_mem : q_star ∈ qs := by simpa using hq_star_mem_finset
+      haveI hq_star_prime : Fact (Nat.Prime q_star) := ⟨_hqs_prime q_star hq_star_mem⟩
+      have hq_star_mod : q_star ≡ 1 [MOD p] := _hqs_mod q_star hq_star_mem
+      have hq_star_ne_p : q_star ≠ p := _hqs_ne_p q_star hq_star_mem
+      have hq_star_pos : 0 < q_star := Nat.Prime.pos hq_star_prime.1
+      set span_q_star := Ideal.span {(q_star : ℤ)} with hspan_q_star_def
+      have h_span_q_star_ne_bot : span_q_star ≠ ⊥ :=
+        mt Ideal.span_singleton_eq_bot.mp
+          (Nat.cast_ne_zero.mpr (Nat.Prime.ne_zero hq_star_prime.1))
+      have hP_j_in_set : P_j ∈ Ideal.primesOver span_q_star (𝓞 K) :=
+        (IsDedekindDomain.mem_primesOverFinset_iff h_span_q_star_ne_bot (B := 𝓞 K)).mp
+          hP_j_in_pover
+      haveI hP_j_prime : P_j.IsPrime := hP_j_in_set.1
+      haveI hP_j_lies : P_j.LiesOver span_q_star := hP_j_in_set.2
+      have hP_j_ne_bot : P_j ≠ ⊥ := hT_ne_bot P_j hP_j_in_T
+      -- The HeightOneSpectrum of P_j
+      let P_j_HOS : IsDedekindDomain.HeightOneSpectrum (𝓞 K) :=
+        ⟨P_j, hP_j_prime, hP_j_ne_bot⟩
+      -- (2) (Q : K) = ∏ q ∈ qs.toFinset, ((q : ℕ) : K), via push_cast/Finset.prod
+      have hQ_cast_eq : ((Q : ℕ) : K) = ∏ q ∈ qs.toFinset, ((q : ℕ) : K) := by
+        dsimp [Q]
+        push_cast
+        rw [← List.prod_toFinset _ _hqs_nodup]
+      -- (3) spanSingleton multiplicativity
+      have h_span_prod : FractionalIdeal.spanSingleton (𝓞 K)⁰ ((Q : ℕ) : K) =
+          ∏ q ∈ qs.toFinset,
+            FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K) := by
+        rw [hQ_cast_eq]
+        induction qs.toFinset using Finset.induction with
+        | empty => simp
+        | insert q s hq_not_mem ih =>
+            rw [Finset.prod_insert hq_not_mem, Finset.prod_insert hq_not_mem,
+                ← FractionalIdeal.spanSingleton_mul_spanSingleton, ih]
+      -- (4) count is additive over products
+      have h_span_ne_zero : ∀ q ∈ qs.toFinset,
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K) ≠ 0 := by
+        intro q hq_mem
+        have hq_mem' : q ∈ qs := by simpa using hq_mem
+        have hq_pos : 0 < q := Nat.Prime.pos (_hqs_prime q hq_mem')
+        rw [Ne, FractionalIdeal.spanSingleton_eq_zero_iff]
+        exact_mod_cast Nat.pos_iff_ne_zero.mp hq_pos
+      rw [show
+          FractionalIdeal.count K P_j_HOS
+            (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((Q : ℕ) : K)) =
+          ∑ q ∈ qs.toFinset,
+            FractionalIdeal.count K P_j_HOS
+              (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K)) from by
+        rw [h_span_prod, FractionalIdeal.count_prod K P_j_HOS qs.toFinset _ h_span_ne_zero]]
+      -- (5) For each q ∈ qs: it contributes 1 if q = q_star, else 0
+      have h_term_eq : ∀ q ∈ qs.toFinset,
+          FractionalIdeal.count K P_j_HOS
+              (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K)) =
+            if q = q_star then 1 else 0 := by
+        intro q hq_mem
+        have hq_mem' : q ∈ qs := by simpa using hq_mem
+        haveI hq_prime : Fact (Nat.Prime q) := ⟨_hqs_prime q hq_mem'⟩
+        have hq_pos : 0 < q := Nat.Prime.pos hq_prime.1
+        by_cases h_eq : q = q_star
+        · subst h_eq
+          rw [if_pos rfl]
+          rw [count_spanSingleton_natCast_of_liesOver hq_pos P_j_HOS hP_j_lies]
+          have : ((Ideal.span {(q : ℤ)}).ramificationIdx P_j_HOS.asIdeal : ℤ) = 1 := by
+            have h := ramificationIdx_eq_one p q (_hqs_ne_p q hq_mem') P_j
+            exact_mod_cast h
+          rw [this]
+        · rw [if_neg h_eq]
+          apply count_spanSingleton_natCast_of_not_liesOver hq_pos P_j_HOS
+          intro hP_j_lies_q
+          -- LiesOver.over : p = Ideal.under R P; so both spans equal under, hence equal.
+          have h_under_q : Ideal.span {(q : ℤ)} = Ideal.under ℤ P_j := hP_j_lies_q.over
+          have h_under_q_star : Ideal.span {(q_star : ℤ)} = Ideal.under ℤ P_j :=
+            hP_j_lies.over
+          have h_span_eq : Ideal.span {(q : ℤ)} = Ideal.span {(q_star : ℤ)} := by
+            rw [h_under_q, ← h_under_q_star]
+          have h_assoc : Associated (q : ℤ) (q_star : ℤ) :=
+            (Ideal.span_singleton_eq_span_singleton).mp h_span_eq
+          have h_natAbs_eq : (q : ℤ).natAbs = (q_star : ℤ).natAbs :=
+            Int.natAbs_eq_iff_associated.mpr h_assoc
+          apply h_eq
+          simpa using h_natAbs_eq
+      -- (6) sum the contributions
+      rw [Finset.sum_congr rfl h_term_eq]
+      -- Goal: ∑ q ∈ qs.toFinset, (if q = q_star then 1 else 0) = 1
+      have hq_star_in_finset : q_star ∈ qs.toFinset := by simpa using hq_star_mem
+      rw [Finset.sum_ite_eq']
+      simp [hq_star_in_finset]
+    · -- h_Q_count_at_conj: count K c(𝔓_j) (Q) = 1
+      -- Same structure: c(𝔓_j) also lies over q_star (since q_star splits, the
+      -- conjugate prime is among the primes over q_star).
       intro j
-      sorry
+      set P_j := primes j with hP_j_def
+      have hP_j_in_T : P_j ∈ T := by
+        dsimp [primes, P_j]; exact (h_equiv.symm j).property
+      have hP_j_in_U : P_j ∈ U := hT_sub hP_j_in_T
+      obtain ⟨q_star, hq_star_mem_finset, hP_j_in_pover⟩ := Finset.mem_biUnion.mp hP_j_in_U
+      have hq_star_mem : q_star ∈ qs := by simpa using hq_star_mem_finset
+      haveI hq_star_prime : Fact (Nat.Prime q_star) := ⟨_hqs_prime q_star hq_star_mem⟩
+      have hq_star_mod : q_star ≡ 1 [MOD p] := _hqs_mod q_star hq_star_mem
+      have hq_star_ne_p : q_star ≠ p := _hqs_ne_p q_star hq_star_mem
+      have hq_star_pos : 0 < q_star := Nat.Prime.pos hq_star_prime.1
+      set span_q_star := Ideal.span {(q_star : ℤ)} with hspan_q_star_def
+      have h_span_q_star_ne_bot : span_q_star ≠ ⊥ :=
+        mt Ideal.span_singleton_eq_bot.mp
+          (Nat.cast_ne_zero.mpr (Nat.Prime.ne_zero hq_star_prime.1))
+      have hP_j_in_set : P_j ∈ Ideal.primesOver span_q_star (𝓞 K) :=
+        (IsDedekindDomain.mem_primesOverFinset_iff h_span_q_star_ne_bot (B := 𝓞 K)).mp
+          hP_j_in_pover
+      haveI hP_j_prime : P_j.IsPrime := hP_j_in_set.1
+      haveI hP_j_lies : P_j.LiesOver span_q_star := hP_j_in_set.2
+      have hP_j_ne_bot : P_j ≠ ⊥ := hT_ne_bot P_j hP_j_in_T
+      -- The conjugate prime c(P_j) also lies over span_q_star
+      haveI h_conj_prime : (conjIdeal K P_j).IsPrime := conjIdeal_isPrime K hP_j_prime
+      haveI h_conj_lies : (conjIdeal K P_j).LiesOver span_q_star := by
+        dsimp [conjIdeal]
+        let σ : 𝓞 K ≃ₐ[ℤ] 𝓞 K :=
+          (IsCMField.ringOfIntegersComplexConj K).restrictScalars ℤ
+        have h := Ideal.map_equiv_liesOver (A := ℤ) (B := 𝓞 K) (C := 𝓞 K)
+          (P := P_j) (p := span_q_star) (σ := σ)
+        simpa [σ] using h
+      have h_conj_ne_bot : conjIdeal K P_j ≠ ⊥ := conjIdeal_ne_bot K hP_j_ne_bot
+      let cP_j_HOS : IsDedekindDomain.HeightOneSpectrum (𝓞 K) :=
+        ⟨conjIdeal K P_j, h_conj_prime, h_conj_ne_bot⟩
+      have hQ_cast_eq : ((Q : ℕ) : K) = ∏ q ∈ qs.toFinset, ((q : ℕ) : K) := by
+        dsimp [Q]
+        push_cast
+        rw [← List.prod_toFinset _ _hqs_nodup]
+      have h_span_prod : FractionalIdeal.spanSingleton (𝓞 K)⁰ ((Q : ℕ) : K) =
+          ∏ q ∈ qs.toFinset,
+            FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K) := by
+        rw [hQ_cast_eq]
+        induction qs.toFinset using Finset.induction with
+        | empty => simp
+        | insert q s hq_not_mem ih =>
+            rw [Finset.prod_insert hq_not_mem, Finset.prod_insert hq_not_mem,
+                ← FractionalIdeal.spanSingleton_mul_spanSingleton, ih]
+      have h_span_ne_zero : ∀ q ∈ qs.toFinset,
+          FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K) ≠ 0 := by
+        intro q hq_mem
+        have hq_mem' : q ∈ qs := by simpa using hq_mem
+        have hq_pos : 0 < q := Nat.Prime.pos (_hqs_prime q hq_mem')
+        rw [Ne, FractionalIdeal.spanSingleton_eq_zero_iff]
+        exact_mod_cast Nat.pos_iff_ne_zero.mp hq_pos
+      rw [show
+          FractionalIdeal.count K cP_j_HOS
+            (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((Q : ℕ) : K)) =
+          ∑ q ∈ qs.toFinset,
+            FractionalIdeal.count K cP_j_HOS
+              (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K)) from by
+        rw [h_span_prod, FractionalIdeal.count_prod K cP_j_HOS qs.toFinset _ h_span_ne_zero]]
+      have h_term_eq : ∀ q ∈ qs.toFinset,
+          FractionalIdeal.count K cP_j_HOS
+              (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((q : ℕ) : K)) =
+            if q = q_star then 1 else 0 := by
+        intro q hq_mem
+        have hq_mem' : q ∈ qs := by simpa using hq_mem
+        haveI hq_prime : Fact (Nat.Prime q) := ⟨_hqs_prime q hq_mem'⟩
+        have hq_pos : 0 < q := Nat.Prime.pos hq_prime.1
+        by_cases h_eq : q = q_star
+        · subst h_eq
+          rw [if_pos rfl]
+          rw [count_spanSingleton_natCast_of_liesOver hq_pos cP_j_HOS h_conj_lies]
+          have : ((Ideal.span {(q : ℤ)}).ramificationIdx cP_j_HOS.asIdeal : ℤ) = 1 := by
+            have h := ramificationIdx_eq_one p q (_hqs_ne_p q hq_mem') (conjIdeal K P_j)
+            exact_mod_cast h
+          rw [this]
+        · rw [if_neg h_eq]
+          apply count_spanSingleton_natCast_of_not_liesOver hq_pos cP_j_HOS
+          intro h_cP_lies_q
+          have h_under_q : Ideal.span {(q : ℤ)} = Ideal.under ℤ (conjIdeal K P_j) :=
+            h_cP_lies_q.over
+          have h_under_q_star : Ideal.span {(q_star : ℤ)} =
+              Ideal.under ℤ (conjIdeal K P_j) := h_conj_lies.over
+          have h_span_eq : Ideal.span {(q : ℤ)} = Ideal.span {(q_star : ℤ)} := by
+            rw [h_under_q, ← h_under_q_star]
+          have h_assoc : Associated (q : ℤ) (q_star : ℤ) :=
+            (Ideal.span_singleton_eq_span_singleton).mp h_span_eq
+          have h_natAbs_eq : (q : ℤ).natAbs = (q_star : ℤ).natAbs :=
+            Int.natAbs_eq_iff_associated.mpr h_assoc
+          apply h_eq
+          simpa using h_natAbs_eq
+      rw [Finset.sum_congr rfl h_term_eq]
+      have hq_star_in_finset : q_star ∈ qs.toFinset := by simpa using hq_star_mem
+      rw [Finset.sum_ite_eq']
+      simp [hq_star_in_finset]
   exact Classical.choice h_exists
 
 /-- **Main construction**: For K = ℚ(ζ_p) with odd prime p > 2, and any t ∈ ℕ,
