@@ -394,6 +394,13 @@ instance algEquiv_self_unique (K : Type u) [Field K] : Unique (K ≃ₐ[K] K) wh
   default := AlgEquiv.refl
   uniq := fun a => by ext x; exact a.commutes' x
 
+/-- The Galois group `K ≃ₐ[K] K` is commutative (trivially). -/
+instance algEquiv_self_isMulCommutative (K : Type u) [Field K] :
+    IsMulCommutative (K ≃ₐ[K] K) := by
+  constructor
+  refine ⟨fun a b => ?_⟩
+  rw [Subsingleton.elim a default, Subsingleton.elim b default]
+
 /-- For any prime `P` of `𝓞 K`, the identity algebra `𝓞 K → 𝓞 K` is
 unramified at `P`.
 
