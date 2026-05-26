@@ -291,6 +291,31 @@ instance HilbertPClassFieldExt.isTotallyComplex
     IsTotallyComplex E.H_p :=
   isTotallyComplex_of_algebra (F := K) (K := E.H_p)
 
+/-! ## Connection between HCF and p-HCF
+
+The p-HCF is a subfield of the HCF.  More precisely:
+
+  `K ⊆ H_p(K) ⊆ H(K)`
+
+with `[H_p(K) : K]` = the p-part of `h_K` (the largest p-power dividing
+the class number).
+
+This is because:
+- `Gal(H(K)/K) ≅ ClassGroup (𝓞 K)` (Artin reciprocity for HCF)
+- `Gal(H_p(K)/K) ≅` p-Sylow part of `ClassGroup (𝓞 K)`
+- The inclusion `Gal(H_p(K)/K) ↪ Gal(H(K)/K)` corresponds to the
+  embedding of subfields.
+-/
+
+/-- **Postulate**: `[H_p(K) : K]` divides `classNumber K`.
+
+For a number field `K`, the degree of the p-HCF over K equals the p-part
+of the class number.  In particular, it divides `classNumber K`. -/
+def p_HCF_finrank_divides_classNumber_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (E : HilbertPClassFieldExt K p) :
+    Module.finrank K E.H_p ∣ NumberField.classNumber K := sorry
+
 /-! ## The Hilbert class field tower (iterated HCF)
 
 The `n`-th level of the **Hilbert class field tower** would naturally be
