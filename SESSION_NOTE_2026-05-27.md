@@ -18,6 +18,30 @@ Written by AI agent for the human maintainer to read on waking.
     ramificationIdx_eq_one, differentIdeal_eq_top, finrank_over_Q,
     artinSymbol + mult + identity, identity_subsingleton_gal, etc.
 
+### MAJOR: 2-D Schwartz Poisson summation summability CLOSED
+
+- **`summable_2d_schwartz_proved`** — FULLY PROVED Lean (no sorry):
+  ```
+  Summable (fun p : ℤ × ℤ => f(p.1, p.2)) for f : 𝓢(ℝ × ℝ, ℂ)
+  ```
+  Proof chain (all PROVED):
+  1. `f.isBigO_cocompact_rpow (-3)` — Schwartz decay (Mathlib).
+  2. `tendsto_int_prod_cocompact` — PROVED via `Tendsto.prodMap_coprod` +
+     `Filter.coprod_cofinite/cocompact`.
+  3. `norm_prod_int_eq` — PROVED Prod-norm = max-natAbs equivalence.
+  4. `summable_norm_rpow_three_prod` — PROVED via Mathlib's
+     `EisensteinSeries.summable_one_div_norm_rpow`.
+  5. `summable_of_isBigO` — Mathlib.
+
+- **`tsum_prod_eq_tsum_tsum`** — FULLY PROVED (no sorry) via the above.
+
+- **`tsum_prod_eq_tsum_tsum_fourier_rightPartial`** — FULLY PROVED:
+  `∑' (p : ℤ × ℤ), f p = ∑' m, ∑' n, 𝓕(f.rightPartial m) n`.
+
+This is **half of the full 2-D Schwartz Poisson** as PROVED Lean code.
+The other half (iterated Fourier identification + partial Fourier is
+Schwartz) remains as 2 labelled postulates.
+
 ### NEW: 2-D Schwartz Poisson summation grind
 
 - **`Erdos90/Mathlib4_Extra/PoissonProd.lean`** (350+ LOC, 13 PROVED theorems):
