@@ -74,6 +74,9 @@ lemma summable_norm_int (f : 𝓢(ℝ, ℂ)) :
 private alias schwartz_summable_int := summable_int
 private alias schwartz_summable_norm_int := summable_norm_int
 
+-- Helper lemmas for the products of summable Schwartz functions
+-- (used implicitly via `tsum_mul_tsum_of_summable_norm` in the proof above).
+
 /-- **Separable 2-D Poisson summation** (full form): for Schwartz `g, h : 𝓢(ℝ, ℂ)`,
 the sum over `ℤ × ℤ` of `g(m) · h(n)` equals the sum over `ℤ × ℤ` of
 `𝓕g(p) · 𝓕h(q)`.
