@@ -191,6 +191,23 @@ TRUE; not in Mathlib v4.30. -/
     (E : HilbertClassFieldExt K) :
     IsCMField E.H := sorry
 
+/-! ## When the HCF tower stabilizes (PID base field)
+
+If `classNumber K = 1` (equivalently, `𝓞 K` is a PID), then `H(K) = K`
+(the HCF is the base field itself).  PROVED Lean. -/
+
+/-- If the base field has class number 1, the algebra map `K → H(K)` is
+bijective (i.e., `K = H(K)` as fields).
+
+PROVED Lean via Mathlib's `Algebra.finrank_eq_one_iff_bijective_algebraMap`. -/
+theorem HilbertClassFieldExt.bijective_algebraMap_of_classNumber_one
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K)
+    (h_classNumber : NumberField.classNumber K = 1) :
+    Function.Bijective (algebraMap K E.H) := by
+  rw [← Algebra.finrank_eq_one_iff_bijective_algebraMap]
+  rw [E.finrank_eq, h_classNumber]
+
 /-! ## The Hilbert class field tower (iterated HCF)
 
 The `n`-th level of the **Hilbert class field tower** would naturally be
