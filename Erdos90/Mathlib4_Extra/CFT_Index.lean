@@ -62,6 +62,10 @@ class-field-theory-adjacent infrastructure files in `Erdos90/Mathlib4_Extra/`.
 | `ProPGalois.lean` | Pro-`p` Galois groups + GS inequality postulate + Tate's local formula `d - r = #S - r_1 - r_2 + δ`.  The group-theoretic side of HMR. |
 | `NormGroup.lean` | Norm group `N_{L/K}(L*)` + CFT index formula + Hasse norm theorem (stubs). |
 | `HilbertSymbol.lean` | Quadratic Hilbert symbol + product formula (stubs).  Connects to quadratic reciprocity. |
+| `LubinTate.lean` | Lubin-Tate formal groups + explicit local Artin map (stubs).  Foundation of modern local CFT. |
+| `GaloisCohomology.lean` | Documentation of Mathlib's PROVED group cohomology infrastructure (Hilbert 90, Shapiro, etc.). |
+| `StarkConjectures.lean` | Stark regulator + main conjecture (stubs, far off-path). |
+| `SelmerGroup.lean` | Selmer groups + Iwasawa Main Conjecture (stubs, far off-path). |
 
 ## Dependency graph
 
