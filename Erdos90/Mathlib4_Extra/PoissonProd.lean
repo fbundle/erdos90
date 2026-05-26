@@ -202,16 +202,32 @@ each a multi-day Lean formalization on its own:
 -/
 
 /-- **Step 2** (POSTULATED): for `f : 𝓢(ℝ × ℝ, ℂ)` and `n : ℤ`,
-the function `x ↦ 𝓕(f.rightPartial x) n` is Schwartz in `x`.
+the function `x ↦ 𝓕(f.rightPartial x) n` is Schwartz in `x`, **with value
+specification**.
 
-This is "partial Fourier preserves Schwartz".  Standard fact; requires
-careful derivation in Lean using Schwartz seminorm bounds and the
-smoothness/decay of `(x, y) ↦ 𝓕(f(x, ·))(y)`.
+Concretely: there exists a Schwartz function `g : 𝓢(ℝ, ℂ)` such that
+`g x = 𝓕 (f.rightPartial x) (n : ℝ)` for every `x : ℝ`.
+
+This bundles "partial Fourier preserves Schwartz" together with the value
+equation, so callers can both apply 1-D Poisson to `g` and rewrite the
+sum back into the original `f`-form.
 
 Cite: Stein–Shakarchi *Fourier Analysis* Chapter 4.  Not in Mathlib v4.30. -/
 def partial_fourier_is_Schwartz_postulate
     (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
-    𝓢(ℝ, ℂ) := sorry
+    { g : 𝓢(ℝ, ℂ) // ∀ x : ℝ,
+        (g : ℝ → ℂ) x = 𝓕 ((f.rightPartial x : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (n : ℝ) } := sorry
+
+/-- The Schwartz function `x ↦ 𝓕(f.rightPartial x) n`.  Accessor for
+`partial_fourier_is_Schwartz_postulate`. -/
+noncomputable def partialFourier (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) : 𝓢(ℝ, ℂ) :=
+  (partial_fourier_is_Schwartz_postulate f n).val
+
+/-- Value spec: `(partialFourier f n) x = 𝓕(f.rightPartial x)(n)`. -/
+theorem partialFourier_apply (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) (x : ℝ) :
+    (partialFourier f n : ℝ → ℂ) x =
+      𝓕 ((f.rightPartial x : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (n : ℝ) :=
+  (partial_fourier_is_Schwartz_postulate f n).property x
 
 -- **Step 3** (the iterated Fourier identity in explicit integral form):
 -- For Schwartz `f : 𝓢(ℝ × ℝ, ℂ)` and `m, n : ℝ`:
@@ -303,9 +319,100 @@ theorem iterated_fourier_eq_2d_integral
   simp_rw [h_factor]
   rw [MeasureTheory.integral_const_mul]
 
--- (Note: `summable_2d_schwartz_postulate` has been promoted to a PROVED
--- theorem `summable_2d_schwartz_proved` below.  All earlier uses now point
--- to it.)
+/-! ## 2-D Fourier integral and its identification with `𝓕(partialFourier)`
+
+We package the 2-D Fourier integral as `fourier2D`, then prove that the
+1-D Fourier of `partialFourier f n` evaluated at `(m : ℝ)` equals
+`fourier2D f m n`.  This is the bridge from the iterated 1-D Fourier
+identity to a single 2-D Fourier integral.
+-/
+
+/-- 2-D Fourier integral of a Schwartz function `f : 𝓢(ℝ × ℝ, ℂ)`:
+`fourier2D f m n = ∫ p, exp(-2πi(m·p.1 + n·p.2)) · f(p) dp`.  -/
+noncomputable def fourier2D (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) : ℂ :=
+  ∫ p : ℝ × ℝ,
+      Complex.exp (-(2 * Real.pi * (m * p.1 + n * p.2)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (p.1, p.2)
+
+/-- The 1-D Fourier of `partialFourier f n` at a real point `m` equals
+the 2-D Fourier of `f` at `(m, n)`.
+
+PROVED via `iterated_fourier_eq_2d_integral` + `partialFourier_apply` +
+`fourier_eq'` + identification of the inner integral with
+`𝓕(f.rightPartial x)(n)`.  Requires only the partial-Fourier value spec
+(part of `partial_fourier_is_Schwartz_postulate`).  -/
+theorem fourier_partialFourier_eq_fourier2D
+    (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) (m : ℝ) :
+    𝓕 ((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) m = fourier2D f m n := by
+  -- Step 1: Rewrite the inner partial-Fourier value as an explicit integral.
+  have h_inner : ∀ x : ℝ,
+      𝓕 ((f.rightPartial x : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (n : ℝ) =
+        ∫ y : ℝ,
+          Complex.exp (-(2 * Real.pi * ((n : ℝ) * y)) * Complex.I) *
+            (f : ℝ × ℝ → ℂ) (x, y) := by
+    intro x
+    rw [fourier_eq' ((f.rightPartial x : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (n : ℝ)]
+    simp only [smul_eq_mul]
+    refine integral_congr_ae (Filter.Eventually.of_forall fun y => ?_)
+    simp only [rightPartial_apply]
+    congr 1
+    have hinner : (inner ℝ y ((n : ℝ)) : ℝ) = y * (n : ℝ) := by
+      simp [RCLike.inner_apply, mul_comm]
+    rw [hinner]
+    push_cast
+    ring
+  -- Step 2: Unfold the LHS Fourier; apply partialFourier_apply; apply h_inner.
+  rw [fourier_eq' ((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) m]
+  simp only [smul_eq_mul]
+  simp_rw [partialFourier_apply, h_inner]
+  -- Step 3: Unfold fourier2D and apply iterated_fourier_eq_2d_integral.
+  unfold fourier2D
+  rw [iterated_fourier_eq_2d_integral f m (n : ℝ)]
+  refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
+  have hinner : (inner ℝ x m : ℝ) = x * m := by
+    simp [RCLike.inner_apply, mul_comm]
+  -- Goal: cexp(↑(-2π·inner x m)·I) · (∫ y, …) = cexp(-2π·m·x·I) · (∫ y, …)
+  -- The inner integrals match; just need to match outer exponentials.
+  show (Complex.exp (((-2 * Real.pi * inner ℝ x m : ℝ)) * Complex.I)) *
+      (∫ y : ℝ, Complex.exp (-(2 * Real.pi * ((n : ℝ) * y)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (x, y)) =
+      Complex.exp (-(2 * Real.pi * (m * x)) * Complex.I) *
+      (∫ y : ℝ, Complex.exp (-(2 * Real.pi * ((n : ℝ) * y)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (x, y))
+  congr 1
+  rw [hinner]
+  push_cast
+  ring
+
+/-- 1-D Poisson summation applied to `partialFourier f n`:
+
+`∑' m : ℤ, (partialFourier f n) m = ∑' m : ℤ, 𝓕(partialFourier f n) m`
+
+PROVED via `SchwartzMap.tsum_eq_tsum_fourier`.  -/
+theorem tsum_partialFourier_eq_fourier (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
+    (∑' m : ℤ, (partialFourier f n : ℝ → ℂ) m) =
+    ∑' m : ℤ, 𝓕 ((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) m := by
+  have h := SchwartzMap.tsum_eq_tsum_fourier (partialFourier f n) 0
+  simp only [zero_add] at h
+  rw [h]
+  refine tsum_congr (fun m => ?_)
+  rw [show ((0 : ℝ) : UnitAddCircle) = (0 : UnitAddCircle) from by
+    simp [QuotientAddGroup.mk_zero]]
+  rw [fourier_eval_zero, mul_one]
+  rfl
+
+/-- 1-D Poisson on `partialFourier f n`, with the RHS expressed via `fourier2D`:
+
+`∑' m : ℤ, (partialFourier f n) m = ∑' m : ℤ, fourier2D f m n`
+
+PROVED by combining `tsum_partialFourier_eq_fourier` with
+`fourier_partialFourier_eq_fourier2D`.  -/
+theorem tsum_partialFourier_eq_fourier2D (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
+    (∑' m : ℤ, (partialFourier f n : ℝ → ℂ) m) =
+    ∑' m : ℤ, fourier2D f m n := by
+  rw [tsum_partialFourier_eq_fourier]
+  refine tsum_congr (fun m => ?_)
+  exact fourier_partialFourier_eq_fourier2D f n m
 
 /-- Mathlib's `EisensteinSeries.summable_one_div_norm_rpow` applied to k=3:
 the `‖·‖^(-3)` series is summable over `Fin 2 → ℤ`.
