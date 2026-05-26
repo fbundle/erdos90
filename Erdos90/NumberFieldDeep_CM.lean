@@ -273,8 +273,6 @@ structure CMTowerData (f : ℕ) (hf1 : f ≥ 1) (Λ : AddSubgroup (Fin f → ℂ
   φ : mixedEmbedding.mixedSpace K ≃ₗ[ℝ] Fin f → ℂ
   h_nrComplexPlaces : InfinitePlace.nrComplexPlaces K = f
   h_nrRealPlaces : InfinitePlace.nrRealPlaces K = 0
-  mem_iff (v : Fin f → ℂ) : v ∈ Λ ↔ ∃ a : 𝓞 K,
-    φ (NumberField.mixedEmbedding K (a : K)) = v
   h_φ1_norm : ∀ r : Fin f, ‖φ (NumberField.mixedEmbedding K (1 : K)) r‖ = 1
   h_φ_norm_div_conj : ∀ (α : K) (_ : α ≠ 0) (r : Fin f),
     ‖φ (NumberField.mixedEmbedding K (α / IsCMField.complexConj K α)) r‖ = 1
