@@ -634,6 +634,23 @@ theorem HilbertPClassFieldExt.ramificationIdx_eq_one
   have := E.unramified P hP
   exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt hP
 
+/-- For HCF, `discr H = discr K^[H:K]` (using the proved tower formula for
+unramified extensions). -/
+theorem HilbertClassFieldExt.discr_eq_pow
+    (K : Type u) [Field K] [NumberField K]
+    (E : HilbertClassFieldExt K) :
+    (NumberField.discr E.H).natAbs =
+      (NumberField.discr K).natAbs ^ Module.finrank K E.H :=
+  NumberField.natAbs_discr_eq_pow_of_unramifiedTower K E.H E.unramified
+
+/-- For p-HCF, `discr H_p = discr K^[H_p:K]`. -/
+theorem HilbertPClassFieldExt.discr_eq_pow
+    (K : Type u) [Field K] [NumberField K] (p : ℕ)
+    (E : HilbertPClassFieldExt K p) :
+    (NumberField.discr E.H_p).natAbs =
+      (NumberField.discr K).natAbs ^ Module.finrank K E.H_p :=
+  NumberField.natAbs_discr_eq_pow_of_unramifiedTower K E.H_p E.unramified
+
 -- (rootDiscr_pHCF_rat and finrank_pHCF_rat omitted: structure projection
 -- through HilbertPClassFieldExt.rat doesn't def-unfold automatically, causing
 -- typeclass timeouts.  Pattern is the same as for HCF — see
