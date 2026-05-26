@@ -316,6 +316,30 @@ def p_HCF_finrank_divides_classNumber_postulate
     (p : ℕ) (E : HilbertPClassFieldExt K p) :
     Module.finrank K E.H_p ∣ NumberField.classNumber K := sorry
 
+/-- If `p ∤ classNumber K`, then the p-HCF of K equals K itself.
+
+PROVED Lean modulo `p_HCF_finrank_divides_classNumber_postulate`. -/
+theorem p_HCF_trivial_of_p_not_dvd_classNumber
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p)
+    (h_p_not_dvd : ¬ p ∣ NumberField.classNumber K)
+    (E : HilbertPClassFieldExt K p) :
+    Module.finrank K E.H_p = 1 := by
+  obtain ⟨n, hn⟩ := E.finrank_is_pow_p
+  -- [H_p : K] = p^n.  By p_HCF_finrank_divides_classNumber, p^n | classNumber K.
+  -- If p doesn't divide classNumber K, then p^n | classNumber K forces n = 0.
+  -- Hence [H_p : K] = p^0 = 1.
+  have h_dvd := p_HCF_finrank_divides_classNumber_postulate K p E
+  rw [hn] at h_dvd
+  rcases Nat.eq_zero_or_pos n with rfl | hn_pos
+  · rw [hn]; simp
+  · -- n > 0 contradicts h_p_not_dvd
+    exfalso
+    apply h_p_not_dvd
+    -- p ∣ p^n (for n > 0) and p^n ∣ classNumber K, so p ∣ classNumber K
+    have h_p_dvd_pow : p ∣ p ^ n := dvd_pow_self p hn_pos.ne'
+    exact h_p_dvd_pow.trans h_dvd
+
 /-! ## The Hilbert class field tower (iterated HCF)
 
 The `n`-th level of the **Hilbert class field tower** would naturally be
