@@ -424,6 +424,41 @@ theorem rightPartial_apply_polynomial_le (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (
   have := f.le_seminorm (𝕜 := ℝ) k 0 (x_0, y)
   simpa using this
 
+/-- The y-variable bound: `‖y‖^k · ‖(f.rightPartial x_0)(y)‖ ≤ ‖f‖_(k, 0)`.
+
+PROVED via the polynomial bound + `‖(x_0, y)‖ ≥ ‖y‖` (sup norm). -/
+theorem rightPartial_seminorm_y_le (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x_0 y : ℝ) :
+    ‖y‖ ^ k * ‖(f.rightPartial x_0 : 𝓢(ℝ, ℂ)) y‖ ≤
+      SchwartzMap.seminorm ℝ k 0 f := by
+  rw [rightPartial_apply]
+  have h_bound := rightPartial_apply_polynomial_le f k x_0 y
+  -- ‖(x_0, y)‖ ≥ ‖y‖ (sup norm on Prod)
+  have h_norm : ‖y‖ ≤ ‖((x_0, y) : ℝ × ℝ)‖ := by
+    simp [Prod.norm_def]
+  calc ‖y‖ ^ k * ‖f (x_0, y)‖
+      ≤ ‖((x_0, y) : ℝ × ℝ)‖ ^ k * ‖f (x_0, y)‖ := by
+        apply mul_le_mul_of_nonneg_right
+        · exact pow_le_pow_left₀ (norm_nonneg _) h_norm k
+        · exact norm_nonneg _
+    _ ≤ SchwartzMap.seminorm ℝ k 0 f := h_bound
+
+/-- The x-variable bound: `‖x_0‖^k · ‖(f.rightPartial x_0)(y)‖ ≤ ‖f‖_(k, 0)`.
+
+PROVED via the polynomial bound + `‖(x_0, y)‖ ≥ ‖x_0‖` (sup norm). -/
+theorem rightPartial_seminorm_x_le (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x_0 y : ℝ) :
+    ‖x_0‖ ^ k * ‖(f.rightPartial x_0 : 𝓢(ℝ, ℂ)) y‖ ≤
+      SchwartzMap.seminorm ℝ k 0 f := by
+  rw [rightPartial_apply]
+  have h_bound := rightPartial_apply_polynomial_le f k x_0 y
+  have h_norm : ‖x_0‖ ≤ ‖((x_0, y) : ℝ × ℝ)‖ := by
+    simp [Prod.norm_def]
+  calc ‖x_0‖ ^ k * ‖f (x_0, y)‖
+      ≤ ‖((x_0, y) : ℝ × ℝ)‖ ^ k * ‖f (x_0, y)‖ := by
+        apply mul_le_mul_of_nonneg_right
+        · exact pow_le_pow_left₀ (norm_nonneg _) h_norm k
+        · exact norm_nonneg _
+    _ ≤ SchwartzMap.seminorm ℝ k 0 f := h_bound
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
