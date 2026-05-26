@@ -5,6 +5,7 @@ import Erdos90.NumberFieldDeep_CM
 import Erdos90.CMField.CyclotomicSplitPrimes
 import Erdos90.CMField.QScaling
 import Erdos90.CMField.QScalingLattice
+import Erdos90.Mathlib4_Extra.ClassNumberBound
 
 open Real Filter NumberField InfinitePlace Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex Pointwise BigOperators
@@ -188,23 +189,202 @@ def hmr_brd_cm_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
   obtain ⟨sp, hsp_Q⟩ := cheb K t' f hcompl hrd_K
   exact ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, sp, hrd_K, hsp_Q⟩
 
-/-- **D3.2**: Quantitative Brauer–Siegel bound for CM fields with bounded root
-discriminant.  For every CM field `K` arising in the BRD tower above, the class
-number satisfies `log(h_K)/f ≤ 2 · log(2 · rd_F)`.  See:
-- `assets/louboutin_2000_class_number.pdf` (explicit class-number bounds).
-- The analytic class number formula + Brauer–Siegel.
+-- Pure numeric lemma used in D3.2d chain: 128·n² ≤ 6^n for n ≥ 5.
+private lemma chain_arith_128n2_le_6n (n : ℕ) (hn : 5 ≤ n) :
+    (128 : ℝ) * (n : ℝ) ^ 2 ≤ (6 : ℝ) ^ n := by
+  induction n, hn using Nat.le_induction with
+  | base => norm_num
+  | succ m hm IH =>
+    have h_m_real : (5 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm
+    have h_m_pos : (0 : ℝ) < (m : ℝ) := by linarith
+    have h_step : (128 : ℝ) * ((m : ℝ) + 1) ^ 2 ≤ 6 * (128 * (m : ℝ) ^ 2) := by nlinarith
+    calc (128 : ℝ) * ((m + 1 : ℕ) : ℝ) ^ 2
+        = (128 : ℝ) * ((m : ℝ) + 1) ^ 2 := by push_cast; ring
+      _ ≤ 6 * (128 * (m : ℝ) ^ 2) := h_step
+      _ ≤ 6 * (6 : ℝ) ^ m := by linarith
+      _ = (6 : ℝ) ^ (m + 1) := by ring
 
-The class-number bound for K in the BRD tower depends only on `rd_F` (the
-root-discriminant bound), not on the specific level.
+/-- **D3.2 (assembled)**: Quantitative Brauer–Siegel bound for CM fields with
+bounded root discriminant, derived from the named pieces:
+- E5: `classNumber_eq_residue_formula` (proved)
+- D3.2b: `dedekind_residue_upper_bound_cm` (sorry — Louboutin 2000)
+- D3.2c: `regulator_lower_bound_cm` (sorry — Friedman 1989)
+- D3.2.tors: `torsionOrder_bound` (sorry — Nat.totient PR target)
 
-Not in Mathlib v4.30; requires analytic class number formula + L(1, χ) bounds. -/
+For CM totally complex K with `rootDiscr K ≤ rd_F` and `f ≥ 5`, the class
+number satisfies `log(h_K)/f ≤ 2 · log(2 · rd_F)`.  The threshold `f ≥ 5` comes
+from the chain arithmetic: `(2π)^f ≥ 128·f²` is needed for the `log(w_K)/f`
+correction term to fit, which holds for `f ≥ 5`. -/
 lemma class_num_bound_of_brd
     (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
-    (f : ℕ) (_hf : InfinitePlace.nrComplexPlaces K = f) (_hf1 : f ≥ 1)
-    (rd_F : ℝ) (_hrd_F : 1 ≤ rd_F)
-    (_hrd_K : NumberField.rootDiscr K ≤ rd_F) :
+    (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) (hf5 : 5 ≤ f)
+    (rd_F : ℝ) (hrd_F : 1 ≤ rd_F)
+    (hrd_K : NumberField.rootDiscr K ≤ rd_F) :
     Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ) ≤
-      2 * Real.log (2 * rd_F) := sorry
+      2 * Real.log (2 * rd_F) := by
+  -- Positivity setup
+  have hf_pos : 0 < f := by linarith
+  have hf_real_pos : (0 : ℝ) < (f : ℝ) := by exact_mod_cast hf_pos
+  have hf_ne : (f : ℝ) ≠ 0 := hf_real_pos.ne'
+  have hrd_F_pos : 0 < rd_F := by linarith
+  have h_pi_pos : 0 < Real.pi := Real.pi_pos
+  have h_2pi_pos : (0 : ℝ) < 2 * Real.pi := by positivity
+  have h_4rd_F_pos : (0 : ℝ) < 4 * rd_F := by linarith
+  have h_2rd_F_pos : (0 : ℝ) < 2 * rd_F := by linarith
+  have h_2pi_gt_one : (1 : ℝ) < 2 * Real.pi := by
+    have := Real.pi_gt_three; linarith
+  -- nrRealPlaces K = 0 (from totally complex)
+  have h_no_real : InfinitePlace.nrRealPlaces K = 0 :=
+    IsTotallyComplex.nrRealPlaces_eq_zero K
+  -- [K:ℚ] = 2f (totally complex)
+  have h_finrank_eq : Module.finrank ℚ K = 2 * f := by
+    have h_rank := InfinitePlace.card_add_two_mul_card_eq_rank (K := K)
+    rw [h_no_real, hf] at h_rank
+    omega
+  -- classNumber K > 0, factor in classNumber K = Fintype.card (ClassGroup (𝓞 K))
+  have h_cardCG_eq : (Fintype.card (ClassGroup (𝓞 K)) : ℝ) =
+      (NumberField.classNumber K : ℝ) := rfl
+  have h_K_pos : (0 : ℝ) < (NumberField.classNumber K : ℝ) := by
+    exact_mod_cast NumberField.classNumber_pos K
+  -- Positivity of all factors in E5
+  have h_R_pos : 0 < NumberField.dedekindZeta_residue K :=
+    NumberField.dedekindZeta_residue_pos K
+  have h_reg_pos : 0 < NumberField.Units.regulator K :=
+    NumberField.Units.regulator_pos K
+  have h_w_pos : (0 : ℝ) < (NumberField.Units.torsionOrder K : ℝ) :=
+    Nat.cast_pos.mpr (NumberField.Units.torsionOrder_pos K)
+  have h_disc_ne : (NumberField.discr K : ℝ) ≠ 0 :=
+    Int.cast_ne_zero.mpr (NumberField.discr_ne_zero K)
+  have h_sqrt_pos : 0 < Real.sqrt |(NumberField.discr K : ℝ)| :=
+    Real.sqrt_pos_of_pos (abs_pos.mpr h_disc_ne)
+  have h_2pi_pow_f_pos : (0 : ℝ) < (2 * Real.pi) ^ f := by positivity
+  have h_rd_K_pos : 0 < NumberField.rootDiscr K := by
+    rw [NumberField.rootDiscr_def]
+    apply Real.rpow_pos_of_pos
+    exact_mod_cast abs_pos.mpr (NumberField.discr_ne_zero K)
+  -- √|disc K| = (rootDiscr K)^f for totally complex K (since [K:ℚ] = 2f)
+  have h_sqrt_disc_eq : Real.sqrt |(NumberField.discr K : ℝ)| =
+      NumberField.rootDiscr K ^ f := by
+    rw [NumberField.rootDiscr_def]
+    rw [← Real.rpow_natCast _ f, ← Real.rpow_mul (by positivity)]
+    have h_exp : ((Module.finrank ℚ K : ℝ))⁻¹ * (f : ℝ) = 1/2 := by
+      rw [h_finrank_eq]
+      push_cast
+      field_simp
+    rw [h_exp, Real.sqrt_eq_rpow]
+    congr 1; push_cast; rfl
+  -- Apply E5: (classNumber K) = R_K · w_K · √|disc K| / (1 · (2π)^f · reg K)
+  have h_E5 := Mathlib4_Extra.classNumber_eq_residue_formula K
+  rw [h_no_real, hf, pow_zero, one_mul] at h_E5
+  -- Apply bounds
+  have h_D32b := Mathlib4_Extra.dedekind_residue_upper_bound_cm K rd_F hrd_F hrd_K
+  rw [hf] at h_D32b
+  have h_D32c := Mathlib4_Extra.regulator_lower_bound_cm K (hf ▸ hf5.trans' (by norm_num))
+  have h_tors := Mathlib4_Extra.torsionOrder_bound K
+  -- log of E5 (with positivity)
+  have h_E5_log : Real.log (NumberField.classNumber K : ℝ) =
+      Real.log (NumberField.dedekindZeta_residue K) +
+      Real.log (NumberField.Units.torsionOrder K : ℝ) +
+      Real.log (Real.sqrt |(NumberField.discr K : ℝ)|) -
+      (f : ℝ) * Real.log (2 * Real.pi) -
+      Real.log (NumberField.Units.regulator K) := by
+    rw [h_E5]
+    have h_num_pos : 0 < NumberField.dedekindZeta_residue K *
+        ((NumberField.Units.torsionOrder K : ℝ) * Real.sqrt |(NumberField.discr K : ℝ)|) := by
+      positivity
+    have h_denom_pos : 0 < (2 * Real.pi) ^ f * NumberField.Units.regulator K := by
+      positivity
+    rw [Real.log_div h_num_pos.ne' h_denom_pos.ne']
+    rw [Real.log_mul h_R_pos.ne' (by positivity : (NumberField.Units.torsionOrder K : ℝ) *
+        Real.sqrt |(NumberField.discr K : ℝ)| ≠ 0)]
+    rw [Real.log_mul h_w_pos.ne' h_sqrt_pos.ne']
+    rw [Real.log_mul (by positivity : ((2 * Real.pi) ^ f : ℝ) ≠ 0) h_reg_pos.ne']
+    rw [Real.log_pow]
+    ring
+  -- Rewrite log √|disc K| as f · log(rootDiscr K)
+  have h_log_sqrt_disc : Real.log (Real.sqrt |(NumberField.discr K : ℝ)|) =
+      (f : ℝ) * Real.log (NumberField.rootDiscr K) := by
+    rw [h_sqrt_disc_eq, Real.log_pow]
+  rw [h_log_sqrt_disc] at h_E5_log
+  -- Apply bounds in log form
+  -- log R_K ≤ f · log(4·rd_F)
+  have h_log_R : Real.log (NumberField.dedekindZeta_residue K) ≤
+      (f : ℝ) * Real.log (4 * rd_F) := by
+    have := Real.log_le_log h_R_pos h_D32b
+    rwa [Real.log_pow] at this
+  -- log w_K ≤ log(4·(2f)²) = log(16·f²)
+  have h_log_w : Real.log (NumberField.Units.torsionOrder K : ℝ) ≤
+      Real.log (16 * (f : ℝ) ^ 2) := by
+    have h_tors_real : (NumberField.Units.torsionOrder K : ℝ) ≤
+        4 * (Module.finrank ℚ K : ℝ) ^ 2 := by
+      have := h_tors
+      have h_finrank_real : (Module.finrank ℚ K : ℝ) = 2 * f := by
+        rw [h_finrank_eq]; push_cast; ring
+      calc (NumberField.Units.torsionOrder K : ℝ) ≤
+          (4 * (Module.finrank ℚ K) ^ 2 : ℕ) := by exact_mod_cast h_tors
+        _ = 4 * (Module.finrank ℚ K : ℝ) ^ 2 := by push_cast; ring
+    have h_bound_eq : 4 * (Module.finrank ℚ K : ℝ) ^ 2 = 16 * (f : ℝ) ^ 2 := by
+      rw [h_finrank_eq]; push_cast; ring
+    rw [h_bound_eq] at h_tors_real
+    exact Real.log_le_log h_w_pos h_tors_real
+  -- log(rootDiscr K) ≤ log(rd_F)
+  have h_log_rd : Real.log (NumberField.rootDiscr K) ≤ Real.log rd_F :=
+    Real.log_le_log h_rd_K_pos hrd_K
+  -- -log(reg K) ≤ log 8 (from reg K ≥ 1/8)
+  have h_log_reg : -Real.log (NumberField.Units.regulator K) ≤ Real.log 8 := by
+    have h_le : Real.log (1/8) ≤ Real.log (NumberField.Units.regulator K) :=
+      Real.log_le_log (by norm_num) h_D32c
+    have h_log_eighth : Real.log (1/8 : ℝ) = -Real.log 8 := by
+      rw [Real.log_div one_ne_zero (by norm_num : (8 : ℝ) ≠ 0)]
+      simp
+    linarith [h_le, h_log_eighth ▸ h_le]
+  -- Combine the bounds: log(classNumber K) ≤ ...
+  have h_chain : Real.log (NumberField.classNumber K : ℝ) ≤
+      (f : ℝ) * Real.log (4 * rd_F) + Real.log (16 * (f : ℝ) ^ 2) +
+      (f : ℝ) * Real.log rd_F - (f : ℝ) * Real.log (2 * Real.pi) + Real.log 8 := by
+    have hfm_log_rd : (f : ℝ) * Real.log (NumberField.rootDiscr K) ≤
+        (f : ℝ) * Real.log rd_F :=
+      mul_le_mul_of_nonneg_left h_log_rd (le_of_lt hf_real_pos)
+    linarith [h_E5_log, h_log_R, h_log_w, hfm_log_rd, h_log_reg]
+  -- Final arithmetic: bound RHS by 2f · log(2 · rd_F)
+  -- Need: f·log(4·rd_F) + log(16f²) + f·log(rd_F) - f·log(2π) + log 8 ≤ 2f·log(2·rd_F)
+  -- i.e., f·log(2π) - log(128·f²) ≥ 0  [where 128 = 16 · 8]
+  -- holds for f ≥ 5 since (2π)^f ≥ 128f² then.
+  have h_arith : (f : ℝ) * Real.log (4 * rd_F) + Real.log (16 * (f : ℝ) ^ 2) +
+      (f : ℝ) * Real.log rd_F - (f : ℝ) * Real.log (2 * Real.pi) + Real.log 8 ≤
+      (f : ℝ) * (2 * Real.log (2 * rd_F)) := by
+    -- Rearrange the target inequality to: f·log(2π) ≥ log(16·f²·8) = log(128·f²)
+    -- i.e., (2π)^f ≥ 128·f²
+    have h_2pi_f_ge : (128 : ℝ) * (f : ℝ) ^ 2 ≤ (2 * Real.pi) ^ f := by
+      -- For f ≥ 5: (2π)^5 ≈ 9786.5 ≥ 128·25 = 3200.
+      have h_2pi_ge_6 : (6 : ℝ) ≤ 2 * Real.pi := by
+        have := Real.pi_gt_three; linarith
+      have h_2pi_pow : (6 : ℝ) ^ f ≤ (2 * Real.pi) ^ f :=
+        pow_le_pow_left₀ (by norm_num) h_2pi_ge_6 f
+      have h_128f2_le_6f : (128 : ℝ) * (f : ℝ) ^ 2 ≤ (6 : ℝ) ^ f :=
+        chain_arith_128n2_le_6n f hf5
+      linarith
+    -- Translate (2π)^f ≥ 128f² to log form
+    have h_128f2_pos : (0 : ℝ) < 128 * (f : ℝ) ^ 2 := by positivity
+    have h_log_le : Real.log (128 * (f : ℝ) ^ 2) ≤ (f : ℝ) * Real.log (2 * Real.pi) := by
+      have := Real.log_le_log h_128f2_pos h_2pi_f_ge
+      rwa [Real.log_pow] at this
+    -- Compute log(16 · f²) + log 8 = log(128 · f²)
+    have h_log_combine : Real.log (16 * (f : ℝ) ^ 2) + Real.log 8 =
+        Real.log (128 * (f : ℝ) ^ 2) := by
+      rw [← Real.log_mul (by positivity) (by norm_num : (8 : ℝ) ≠ 0)]
+      congr 1; ring
+    -- Compute log(4·rd_F) + log(rd_F) = log(4·rd_F²) = log((2·rd_F)²) = 2·log(2·rd_F)
+    have h_log_target : Real.log (4 * rd_F) + Real.log rd_F = 2 * Real.log (2 * rd_F) := by
+      rw [← Real.log_mul h_4rd_F_pos.ne' hrd_F_pos.ne']
+      have h_eq : (4 : ℝ) * rd_F * rd_F = (2 * rd_F) ^ 2 := by ring
+      rw [h_eq, Real.log_pow]; push_cast; ring
+    -- Putting it together
+    nlinarith [h_log_combine, h_log_target, h_log_le, hf_real_pos]
+  -- Convert log(h_K)/f ≤ ... using f > 0
+  rw [h_cardCG_eq]
+  rw [div_le_iff₀ hf_real_pos]
+  linarith [h_chain, h_arith]
 
 -- (Phase D4: `brd_log_H_threshold` sorry removed; the hypothesis is now
 -- threaded through `BRDTowerData.getTowerLevel` as an explicit argument.)
@@ -244,8 +424,14 @@ def brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ :=
         dsimp [t']
         push_cast
         linarith [Nat.le_ceil t]
-      obtain ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, sp, hrd_K, hsp_Q⟩ :=
-        h_tower M t'
+      -- Internally bump M to max(M, 5) so that f ≥ 5 (required by class_num_bound_of_brd).
+      let M' : ℕ := max M 5
+      have hM_le_M' : M ≤ M' := le_max_left M 5
+      have hM'_ge_5 : 5 ≤ M' := le_max_right M 5
+      obtain ⟨K, hField, hNF, hCM, hTC, f, hfM', hf1, hcompl, hreal, sp, hrd_K, hsp_Q⟩ :=
+        h_tower M' t'
+      have hfM : f ≥ M := hM_le_M'.trans hfM'
+      have hf5 : 5 ≤ f := hM'_ge_5.trans hfM'
       refine ⟨K, hField, hNF, hCM, hTC, f, hfM, hf1, hcompl, hreal, t', ht'_ge, sp,
         hsp_Q, ?_⟩
       letI : Field K := hField
@@ -254,7 +440,7 @@ def brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ :=
       letI : IsTotallyComplex K := hTC
       have h_BS : Real.log (Fintype.card (ClassGroup (𝓞 K)) : ℝ) / (f : ℝ) ≤
           2 * Real.log (2 * rd_F) :=
-        class_num_bound_of_brd K f hcompl hf1 rd_F hrd_F_ge1 hrd_K
+        class_num_bound_of_brd K f hcompl hf5 rd_F hrd_F_ge1 hrd_K
       linarith }
 
 /-- **BRD CM tower postulate** — Phase C (b) PROVED assembly.

@@ -49,21 +49,27 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 3 `sorry` warnings on the proof path of `erdos_unit_distance_false` (after Phase A+B+C+D1+D2+D3+D4+D5+E1+E2+E3+E4+E5).  `Mathlib4_Extra/ClassNumberBound.lean` is now fully proved.
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with **2 `sorry` warnings on the proof path of `erdos_unit_distance_false`** (after Phase A+B+C+D1+D2+D3+D4+D5+E1+E2+E3+E4+E5+E6+E7+E8+E9).  `Mathlib4_Extra/ClassNumberBound.lean` has 3 named, off-path sorries (D3.2b, D3.2c, D3.2.tors) supporting the chain.
 
-Phase D5 (2026-05-26) split `hmr_brd_cm_tower` into two named sub-postulates `gs_cm_tower` (Golod–Shafarevich existence) and `chebotarev_fixed_Q` (Chebotarev/Ihara fixed split primes), with the bundled tower now a proved assembly.  Sorry count went from 2 to 3, but each is now a smaller, more focused Mathlib-PR-shaped statement.
+Phase D5 split `hmr_brd_cm_tower` into `gs_cm_tower` + `chebotarev_fixed_Q`.  Phase E9 (2026-05-26) closed `class_num_bound_of_brd` by assembling E5 (analytic class number formula) + D3.2b (Louboutin residue upper bound) + D3.2c (Friedman regulator lower bound) + D3.2.tors (torsionOrder polynomial bound) + numeric arithmetic.  The chain requires `f ≥ 5` (provided by `brd_tower_data` bumping `M` to `max M 5`).
 
-## Proof state — zero axioms, 3 labelled TRUE postulates (all literature gaps)
+## Proof state — zero axioms, 2 labelled TRUE postulates on the proof path
 
 All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` keywords).  The build succeeds; `erdos_unit_distance_false` depends only on `[propext, sorryAx, Classical.choice, Quot.sound]` (foundational Lean axioms + `sorryAx`).
 
-### The three remaining sorries (all literature gaps)
+### The two remaining sorries on the proof path
 
 **D3.1.gs** `gs_cm_tower` in `Erdos90/NumberFieldDeep_GSTower.lean:132` — Golod–Shafarevich existence of an infinite CM tower with bounded root discriminant.  TRUE per HMR 2021 §2–4 + CM lift (tensor with ℚ(i)).  Not in Mathlib v4.30; requires class field theory + Golod–Shafarevich inequality.  Multi-year formalization (blocked on Mathlib's Artin reciprocity).
 
 **D3.1.cheb** `chebotarev_fixed_Q` in `Erdos90/NumberFieldDeep_GSTower.lean:154` — Chebotarev/Ihara fixed split primes across the tower.  TRUE per HMR 2021 §3 `theo:ihara` (line 729 in `assets/hmr_2021_src/Cutting_towers_arxiv.tex`).  Not in Mathlib v4.30; requires Chebotarev density theorem + L-function machinery.  Multi-month formalization.
 
-**D3.2** `class_num_bound_of_brd` in `Erdos90/NumberFieldDeep_GSTower.lean:201` — Quantitative Brauer–Siegel bound `log(h_K)/f ≤ 2 · log(2 · rd_F)` for K in the BRD tower with `rootDiscr K ≤ rd_F` (the previous `_h_K_from_brd_tower : True` placeholder was fixed by threading `rootDiscr K ≤ rd_F` through `hmr_brd_cm_tower`).  TRUE per Brauer–Siegel + Louboutin 2000.  Not in Mathlib v4.30; D3.2a (analytic class number formula as algebraic identity) was closed by Phase E5 (`classNumber_eq_residue_formula` in `Mathlib4_Extra/ClassNumberBound.lean`).  Remaining gaps are D3.2b (L(1,χ) upper bound on residue) and D3.2c (regulator lower bound).  Multi-month formalization.
+### Three off-path sorries in `Mathlib4_Extra/ClassNumberBound.lean`
+
+These support `class_num_bound_of_brd` (which IS proved as PHASE E9 assembly) and are Mathlib-PR-shaped:
+
+- **D3.2b** `dedekind_residue_upper_bound_cm` (line 295): Louboutin upper bound `dedekindZeta_residue K ≤ (4·rd_F)^f`.  Cite: Louboutin 2000 (`assets/louboutin_2000_class_number.pdf`).
+- **D3.2c** `regulator_lower_bound_cm` (line 259): Friedman lower bound `regulator K ≥ 1/8`.  Cite: Friedman 1989.
+- **D3.2.tors** `torsionOrder_bound` (line 329): polynomial bound `torsionOrder K ≤ 4·[K:ℚ]²`.  Cite: standard `K ⊇ ℚ(ζ_{w_K})` + `φ(n) ≥ √n/2`.
 
 `brd_tower_data` itself is PROVED Lean code that assembles D3.1+D3.2.  Phase D4 closed D3.3 (the `log_H ≥ 2 · log(2 · rd_F)` threshold) by threading the hypothesis through the entire signature chain from `BRDTowerData.getTowerLevel` up to `exists_admissible_family` (which proves it via `C_class = 1`).
 
