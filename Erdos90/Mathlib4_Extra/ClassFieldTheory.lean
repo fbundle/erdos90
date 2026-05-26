@@ -566,6 +566,21 @@ theorem card_gal_hcf_cyclotomic_five_eq_one
   rw [this]
   exact NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.five_pid (K := K))
 
+/-- For the identity HCF, the structure's `finrank_eq` field gives `1`. -/
+theorem HilbertClassFieldExt.identity_finrank_eq
+    (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1) :
+    Module.finrank K (HilbertClassFieldExt.identity K h).H = 1 := by
+  rw [(HilbertClassFieldExt.identity K h).finrank_eq, h]
+
+/-- For the identity HCF, the algebraMap K → H is bijective. -/
+theorem HilbertClassFieldExt.identity_bijective
+    (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1) :
+    Function.Bijective (algebraMap K (HilbertClassFieldExt.identity K h).H) :=
+  HilbertClassFieldExt.bijective_algebraMap_of_classNumber_one K
+    (HilbertClassFieldExt.identity K h) h
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
