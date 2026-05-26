@@ -362,6 +362,13 @@ trivial as a group. -/
   have hc : Fintype.card (ClassGroup (𝓞 K)) = 1 := h
   exact Fintype.card_eq_one_iff_nonempty_unique.mp hc |>.some
 
+/-- The Galois group `K ≃ₐ[K] K` is trivial: it contains only the identity.
+
+PROVED Lean. -/
+instance algEquiv_self_unique (K : Type u) [Field K] : Unique (K ≃ₐ[K] K) where
+  default := AlgEquiv.refl
+  uniq := fun a => by ext x; exact a.commutes' x
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
