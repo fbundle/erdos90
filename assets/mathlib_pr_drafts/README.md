@@ -71,6 +71,28 @@ to K, apply `IsPrimitiveRoot.lcm_totient_le_finrank`.
 
 **Status:** Fully proved.
 
+### `NumberField_UnramifiedDiscriminant.lean` — discriminant tower for unramified extensions
+
+**Target Mathlib location:** `Mathlib/NumberTheory/NumberField/Discriminant/Different.lean`
+(extension of the existing tower formula).
+
+**Statements:**
+- `NumberField.differentIdeal_eq_top_of_isUnramifiedAt` — if every nonzero
+  prime of `𝓞 L` is unramified over `𝓞 K`, then `differentIdeal (𝓞 K) (𝓞 L) = ⊤`.
+- `NumberField.natAbs_discr_eq_pow_of_unramifiedTower` — `|discr L| = |discr K|^[L:K]`
+  for everywhere-unramified `L/K`.
+- `NumberField.rootDiscr_eq_of_unramifiedTower` — `rootDiscr L = rootDiscr K`
+  for everywhere-unramified `L/K`.
+
+**Proof:** Combines `not_dvd_differentIdeal_iff` (the unramified ↔ no prime
+divides bridge), `Ideal.exists_le_maximal` (Dedekind structure), and the
+existing tower formula `natAbs_discr_eq_absNorm_differentIdeal_mul_natAbs_discr_pow`.
+
+**Lines:** ~120.
+
+**Status:** Fully proved.  Used by the Erd46 project's Phase E14
+restructuring of `gs_cm_tower` (formerly a load-bearing sorry).
+
 ## How to use these drafts
 
 To submit any of these as a Mathlib PR:
