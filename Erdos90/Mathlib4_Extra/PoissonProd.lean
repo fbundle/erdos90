@@ -273,13 +273,35 @@ theorem iterated_fourier_eq_2d_integral
       ∫ x : ℝ, Complex.exp (-(2 * Real.pi * (m * x)) * Complex.I) *
           (∫ y : ℝ, Complex.exp (-(2 * Real.pi * (n * y)) * Complex.I) *
               (f : ℝ × ℝ → ℂ) (x, y)) := by
-  -- Proof outline (sorried; substantial Fubini bookkeeping in Lean):
-  -- 1. F(x, y) := exp(-2πi(mx+ny)) · f(x, y) is integrable
-  --    (Schwartz f times bounded character).
-  -- 2. By integral_prod (Fubini): ∫_{ℝ²} F = ∫_x ∫_y F.
-  -- 3. Factor F(x, y) = exp(-2πi m x) · (exp(-2πi n y) · f(x, y)) and
-  --    factor the constant out of the inner integral via integral_const_mul.
-  sorry
+  -- Step 1: F is integrable.
+  have h_F_int := fourier_mul_schwartz_integrable_2d f m n
+  -- Step 2: Apply Fubini (integral_prod) to get the iterated form.
+  -- LHS = ∫_{p : ℝ × ℝ}, F(p) dp = ∫ x, ∫ y, F(x, y) dy dx
+  rw [show (∫ p : ℝ × ℝ,
+        Complex.exp (-(2 * Real.pi * (m * p.1 + n * p.2)) * Complex.I) *
+          (f : ℝ × ℝ → ℂ) (p.1, p.2))
+        = ∫ x : ℝ, ∫ y : ℝ,
+            Complex.exp (-(2 * Real.pi * (m * x + n * y)) * Complex.I) *
+              (f : ℝ × ℝ → ℂ) (x, y) from
+      MeasureTheory.integral_prod _ h_F_int]
+  -- Step 3: For each x, factor the inner integral.
+  refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
+  -- Inner: ∫ y, exp(-2πi(mx + ny)) · f(x, y) = exp(-2πi m x) · ∫ y, exp(-2πi n y) · f(x, y)
+  have h_factor : ∀ y : ℝ,
+      Complex.exp (-(2 * Real.pi * (m * x + n * y)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (x, y) =
+      Complex.exp (-(2 * Real.pi * (m * x)) * Complex.I) *
+        (Complex.exp (-(2 * Real.pi * (n * y)) * Complex.I) *
+          (f : ℝ × ℝ → ℂ) (x, y)) := by
+    intro y
+    rw [show (-(2 * Real.pi * (m * x + n * y)) * Complex.I) =
+        (-(2 * Real.pi * (m * x)) * Complex.I) + (-(2 * Real.pi * (n * y)) * Complex.I)
+        from by push_cast; ring,
+      Complex.exp_add]
+    ring
+  -- Apply the factorization and pull out the constant
+  simp_rw [h_factor]
+  rw [MeasureTheory.integral_const_mul]
 
 -- (Note: `summable_2d_schwartz_postulate` has been promoted to a PROVED
 -- theorem `summable_2d_schwartz_proved` below.  All earlier uses now point
