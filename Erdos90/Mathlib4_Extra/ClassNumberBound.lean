@@ -346,35 +346,135 @@ lemma totient_torsionOrder_le_finrank :
     (by rw [Nat.lcm_self]; exact hirr)
   rwa [Nat.lcm_self] at h
 
+/-- Helper for `nat_le_four_mul_totient_sq`: for any odd `m`, `m ≤ φ(m)²`. -/
+private lemma odd_le_totient_sq : ∀ (m : ℕ), Odd m → m ≤ m.totient ^ 2 := by
+  refine Nat.recOnPosPrimePosCoprime ?_ ?_ ?_ ?_
+  -- Case 1: prime_pow — ∀ p k, Prime p → 0 < k → motive (p^k)
+  · intro p k hp hk hm_odd
+    -- p^k odd ⟹ p odd (since k ≥ 1)
+    have hp_odd : Odd p := (Nat.odd_pow_iff hk.ne').mp hm_odd
+    have hp_ge3 : 3 ≤ p := by
+      have hp2 : 2 ≤ p := hp.two_le
+      rcases hp2.lt_or_eq with h | h
+      · omega
+      · exfalso
+        rw [← h] at hp_odd
+        exact (Nat.not_odd_iff_even.mpr (by decide)) hp_odd
+    rw [Nat.totient_prime_pow hp hk]
+    -- Goal: p^k ≤ (p^(k-1) · (p-1))^2
+    rcases (Nat.lt_or_ge 1 k) with hk_ge2 | hk_le1
+    · -- k ≥ 2
+      have h_exp : (k - 1) * 2 = k + (k - 2) := by omega
+      have h_pow_eq : (p ^ (k - 1)) ^ 2 = p ^ k * p ^ (k - 2) := by
+        rw [← pow_mul, h_exp, pow_add]
+      rw [Nat.mul_pow, h_pow_eq]
+      have h_p1_sq : 1 ≤ (p - 1) ^ 2 := by
+        have : 2 ≤ p - 1 := by omega
+        nlinarith
+      have h_pkm2 : 1 ≤ p ^ (k - 2) := Nat.one_le_iff_ne_zero.mpr <| by positivity
+      calc p ^ k = p ^ k * 1 := by ring
+        _ ≤ p ^ k * (p ^ (k - 2) * (p - 1) ^ 2) :=
+            Nat.mul_le_mul_left _ (by nlinarith)
+        _ = p ^ k * p ^ (k - 2) * (p - 1) ^ 2 := by ring
+    · -- k = 1 (since 0 < k and ¬ 1 < k)
+      have hk1 : k = 1 := by omega
+      subst hk1
+      simp only [pow_one, Nat.sub_self, pow_zero, one_mul]
+      -- Goal: p ≤ (p - 1)^2
+      have hpm1 : 2 ≤ p - 1 := by omega
+      calc p = (p - 1) + 1 := by omega
+        _ ≤ 2 * (p - 1) := by omega
+        _ ≤ (p - 1) * (p - 1) := Nat.mul_le_mul_right (p - 1) hpm1
+        _ = (p - 1) ^ 2 := by ring
+  -- Case 2: zero — Odd 0 → 0 ≤ 0².  Vacuous since 0 is even.
+  · intro hm; exact absurd hm (by decide)
+  -- Case 3: one — Odd 1 → 1 ≤ 1².  Trivial.
+  · intro _; decide
+  -- Case 4: coprime — IH a → IH b → motive (a*b) under Odd (a*b)
+  · intro a b _ _ hab IHa IHb hm_odd
+    have h_mul := Nat.odd_mul.mp hm_odd
+    have ha_odd : Odd a := h_mul.1
+    have hb_odd : Odd b := h_mul.2
+    rw [Nat.totient_mul hab]
+    calc a * b ≤ a.totient ^ 2 * b.totient ^ 2 :=
+          Nat.mul_le_mul (IHa ha_odd) (IHb hb_odd)
+      _ = (a.totient * b.totient) ^ 2 := by ring
+
 /-- **D3.2.tors.b**: Pure-Nat reverse totient inequality.  For all `n : ℕ`,
 `n ≤ 4 · φ(n)²`.
 
-Proof structure:
-- For `n ≤ 16`: direct check (`interval_cases + decide` works; `φ(n) ≥ 2` for
-  `n ≥ 3` gives `4·φ² ≥ 16 ≥ n`, and small cases verified directly).
-- For `n ≥ 17`: needs `φ(n) ≥ ⌈√(n/4)⌉`.  Reduces to the helper claim that
-  for odd `m`, `m ≤ φ(m)²` (which combined with `φ(2^a · m) = 2^(a-1) · φ(m)`
-  for `a ≥ 1` yields the bound).
+For `n ≤ 16`, checked directly by `interval_cases + decide`.
+For `n ≥ 17`, decompose `n = 2^a · m` with `m` odd via the 2-adic valuation,
+and apply `odd_le_totient_sq` to `m`, then combine via `Nat.totient_mul`.
 
-The helper claim, for odd `m ≥ 3`, is proved by strong induction on m:
-- m prime: φ(m) = m - 1, and `(m-1)² ≥ m` for m ≥ 3 (quadratic check).
-- m = p^k odd prime power, k ≥ 2: φ(p^k) = p^(k-1)·(p-1), and
-  `p^k ≤ p^(2k-2)·(p-1)²` reduces to `1 ≤ p^(k-2)·(p-1)²`, holding for k ≥ 2.
-- m composite with ≥ 2 distinct prime factors: write m = a·b with coprime
-  a, b ≥ 3 odd; by IH, a ≤ φ(a)² and b ≤ φ(b)²; multiplicativity gives
-  m = a·b ≤ φ(a)²·φ(b)² = φ(ab)² = φ(m)².
-
-Clean Mathlib PR target — `Nat.le_four_mul_totient_sq` would fit alongside
-existing lemmas like `Nat.totient_le` in `Mathlib/Data/Nat/Totient.lean`.
-
-The proof for `n ≤ 16` is concrete; for `n ≥ 17` we leave as sorry. -/
+Clean Mathlib PR target — would fit alongside existing lemmas like
+`Nat.totient_le` in `Mathlib/Data/Nat/Totient.lean`. -/
 lemma nat_le_four_mul_totient_sq (n : ℕ) : n ≤ 4 * n.totient ^ 2 := by
   -- Case n ≤ 16: φ(n) ≥ 2 for n ≥ 3 (and direct check for n ≤ 2) gives 4·φ² ≥ 16 ≥ n
   by_cases hn : n ≤ 16
   · interval_cases n <;> decide
-  · -- n ≥ 17: needs the odd-helper + decomposition argument above.
-    -- Closing this is a clean Mathlib PR target.
-    sorry
+  · push_neg at hn
+    -- n ≥ 17: decompose n = 2^a · m with m odd via 2-adic valuation.
+    haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
+    set a := padicValNat 2 n with ha_def
+    set m := n / 2 ^ a with hm_def
+    have hn_pos : 0 < n := by omega
+    have hn_ne_zero : n ≠ 0 := hn_pos.ne'
+    have h_pa_dvd : 2 ^ a ∣ n := pow_padicValNat_dvd
+    have hn_eq : n = 2 ^ a * m := by
+      rw [hm_def, Nat.mul_div_cancel' h_pa_dvd]
+    have h_two_pos : (0 : ℕ) < 2 := by norm_num
+    have h_2pow_pos : (0 : ℕ) < 2 ^ a := pow_pos h_two_pos a
+    have h_m_pos : 0 < m := by
+      rw [hm_def]
+      exact Nat.div_pos (Nat.le_of_dvd hn_pos h_pa_dvd) h_2pow_pos
+    -- m is odd: if 2 ∣ m then 2^(a+1) ∣ n, contradicting maximality
+    have hm_odd : Odd m := by
+      rw [← Nat.not_even_iff_odd]
+      intro h_even
+      have h2dvd : 2 ∣ m := h_even.two_dvd
+      have h_pow_succ_dvd : 2 ^ (a + 1) ∣ n := by
+        rw [hn_eq, pow_succ]
+        exact mul_dvd_mul (dvd_refl _) h2dvd
+      exact pow_succ_padicValNat_not_dvd hn_ne_zero h_pow_succ_dvd
+    have h_m_le : m ≤ m.totient ^ 2 := odd_le_totient_sq m hm_odd
+    -- m coprime to 2 (since m is odd) ⟹ m coprime to 2^a
+    have h_coprime : Nat.Coprime (2 ^ a) m := by
+      have h_m_two : Nat.Coprime 2 m := (Nat.coprime_two_left).mpr hm_odd
+      exact (Nat.Coprime.pow_left a h_m_two)
+    -- Combine: n = 2^a · m, n.totient = φ(2^a) · φ(m), and m ≤ φ(m)²
+    have h_totient_n : n.totient = (2 ^ a).totient * m.totient := by
+      rw [hn_eq, Nat.totient_mul h_coprime]
+    -- Case split on a = 0 vs a ≥ 1
+    rcases Nat.eq_zero_or_pos a with ha0 | ha_pos
+    · -- a = 0: n = m is odd
+      have hn_odd : n = m := by rw [hn_eq, ha0, pow_zero, one_mul]
+      rw [hn_odd]
+      linarith [h_m_le]
+    · -- a ≥ 1: φ(2^a) = 2^(a-1)
+      have h_phi_2pow : (2 ^ a).totient = 2 ^ (a - 1) := by
+        rw [Nat.totient_prime_pow Nat.prime_two ha_pos]; ring
+      rw [h_totient_n, h_phi_2pow]
+      -- Goal: n ≤ 4 * (2^(a-1) * m.totient)^2
+      -- n = 2^a · m, so:
+      -- 4 * (2^(a-1) * φ(m))^2 = 4 * 2^(2a-2) * φ(m)^2 = 2^(2a) * φ(m)^2
+      -- n = 2^a * m ≤ 2^(2a) * φ(m)^2 ⟺ m ≤ 2^a * φ(m)^2
+      -- Have m ≤ φ(m)^2 and 2^a ≥ 2, so m ≤ 2^a * φ(m)^2.
+      rw [hn_eq]
+      have h_2pow_split : 2 ^ a = 2 * 2 ^ (a - 1) := by
+        conv_lhs => rw [show a = (a - 1) + 1 from by omega]
+        ring
+      have h_2pow_a_sq : 4 * (2 ^ (a - 1)) ^ 2 = (2 ^ a) ^ 2 := by
+        rw [h_2pow_split]; ring
+      calc 2 ^ a * m ≤ 2 ^ a * m.totient ^ 2 :=
+            Nat.mul_le_mul_left _ h_m_le
+        _ ≤ (2 ^ a) ^ 2 * m.totient ^ 2 := by
+            have : 2 ^ a ≤ (2 ^ a) ^ 2 := by
+              have h1 : 1 ≤ 2 ^ a := Nat.one_le_iff_ne_zero.mpr h_2pow_pos.ne'
+              nlinarith
+            exact Nat.mul_le_mul_right _ this
+        _ = 4 * (2 ^ (a - 1)) ^ 2 * m.totient ^ 2 := by rw [← h_2pow_a_sq]
+        _ = 4 * (2 ^ (a - 1) * m.totient) ^ 2 := by ring
 
 /-- **D3.2.tors**: Polynomial bound on the number of roots of unity in a number
 field.  For any number field K of degree n, `torsionOrder K ≤ 4 · n²`.
