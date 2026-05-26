@@ -598,6 +598,22 @@ theorem HilbertClassFieldExt.identity_card_gal_eq_one
   rw [card_gal_hcf_eq_classNumber]
   exact h
 
+/-- The cyclotomic-3 HCF has rootDiscr equal to the cyclotomic-3 field's
+rootDiscr. -/
+theorem rootDiscr_hcf_cyclotomic_three
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.rootDiscr (HilbertClassFieldExt.cyclotomic_three K).H =
+      NumberField.rootDiscr K :=
+  rootDiscr_hcf_eq K (HilbertClassFieldExt.cyclotomic_three K)
+
+/-- The cyclotomic-5 HCF has rootDiscr equal to the cyclotomic-5 field's
+rootDiscr. -/
+theorem rootDiscr_hcf_cyclotomic_five
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.rootDiscr (HilbertClassFieldExt.cyclotomic_five K).H =
+      NumberField.rootDiscr K :=
+  rootDiscr_hcf_eq K (HilbertClassFieldExt.cyclotomic_five K)
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
