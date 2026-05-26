@@ -490,6 +490,24 @@ theorem rootDiscr_hcf_rat_eq_one :
     NumberField.rootDiscr HilbertClassFieldExt.rat.H = 1 :=
   (rootDiscr_hcf_eq ℚ HilbertClassFieldExt.rat).trans NumberField.rootDiscr_rat
 
+/-- Concrete sanity check for `ℚ(ζ_3)`: HCF has Galois group cardinality 1. -/
+theorem card_gal_hcf_cyclotomic_three_eq_one
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    Nat.card ((HilbertClassFieldExt.cyclotomic_three K).H ≃ₐ[K]
+      (HilbertClassFieldExt.cyclotomic_three K).H) = 1 := by
+  have := card_gal_hcf_eq_classNumber K (HilbertClassFieldExt.cyclotomic_three K)
+  rw [this]
+  exact NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.three_pid (K := K))
+
+/-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
+theorem card_gal_hcf_cyclotomic_five_eq_one
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    Nat.card ((HilbertClassFieldExt.cyclotomic_five K).H ≃ₐ[K]
+      (HilbertClassFieldExt.cyclotomic_five K).H) = 1 := by
+  have := card_gal_hcf_eq_classNumber K (HilbertClassFieldExt.cyclotomic_five K)
+  rw [this]
+  exact NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.five_pid (K := K))
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
