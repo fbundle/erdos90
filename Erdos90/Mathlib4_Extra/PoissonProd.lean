@@ -231,6 +231,14 @@ theorem norm_fourier_char_eq_one (r : ℝ) :
 -- on `ℝ × ℝ` requires `volume.HasTemperateGrowth` which is not auto-inferred
 -- for Prod measures.  Mathematically obvious but Lean-tricky.)
 
+/-- Schwartz functions on `ℝ × ℝ` are integrable (Lebesgue, default volume).
+
+PROVED Lean via `SchwartzMap.integrable` once the `volume.HasTemperateGrowth`
+typeclass is in scope. -/
+theorem schwartz_integrable_2d (f : 𝓢(ℝ × ℝ, ℂ)) :
+    MeasureTheory.Integrable (f : ℝ × ℝ → ℂ) :=
+  f.integrable
+
 theorem iterated_fourier_eq_2d_integral
     (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
     ∫ p : ℝ × ℝ,
