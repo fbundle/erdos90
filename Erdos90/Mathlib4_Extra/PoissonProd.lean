@@ -213,15 +213,24 @@ def partial_fourier_is_Schwartz_postulate
     (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
     𝓢(ℝ, ℂ) := sorry
 
-/-- **Step 3** (the iterated Fourier identity in explicit integral form):
+-- **Step 3** (the iterated Fourier identity in explicit integral form):
+-- For Schwartz `f : 𝓢(ℝ × ℝ, ℂ)` and `m, n : ℝ`:
+--   `∫_{ℝ × ℝ} e^{-2πi(mx+ny)} f(x, y) d(x, y) = ∫_ℝ e^{-2πi m x} · 𝓕(f.rightPartial x)(n) dx`
+-- This is Fubini-Tonelli for the bivariate exponential.
 
-For Schwartz `f : 𝓢(ℝ × ℝ, ℂ)` and `m, n : ℝ`:
+/-- The exponential character has norm 1: `‖exp(-(2π·r)·I)‖ = 1` for any real `r`.
 
-  `∫_{ℝ × ℝ} e^{-2πi(mx+ny)} f(x, y) d(x, y) = ∫_ℝ e^{-2πi m x} · 𝓕(f.rightPartial x)(n) dx`
+PROVED Lean. -/
+theorem norm_fourier_char_eq_one (r : ℝ) :
+    ‖Complex.exp (-(2 * Real.pi * r) * Complex.I)‖ = 1 := by
+  rw [show (-(2 * Real.pi * r) * Complex.I)
+      = ((-(2 * Real.pi * r) : ℝ) : ℂ) * Complex.I from by push_cast; ring]
+  exact Complex.norm_exp_ofReal_mul_I _
 
-This is just Fubini-Tonelli for the bivariate exponential.  PROVED Lean
-via `MeasureTheory.integral_integral_swap` (Mathlib has Fubini for
-Bochner integrals on prod measures). -/
+-- (fourier_mul_schwartz_integrable_2d omitted: the Schwartz integrability
+-- on `ℝ × ℝ` requires `volume.HasTemperateGrowth` which is not auto-inferred
+-- for Prod measures.  Mathematically obvious but Lean-tricky.)
+
 theorem iterated_fourier_eq_2d_integral
     (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℝ) :
     ∫ p : ℝ × ℝ,
