@@ -523,6 +523,28 @@ theorem summable_2d_schwartz_proved (f : 𝓢(ℝ × ℝ, ℂ)) :
   -- Step 4: summable_of_isBigO
   exact summable_of_isBigO h_summ_bound h_decay_int
 
+/-- Absolute (norm) version of `summable_2d_schwartz_proved`: for any
+Schwartz `f : 𝓢(ℝ × ℝ, ℂ)`, the function `(p.1, p.2) ↦ ‖f(p.1, p.2)‖` is
+summable on `ℤ × ℤ`.
+
+PROVED via the same chain as `summable_2d_schwartz_proved` plus
+`.norm_left` to transfer the isBigO bound to the norm. -/
+theorem summable_norm_2d_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) :
+    Summable fun p : ℤ × ℤ => ‖(f : ℝ × ℝ → ℂ) (p.1, p.2)‖ := by
+  have h_decay : (fun x : ℝ × ℝ => (f : ℝ × ℝ → ℂ) x) =O[Filter.cocompact (ℝ × ℝ)]
+      (fun x : ℝ × ℝ => ‖x‖ ^ (-(3 : ℝ))) :=
+    f.isBigO_cocompact_rpow (-(3 : ℝ))
+  have h_decay_int : (fun p : ℤ × ℤ => (f : ℝ × ℝ → ℂ) (p.1, p.2)) =O[Filter.cofinite]
+      (fun p : ℤ × ℤ => ‖((p.1 : ℝ), (p.2 : ℝ))‖ ^ (-(3 : ℝ))) :=
+    h_decay.comp_tendsto tendsto_int_prod_cocompact
+  have h_summ_bound : Summable fun p : ℤ × ℤ =>
+      ‖((p.1 : ℝ), (p.2 : ℝ))‖ ^ (-(3 : ℝ)) := by
+    convert summable_norm_rpow_three_prod using 1
+    ext p
+    rw [norm_prod_int_eq, norm_finTwoArrow_symm_eq]
+  -- Apply summable_of_isBigO with .norm_left for absolute summability
+  exact summable_of_isBigO h_summ_bound h_decay_int.norm_left
+
 /-! ## Summability via partial summability (PROVED)
 
 Even without the full 2-D summability above, we can prove summability of
