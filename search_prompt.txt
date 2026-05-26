@@ -1,6 +1,0 @@
-I am using an AI to write proof in this directory, here is what needed to finish the proof.
-Could you help to do search and find the resources and write into assets/
-assets/search_results/ should hold the details
-assets/ should hold the original sources: PDFs, tex files, etc.
-
-below is the instruction:
