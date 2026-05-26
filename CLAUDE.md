@@ -34,6 +34,7 @@ Here ν(n) = maximum number of unit-distance pairs among n points in the plane.
 | `Erdos90/Mathlib4_Extra/Analytic.lean` | Mathlib-candidate analytic lemmas: `log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`, `card_ratio_ineq` (all proved). |
 | `Erdos90/Mathlib4_Extra/FractionalIdealCount.lean` | Mathlib-candidate `FractionalIdeal.count` lemmas: `le_one_of_forall_count_nonneg`, `mem_range_of_spanSingleton_count_nonneg` (the integrality bridge). |
 | `Erdos90/Mathlib4_Extra/FractionalIdealRingEquiv.lean` | Mathlib-candidate `ringEquivOfRingEquiv_coeIdeal` lemma. |
+| `Erdos90/Mathlib4_Extra/ClassNumberBound.lean` | Phase E (E1+E2+E3) infrastructure for closing D3.2: `classNumber_le_card_ideals_of_norm_le_minkowski` (proved), `minkBound_le_pow_rootDiscr` (proved), `log_four_r_div_pi_le_two_log_two_r` (proved), `card_ideals_of_norm_le_bound` (sorried; the genuine Mathlib gap — analytic ideal count). |
 | `lakefile.toml` | Build configuration (mathlib dependency, library target `Erd46`) |
 
 ## Rules
@@ -48,7 +49,7 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` warnings (after Phase A+B+C+D1+D2+D3+D4).
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with 2 `sorry` warnings on the proof path of `erdos_unit_distance_false` (after Phase A+B+C+D1+D2+D3+D4+E1+E2+E3), plus 1 sorry in `Mathlib4_Extra/ClassNumberBound.lean` (a separate Mathlib-gap lemma that doesn't yet feed into the proof chain).
 
 ## Proof state — zero axioms, 2 labelled TRUE postulates (both literature gaps)
 
@@ -61,6 +62,33 @@ All number-theoretic postulates are `def`s with `sorry` bodies (zero `axiom` key
 **D3.2** `class_num_bound_of_brd` in `Erdos90/NumberFieldDeep_GSTower.lean:137` — Quantitative Brauer–Siegel bound `log(h_K)/f ≤ 2 · log(2 · rd_F)` for K in the BRD tower.  TRUE per Brauer–Siegel + Louboutin 2000.  Not in Mathlib v4.30.  Multi-month formalization.
 
 `brd_tower_data` itself is PROVED Lean code that assembles D3.1+D3.2.  Phase D4 closed D3.3 (the `log_H ≥ 2 · log(2 · rd_F)` threshold) by threading the hypothesis through the entire signature chain from `BRDTowerData.getTowerLevel` up to `exists_admissible_family` (which proves it via `C_class = 1`).
+
+### Phase E (D3.2 attack): infrastructure for the Brauer–Siegel chain
+
+Phase E (E1, E2, E3) builds the named chain that would close D3.2 once the analytic ideal-count Mathlib lemma is in place.  Lives in `Erdos90/Mathlib4_Extra/ClassNumberBound.lean`.
+
+**Proved:**
+- `classNumber_le_card_ideals_of_norm_le_minkowski` (E1): `h_K ≤ |{ideals of 𝓞 K with absNorm ≤ ⌊M K⌋₊}|`.  Built from `NumberField.exists_ideal_in_class_of_norm_le` + the obvious injection.
+- `minkBound_le_pow_rootDiscr` (E3): `M K ≤ ((4 · rootDiscr K) / π)^f` for totally complex K.  Uses `Nat.factorial_le_pow` + `rootDiscr_def` + half-power simplification.
+- `log_four_r_div_pi_le_two_log_two_r` (E2): `log((4r)/π) ≤ 2·log(2r)` for `r ≥ 1`.
+
+**Sorried (Mathlib gap):**
+- `card_ideals_of_norm_le_bound`: the crude polynomial form `|{ideals norm ≤ N}| ≤ N^[K:ℚ]`.  The *linear* form `|{ideals norm ≤ N}| ≤ C(K) · N` is the genuine analytic estimate needed to close D3.2 cleanly; the polynomial form is included as a sorried Mathlib-PR-shaped lemma documenting the gap.
+
+**The complete D3.2 chain (modulo the Mathlib gap):**
+
+```
+h_K
+  ≤ |{ideals of 𝓞 K with absNorm ≤ ⌊M K⌋}|     (E1, proved)
+  ≤ C(K) · M K                                  (MATHLIB GAP: analytic count)
+  ≤ C(K) · ((4 · rootDiscr K) / π)^f            (E3, proved)
+  ≤ C(K) · ((4 · rd_F) / π)^f                   (rd_K ≤ rd_F, BRD hypothesis)
+
+log(h_K)/f
+  ≤ (log C(K))/f + log((4·rd_F)/π)
+  → log((4·rd_F)/π) as f → ∞
+  ≤ 2 · log(2·rd_F)                             (E2, proved)
+```
 
 ### Sorry (1) closed (Phase D1+D2)
 
@@ -249,6 +277,34 @@ All in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 7. Commit often with descriptive messages.  Always end commits with the co-author line.
 
 ## Lessons
+
+### 2026-05-26 (Phase E1+E2+E3): Build the Brauer–Siegel chain infrastructure
+
+D3.2 (the quantitative Brauer–Siegel bound) decomposes into a chain of pieces.
+Phase E built the proved pieces and identified the one Mathlib-gap piece.
+
+**E1**: prove the injection `h_K ≤ |{bounded-norm ideals}|` from
+`NumberField.exists_ideal_in_class_of_norm_le` + `ClassGroup.mk0` as left
+inverse.  ~40 LOC of Lean.
+
+**E2**: prove the log inequality `log((4r)/π) ≤ 2·log(2r)` for `r ≥ 1`.
+~10 LOC of `nlinarith`.
+
+**E3**: prove the Minkowski-bound ≤ root-discriminant-power inequality
+`M K ≤ ((4·rootDiscr K)/π)^f` for totally complex K of positive degree.
+~50 LOC, using `Nat.factorial_le_pow` + `rootDiscr_def`.
+
+**Mathlib gap**: the analytic ideal-count `|{ideals of 𝓞 K with absNorm ≤ N}| ≤ C(K) · N`.
+This is a Dedekind-zeta partial-sum result not in Mathlib v4.30.  Sorried as
+`card_ideals_of_norm_le_bound` with a crude polynomial form for now; the
+genuine analytic form is the multi-month Mathlib contribution.
+
+**Lesson:** When a sorry hides a Mathlib gap that's substantial but
+well-understood (here: Brauer–Siegel), the right move is to *build the
+named chain* around it.  Even if the chain has a missing link, naming
+each link makes (a) the missing piece a clean Mathlib-PR target,
+(b) the proof complete once that PR lands, and (c) the code reviewable
+without expert knowledge of the gap.
 
 ### 2026-05-26 (Phase D4): Close the architectural gap by threading the hypothesis
 
