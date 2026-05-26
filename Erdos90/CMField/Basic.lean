@@ -121,6 +121,21 @@ structure SplitPrimeData (K : Type*) [Field K] [NumberField K] [IsCMField K] (m 
   (t = m / f where f = nrComplexPlaces).  Used for D₀ = Q² scaling. -/
   Q : ℕ
   h_Q_pos : Q > 0
+  /-- The count of `(Q : K)` at each split prime `𝔓_j` is exactly 1.
+  Holds in the cyclotomic construction because `Q = ∏ q_j` is the product of the
+  rational primes underlying the split-prime pairs, with each `q_j` splitting
+  completely (so `(q_j) = 𝔓_j · c(𝔓_j)` and `v_{𝔓_j}(q_j) = 1`).  This is the key
+  arithmetic fact powering the Q²-scaling lemma `Q_sq_div_conj_mem_integers`. -/
+  h_Q_count_at_split : ∀ j : Fin m,
+    FractionalIdeal.count K
+      (⟨primes j, h_prime j, h_ne_bot j⟩ : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
+      (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((Q : ℕ) : K)) = 1
+  /-- The count of `(Q : K)` at each conjugate split prime `c(𝔓_j)` is exactly 1. -/
+  h_Q_count_at_conj : ∀ j : Fin m,
+    FractionalIdeal.count K
+      (⟨conjIdeal K (primes j), conjIdeal_isPrime K (h_prime j),
+         conjIdeal_ne_bot K (h_ne_bot j)⟩ : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
+      (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((Q : ℕ) : K)) = 1
 
 /-- The conjugate prime `c(𝔭ⱼ)` as an ideal. -/
 def SplitPrimeData.conjPrime {m : ℕ} (sp : SplitPrimeData K m) (j : Fin m) : Ideal (𝓞 K) :=
@@ -146,6 +161,8 @@ def SplitPrimeData.restrict {m : ℕ} (sp : SplitPrimeData K m) (n : ℕ) (hn : 
     refine ⟨Fin.ext hij_val, hb⟩
   Q := sp.Q
   h_Q_pos := sp.h_Q_pos
+  h_Q_count_at_split j := sp.h_Q_count_at_split ⟨j.1, Nat.lt_of_lt_of_le j.2 hn⟩
+  h_Q_count_at_conj j := sp.h_Q_count_at_conj ⟨j.1, Nat.lt_of_lt_of_le j.2 hn⟩
 
 /-- Convert a `SplitPrimeData` prime to a `HeightOneSpectrum`.
     In a Dedekind domain, nonzero prime ideals are height-1. -/

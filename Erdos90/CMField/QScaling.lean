@@ -376,6 +376,20 @@ theorem Q_sq_div_conj_mem_integers {m : ℕ}
       rw [hαv0, hcαv0]
       linarith
 
+/-- **Convenience form** of `Q_sq_div_conj_mem_integers` using the
+`h_Q_count_at_split` / `h_Q_count_at_conj` fields of `SplitPrimeData`.
+
+Use this at call sites (e.g., inside the BRD CM tower construction in Phase C)
+where the `SplitPrimeData` already carries the count fields. -/
+theorem Q_sq_div_conj_mem_integers_of_spData {m : ℕ}
+    (sp : SplitPrimeData K m)
+    (ε₁ ε₂ : Fin m → Bool) (α : K) (hα : α ≠ 0)
+    (hα_eq : FractionalIdeal.spanSingleton (𝓞 K)⁰ α * J_ideal K sp ε₁ =
+        J_ideal K sp ε₂) :
+    ∃ β : 𝓞 K, (β : K) = ((sp.Q : ℕ) : K)^2 * (α / IsCMField.complexConj K α) :=
+  Q_sq_div_conj_mem_integers sp sp.h_Q_count_at_split sp.h_Q_count_at_conj
+    ε₁ ε₂ α hα hα_eq
+
 end Erdos90.CMField
 
 end

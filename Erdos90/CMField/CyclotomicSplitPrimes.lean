@@ -678,7 +678,7 @@ def splitPrimeData_from_prime_list (t : ℕ) (qs : List ℕ)
     let Q : ℕ := qs.prod
     have h_Q_pos : Q > 0 := by
       refine List.prod_pos (fun q hq => Nat.Prime.pos (_hqs_prime q hq))
-    refine ⟨primes, ?_, ?_, ?_, ?_, Q, h_Q_pos⟩
+    refine ⟨primes, ?_, ?_, ?_, ?_, Q, h_Q_pos, ?_, ?_⟩
     · -- h_prime
       intro j
       dsimp [primes]
@@ -731,6 +731,18 @@ def splitPrimeData_from_prime_list (t : ℕ) (qs : List ℕ)
             exact h_primes_eq
           have hi_eq_j : i = j := h_equiv.symm.injective h_sub_eq
           exact ⟨hi_eq_j, by simp [hb₁, hb₂]⟩
+    · -- h_Q_count_at_split: count K 𝔓_j (Q) = 1 for each split prime
+      -- TRUE: each 𝔓_j lies over exactly one q_j ∈ qs with `ramificationIdx = 1`
+      -- (from `ramificationIdx_eq_one`, this file lines 144-165), and the primes
+      -- in qs are pairwise distinct (h_distinct), so v_{𝔓_j}(Q) = v_{𝔓_j}(q_j) = 1.
+      -- Filling this requires bridging `count K v (span q)` with `ramificationIdx`,
+      -- which is a separate Mathlib-API exercise (see Phase B note in CLAUDE.md).
+      intro j
+      sorry
+    · -- h_Q_count_at_conj: count K c(𝔓_j) (Q) = 1 for each conjugate split prime
+      -- TRUE by the same argument: c(𝔓_j) lies over q_j with `ramificationIdx = 1`.
+      intro j
+      sorry
   exact Classical.choice h_exists
 
 /-- **Main construction**: For K = ℚ(ζ_p) with odd prime p > 2, and any t ∈ ℕ,
