@@ -136,6 +136,27 @@ structure SplitPrimeData (K : Type*) [Field K] [NumberField K] [IsCMField K] (m 
 def SplitPrimeData.conjPrime {m : ℕ} (sp : SplitPrimeData K m) (j : Fin m) : Ideal (𝓞 K) :=
   conjIdeal K (sp.primes j)
 
+/-- Restrict a `SplitPrimeData` of size `m` to the first `n` primes (n ≤ m),
+keeping the same `Q`. Used to derive smaller split-prime data from a master
+data while preserving the same Q for lattice scaling. -/
+def SplitPrimeData.restrict {m : ℕ} (sp : SplitPrimeData K m) (n : ℕ) (hn : n ≤ m) :
+    SplitPrimeData K n where
+  primes (j : Fin n) := sp.primes ⟨j.1, Nat.lt_of_lt_of_le j.2 hn⟩
+  h_prime j := sp.h_prime ⟨j.1, Nat.lt_of_lt_of_le j.2 hn⟩
+  h_ne_bot j := sp.h_ne_bot ⟨j.1, Nat.lt_of_lt_of_le j.2 hn⟩
+  h_split j := sp.h_split ⟨j.1, Nat.lt_of_lt_of_le j.2 hn⟩
+  h_distinct i j b₁ b₂ h_eq := by
+    have hd := sp.h_distinct
+      ⟨i.1, Nat.lt_of_lt_of_le i.2 hn⟩
+      ⟨j.1, Nat.lt_of_lt_of_le j.2 hn⟩ b₁ b₂ h_eq
+    rcases hd with ⟨hij, hb⟩
+    -- hij : ⟨i.1, _⟩ = ⟨j.1, _⟩ as Fin m, so i.1 = j.1, hence i = j as Fin n
+    have hij_val : i.1 = j.1 := by
+      have := congrArg Fin.val hij; simpa using this
+    refine ⟨Fin.ext hij_val, hb⟩
+  Q := sp.Q
+  h_Q_pos := sp.h_Q_pos
+
 /-- Convert a `SplitPrimeData` prime to a `HeightOneSpectrum`.
     In a Dedekind domain, nonzero prime ideals are height-1. -/
 def SplitPrimeData.toHeightOneSpectrum {m : ℕ} (sp : SplitPrimeData K m)
