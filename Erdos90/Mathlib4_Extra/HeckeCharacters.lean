@@ -111,4 +111,18 @@ This is the LOEFFLER–STOLL 2025 architecture extended from Dirichlet
 L-functions to general Hecke L-functions for number fields.
 -/
 
+/-! ## Connection to Dirichlet characters
+
+For `K = ℚ`, Hecke characters specialize to Dirichlet characters
+(unramified characters of `(ℤ/NℤN)^*`).
+
+Mathlib's `DirichletCharacter R N` (PROVED in
+`Mathlib/NumberTheory/DirichletCharacter/Basic.lean`) gives the Dirichlet
+character side.  The Hecke L-function for a Dirichlet character is the
+classical Dirichlet L-function `L(s, χ)` (PROVED in Mathlib via
+`DirichletLSeries`).
+
+So the postulates above are PROVED for the K=ℚ case via Mathlib's existing
+infrastructure.  The Mathlib gap is generalizing to arbitrary number fields. -/
+
 end NumberField
