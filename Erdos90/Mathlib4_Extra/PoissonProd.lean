@@ -296,6 +296,26 @@ theorem tsum_prod_eq_tsum_tsum
   -- Apply Summable.tsum_prod'
   rw [h_summ.tsum_prod' h_row]
 
+/-- **Combined**: 2-D Poisson up to the partial-Fourier step (PROVED modulo
+`summable_2d_schwartz_postulate`).
+
+  `∑' (p : ℤ × ℤ), f p = ∑' m, ∑' n, 𝓕(f.rightPartial m) n`
+
+PROVED Lean by combining `tsum_prod_eq_tsum_tsum` (Fubini, modulo
+postulate) + `tsum_tsum_rightPartial_eq_fourier` (1-D Poisson per row,
+fully PROVED).
+
+To get the full 2-D Poisson on the RHS, the remaining steps are:
+1. Show `m ↦ ∑' n, 𝓕(f.rightPartial m) n` is Schwartz in m (postulate 2).
+2. Apply 1-D Poisson in m direction.
+3. Identify with 2-D Fourier integral (postulate 3).
+4. Use Fubini reverse to get tsum on ℤ × ℤ on the RHS. -/
+theorem tsum_prod_eq_tsum_tsum_fourier_rightPartial
+    (f : 𝓢(ℝ × ℝ, ℂ)) :
+    (∑' p : ℤ × ℤ, (f : ℝ × ℝ → ℂ) (p.1, p.2)) =
+    ∑' m : ℤ, ∑' n : ℤ, 𝓕 ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) n := by
+  rw [tsum_prod_eq_tsum_tsum, tsum_tsum_rightPartial_eq_fourier]
+
 /-! ## Multi-dim Poisson summation (currently sorried)
 
 The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
