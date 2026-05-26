@@ -261,6 +261,15 @@ theorem norm_finTwoArrow_symm_eq (p : ℤ × ℤ) :
   rw [EisensteinSeries.norm_eq_max_natAbs]
   simp [finTwoArrowEquiv]
 
+/-- The integer inclusion `ℤ × ℤ → ℝ × ℝ` sends cofinite to cocompact.
+
+POSTULATED for now.  The proof is straightforward (integer points in a
+bounded region are finite) but requires careful bookkeeping with bounded
+sets in `ℝ × ℝ`. -/
+def tendsto_int_prod_cocompact :
+    Filter.Tendsto (fun p : ℤ × ℤ => ((p.1 : ℝ), (p.2 : ℝ)))
+      Filter.cofinite (Filter.cocompact (ℝ × ℝ)) := sorry
+
 /-! ## Summability via partial summability (PROVED)
 
 Even without the full 2-D summability above, we can prove summability of
