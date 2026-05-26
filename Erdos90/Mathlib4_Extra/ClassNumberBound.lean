@@ -261,6 +261,44 @@ lemma regulator_lower_bound_cm
     (_hf : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces K) :
     NumberField.Units.regulator K ≥ 1/8 := sorry
 
+/-! ## Phase E7 (D3.2b): Louboutin residue upper bound
+
+For the Brauer–Siegel chain, we need an upper bound on `dedekindZeta_residue K`
+that grows like `(C · rd_K)^f`.  Louboutin 2000, *"Explicit upper bounds for
+residues of Dedekind zeta functions and class numbers of CM-fields"*, Math. Comp.
+**69**:225, 311–339, gives such bounds via the functional equation of `ζ_K` and
+explicit Phragmén–Lindelöf interpolation.
+
+The bound we state — `R_K ≤ (4 · rd_F)^f` — is a constant-loose form: the actual
+Louboutin Theorem A constants are slightly sharper, but `(4 · rd_F)^f` is in the
+correct asymptotic class for the chain to give `log(h_K)/f ≤ 2 · log(2 · rd_F) +
+O(log f / f)`.
+
+**Mathlib status**: `dedekindZeta_residue_pos K` (positivity) only.  No upper
+bound; would need functional equation for `ζ_K` (Hecke gamma factors) plus
+Stechkin-style partial-sum bounds.
+-/
+
+/-- **D3.2b**: Louboutin upper bound on the Dedekind zeta residue for CM fields.
+For a CM totally complex `K` with `rootDiscr K ≤ rd_F` (where `1 ≤ rd_F`),
+`dedekindZeta_residue K ≤ (4 · rd_F) ^ nrComplexPlaces K`.
+
+The form `(4 · rd_F)^f` is the loose-constant version of Louboutin 2000 Theorem A;
+sharper variants give smaller constants but this form chains cleanly into
+`2 · log(2 · rd_F)`.
+
+Cite: `assets/louboutin_2000_class_number.pdf` Theorem A.  See also
+Akhtari–Vaaler–Widmer (`assets/akhtari_vaaler_widmer_src/Equidistribution_1.tex`)
+for related effective constants in the CM case.
+
+Not in Mathlib v4.30; requires functional equation + L(1, χ) bounds. -/
+lemma dedekind_residue_upper_bound_cm
+    [IsCMField K] [IsTotallyComplex K]
+    (rd_F : ℝ) (_h_rd_F : 1 ≤ rd_F)
+    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
+    NumberField.dedekindZeta_residue K ≤
+      (4 * rd_F) ^ NumberField.InfinitePlace.nrComplexPlaces K := sorry
+
 /-! ## Phase E2: discriminant chain and log inequality
 
 Goal: bound `log h_K / nrComplexPlaces K` by `2 · log(2 · rd_F)` for
