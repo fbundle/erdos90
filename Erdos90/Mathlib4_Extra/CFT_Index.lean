@@ -53,6 +53,13 @@ class-field-theory-adjacent infrastructure files in `Erdos90/Mathlib4_Extra/`.
 |---|---|
 | `GolodShafarevich.lean` | `GolodShafarevich.Input` + GS infinite tower postulate + `gs_unramified_tower_with_bounded_rd` (PROVED bridge).  This is the file that powers `gs_cm_tower` (Phase E14). |
 
+### Deep CFT theory (off-path infrastructure)
+
+| File | What |
+|---|---|
+| `Iwasawa.lean` | Cyclotomic `ℤ_p`-extension + Iwasawa invariants (μ, λ, ν) + Ferrero–Washington μ=0 postulate.  The deeper framework around HMR-style towers. |
+| `ReciprocityLaws.lean` | Cubic + biquadratic reciprocity stubs.  Documents the CFT context for splitting-prime calculations. |
+
 ## Dependency graph
 
 ```
