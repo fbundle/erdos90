@@ -37,56 +37,72 @@ Outline:
 
 ## What's needed (Mathlib gap)
 
-1. **Schwartz multi-variable currying**: a Schwartz function `f : 𝓢(V × W, F)`
-   should give Schwartz `f(x, ·) : 𝓢(W, F)` for each `x : V`, and the family
-   should be jointly Schwartz.  This is true but may not be explicitly
-   packaged.
+### Resolved in this codebase (May 2026)
 
-2. **2-D Schwartz Poisson summation** (the target):
-   ```
-   theorem SchwartzMap.tsum_eq_tsum_fourier_two_d (f : 𝓢(ℝ × ℝ, ℂ)) :
-       ∑' (n : ℤ × ℤ), f (n.1, n.2) =
-       ∑' (n : ℤ × ℤ), Real.fourierIntegral f (n.1, n.2)
-   ```
-   (with the right notation for 2-D Fourier on the prod space).
+1. **Schwartz multi-variable currying** — DONE: `SchwartzMap.rightPartial`
+   and `SchwartzMap.leftPartial` in `PoissonProd.lean` (PROVED).
 
-3. **n-D Schwartz Poisson summation**: induction on dimension.
+2. **2-D Schwartz Poisson summation** — DONE modulo 3 named postulates:
+   `tsum_2d_schwartz_poisson` in `PoissonProd.lean` is PROVED Lean code
+   that says
+   ```
+   ∑' p : ℤ × ℤ, f p = ∑' p : ℤ × ℤ, fourier2D f p.1 p.2
+   ```
+   for `f : 𝓢(ℝ × ℝ, ℂ)`, where `fourier2D f m n = ∫ p, exp(-2πi(m·p.1+
+   n·p.2))·f(p)`.  The 3 named postulates are:
+   - `partial_fourier_is_Schwartz_postulate` (Fourier-in-one-variable
+     preserves Schwartz, with value spec).
+   - `summable_partialFourier_2d_postulate` (intermediate Fourier sum
+     summable on `ℤ × ℤ`).
+   - `summable_fourier2D_postulate` (full 2-D Fourier sum summable on
+     `ℤ × ℤ`).
+   All three are TRUE Plancherel-style facts; not in Mathlib v4.30.
+
+### Still needed for the full chain
+
+3. **n-D Schwartz Poisson summation** — `tsum_eq_tsum_fourier_multi_postulate`
+   in `PoissonProd.lean` (sorried).  Reduces to 2-D + induction.
 
 4. **Lattice Poisson summation**: for general ZLattices via change of basis.
 
-## Proof sketch (Lean-style pseudocode)
+## Proof sketch — IMPLEMENTED in `PoissonProd.lean`
+
+The 2-D Schwartz Poisson identity is now a PROVED theorem
+(`tsum_2d_schwartz_poisson`).  Sketch of the assembly:
 
 ```
-theorem schwartzMap_two_d_tsum_eq_tsum_fourier (f : 𝓢(ℝ × ℝ, ℂ)) :
-    ∑' (n : ℤ × ℤ), f (n.1, n.2) =
-    ∑' (n : ℤ × ℤ), (2-D fourier integral of f) n := by
-  -- Step 1: Decompose product tsum into iterated tsum
-  rw [tsum_prod_of_summable_norm ...]
-  -- Goal: ∑ m, ∑ n, f(m, n) = ∑ p, ∑ q, 𝓕f(p, q)
-
-  -- Step 2: For each m, apply 1-D Poisson in y to f(m, ·)
-  conv_lhs =>
-    ext m
-    rw [SchwartzMap.tsum_eq_tsum_fourier (schwartz_partial_y f m)]
-  -- Goal: ∑ m, ∑ q, 𝓕_y(f(m, ·))(q) = ∑ p, ∑ q, 𝓕f(p, q)
-
-  -- Step 3: Swap sums
-  rw [tsum_comm ...]
-  -- Goal: ∑ q, ∑ m, 𝓕_y(f(m, ·))(q) = ∑ p, ∑ q, 𝓕f(p, q)
-
-  -- Step 4: Apply 1-D Poisson in x to x ↦ 𝓕_y(f(x, ·))(q)
-  conv_lhs =>
-    ext q
-    rw [SchwartzMap.tsum_eq_tsum_fourier (partial_fourier_y_schwartz f q)]
-  -- Goal: ∑ q, ∑ p, 𝓕_x(𝓕_y(f))(p, q) = ∑ p, ∑ q, 𝓕f(p, q)
-
-  -- Step 5: Identify iterated Fourier with 2-D Fourier via Fubini
-  rw [iterated_fourier_eq_two_d_fourier ...]
-  -- Goal: ∑ q, ∑ p, 𝓕f(p, q) = ∑ p, ∑ q, 𝓕f(p, q)
-
-  -- Step 6: Swap and recombine
-  rw [tsum_comm, tsum_prod_of_summable_norm ...]
+theorem tsum_2d_schwartz_poisson (f : 𝓢(ℝ × ℝ, ℂ)) :
+    (∑' p : ℤ × ℤ, (f : ℝ × ℝ → ℂ) (p.1, p.2)) =
+    ∑' p : ℤ × ℤ, fourier2D f p.1 p.2 := by
+  -- Step 1: LHS = ∑' m, ∑' n, (partialFourier f n) m  (via Fubini + 1-D Poisson per row)
+  rw [tsum_prod_eq_tsum_tsum_partialFourier]
+  -- Step 2: swap ∑' m, ∑' n ↔ ∑' n, ∑' m  (Summable.tsum_comm)
+  rw [tsum_tsum_partialFourier_swap]
+  -- Step 3: ∑' n, ∑' m, (partialFourier f n) m = ∑' n, ∑' m, fourier2D f m n
+  conv_lhs => rw [show … from by
+    refine tsum_congr (fun n => ?_)
+    exact tsum_partialFourier_eq_fourier2D f n]
+  -- Step 4: swap ∑' n, ∑' m, fourier2D ↔ ∑' m, ∑' n, fourier2D  (Summable.tsum_comm)
+  rw [h_swap]
+  -- Step 5: ∑' m, ∑' n, fourier2D f m n = ∑' p, fourier2D f p.1 p.2  (Summable.tsum_prod)
+  rw [h_prod]
 ```
+
+The 5-step chain has 3 of the 5 steps backed by labelled postulates
+(Steps 2, 4: tsum_comm; Step 5: tsum_prod — all 3 need summability of
+the partial/full 2-D Fourier on ℤ × ℤ).  Steps 1 and 3 are PROVED Lean.
+
+### Key supporting theorems (all PROVED in `PoissonProd.lean`)
+
+- `fourier_partialFourier_eq_fourier2D`: identifies 1-D Fourier of
+  `partialFourier f n` with 2-D Fourier of `f` at `(m, n)`.
+- `tsum_partialFourier_eq_fourier2D`: 1-D Poisson on `partialFourier f n`
+  gives a sum over `fourier2D f m n`.
+- `iterated_fourier_eq_2d_integral`: Fubini for the 2-D Fourier integral
+  expressed as iterated 1-D integrals.
+- `tsum_prod_eq_tsum_tsum_fourier_rightPartial`: row-Poisson chain
+  combining Fubini (`summable_2d_schwartz_proved` — fully PROVED) with
+  1-D Poisson per row.
 
 ## Connection to Dedekind zeta functional equation
 
