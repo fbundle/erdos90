@@ -478,6 +478,18 @@ noncomputable def HilbertClassFieldExt.cyclotomic_five
   HilbertClassFieldExt.identity K
     (NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.five_pid (K := K)))
 
+/-- Concrete sanity check: for the identity HCF of `ℚ`, the Galois group
+has cardinality 1 (=`classNumber ℚ`).  PROVED Lean. -/
+theorem card_gal_hcf_rat_eq_one :
+    Nat.card (HilbertClassFieldExt.rat.H ≃ₐ[ℚ] HilbertClassFieldExt.rat.H) = 1 :=
+  (card_gal_hcf_eq_classNumber ℚ HilbertClassFieldExt.rat).trans Rat.classNumber_eq
+
+/-- Concrete sanity check: for the identity HCF of `ℚ`, the root
+discriminant is 1.  PROVED Lean. -/
+theorem rootDiscr_hcf_rat_eq_one :
+    NumberField.rootDiscr HilbertClassFieldExt.rat.H = 1 :=
+  (rootDiscr_hcf_eq ℚ HilbertClassFieldExt.rat).trans NumberField.rootDiscr_rat
+
 /-! ## Summary: proved vs. postulated
 
 ### PROVED Lean (no sorry)
