@@ -49,7 +49,7 @@ In particular: never edit or commit `README.md` itself.
 lake build
 ```
 
-Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with **2 `sorry` warnings on the proof path of `erdos_unit_distance_false`** (after Phase A+B+C+D1+D2+D3+D4+D5+E1+E2+E3+E4+E5+E6+E7+E8+E9).  `Mathlib4_Extra/ClassNumberBound.lean` has 3 named, off-path sorries (D3.2b, D3.2c, D3.2.tors) supporting the chain.
+Requires `leanprover/lean4:v4.30.0-rc2` and mathlib at `master-2026-05-24` (declared in `lakefile.toml`).  The build succeeds with **2 `sorry` warnings on the proof path of `erdos_unit_distance_false`** (after Phase A+B+C+D1+D2+D3+D4+D5+E1+…+E13).  `Mathlib4_Extra/ClassNumberBound.lean` has 2 named, off-path sorries (D3.2b, D3.2c) supporting the chain — D3.2.tors (`torsionOrder_bound`) is now fully proved Lean code via E10 + E13.
 
 Phase D5 split `hmr_brd_cm_tower` into `gs_cm_tower` + `chebotarev_fixed_Q`.  Phase E9 (2026-05-26) closed `class_num_bound_of_brd` by assembling E5 (analytic class number formula) + D3.2b (Louboutin residue upper bound) + D3.2c (Friedman regulator lower bound) + D3.2.tors (torsionOrder polynomial bound) + numeric arithmetic.  The chain requires `f ≥ 5` (provided by `brd_tower_data` bumping `M` to `max M 5`).
 
