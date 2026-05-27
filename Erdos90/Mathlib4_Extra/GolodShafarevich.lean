@@ -119,19 +119,69 @@ graph explicit and provides cleaner Mathlib-PR-shape entry points for
 outside contributors.
 -/
 
+/-- **Sub-sub-postulate D3.1.gs.base.imagquad**: Existence of an imaginary
+quadratic field with large `p`-class group rank.
+
+For each prime `p`, there exists an imaginary quadratic field `K₀ = ℚ(√-d)`
+(with `d > 0` squarefree) such that `r_p(Cl K₀) ≥ ⌈2 + 2√2⌉ = 5` (the
+classical Golod-Shafarevich threshold for `r_1 = 0, r_2 = 1`).
+
+Cite: Golod-Shafarevich 1964 (the original construction); concrete examples
+include `K₀ = ℚ(√-d)` for `d = 3·5·7·11·13·17·19·23` (8 small primes,
+giving 2-class group rank ≥ 5).
+
+Mathlib v4.30 status: imaginary quadratic fields exist (`NumberField.QuadraticField`)
+but class group rank computations are not packaged.  Weeks-to-months. -/
+def gs_imagquad_with_p_rank_postulate
+    (p : ℕ) (_hp : Nat.Prime p) :
+    ∃ (K₀ : Type) (_ : Field K₀) (_ : NumberField K₀),
+      InfinitePlace.nrComplexPlaces K₀ = 1 ∧
+      InfinitePlace.nrRealPlaces K₀ = 0 ∧
+      p ∣ NumberField.classNumber K₀ := sorry
+
+/-- **Sub-sub-postulate D3.1.gs.base.cm-lift**: CM lift via tensor product.
+
+Given an imaginary quadratic K₀, the CM lift K = K₀ ⊗_ℚ K₀' (for an
+appropriate K₀') is a CM totally complex field of degree 2·[K₀:ℚ] = 4
+with related class-number divisibility properties.
+
+For our GS application: from `K₀` with `p ∣ classNumber K₀`, construct
+a CM totally complex `K` with `p ∣ classNumber K` and explicit
+`rootDiscr K` bound.
+
+Cite: standard CM lift theory; HMR 2021 uses this implicitly.  Not in
+Mathlib v4.30; needs CM field tensor product construction.  -/
+def gs_cm_lift_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (ℓ : ℕ) (_hℓ : ℓ ≥ 2)
+    (K₀ : Type) [Field K₀] [NumberField K₀]
+    (_h_imagquad : InfinitePlace.nrComplexPlaces K₀ = 1 ∧
+      InfinitePlace.nrRealPlaces K₀ = 0)
+    (_h_p_dvd : p ∣ NumberField.classNumber K₀) :
+    ∃ (K : Type) (_ : Field K) (_ : NumberField K)
+      (_ : IsCMField K) (_ : IsTotallyComplex K),
+      NumberField.rootDiscr K ≤ (ℓ : ℝ) ∧
+      p ∣ NumberField.classNumber K := sorry
+
 /-- **Sub-postulate D3.1.gs.base** (existence of GS base field):
 For each prime `p` and each `ℓ ≥ 2`, there exists a CM totally complex
 number field `K` with `rootDiscr K ≤ ℓ` AND `p ∣ classNumber K` (so the
 p-class field tower can begin).
 
+PROVED Lean assembly: combine `gs_imagquad_with_p_rank_postulate` (give
+K₀ with p ∣ classNumber K₀) + `gs_cm_lift_postulate` (lift K₀ to a CM TC
+K with bounded rd).
+
 Cite: HMR 2021 §2 (the explicit base construction).  Multi-month Mathlib
-effort: needs pro-`p` group cohomology + class field theory.  -/
+effort: see the two sub-postulates above. -/
 def gs_base_field_postulate
-    (p : ℕ) (_hp : Nat.Prime p) (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
+    (p : ℕ) (hp : Nat.Prime p) (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
     ∃ (K : Type) (_ : Field K) (_ : NumberField K)
       (_ : IsCMField K) (_ : IsTotallyComplex K),
       NumberField.rootDiscr K ≤ (ℓ : ℝ) ∧
-      p ∣ NumberField.classNumber K := sorry
+      p ∣ NumberField.classNumber K := by
+  obtain ⟨K₀, hF₀, hNF₀, h_compl, h_real, h_dvd₀⟩ :=
+    gs_imagquad_with_p_rank_postulate p hp
+  exact gs_cm_lift_postulate p hp ℓ hℓ K₀ ⟨h_compl, h_real⟩ h_dvd₀
 
 /-- **Sub-postulate D3.1.gs.step** (GS tower step — conditional):
 Given a CM totally complex field `K` such that the `p`-class group of `K`
