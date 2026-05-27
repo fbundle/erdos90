@@ -1,4 +1,5 @@
 import Mathlib
+import Erdos90.Mathlib4_Extra.NumberTheory.LSeries.DedekindZetaFE
 
 /-!
 # Mathlib4 candidates: class number bounds via the Minkowski bound
@@ -631,22 +632,22 @@ Stechkin-style partial-sum bounds.
 -/
 
 /-- **Sub-postulate D3.2b.zeta-FE** (Dedekind zeta functional equation):
-The completed Dedekind zeta function `Λ_K(s) = ...` satisfies
+The completed Dedekind zeta function `Λ_K(s)` satisfies
 `Λ_K(1 - s) = Λ_K(s)`.
 
 Cite: Hecke 1917 + Tate's thesis.  Multi-month/year Mathlib: needs
 multi-D Poisson summation + theta function modular transformation +
-Mellin transform.  See `Mathlib4_Extra/DedekindZetaFE.lean` for the
-in-progress formalization.
+Mellin transform.  See `Mathlib4_Extra/NumberTheory/LSeries/DedekindZetaFE.lean`
+for the in-progress formalization.
 
-DECOMPOSITION: 2 named pieces.
-1. **K = ℚ case (Riemann zeta FE)** — PROVED in Mathlib as
-   `completedRiemannZeta_one_sub`.
-2. **General number field K** — Mathlib gap; needs the multi-D
-   Poisson + θ_K + Mellin chain in `DedekindZetaFE.lean`. -/
-def dedekindZeta_functional_equation_postulate
-    [NumberField K] :
-    True := sorry
+PROVED ASSEMBLY modulo `NumberField.completedDedekindZeta_one_sub`:
+this postulate's content is exactly the statement of
+`completedDedekindZeta_one_sub`.  See C3 in `DedekindZetaFE.lean`. -/
+theorem dedekindZeta_functional_equation_postulate
+    [NumberField K] (s : ℂ) :
+    NumberField.completedDedekindZeta K (1 - s) =
+      NumberField.completedDedekindZeta K s :=
+  NumberField.completedDedekindZeta_one_sub K s
 
 /-- **Sub-sub-postulate D3.2b.zeta-FE.riemann** (Riemann zeta FE — Mathlib
 citation):
@@ -659,17 +660,16 @@ theorem dedekindZeta_functional_equation_riemann_postulate (s : ℂ) :
     completedRiemannZeta (1 - s) = completedRiemannZeta s :=
   completedRiemannZeta_one_sub s
 
-/-- **Sub-sub-postulate D3.2b.zeta-FE.generalK** (General number field FE —
-Mathlib gap):
-
+/-- **Sub-sub-postulate D3.2b.zeta-FE.generalK** (General number field FE):
 For general number field `K` (not just ℚ), the completed Dedekind
 zeta `Λ_K(s)` satisfies `Λ_K(1 - s) = Λ_K(s)`.
 
-Mathlib v4.30: not packaged; needs the multi-D Poisson + θ_K + Mellin
-chain in `Mathlib4_Extra/NumberTheory/LSeries/DedekindZetaFE.lean`. -/
-def dedekindZeta_functional_equation_generalK_postulate
-    [NumberField K] :
-    True := sorry
+PROVED ASSEMBLY modulo C3's `completedDedekindZeta_one_sub`. -/
+theorem dedekindZeta_functional_equation_generalK_postulate
+    [NumberField K] (s : ℂ) :
+    NumberField.completedDedekindZeta K (1 - s) =
+      NumberField.completedDedekindZeta K s :=
+  NumberField.completedDedekindZeta_one_sub K s
 
 /-! #### Decomposition of `phragmen_lindelof_zeta_postulate`
 
