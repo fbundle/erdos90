@@ -105,11 +105,61 @@ finite groups over ℂ + Frobenius lifts + Euler products. -/
 def artin_L_function_postulate (K : Type*) [Field K] [NumberField K] :
     True := sorry
 
+/-! #### Decomposition of `artin_L_meromorphic_postulate` via Brauer + Tate
+
+Meromorphic continuation of Artin L-functions:
+
+1. **Brauer induction theorem**: every complex character of a finite group
+   is a ℤ-linear combination of monomial characters (= induced from
+   1-dim characters of subgroups).
+2. **Monomial L = Hecke L**: an Artin L-function of a monomial character
+   equals a Hecke L-function (functoriality + induction).
+3. **Hecke L continuation**: Hecke L-functions extend meromorphically to ℂ
+   via Tate's thesis (Mellin transform of theta + functional equation).
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-sub-postulate D3.1.cheb.artinL.merom.brauer** (Brauer induction):
+Every complex character of a finite group is a ℤ-linear combination of
+monomial characters (= induced from 1-dim characters of subgroups).
+
+Cite: Brauer 1947 *On Artin's L-series with general group characters*.
+Mathlib v4.30: representation theory of finite groups partially packaged
+but Brauer induction not specifically. -/
+def brauer_induction_postulate : True := sorry
+
+/-- **Sub-sub-postulate D3.1.cheb.artinL.merom.monomial-eq-hecke**
+(Monomial L = Hecke L):
+For a monomial character χ (induced from a 1-dim character ψ of a subgroup),
+the Artin L-function L(s, χ) equals the Hecke L-function L(s, ψ).
+
+Cite: Artin 1923 (functoriality); Neukirch VII §10 Lemma 10.5.  Mathlib
+v4.30: not packaged. -/
+def monomial_L_eq_hecke_L_postulate : True := sorry
+
+/-- **Sub-sub-postulate D3.1.cheb.artinL.merom.hecke-cont** (Hecke L
+meromorphic continuation):
+Each Hecke L-function L(s, ψ) for a Hecke character ψ extends to a
+meromorphic function on all of ℂ.  The trivial character gives the
+Dedekind zeta ζ_K with simple pole at s = 1.
+
+Cite: Tate's thesis 1950.  Mathlib v4.30: Dirichlet L-functions
+packaged (`DirichletCharacter.completedLFunction_one_sub`); Hecke
+generalization not. -/
+def hecke_L_meromorphic_postulate : True := sorry
+
 /-- **Sub-postulate D3.1.cheb.artinL.merom** (Meromorphic continuation):
 `L(s, ρ)` extends to a meromorphic function on all of `ℂ`.  For `ρ`
 irreducible non-trivial, `L(s, ρ)` is entire (no poles).  The trivial
 representation `ρ = 1` gives `L(s, 1) = ζ_K(s)`, which has a unique
 simple pole at `s = 1`.
+
+ASSEMBLY (modulo the three sub-sub-postulates above):
+1. By `brauer_induction_postulate`: ρ = sum of monomial χ_i (with ℤ coefs).
+2. By `monomial_L_eq_hecke_L_postulate`: L(s, χ_i) = Hecke L for each i.
+3. By `hecke_L_meromorphic_postulate`: each Hecke L is meromorphic.
+4. The sum of meromorphic functions is meromorphic.
 
 This uses Brauer's induction theorem (1947) reducing to monomial
 representations whose L-functions are Hecke L-functions, which have
