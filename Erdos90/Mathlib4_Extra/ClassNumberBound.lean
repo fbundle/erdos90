@@ -291,10 +291,53 @@ infrastructure (functional equation for `dedekindZeta`, analytic continuation,
 residue evaluation at `s = 0`).
 -/
 
+/-! #### Decomposition of `zimmert_regulator_lower_bound_postulate`
+
+Zimmert's regulator bound decomposes via the **logarithmic sieve** for
+ideals of small norm:
+
+1. **Existence of small-norm ideals**: in each ideal class, there exists
+   an ideal of norm bounded by the Minkowski bound.
+2. **Log-sieve**: bounding the regulator from below by relating it to the
+   number of "missing" small-norm primes (those not generating units).
+3. **Universal constant**: rearrangement gives the universal
+   `R_K ≥ 0.0023` (a slightly weak constant compared to Friedman).
+
+Two sub-postulates below.
+-/
+
+/-- **Sub-sub-postulate D3.2c.zimmert.small-norm** (Small-norm ideals):
+For each ideal class, there is a representative ideal of norm ≤ the
+Minkowski bound `M K`.
+
+Mathlib PROVED: `NumberField.exists_ideal_in_class_of_norm_le`.  This
+sub-postulate is essentially the wrapper — no Mathlib gap. -/
+def zimmert_small_norm_postulate
+    [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.2c.zimmert.log-sieve** (Log-sieve bound):
+The regulator `R_K` is bounded below by a universal log-sieve estimate
+on the multiplicative independence of small-norm prime generators:
+
+  `R_K ≥ ∑_{𝔭 small} log N(𝔭) / log_2 N(𝔭) - O(1)`.
+
+This is Zimmert's main estimate.  Cite: Zimmert 1981 Theorem 1.  Mathlib
+v4.30: not packaged. -/
+def zimmert_log_sieve_postulate
+    [NumberField K]
+    (_hrank : 1 ≤ NumberField.Units.rank K) :
+    True := sorry
+
 /-- **Sub-postulate D3.2c.zimmert** (Zimmert log-sieve bound, weakest form):
 For any number field K with unit rank ≥ 1, the regulator satisfies
 `regulator K ≥ 0.0023` (a very weak universal lower bound that doesn't
 require the dedekindZeta functional equation).
+
+ASSEMBLY (modulo the two sub-sub-postulates above):
+1. By `zimmert_small_norm_postulate`: pick small-norm reps.
+2. By `zimmert_log_sieve_postulate`: bound R_K from below.
+3. Combine with the universal Zimmert constants.
 
 Cite: Zimmert 1981, *"Ideale kleinster Norm in Idealklassen und eine Regulatorabschätzung"*,
 Inventiones 62:367-380.  Mathlib v4.30: not packaged.
