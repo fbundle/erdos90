@@ -835,6 +835,32 @@ theorem pHCF_galois_isPGroup_of_prime
   refine IsPGroup.of_card (n := n) ?_
   rw [IsGalois.card_aut_eq_finrank, hn]
 
+/-- **Companion (PROVED)**: In a finite commutative group, the type
+`Sylow p G` is a subsingleton (any two Sylow p-subgroups are equal).
+
+PROVED Lean: every subgroup of a CommGroup is normal
+(`Subgroup.normal_of_isMulCommutative` instance), so the Sylow
+p-subgroup is normal and hence unique
+(Mathlib: `Sylow.unique_of_normal`).
+
+This is the algebraic fact that closes step 4 of the decomposition of
+`pHCF_artin_image_eq_sylow_p_postulate` (the "p-Sylow is unique in
+abelian Cl" argument). -/
+theorem sylow_subsingleton_of_commGroup
+    {G : Type*} [CommGroup G] [Finite G] (p : ℕ) [Fact p.Prime] :
+    Subsingleton (Sylow p G) := by
+  refine ⟨fun P Q => ?_⟩
+  haveI : Finite (Sylow p G) := inferInstance
+  haveI := Sylow.unique_of_normal P (Subgroup.normal_of_isMulCommutative _)
+  exact Subsingleton.elim P Q
+
+/-- **Companion (PROVED)** specialized to `ClassGroup (𝓞 K)`. -/
+theorem sylow_classGroup_subsingleton
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) [Fact p.Prime] :
+    Subsingleton (Sylow p (ClassGroup (𝓞 K))) :=
+  sylow_subsingleton_of_commGroup p
+
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
