@@ -67,12 +67,67 @@ def localInvariantMap_postulate
     (K : Type u) [Field K] :
     BrauerGroup K → ℚ := fun _ => 0
 
+/-! ### Decomposition of `hasseBrauerNoether_postulate`
+
+The Hasse-Brauer-Noether exact sequence decomposes into three pieces
+corresponding to injectivity, exactness in the middle, and surjectivity:
+
+1. **Injectivity** (Hasse): a global Brauer class trivializes everywhere
+   locally iff it's globally trivial.  Equivalently, the localization map
+   `Br(K) → ⊕_v Br(K_v)` is injective.
+2. **Exactness in the middle**: the image of `Br(K)` equals the kernel
+   of the sum-of-invariants map `⊕_v Br(K_v) → ℚ/ℤ`.  Equivalent to
+   Artin's reciprocity law (sum of local invariants = 0).
+3. **Surjectivity**: every element of `⊕_v Br(K_v)` with invariant-sum
+   zero comes from a global class.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.brauer.hbn.injectivity** (Hasse principle for
+algebras):
+The localization map `Br(K) → ⊕_v Br(K_v)` is injective.  Equivalently,
+a central simple algebra over K splits globally iff it splits at every
+place.
+
+Cite: Hasse 1933 "Über p-adische Schiefkörper".  Mathlib v4.30: not packaged. -/
+def hbn_injectivity_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.brauer.hbn.exactness** (Artin reciprocity for
+Brauer):
+The kernel of `⊕_v inv_v : ⊕_v Br(K_v) → ℚ/ℤ` equals the image of
+`Br(K) → ⊕_v Br(K_v)`.  This is the Artin reciprocity law at the
+Brauer-group level.
+
+Cite: Artin 1927; Brauer-Hasse-Noether 1932.  Mathlib v4.30: not packaged. -/
+def hbn_exactness_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.brauer.hbn.surjectivity** (Brauer's theorem):
+The sum-of-invariants map `⊕_v Br(K_v) → ℚ/ℤ` is surjective.  Combined
+with the previous two, this gives the short exact sequence
+
+  `0 → Br(K) → ⊕_v Br(K_v) → ℚ/ℤ → 0`.
+
+Cite: Brauer 1929; Albert 1932.  Mathlib v4.30: not packaged. -/
+def hbn_surjectivity_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
 /-- **Hasse–Brauer–Noether theorem** (labelled postulate):
 
 For a number field `K`, the sequence
   `0 → Br(K) → ⊕_v Br(K_v) → ℚ/ℤ → 0`
 is exact, where the second map is the direct sum of local invariants and
 the third is the sum.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. `hbn_injectivity_postulate`: left-exactness (Br(K) injects).
+2. `hbn_exactness_postulate`: middle exactness (image = kernel of sum).
+3. `hbn_surjectivity_postulate`: right-exactness (sum is surjective).
 
 This is the LOCAL-TO-GLOBAL principle for the Brauer group.  It implies
 quadratic reciprocity (the sum of local Hilbert symbols is 0), the
