@@ -1531,6 +1531,21 @@ theorem cyclotomic_five_units_rank
   rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
     cyclotomic_five_nrRealPlaces, cyclotomic_five_nrComplexPlaces]
 
+/-- `ℚ(ζ_3)` is totally complex.
+
+PROVED Lean: direct citation of Mathlib's
+`IsCyclotomicExtension.Rat.isTotallyComplex` (applies for n > 2). -/
+theorem cyclotomic_three_isTotallyComplex
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.IsTotallyComplex K :=
+  IsCyclotomicExtension.Rat.isTotallyComplex (n := 3) K (by decide)
+
+/-- `ℚ(ζ_5)` is totally complex. -/
+theorem cyclotomic_five_isTotallyComplex
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.IsTotallyComplex K :=
+  IsCyclotomicExtension.Rat.isTotallyComplex (n := 5) K (by decide)
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
