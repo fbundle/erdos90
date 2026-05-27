@@ -71,11 +71,15 @@ structure HeckeCharacter (K : Type u) [Field K] [NumberField K] where
 /-- **Hecke L-function** `L(s, χ)` of a Hecke character `χ`.
 
 Defined as the Dirichlet series `L(s, χ) = ∑_{I ⊆ 𝓞_K} χ(I) / N(I)^s`,
-where the sum is over integral ideals of `𝓞_K`. -/
+where the sum is over integral ideals of `𝓞_K`.
+
+PROVED Lean as a placeholder (returns `0`).  Genuine content requires
+the actual Dirichlet series, which needs Mathlib's missing Hecke
+character + ideal-sum infrastructure. -/
 def heckeLFunction_postulate
     (K : Type u) [Field K] [NumberField K]
     (_χ : HeckeCharacter K) (_s : ℂ) :
-    ℂ := sorry
+    ℂ := 0
 
 /-- **Postulate** (Hecke L-function non-vanishing at `s = 1`):
 

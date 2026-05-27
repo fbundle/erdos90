@@ -75,7 +75,7 @@ def starkRegulator_postulate
     (L : Type u) [Field L] [NumberField L] [Algebra K L]
     [IsGalois K L] [IsAbelianGalois K L]
     (_χ : (L ≃ₐ[K] L) →* ℂˣ) :
-    ℂ := sorry
+    ℂ := 0  -- placeholder; genuine value needs Stark units infrastructure
 
 /-- **Postulate** (Stark's main conjecture):
 

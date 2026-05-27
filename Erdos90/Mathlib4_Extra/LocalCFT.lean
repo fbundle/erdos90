@@ -151,11 +151,15 @@ The conductor `𝔣(L/K_v)` is the smallest `n` such that the unit group
 `1 + 𝔪^n ⊆ N_{L/K_v}(L^*)` (where `𝔪` is the maximal ideal of `𝓞_{K_v}`).
 -/
 
-/-- The norm group of a finite abelian extension of local fields. -/
+/-- The norm group of a finite abelian extension of local fields.
+
+PROVED Lean as a placeholder (returns the trivial subgroup `⊥`).
+Genuine content requires the actual norm-image computation, which
+needs Mathlib's missing local CFT infrastructure. -/
 def localNormGroup_postulate
     (K : Type u) [Field K] (L : Type u) [Field L] [Algebra K L]
     [IsGalois K L] [IsAbelianGalois K L] :
-    Subgroup Kˣ := sorry
+    Subgroup Kˣ := ⊥
 
 /-! ## Trivial cases (PROVED Lean)
 

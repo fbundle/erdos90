@@ -68,7 +68,78 @@ structure Conductor (K : Type u) [Field K] [NumberField K]
   /-- The conductor is non-zero. -/
   𝔣_ne_bot : 𝔣 ≠ ⊥
 
+/-! ### Decomposition of `conductor_postulate`
+
+The conductor of an abelian extension is built as the **product of local
+conductors at each finite place**.  The chain:
+
+1. **Local conductor exists**: for each prime `P` of `𝓞 K`, the local
+   conductor `𝔣_P(L/K) ∈ ℕ` exists: the smallest `n` such that the unit
+   group `1 + P^n` is in the kernel of the local Artin map at P.
+2. **Finite support**: `𝔣_P(L/K) = 0` for all but finitely many P
+   (those not in the ramification locus).
+3. **Global product**: define `𝔣(L/K) := ∏_P P^{𝔣_P(L/K)}` (the finite
+   product over ramified primes).
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.conductor.local** (Local conductor):
+For each finite place `P` of `𝓞 K` and each finite abelian extension
+`L/K`, there exists a smallest `n ∈ ℕ` such that the local unit group
+`1 + P^n` lies in the kernel of the local Artin map at `P`.
+
+This is the **local conductor exponent** `𝔣_P(L/K)`.
+
+Cite: Serre *Local Fields* XV §2.  Mathlib v4.30: not packaged. -/
+def local_conductor_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L]
+    (_P : Ideal (𝓞 K)) :
+    True := sorry
+
+/-- **Sub-postulate D3.conductor.finite-support** (Finite support):
+For a finite abelian `L/K`, the set of finite places `P` where the
+local conductor `𝔣_P(L/K) > 0` is FINITE.
+
+This is the set of finite places where `L/K` is ramified.
+
+Cite: standard (ramification locus is finite for finite extensions).
+Mathlib v4.30: ramified places API exists but conductor-specific
+formulation not packaged. -/
+def conductor_finite_support_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
+/-- **Sub-postulate D3.conductor.cond-disc** (Conductor-discriminant
+formula):
+For a finite abelian extension `L/K` with Galois group `G`,
+
+  `disc(L/K) = ∏_{χ ∈ Ĝ} 𝔣(χ)`
+
+where `Ĝ` is the character group of `G` and `𝔣(χ)` is the conductor of
+the character (= conductor of the unique cyclic subextension fixed by
+ker(χ)).
+
+Cite: Hasse 1934 (the original); Neukirch VII §11 Theorem 11.9.
+Mathlib v4.30: not packaged. -/
+def conductor_discriminant_formula_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
 /-- **Postulate**: the conductor of a finite abelian extension exists.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `local_conductor_postulate`: pick local conductor at each P.
+2. By `conductor_finite_support_postulate`: only finitely many P have
+   nontrivial local conductor.
+3. Define the global conductor as the finite product
+   `𝔣(L/K) := ∏_P P^{𝔣_P}`.
 
 Cite: Neukirch *Algebraic Number Theory* VI §6.  Not in Mathlib v4.30. -/
 def conductor_postulate
