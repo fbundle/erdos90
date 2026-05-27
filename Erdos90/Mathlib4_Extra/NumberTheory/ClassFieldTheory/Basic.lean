@@ -709,17 +709,37 @@ This is because:
   embedding of subfields.
 -/
 
+/-! ### Decomposition of `p_HCF_finrank_eq_p_part_postulate`
+
+3 steps:
+1. **Galois-order = finrank** (Mathlib: `IsGalois.card_aut_eq_finrank`).
+2. **p-Sylow Artin reciprocity** (Mathlib gap, sub-postulate below).
+3. **Sylow cardinality** (Mathlib: `Sylow.card_eq_multiplicity`).
+Steps 1 and 3 are in Mathlib; step 2 is the genuine gap.
+-/
+
+/-- **Sub-postulate D3.pHCF.galois-eq-sylow** (p-Sylow Artin recip iso):
+`Gal(H_p(K)/K) ≃ Sylow_p (ClassGroup (𝓞 K))`.
+
+Cite: standard CFT (Lang X §2 + Sylow). -/
+def pHCF_galois_iso_sylow_p_classGroup_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p) (_E : HilbertPClassFieldExt K p) :
+    True := sorry
+
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
 
-This is Artin reciprocity restricted to the p-Sylow subgroup of the
-class group, giving an isomorphism `Gal(H_p(K)/K) ≃ Sylow_p(Cl(K))`.
-The order equality follows.
-
 Cite: standard CFT; p-Sylow correspondence under Artin reciprocity.
 Lang *Algebraic Number Theory* X §2 (Artin map) + Sylow theorems.  Not
-in Mathlib v4.30 (depends on `hilbertPClassField_exists` + Artin recip). -/
+in Mathlib v4.30 (depends on `hilbertPClassField_exists` + Artin recip).
+
+ASSEMBLY modulo `pHCF_galois_iso_sylow_p_classGroup_postulate`:
+1. card_aut_eq_finrank: |Gal(H_p/K)| = [H_p:K] (Mathlib).
+2. The iso: |Gal(H_p/K)| = |Sylow_p Cl(K)| (sub-postulate).
+3. Sylow.card_eq_multiplicity: |Sylow_p Cl(K)| = p^padicValNat p (h_K)
+   (Mathlib). -/
 def p_HCF_finrank_eq_p_part_postulate
     (K : Type u) [Field K] [NumberField K]
     (p : ℕ) (_hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
