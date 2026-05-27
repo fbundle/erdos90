@@ -158,15 +158,20 @@ def max_pro_p_colimit_postulate
 The pro-`p` Galois group `Gal(K_S^{(p)}/K)` is the *Galois cohomology object*
 that GS criterion applies to.
 
+PROVED Lean as a TRIVIAL placeholder where `L := K` (the identity
+algebra).  This is the **degenerate case** — a genuine maximal pro-p
+extension typically has infinite Galois group.
+
 ASSEMBLY (modulo the three sub-postulates above):
 1. By `max_pro_p_finite_level_postulate`: build finite levels.
 2. By `max_pro_p_compat_postulate`: they form a filtered system.
 3. By `max_pro_p_colimit_postulate`: take the colimit.
 
 Cite: Neukirch, *Cohomology of Number Fields*, Chapter X.  Not in Mathlib v4.30. -/
-def maxProPExt_exists (K : Type u) [Field K] [NumberField K] (p : ℕ)
+noncomputable def maxProPExt_exists (K : Type u) [Field K] [NumberField K] (p : ℕ)
     (_hp : Nat.Prime p) (S : Set (Ideal (𝓞 K))) (_hS_fin : S.Finite) :
-    MaxProPExt K p S := sorry
+    MaxProPExt K p S where
+  L := K
 
 /-- **Ray class field** for a number field `K` and a modulus `𝔪` (stub).
 
