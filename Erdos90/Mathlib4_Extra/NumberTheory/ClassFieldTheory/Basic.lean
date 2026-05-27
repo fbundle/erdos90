@@ -767,8 +767,33 @@ This is the precise CFT statement: H_p is the **maximal** unramified
 abelian p-extension, so its Galois group is the **maximal** p-quotient
 of Cl(K), i.e., the p-Sylow.
 
-Cite: Iwasawa / Lang.  Mathlib v4.30 gap. -/
+Cite: Iwasawa / Lang.  Mathlib v4.30 gap.
+
+DECOMPOSITION: 4 steps.
+1. Image ⊆ some Sylow_p (Mathlib: `IsPGroup.exists_le_sylow`).
+2. Image has max p-power order, i.e. |Image| = p^padicValNat p (h_K)
+   (sub-postulate `pHCF_galois_image_max_p_order_postulate` below —
+   the genuine CFT-level "H_p is maximal" fact).
+3. Sylow has the same order (Mathlib: `Sylow.card_eq_multiplicity`).
+4. In abelian Cl, p-Sylow is unique (Mathlib: `Sylow.unique_of_normal`
+   + `Subgroup.normal_of_isMulCommutative`).
+Same order + same containing Sylow ⟹ equal subgroups. -/
 def pHCF_artin_image_eq_sylow_p_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p) (_E : HilbertPClassFieldExt K p) :
+    True := sorry
+
+/-- **Sub-postulate D3.pHCF.artin-image-max-order**: The image of the
+Artin embedding `Gal(H_p/K) → Cl(K)` has order `p^padicValNat p (h_K)`
+(the maximum p-power dividing h_K).
+
+This is the **maximality** statement: H_p is constructed as the MAX
+unramified abelian p-extension, so its Galois group reaches the full
+p-Sylow order.  Conversely, if image were smaller, the corresponding
+quotient field would extend H_p, contradicting maximality.
+
+Cite: Iwasawa Ch 6 / Lang X §3.  Mathlib v4.30 gap. -/
+def pHCF_galois_image_max_p_order_postulate
     (K : Type u) [Field K] [NumberField K]
     (p : ℕ) (_hp : Nat.Prime p) (_E : HilbertPClassFieldExt K p) :
     True := sorry
