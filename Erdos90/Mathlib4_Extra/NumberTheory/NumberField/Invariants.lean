@@ -548,3 +548,17 @@ theorem nat_gcd_one_right (n : ℕ) : Nat.gcd n 1 = 1 := Nat.gcd_one_right n
 
 /-- `gcd` is commutative. -/
 theorem nat_gcd_comm (m n : ℕ) : Nat.gcd m n = Nat.gcd n m := Nat.gcd_comm m n
+
+/-! ### Nat.Prime divisibility wrappers -/
+
+/-- `p ∣ p` for prime p (or any nat). -/
+theorem nat_dvd_refl (p : ℕ) : p ∣ p := dvd_refl p
+
+/-- If `p` is prime and `p ∣ a · b`, then `p ∣ a` or `p ∣ b`. -/
+theorem nat_prime_dvd_mul {p a b : ℕ} (hp : p.Prime) (h : p ∣ a * b) :
+    p ∣ a ∨ p ∣ b :=
+  hp.dvd_mul.mp h
+
+/-- `p` divides itself raised to any positive power. -/
+theorem nat_prime_dvd_self_pow (p : ℕ) {n : ℕ} (hn : 0 < n) : p ∣ p ^ n :=
+  dvd_pow_self p hn.ne'
