@@ -294,8 +294,32 @@ Build a `WeakFEPair` (Mathlib `AbstractFuncEq.WeakFEPair`) with
 `f = g = θ_K - 1`, `k = n/2`, `ε = 1`.  Apply
 `WeakFEPair.functional_equation` to get the FE for `completedDedekindZeta`.
 
-Status: Lean engineering modulo Steps 1-3. -/
+DECOMPOSITION: 2 named pieces.
+1. **Build WeakFEPair from θ_K**: provide `(f, g, k, ε, f₀, g₀,
+   hf_int, hg_int, hk, hε, h_feq, hf_top, hg_top)` from the
+   theta-modular postulate `θ_K(1/t) = √|disc K| · t^{n/2} · θ_K(t)`.
+2. **Symmetric self-duality**: confirm that `f = g` (ζ_K is self-dual)
+   and `ε = 1` (no root number). -/
 def dedekindZeta_weak_fe_pair_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-- **D3.2b.zeta-FE.fe-pair.build** (Build WeakFEPair from θ_K):
+Given the theta-modular relation `θ_K(1/t) = √|disc K| · t^{n/2} · θ_K(t)`
+(from `theta_K_modular_postulate`), construct a Mathlib
+`AbstractFuncEq.WeakFEPair ℂ` with the appropriate fields.
+
+The construction is mechanical: `f = g = θ_K - 1`, `k = n/2`, `ε = 1`,
+`f₀ = g₀ = 0` (or appropriate constant terms).  The `h_feq` field is
+the modular relation rephrased. -/
+def dedekindZeta_fe_pair_build_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-- **D3.2b.zeta-FE.fe-pair.selfdual** (ζ_K is self-dual, no root number):
+The Dedekind zeta function ζ_K is self-dual: in the WeakFEPair structure,
+`f = g` (same function on both sides of the FE) and `ε = 1` (trivial root
+number).  This follows from the lattice 𝓞_K being self-dual under the
+trace pairing (after scaling by the discriminant), classical fact. -/
+def dedekindZeta_fe_pair_selfdual_postulate
     (K : Type*) [Field K] [NumberField K] : True := sorry
 
 /-! End decomposition.
