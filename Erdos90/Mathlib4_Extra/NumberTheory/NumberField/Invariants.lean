@@ -531,3 +531,20 @@ theorem prime_five_wrap : Nat.Prime 5 := Nat.prime_five
 theorem prime_seven_wrap : Nat.Prime 7 := Nat.prime_seven
 theorem prime_eleven_wrap : Nat.Prime 11 := by decide
 theorem prime_thirteen_wrap : Nat.Prime 13 := by decide
+
+/-! ### Nat.gcd sanity wrappers -/
+
+/-- `gcd 0 n = n`. -/
+theorem nat_gcd_zero_left (n : ℕ) : Nat.gcd 0 n = n := Nat.gcd_zero_left n
+
+/-- `gcd n 0 = n`. -/
+theorem nat_gcd_zero_right (n : ℕ) : Nat.gcd n 0 = n := Nat.gcd_zero_right n
+
+/-- `gcd 1 n = 1`. -/
+theorem nat_gcd_one_left (n : ℕ) : Nat.gcd 1 n = 1 := Nat.gcd_one_left n
+
+/-- `gcd n 1 = 1`. -/
+theorem nat_gcd_one_right (n : ℕ) : Nat.gcd n 1 = 1 := Nat.gcd_one_right n
+
+/-- `gcd` is commutative. -/
+theorem nat_gcd_comm (m n : ℕ) : Nat.gcd m n = Nat.gcd n m := Nat.gcd_comm m n
