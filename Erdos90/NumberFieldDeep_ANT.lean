@@ -79,6 +79,16 @@ theorem T_set_card : T_set.card = 13 := by decide
 /-- Sanity: S_set has 22 elements. -/
 theorem S_set_card : S_set.card = 22 := by decide
 
+/-- Sanity: `D_val = ∏ T_set = 6541380665835015` (≈ 6.54 × 10¹⁵).
+
+Mathematical content: the docstring says `D ≈ 3.27 × 10¹⁶`, which is
+the radicand of `Q = ℚ(√D)`, NOT D itself (the docstring estimates
+include a factor 4 from `rd_KF = √(4D)`).  This sanity check pins
+down the exact value. -/
+theorem D_val_eq : D_val = 6541380665835015 := by
+  unfold D_val T_set
+  decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
