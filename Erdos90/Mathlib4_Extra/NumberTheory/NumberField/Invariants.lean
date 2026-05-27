@@ -232,12 +232,3 @@ theorem prime_five_wrap : Nat.Prime 5 := Nat.prime_five
 theorem prime_seven_wrap : Nat.Prime 7 := Nat.prime_seven
 theorem prime_eleven_wrap : Nat.Prime 11 := by decide
 theorem prime_thirteen_wrap : Nat.Prime 13 := by decide
-
-/-- `2` is prime.  Direct citation of Mathlib's `Nat.prime_two`. -/
-theorem two_prime : Nat.Prime 2 := Nat.prime_two
-
-/-- `3` is prime.  Direct citation of Mathlib's `Nat.prime_three`. -/
-theorem three_prime : Nat.Prime 3 := Nat.prime_three
-
-/-- `5` is prime. -/
-theorem five_prime : Nat.Prime 5 := by decide
