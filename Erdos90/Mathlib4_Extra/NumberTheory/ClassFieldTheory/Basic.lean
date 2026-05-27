@@ -1427,6 +1427,22 @@ theorem cyclotomic_five_discr
   have h := IsCyclotomicExtension.Rat.discr_prime (p := 5) (K := K)
   simpa using h
 
+/-- `nrRealPlaces ℚ(ζ_3) = 0` (cyclotomic extensions for n > 2 are
+totally complex).
+
+PROVED Lean: direct citation of Mathlib's
+`IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero`. -/
+theorem cyclotomic_three_nrRealPlaces
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.InfinitePlace.nrRealPlaces K = 0 :=
+  IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 3) K (by decide)
+
+/-- `nrRealPlaces ℚ(ζ_5) = 0`. -/
+theorem cyclotomic_five_nrRealPlaces
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.InfinitePlace.nrRealPlaces K = 0 :=
+  IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 5) K (by decide)
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
