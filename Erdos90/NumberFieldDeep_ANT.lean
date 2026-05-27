@@ -182,6 +182,14 @@ theorem S_set_sum : S_set.sum id =
     47 + 71 + 79 + 97 + 101 + 107 + 109 + 139 + 151 + 163 + 167 + 179 := by
   decide
 
+/-- `T_set ⊆ S_set` is FALSE — they overlap on first 9 odd primes, but
+T_set contains 31, 37, 41, 43 which are not in S_set. -/
+theorem T_set_not_subset_S_set : ¬ T_set ⊆ S_set := by
+  intro h
+  have : 31 ∈ S_set := h (by decide : 31 ∈ T_set)
+  -- 31 ∉ S_set
+  exact absurd this (by decide)
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
