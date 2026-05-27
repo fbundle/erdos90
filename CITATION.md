@@ -1,120 +1,97 @@
 # Citation
 
-This project builds on prior Lean 4 / Mathlib formalization work.  Whenever we
-use, port, or adapt external code, we cite the source here.
+This project formalizes Theorem 1.1 of the OpenAI 2026 paper *"Planar Point
+Sets with Many Unit Distances"* (the disproof of the Erdős unit-distance
+conjecture).  The Lean 4 development is in `Erdos90/Main.lean`:
+`erdos_unit_distance_false`.
 
-## Primary external Lean dependencies
+On the `master` branch, the theorem depends on **one non-Mathlib axiom**,
+`brd_tower_data` (in `Erdos90/NumberFieldDeep_GSTower.lean`), which bundles
+the two deep number-theoretic facts the paper invokes.  On the `full` branch,
+that axiom is decomposed into four sub-postulates corresponding to specific
+multi-month Mathlib contributions.
 
-### `vendor/mathlib4/`
+## Lean dependencies
 
-The **Lean Mathematical Library** (Mathlib4), version v4.30.0.
+### Mathlib4
+
+The Lean Mathematical Library, version v4.30.0.  The only Lean dependency.
 
 * Project: https://github.com/leanprover-community/mathlib4
 * License: Apache 2.0
-* Citation: The mathlib Community. "The Lean mathematical library." CPP 2020.
-* Used as: primary Lean dependency (via `[[require]]` in `lakefile.toml`).
+* Citation: The mathlib Community, *The Lean mathematical library*, CPP 2020.
+* Used as: required via `[[require]]` in `lakefile.toml`.
 
-### `vendor/formal-conjectures/`
+## Mathematical sources backing the axiom `brd_tower_data`
 
-The **Google DeepMind Formal Conjectures** project.
+`brd_tower_data` (the only non-Mathlib axiom on the proof path) bundles two
+results.  Each is supported by the following references; when Mathlib gains
+the required infrastructure, the axiom becomes a theorem and these citations
+move into the corresponding proof.
 
-* Project: https://github.com/google-deepmind/formal-conjectures
-* Used as: reference for the Lean template of Erdős Problem 90 (see
-  `FormalConjectures/ErdosProblems/90.lean`).
+### (1) HMR 2021 — Golod–Shafarevich CM tower with fixed split primes
 
-### `vendor/ClassFieldTheory/` (Kevin Buzzard's CFT project)
+For each `ℓ ≥ 2`, the existence of an infinite tower of CM totally-complex
+number fields with bounded root discriminant and a tower-fixed product `Q` of
+split primes (via Chebotarev / Ihara).
 
-The **2025 Clay Maths Summer School on Formalizing Class Field Theory** repo,
-maintained by Kevin Buzzard.
+* **Hajir, Maire, Ramakrishna**, *Cutting class field theory towers*,
+  arXiv:2103.05382, 2021.  Local copy: `assets/hmr_2021_src/`.  See §3
+  `theo:ihara` for the split-prime persistence in the tower.
+* **Golod, Shafarevich**, *On the class field tower*, Izv. Akad. Nauk SSSR
+  Ser. Mat. 28 (1964), 261–272.  Existence of infinite class-field towers
+  via the relation-rank inequality.
+* Standard CM lift (tensor the totally-real base field with a controlled
+  imaginary quadratic) — e.g. Neukirch, *Algebraic Number Theory*, Ch. III.
 
-* Original project: https://github.com/kbuzzard/ClassFieldTheory
-* Local fork (with v4.30 bump): https://github.com/fbundle/ClassFieldTheory
-* License: Apache 2.0
-* Contributors (per file headers): Kevin Buzzard, Yaël Dillies, Aaron Liu,
-  María Inés de Frutos-Fernández, and the 2025 Clay summer school participants.
+Required Mathlib infrastructure:
+* General Chebotarev density theorem (currently only Dirichlet density).
+* Artin / Hecke L-functions, their meromorphic continuation past `s = 1`
+  and non-vanishing on `Re s = 1`.
+* Wiener–Ikehara tauberian theorem.
+* Golod–Shafarevich inequality + pro-`p` cohomology + p-Hilbert class field.
 
-**What we use from it (intended targets, work-in-progress):**
+### (2) Friedman–Louboutin Brauer–Siegel bound for CM fields
 
-* `Cohomology/LocalInv.lean` — local invariant `H²(ℤ/nℤ, ℤ) ≃+ ZMod n`.
-  Underlying the abstract reciprocity isomorphism.
-* `Cohomology/TateCohomology.lean` — Tate cohomology framework.
-* `Cohomology/SplittingModule.lean` — `FiniteClassFormation` + abstract
-  Artin `reciprocityIso`.
-* `IsNonarchimedeanLocalField/HerbrandQuotient.lean` — Herbrand quotient.
-* `IsNonarchimedeanLocalField/Basic.lean` and friends — non-archimedean local
-  field foundations (valuations, ramification, towers).
+For CM totally-complex `K` of complex degree `f ≥ 5` with `rootDiscr K ≤ rd_F`:
+`log h_K / f ≤ 2 · log (2 · rd_F)`.
 
-**Status (as of 2026-05-27):** the upstream Buzzard repo uses Lean v4.29.0 and
-Mathlib v4.29; we use v4.30.  We bumped a local fork of his repo to v4.30 and
-fixed about half of the v4.30 API drift errors (in `Mathlib/RingTheory/Unramified/LocalRing.lean`,
-`Cohomology/IndCoind/Finite.lean`, `Cohomology/{Tate,SerreApproximation}.lean`,
-`Mathlib/RepresentationTheory/.../Basic.lean`, `IsNonarchimedeanLocalField/Basic.lean`).
-The remaining errors are mostly `simp` set drift in `TateCohomology.lean` and
-`SerreApproximation.lean`, plus one missing instance (`IsBotZeroClass (ValueGroup₀ vK)`).
+* **Friedman**, *Analytic formulas for the regulator of a number field*,
+  Inventiones Math. 98 (1989), 599–622.  Gives `R_K ≥ 1/5` for CM TC `K`.
+* **Louboutin**, *Explicit upper bounds for residues of Dedekind zeta
+  functions and class numbers of CM-fields*, Math. Comp. 69 (2000), 311–339.
+  Gives `Res_{s=1} ζ_K(s) ≤ (4 · rd_F)^f`.  Local copy:
+  `assets/louboutin_2000_class_number.pdf`.
+* **Brauer**, *On the zeta-functions of algebraic number fields*,
+  Amer. J. Math. 69 (1947), 243–250.  Original Brauer–Siegel theorem.
+* **Lang**, *Algebraic Number Theory*, 2nd ed., Springer, Ch. XVI.
 
-When we successfully port a Buzzard lemma into our codebase (e.g. into
-`Erdos90/Mathlib4_Extra/Vendor/CFT/`), the file header MUST include:
+Required Mathlib infrastructure:
+* Functional equation for `NumberField.dedekindZeta` (multi-D Poisson + theta
+  function modular transformation + Mellin transform).
+* Stark/Tate's class-number formula at `s = 0`.
+* Phragmén–Lindelöf interpolation in vertical strips + Stirling-type bounds
+  on `Γ` for the boundary estimates.
 
-```
-/-
-Copyright (c) <year> <original authors>. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: <original authors> (from kbuzzard/ClassFieldTheory)
-Adapted for Erd46 by: Khanh Nguyen with Claude Opus 4.7
+## Primary paper being formalized
 
-Source: https://github.com/kbuzzard/ClassFieldTheory
-       commit <sha>
--/
-```
+* **OpenAI**, *Planar Point Sets with Many Unit Distances*, 2026.  Local copy:
+  `assets/unit-distance-proof.pdf`.  Theorem 1.1 (the main result) is
+  formalized as `Erdos90.Main.erdos_unit_distance_false`; Theorem 1.1's
+  contrapositive (the explicit refutation of the Erdős unit-distance
+  conjecture) is `Erdos90.Main.erdos_bound_false`.
 
-## Other referenced (but not yet ported) external work
+  The paper's Propositions 2.2–3.8 chain decomposes into:
+  * **Props 2.3, 2.4** (geometric construction + coset averaging): proved Lean
+    in `Erdos90/Geometric.lean` and `Erdos90/CosetAveraging.lean`.
+  * **Props 3.2–3.6** (Golod–Shafarevich + Chebotarev + Brauer–Siegel tower):
+    bundled into the axiom `brd_tower_data` (see above for backing references).
+  * **Prop 3.7** (Minkowski class-number bound): not needed in our chain
+    (`C_class := 1` suffices).
+  * **Prop 3.8** (admissibility assembly): proved Lean in
+    `Erdos90/NumberField.lean`.
 
-These are referenced in our `Erdos90/Mathlib4_Extra/*.lean` postulate docstrings
-as the eventual Mathlib home for the relevant theorem.  We have NOT copied any
-code from them yet.
+## License
 
-### `mariainesdff/local_fields_journal`
-
-María Inés de Frutos-Fernández's **Local Fields** formalization (CPP 2024).
-
-* Project: https://github.com/mariainesdff/local_fields_journal
-* Referenced in: `Erdos90/Mathlib4_Extra/LocalCFT.lean` (as the upstream-candidate
-  for the local CFT chain).
-
-### Loeffler–Stoll "Formalizing zeta and L-functions in Lean" (arXiv:2503.00959)
-
-* Paper: https://arxiv.org/abs/2503.00959
-* Status: results being contributed to Mathlib; covers Riemann zeta + Dirichlet
-  L-functions and the formal statement of the Riemann hypothesis.
-* Referenced in: `Erdos90/Mathlib4_Extra/DedekindZetaFE.lean` and
-  `Erdos90/Mathlib4_Extra/HeckeCharacters.lean` (these are the analytic-chain
-  postulates that Loeffler-Stoll's work would eventually support for `ζ_K`).
-
-## Reference papers and texts (for postulate citations)
-
-Many of our `Erdos90/Mathlib4_Extra/*.lean` postulates cite primary mathematical
-sources rather than other Lean formalizations.  These are the "external math"
-the formalization rests on, not Lean code dependencies:
-
-* OpenAI 2026 — *Planar Point Sets with Many Unit Distances*
-  (`assets/unit-distance-proof.pdf`): the paper proving Theorem 1.1.
-* Hajir-Maire-Ramakrishna 2021 — *Cutting Towers* (`assets/hmr_2021_src/`): the
-  Golod-Shafarevich CM tower with bounded root discriminant.
-* Friedman 1989 *Analytic formulas for the regulator of a number field*
-  (Inventiones 98:599-622).
-* Louboutin 2000 *Explicit upper bounds for residues of Dedekind zeta functions
-  and class numbers of CM-fields* (`assets/louboutin_2000_class_number.pdf`).
-* Hecke 1917, Tate's thesis 1950 (dedekindZeta functional equation).
-* Lubin-Tate 1965 (local Artin map via formal groups).
-* Stickelberger 1890 (Stickelberger element + annihilation).
-* Mazur-Wiles 1984, Wiles 1990 (Iwasawa Main Conjecture).
-* Brauer 1947 (induction theorem for L-functions).
-* Hasse 1933, Brauer-Hasse-Noether 1932 (Hasse principle for algebras).
-* Iyanaga 1934, Tannaka 1934 (Verlagerung vanishing / group-theoretic principal
-  ideal theorem).
-
-## License compatibility
-
-All cited Lean projects are under Apache 2.0, which is compatible with this
-project's Apache 2.0 license.  Per Apache 2.0, derivative files retain
-attribution to the original authors.
+Apache 2.0 (matches Mathlib4).  Derivative work attribution per Apache 2.0
+applies for any Mathlib lemma directly cited.
