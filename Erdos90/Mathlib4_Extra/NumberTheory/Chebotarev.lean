@@ -203,9 +203,33 @@ completely.
 
 Cite: Wiener-Ikehara 1932 (Tauberian); Neukirch VII §13 Theorem 13.4.
 Mathlib v4.30: `Wiener-Ikehara` not packaged; Selberg-Delange not packaged.
-Multi-month after the prerequisites. -/
+Multi-month after the prerequisites.
+
+DECOMPOSITION: 2 named pieces by specialization level.
+1. **Abelian/cyclotomic case (K = ℚ(ζ_q))**: Dirichlet's theorem on
+   primes in arithmetic progression — PROVED in Mathlib as
+   `Nat.setOf_prime_and_eq_mod_finite`.
+2. **General K case**: full Chebotarev — Mathlib gap (Wiener-Ikehara +
+   Brauer induction). -/
 def chebotarev_density_via_L_postulate (K : Type*) [Field K] [NumberField K] :
     True := sorry
+
+/-- **Sub-sub-postulate D3.1.cheb.density.dirichlet-ap** (Dirichlet's
+theorem on primes in arithmetic progression — Mathlib citation):
+
+For any positive integer `q` and unit `a : (ZMod q)ˣ`, infinitely many
+prime numbers `p` satisfy `(p : ZMod q) = a` (i.e., `p ≡ a (mod q)`).
+
+This IS the K = ℚ(ζ_q) specialization of Chebotarev: primes splitting
+in arithmetic progression mod q correspond to specific Frobenius
+elements in the cyclotomic Galois group.
+
+PROVED Lean: direct citation of Mathlib's
+`Nat.setOf_prime_and_eq_mod_finite`'s `infinite_setOf_prime_and_eq_mod`. -/
+theorem chebotarev_density_dirichlet_ap_postulate
+    {q : ℕ} [NeZero q] {a : ZMod q} (ha : IsUnit a) :
+    {p : ℕ | p.Prime ∧ (p : ZMod q) = a}.Infinite :=
+  Nat.infinite_setOf_prime_and_eq_mod ha
 
 /-- **Chebotarev density theorem** (labelled postulate).
 
@@ -230,7 +254,7 @@ def chebotarev_density_postulate (K : Type*) [Field K] [NumberField K] :
         Ideal.ramificationIdx (Ideal.span {(q : ℤ)}) P = 1 ∧
         Ideal.inertiaDeg (Ideal.span {(q : ℤ)}) P = 1}.Infinite := sorry
 
-/-- **Ihara's theorem** (labelled postulate).
+/-! ### Ihara's theorem (documentation)
 
 For each base field `F` (number field) and each prime `ℓ ≥ 2`, the maximal
 pro-`ℓ` extension `K_∞ = K_S(F)/F` (unramified outside a finite set `S`)
@@ -241,8 +265,9 @@ This is Ihara 1983/1986: in an asymptotically good pro-`ℓ` extension, there
 are positive-density "completely split" primes that persist through the tower.
 
 Cite: HMR 2021 line 729 `theo:ihara`; Ihara, *How many primes decompose...*,
-J. Math. Soc. Japan 35 (1983) 693-709.  Not in Mathlib v4.30. -/
-/-! ### Decomposition of `ihara_split_primes_postulate`
+J. Math. Soc. Japan 35 (1983) 693-709.  Not in Mathlib v4.30.
+
+### Decomposition of `ihara_split_primes_postulate`
 
 Ihara 1983/1986's persistence result decomposes:
 
