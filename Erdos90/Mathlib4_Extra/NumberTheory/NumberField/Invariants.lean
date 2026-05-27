@@ -580,3 +580,19 @@ theorem finset_card_le_of_subset {α : Type*} {s t : Finset α} (h : s ⊆ t) :
 
 /-- Empty set has no elements. -/
 theorem finset_not_mem_empty {α : Type*} (a : α) : a ∉ (∅ : Finset α) := by simp
+
+/-! ### Set.Infinite sanity wrappers -/
+
+/-- The empty set is not infinite. -/
+theorem set_infinite_empty_false {α : Type*} : ¬ (∅ : Set α).Infinite :=
+  Set.not_infinite.mpr Set.finite_empty
+
+/-- A singleton is not infinite. -/
+theorem set_infinite_singleton_false {α : Type*} (a : α) : ¬ ({a} : Set α).Infinite :=
+  Set.not_infinite.mpr (Set.finite_singleton a)
+
+/-- The natural numbers are infinite. -/
+theorem set_infinite_univ_nat : (Set.univ : Set ℕ).Infinite := Set.infinite_univ
+
+/-- The integers are infinite. -/
+theorem set_infinite_univ_int : (Set.univ : Set ℤ).Infinite := Set.infinite_univ
