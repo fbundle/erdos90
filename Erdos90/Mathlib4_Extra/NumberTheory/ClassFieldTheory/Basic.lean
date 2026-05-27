@@ -710,6 +710,16 @@ instance HilbertPClassFieldExt.isTotallyComplex
     IsTotallyComplex E.H_p :=
   isTotallyComplex_of_algebra (F := K) (K := E.H_p)
 
+/-- The `p`-HCF is algebraic over ℚ.
+
+PROVED Lean: any NumberField is algebraic over ℚ
+(Mathlib: `NumberField.isAlgebraic`). -/
+theorem HilbertPClassFieldExt.isAlgebraic_rat
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (E : HilbertPClassFieldExt K p) :
+    Algebra.IsAlgebraic ℚ E.H_p :=
+  NumberField.isAlgebraic (K := E.H_p)
+
 /-! ## Connection between HCF and p-HCF
 
 The p-HCF is a subfield of the HCF.  More precisely:
