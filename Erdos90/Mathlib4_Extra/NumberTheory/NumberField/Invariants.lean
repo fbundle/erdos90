@@ -223,3 +223,12 @@ theorem totient_lt_self {n : ℕ} (h : 2 ≤ n) : Nat.totient n < n :=
 /-- **Totient is always at most n**: `φ(n) ≤ n`. -/
 theorem totient_le_self (n : ℕ) : Nat.totient n ≤ n :=
   Nat.totient_le n
+
+/-- `2` is prime.  Direct citation of Mathlib's `Nat.prime_two`. -/
+theorem two_prime : Nat.Prime 2 := Nat.prime_two
+
+/-- `3` is prime.  Direct citation of Mathlib's `Nat.prime_three`. -/
+theorem three_prime : Nat.Prime 3 := Nat.prime_three
+
+/-- `5` is prime. -/
+theorem five_prime : Nat.Prime 5 := by decide
