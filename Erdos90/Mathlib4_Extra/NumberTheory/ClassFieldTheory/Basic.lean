@@ -1513,6 +1513,24 @@ theorem cyclotomic_five_card_aut
   rw [IsGalois.card_aut_eq_finrank ℚ K]
   exact cyclotomic_five_finrank K
 
+/-- `Units.rank ℚ(ζ_3) = 0`: rank = #InfinitePlace - 1 = 1 - 1 = 0
+(since ℚ(ζ_3) has 0 real + 1 complex place). -/
+theorem cyclotomic_three_units_rank
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.Units.rank K = 0 := by
+  unfold NumberField.Units.rank
+  rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    cyclotomic_three_nrRealPlaces, cyclotomic_three_nrComplexPlaces]
+
+/-- `Units.rank ℚ(ζ_5) = 1`: rank = #InfinitePlace - 1 = 2 - 1 = 1
+(since ℚ(ζ_5) has 0 real + 2 complex places). -/
+theorem cyclotomic_five_units_rank
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.Units.rank K = 1 := by
+  unfold NumberField.Units.rank
+  rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    cyclotomic_five_nrRealPlaces, cyclotomic_five_nrComplexPlaces]
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
