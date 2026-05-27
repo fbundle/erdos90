@@ -261,6 +261,16 @@ theorem chebotarev_density_dirichlet_ap_frequently_postulate
     ∃ᶠ p in Filter.atTop, p.Prime ∧ p ≡ a [MOD q] :=
   Nat.frequently_atTop_prime_and_modEq hq h
 
+/-- **Integer-residue form** (PROVED): the same theorem but with `a : ℤ`
+and `IsCoprime a q`.
+
+PROVED Lean: direct citation of Mathlib's
+`Nat.forall_exists_prime_gt_and_zmodEq`. -/
+theorem chebotarev_density_dirichlet_ap_zmodEq_postulate
+    (n : ℕ) {q : ℕ} {a : ℤ} (hq : q ≠ 0) (h : IsCoprime a q) :
+    ∃ p > n, p.Prime ∧ p ≡ a [ZMOD q] :=
+  Nat.forall_exists_prime_gt_and_zmodEq n hq h
+
 /-- **Chebotarev density theorem** (labelled postulate).
 
 For any number field `K`, infinitely many rational primes split completely
