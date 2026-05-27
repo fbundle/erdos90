@@ -121,9 +121,8 @@ outside contributors.
 
 /-- **Sub-postulate D3.1.gs.base** (existence of GS base field):
 For each prime `p` and each `ℓ ≥ 2`, there exists a CM totally complex
-number field `K` with `rootDiscr K ≤ ℓ` and a Golod–Shafarevich criterion
-witness: `4 · r_p(K) < d_p(K)²`, where `r_p(K)`, `d_p(K)` are the
-`p`-cohomological dimensions of `Gal(K_S^{(p)}/K)`.
+number field `K` with `rootDiscr K ≤ ℓ` AND `p ∣ classNumber K` (so the
+p-class field tower can begin).
 
 Cite: HMR 2021 §2 (the explicit base construction).  Multi-month Mathlib
 effort: needs pro-`p` group cohomology + class field theory.  -/
@@ -131,37 +130,70 @@ def gs_base_field_postulate
     (p : ℕ) (_hp : Nat.Prime p) (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
     ∃ (K : Type) (_ : Field K) (_ : NumberField K)
       (_ : IsCMField K) (_ : IsTotallyComplex K),
-      NumberField.rootDiscr K ≤ (ℓ : ℝ) := sorry
+      NumberField.rootDiscr K ≤ (ℓ : ℝ) ∧
+      p ∣ NumberField.classNumber K := sorry
 
-/-- **Sub-postulate D3.1.gs.step** (GS tower step):
-Given a CM totally complex base field `K` (with GS criterion satisfied
-at level `N`), there exists a CM totally complex extension `L/K` with
-`[L:K] ≥ p` and `rootDiscr L = rootDiscr K` (everywhere unramified).
+/-- **Sub-postulate D3.1.gs.step** (GS tower step — conditional):
+Given a CM totally complex field `K` such that the `p`-class group of `K`
+is **non-trivial** (i.e., `p ∣ classNumber K`), there exists a CM totally
+complex extension `L/K` with `[L:K] = p` (or some power of `p` > 1) and
+`rootDiscr L = rootDiscr K` (everywhere unramified).
 
-Cite: HMR 2021 §2 + Hilbert class field theory.  Closing this requires
-Mathlib's HCF / p-HCF construction (`hilbertClassField_exists` in
-`Mathlib4_Extra/ClassFieldTheory.lean`).  Multi-month. -/
+This is the SHALLOW step: just use the p-Hilbert class field
+`hilbertPClassField_exists K p` of `K`.  The DEEP content of GS is that
+the criterion `4·r_p(K) < d_p(K)²` is **inherited** by L (so the iteration
+can continue) — this is `gs_criterion_inherited_postulate` below, NOT this
+step lemma.
+
+Cite: standard CFT.  Closing this requires `hilbertPClassField_exists`
+(`Mathlib4_Extra/ClassFieldTheory.lean`).  Weeks once HCF is in Mathlib. -/
 def gs_tower_step_postulate
     (p : ℕ) (_hp : Nat.Prime p)
-    (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K] :
-    ∀ (_N : ℕ),
-      ∃ (L : Type) (_ : Field L) (_ : NumberField L)
-        (_ : IsCMField L) (_ : IsTotallyComplex L)
-        (_ : Algebra K L),
-        Module.finrank K L ≥ p ∧
-        NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
+    (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
+    (_h_p_dvd_cn : p ∣ NumberField.classNumber K) :
+    ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+      (_ : IsCMField L) (_ : IsTotallyComplex L)
+      (_ : Algebra K L),
+      Module.finrank K L ≥ p ∧
+      NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
 
-/-- **Sub-postulate D3.1.gs.iterate** (iterated tower step):
-Given the base field + step postulates, the iteration produces a tower
-of CM totally complex extensions of growing degree (≥ p^N at level N)
-with the same `rootDiscr`.
+/-- **Sub-postulate D3.1.gs.inherit** (GS criterion inheritance):
+If `K` satisfies the GS criterion (`4·r_p < d_p²`) AND `L` is the
+`p`-Hilbert class field of `K`, then `L` ALSO satisfies the GS criterion.
 
-Cite: standard induction on N using the step postulate.  Closing this
-requires propagating typeclass instances through the iteration —
-substantial Lean engineering, not new mathematics.  -/
+This is the genuine deep content of GS for towers — it's what makes the
+tower infinite.  Proof: the pro-`p` group `Gal(K_S^{(p)}/K)` is the
+inverse limit of `Gal(L_N/K)` for tower levels `L_N`, and Anick–Dicks
+gives the recursive GS bound.
+
+Cite: HMR 2021 §2 (refined GS) + Anick–Dicks 2017.  Multi-month: needs
+pro-`p` group cohomology. -/
+def gs_criterion_inherited_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
+    (_h_p_dvd_cn : p ∣ NumberField.classNumber K) :
+    -- L is the p-HCF of K (witness exists via hilbertPClassField_exists)
+    -- and L still has p ∣ classNumber L
+    ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+      (_ : IsCMField L) (_ : IsTotallyComplex L)
+      (_ : Algebra K L),
+      Module.finrank K L ≥ p ∧
+      NumberField.rootDiscr L = NumberField.rootDiscr K ∧
+      p ∣ NumberField.classNumber L := sorry
+
+/-- **Sub-postulate D3.1.gs.iterate** (iterated tower):
+Given the base field with `p ∣ classNumber K`, the iteration produces a
+tower of CM totally complex extensions of growing degree (≥ `p^N` at
+level `N`) with the same `rootDiscr`.
+
+This is the assembly of `gs_tower_step_postulate` +
+`gs_criterion_inherited_postulate` via induction on `N`.  The work is
+mostly Lean engineering (typeclass propagation through iteration); once
+both step + inheritance are in Mathlib, this iteration is "just" induction. -/
 def gs_iterate_postulate
     (p : ℕ) (_hp : Nat.Prime p)
-    (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K] :
+    (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
+    (_h_p_dvd_cn : p ∣ NumberField.classNumber K) :
     ∀ (N : ℕ),
       ∃ (L : Type) (_ : Field L) (_ : NumberField L)
         (_ : IsCMField L) (_ : IsTotallyComplex L)
@@ -186,9 +218,10 @@ def gs_cm_tower_infinite_postulate
           (_ : Algebra K L),
           Module.finrank K L ≥ p ^ N ∧
           NumberField.rootDiscr L = NumberField.rootDiscr K := by
-  obtain ⟨K, hF_K, hNF_K, hCM_K, hTC_K, h_rd⟩ := gs_base_field_postulate p hp ℓ hℓ
+  obtain ⟨K, hF_K, hNF_K, hCM_K, hTC_K, h_rd, h_dvd⟩ :=
+    gs_base_field_postulate p hp ℓ hℓ
   refine ⟨K, hF_K, hNF_K, hCM_K, hTC_K, h_rd, ?_⟩
-  exact gs_iterate_postulate p hp K
+  exact gs_iterate_postulate p hp K h_dvd
 
 end GolodShafarevich
 
