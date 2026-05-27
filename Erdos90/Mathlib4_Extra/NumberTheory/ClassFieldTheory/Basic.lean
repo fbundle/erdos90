@@ -686,11 +686,22 @@ theorem rootDiscr_pHCF_eq (K : Type u) [Field K] [NumberField K]
     rootDiscr E.H_p = rootDiscr K :=
   rootDiscr_eq_of_unramifiedTower K E.H_p E.unramified
 
--- (HilbertPClassFieldExt.finiteDimensional instance omitted:
--- requires either an additional `[Module.Finite K H_p]` structure
--- field or a `(hp : Nat.Prime p)` hypothesis on the instance.
--- See `HilbertClassFieldExt.finiteDimensional` for the analogous
--- HCF instance which uses the `finrank_eq` field directly.)
+/-- `H_p/K` is finite-dimensional, assuming p is prime.
+
+PROVED Lean: from `finrank_is_pow_p`, `Module.finrank K H_p = p^n`.
+Since `p ≥ 2` (prime), `p^n ≥ 1`.  In Mathlib, `Module.finrank > 0`
+iff `FiniteDimensional`, so the instance holds.
+
+Takes a hypothesis (not auto-instance) because p is a structure
+parameter, not necessarily prime; pHCF only makes sense for prime p. -/
+theorem HilbertPClassFieldExt.finiteDimensional_of_prime
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
+    FiniteDimensional K E.H_p := by
+  obtain ⟨n, hn⟩ := E.finrank_is_pow_p
+  refine .of_finrank_pos ?_
+  rw [hn]
+  exact pow_pos hp.pos n
 
 /-- The `p`-HCF of a totally complex number field is itself totally complex. -/
 instance HilbertPClassFieldExt.isTotallyComplex
