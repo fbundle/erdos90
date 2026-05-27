@@ -98,7 +98,77 @@ section ModularSubPostulates
 open MeasureTheory ZSpan
 open scoped FourierTransform RealInnerProductSpace Classical
 
-/-- **C2.modular.poisson — Lattice Poisson summation** (postulate).
+/-! ### Decomposition of `lattice_poisson_postulate`
+
+The full statement (for any Schwartz `f` on any inner product space and
+any full-rank lattice) reduces via change-of-basis to "Gaussian Poisson
+for a positive-definite quadratic form on `ℤ^d`":
+```
+∑'_{n ∈ ℤ^d} cexp(-π · a · nᵀ Q n) = (det Q)^(-1/2) · a^(-d/2) ·
+  ∑'_{n ∈ ℤ^d} cexp(-π · a⁻¹ · nᵀ Q⁻¹ n)
+```
+for `Re(a) > 0` and symmetric positive-definite `Q`.
+
+Special cases (with progressively more general `Q`):
+
+* **Identity case** `Q = I`: PROVED as `gaussianThetaMultiDim_modular`
+  (Step B).
+* **Diagonal case** `Q = diag(λ_i)`: PROVED as `thetaAniso_modular`
+  (C1).  Covers any lattice that becomes axis-aligned after an
+  orthogonal change of basis.
+* **General PSD case**: still open in Mathlib v4.30; would follow from
+  full multi-D Schwartz Poisson summation + linear change of variables.
+
+For the number-field application, the CM lattice's Gram matrix is the
+**trace form** on `𝓞_K`, which is generally not diagonal in any obvious
+integral basis.  Reducing it to the diagonal case requires a basis
+adapted to the spectral decomposition of the trace form — which may not
+be an integral basis.
+-/
+
+/-- **C2.modular.poisson.diagonal — Diagonal Gaussian-Poisson** (PROVED).
+
+For per-coordinate complex scales `a : Fin d → ℂ` with `Re(a i) > 0`,
+the diagonal Jacobi theta has the modular transformation
+```
+∑'_{n} cexp(-π·∑_i (a i)·(n i)²) =
+  (∏_i (a i)^(-1/2)) · ∑'_{n} cexp(-π·∑_i (a i)⁻¹·(n i)²).
+```
+
+This is `thetaAniso_modular` re-exported.  It covers the case where the
+lattice's Gram matrix is diagonal in an integral basis. -/
+theorem lattice_poisson_diagonal_postulate
+    {d : ℕ} (a : Fin d → ℂ) (ha : ∀ i, 0 < (a i).re) :
+    (∑' n : Fin d → ℤ,
+        Complex.exp (-Real.pi * ∑ i, (a i) * (n i : ℂ) ^ 2)) =
+      (∏ i, 1 / (a i) ^ (1 / 2 : ℂ)) *
+        ∑' n : Fin d → ℤ,
+          Complex.exp (-Real.pi * ∑ i, (a i)⁻¹ * (n i : ℂ) ^ 2) :=
+  SchwartzMap.thetaAniso_modular a ha
+
+/-- **C2.modular.poisson.general — General Gaussian-Poisson** (sorried).
+
+For symmetric positive-definite `Q : Matrix (Fin d) (Fin d) ℝ`,
+```
+∑'_{n ∈ ℤ^d} cexp(-π·a·∑_{i,j} Q i j · (n i : ℂ) · (n j : ℂ)) =
+  ((Q.det : ℂ))^(-1/2) · a^(-(d : ℂ)/2) ·
+    ∑'_{n ∈ ℤ^d} cexp(-π·a⁻¹·∑_{i,j} Q⁻¹ i j · (n i : ℂ) · (n j : ℂ))
+```
+for `Re(a) > 0`.
+
+This is the remaining gap.  Reduces to `lattice_poisson_diagonal_postulate`
+(PROVED) once `Q` is brought to diagonal form via an orthogonal basis
+change, but the orthogonal basis is generally not integral, so the
+reduction is non-trivial (needs multi-D Schwartz Poisson + linear
+change of variables in `ℝ^d`). -/
+def lattice_poisson_general_postulate
+    {d : ℕ} (_Q : Matrix (Fin d) (Fin d) ℝ)
+    (_hQ_sym : True /- Q.IsSymm -/)
+    (_hQ_pd : True /- Q is positive definite -/)
+    {a : ℂ} (_ha : 0 < a.re) : True := sorry
+
+/-- **C2.modular.poisson — Lattice Poisson summation** (postulate, retained
+as a high-level header pointing to the decomposed sub-postulates).
 
 For a full-rank ℤ-lattice `L` in a finite-dim ℝ-inner-product space `V`,
 and Schwartz `f : V → ℂ`,
@@ -108,16 +178,16 @@ and Schwartz `f : V → ℂ`,
 where `L* := {ξ : V | ∀ x ∈ L, ⟨x, ξ⟩ ∈ ℤ}` is the dual lattice and
 `covol L := volume (fundamentalDomain (latticeBasis L))`.
 
-Status: not in Mathlib v4.30.  Integer-lattice special case PROVED as
-`SchwartzMap.gaussianThetaMultiDim_modular` (Step B).
-
-DECOMPOSITION (when V = `EuclideanSpace ℝ (Fin n)`):
-- a. Change of variables: reduce `L = B·ℤ^n` to `ℤ^n` via the inverse of
-     `B` (the lattice basis matrix).
-- b. Apply `gaussianThetaMultiDim_modular` (or its Schwartz analogue
-     `tsum_eq_tsum_fourier_multi_postulate`).
-- c. The covolume factor `|det B|` enters via the change-of-variables
-     determinant. -/
+DECOMPOSITION:
+* For Gaussians (the only case used here): the lattice Poisson reduces
+  to `lattice_poisson_general_postulate` after picking an integral basis
+  for `L` and computing the Gram matrix `Q := Bᵀ B` (B = basis matrix).
+* The integer-lattice and diagonal-Gram special cases are PROVED via
+  `gaussianThetaMultiDim_modular` and `lattice_poisson_diagonal_postulate`
+  above.
+* The fully general Schwartz `f` (not just Gaussian) would additionally
+  require multi-D Schwartz Poisson (`tsum_eq_tsum_fourier_multi_postulate`
+  in `PoissonProd.lean`).  Not used here. -/
 def lattice_poisson_postulate : True := sorry
 
 /-- **C2.modular.gaussian — d-D Gaussian Fourier transform** (PROVED).
