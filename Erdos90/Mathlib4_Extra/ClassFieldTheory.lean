@@ -995,6 +995,16 @@ theorem HilbertPClassFieldExt.identity_totally_real
     NumberField.InfinitePlace.nrComplexPlaces
         (HilbertPClassFieldExt.identity F p h).H_p = 0 := h_tot_real
 
+/-- For the identity p-HCF case with CM `K`, the p-HCF is CM (since H_p = K).
+
+PROVED Lean instance of `pHCF_isCMField_postulate` for the
+trivial-class-number case. -/
+theorem HilbertPClassFieldExt.identity_isCMField
+    (K : Type u) [Field K] [NumberField K] [IsCMField K]
+    (p : ℕ) (h : NumberField.classNumber K = 1) :
+    IsCMField (HilbertPClassFieldExt.identity K p h).H_p :=
+  inferInstanceAs (IsCMField K)
+
 /-- For the identity HCF case with totally real `F`, the HCF is totally
 real (since H = F).
 
