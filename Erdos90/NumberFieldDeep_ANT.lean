@@ -165,6 +165,14 @@ theorem rd_KF_ge_two : 2 ≤ rd_KF := by
 theorem log_rd_KF_pos : 0 < Real.log rd_KF :=
   Real.log_pos (by linarith [rd_KF_ge_two])
 
+/-- `exp (log rd_KF) = rd_KF` (since rd_KF > 0). -/
+theorem exp_log_rd_KF : Real.exp (Real.log rd_KF) = rd_KF :=
+  Real.exp_log rd_KF_pos
+
+/-- `log rd_KF ≥ log 2 > 0`. -/
+theorem log_rd_KF_ge_log_two : Real.log 2 ≤ Real.log rd_KF :=
+  Real.log_le_log (by norm_num) rd_KF_ge_two
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
