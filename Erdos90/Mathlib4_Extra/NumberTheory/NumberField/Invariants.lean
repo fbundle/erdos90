@@ -371,6 +371,13 @@ theorem padicValNat_zero (p : ℕ) : padicValNat p 0 = 0 := padicValNat_zero_rig
 theorem padicValNat_p_self {p : ℕ} [Fact p.Prime] : padicValNat p p = 1 :=
   padicValNat_self
 
+/-! ### Module.finrank sanity wrappers -/
+
+/-- `[K : K] = 1` for any commutative semiring K. -/
+theorem module_finrank_self_eq_one (K : Type*) [CommSemiring K] :
+    Module.finrank K K = 1 :=
+  CommSemiring.finrank_self K
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
