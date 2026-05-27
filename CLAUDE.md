@@ -94,54 +94,18 @@ These files contain decomposition/scaffolding for the broader CFT landscape but 
 
 `brd_tower_data` → `brd_cm_tower_postulate` (PROVED body) → `gs_tower_levels` → `GSTowerData.getTowerLevel` → `prop_3_2_to_3_6_via_deep` → `exists_admissible_family` → `erdos_unit_distance_false`
 
-### Postulate layout in `Mathlib4_Extra/` (mirrors Mathlib directory structure)
+### Postulate layout in `Mathlib4_Extra/` (mirrors Mathlib hierarchy)
 
-```
-Erdos90/Mathlib4_Extra/
-├── Analysis/
-│   ├── Analytic.lean
-│   └── Fourier/
-│       ├── PoissonProd.lean
-│       ├── SeparablePoisson2D.lean
-│       └── MultiDimPoisson.lean
-├── NumberTheory/
-│   ├── Chebotarev.lean
-│   ├── GolodShafarevich.lean
-│   ├── ProPGalois.lean
-│   ├── ClassFieldTheory/
-│   │   ├── Basic.lean            (HilbertClassFieldExt + HilbertPClassFieldExt)
-│   │   ├── LocalCFT.lean
-│   │   ├── GlobalCFT.lean
-│   │   ├── RayClassField.lean    (MaxProPExt, HMR's S-restricted)
-│   │   ├── Conductor.lean
-│   │   ├── NormGroup.lean
-│   │   ├── HilbertSymbol.lean
-│   │   ├── LubinTate.lean
-│   │   ├── ReciprocityLaws.lean
-│   │   ├── HCFFrobenius.lean
-│   │   └── BrauerGroup.lean
-│   ├── Cyclotomic/
-│   │   ├── Iwasawa.lean
-│   │   └── Stickelberger.lean
-│   ├── LSeries/
-│   │   ├── DedekindZetaFE.lean
-│   │   ├── HeckeCharacters.lean
-│   │   └── StarkConjectures.lean
-│   └── NumberField/
-│       ├── ClassNumberBound.lean (Brauer-Siegel chain E1-E13)
-│       ├── Invariants.lean
-│       ├── Theta.lean
-│       └── Discriminant/
-│           ├── UnramifiedDiscriminant.lean  (rootDiscr_eq_of_unramifiedTower PROVED)
-│           └── TameRamification.lean
-├── RingTheory/
-│   └── FractionalIdeal/
-│       ├── Count.lean
-│       └── RingEquiv.lean
-└── RepresentationTheory/
-    ├── GaloisCohomology.lean
-    └── SelmerGroup.lean
-```
+`Analysis/{Analytic, Fourier/{PoissonProd, SeparablePoisson2D, MultiDimPoisson}}` |
+`NumberTheory/{Chebotarev, GolodShafarevich, ProPGalois}` +
+`NumberTheory/ClassFieldTheory/{Basic, LocalCFT, GlobalCFT, RayClassField, Conductor, NormGroup, HilbertSymbol, LubinTate, ReciprocityLaws, HCFFrobenius, BrauerGroup}` +
+`NumberTheory/Cyclotomic/{Iwasawa, Stickelberger}` +
+`NumberTheory/LSeries/{DedekindZetaFE, HeckeCharacters, StarkConjectures}` +
+`NumberTheory/NumberField/{ClassNumberBound, Invariants, Theta, Discriminant/{UnramifiedDiscriminant, TameRamification}}` |
+`RingTheory/FractionalIdeal/{Count, RingEquiv}` |
+`RepresentationTheory/{GaloisCohomology, SelmerGroup}`.
+
+Quick `ls -R Erdos90/Mathlib4_Extra` gives the live tree.
 
 ## Important types and notations
 
