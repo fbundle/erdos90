@@ -215,6 +215,18 @@ theorem real_pi_gt_three : 3 < Real.pi := Real.pi_gt_three
 /-- `π < 4`.  Direct citation of Mathlib's `Real.pi_lt_four`. -/
 theorem real_pi_lt_four : Real.pi < 4 := Real.pi_lt_four
 
+/-- `3.14 < π`.  Mathlib's `Real.pi_gt_d2`. -/
+theorem real_pi_gt_3_14 : 3.14 < Real.pi := Real.pi_gt_d2
+
+/-- `π < 3.15`.  Mathlib's `Real.pi_lt_d2`. -/
+theorem real_pi_lt_3_15 : Real.pi < 3.15 := Real.pi_lt_d2
+
+/-- `3.141592 < π`.  Mathlib's `Real.pi_gt_d6` (6 decimal digits). -/
+theorem real_pi_gt_d6 : 3.141592 < Real.pi := Real.pi_gt_d6
+
+/-- `π < 3.141593`.  Mathlib's `Real.pi_lt_d6`. -/
+theorem real_pi_lt_d6 : Real.pi < 3.141593 := Real.pi_lt_d6
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
