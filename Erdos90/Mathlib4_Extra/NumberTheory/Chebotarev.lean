@@ -241,6 +241,16 @@ theorem chebotarev_density_dirichlet_ap_constructive_postulate
     ∃ p > n, p.Prime ∧ (p : ZMod q) = a :=
   Nat.forall_exists_prime_gt_and_eq_mod ha n
 
+/-- **Constructive ℕ-version** (PROVED): for any `n` and coprime `a, q : ℕ`,
+there's a prime `p > n` with `p ≡ a (mod q)`.
+
+PROVED Lean: direct citation of Mathlib's
+`Nat.forall_exists_prime_gt_and_modEq`. -/
+theorem chebotarev_density_dirichlet_ap_modEq_postulate
+    (n : ℕ) {q a : ℕ} (hq : q ≠ 0) (h : a.Coprime q) :
+    ∃ p > n, p.Prime ∧ p ≡ a [MOD q] :=
+  Nat.forall_exists_prime_gt_and_modEq n hq h
+
 /-- **Chebotarev density theorem** (labelled postulate).
 
 For any number field `K`, infinitely many rational primes split completely
