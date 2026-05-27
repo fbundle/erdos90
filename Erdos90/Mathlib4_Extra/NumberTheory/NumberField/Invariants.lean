@@ -266,6 +266,26 @@ theorem real_exp_one_gt_two : (2 : ℝ) < Real.exp 1 :=
 theorem real_exp_one_lt_three : Real.exp 1 < 3 :=
   lt_trans Real.exp_one_lt_d9 (by norm_num)
 
+/-- `log 2 > 0.6931471803` (9 decimal digits).
+
+PROVED Lean: direct citation of Mathlib's `Real.log_two_gt_d9`. -/
+theorem real_log_two_gt_d9 : (0.6931471803 : ℝ) < Real.log 2 :=
+  Real.log_two_gt_d9
+
+/-- `log 2 < 0.6931471808` (9 decimal digits).
+
+PROVED Lean: direct citation of Mathlib's `Real.log_two_lt_d9`. -/
+theorem real_log_two_lt_d9 : Real.log 2 < 0.6931471808 :=
+  Real.log_two_lt_d9
+
+/-- `log 2 > 0`.  Useful sanity bound for log-based estimates. -/
+theorem real_log_two_pos : 0 < Real.log 2 :=
+  Real.log_pos (by norm_num)
+
+/-- `log 2 < 1`.  Useful upper bound. -/
+theorem real_log_two_lt_one : Real.log 2 < 1 :=
+  lt_trans Real.log_two_lt_d9 (by norm_num)
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
