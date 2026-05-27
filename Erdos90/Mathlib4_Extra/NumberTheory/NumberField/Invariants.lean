@@ -286,6 +286,25 @@ theorem real_log_two_pos : 0 < Real.log 2 :=
 theorem real_log_two_lt_one : Real.log 2 < 1 :=
   lt_trans Real.log_two_lt_d9 (by norm_num)
 
+/-! ### Real.sqrt sanity wrappers -/
+
+/-- `√1 = 1`. -/
+theorem real_sqrt_one : Real.sqrt 1 = 1 := Real.sqrt_one
+
+/-- `√0 = 0`. -/
+theorem real_sqrt_zero : Real.sqrt 0 = 0 := Real.sqrt_zero
+
+/-- `√4 = 2`. -/
+theorem real_sqrt_four : Real.sqrt 4 = 2 := by
+  rw [show (4 : ℝ) = 2^2 by norm_num, Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2)]
+
+/-- `√9 = 3`. -/
+theorem real_sqrt_nine : Real.sqrt 9 = 3 := by
+  rw [show (9 : ℝ) = 3^2 by norm_num, Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 3)]
+
+/-- `0 < √x` iff `0 < x` (positive sqrt is positive). -/
+theorem real_sqrt_pos {x : ℝ} : 0 < Real.sqrt x ↔ 0 < x := Real.sqrt_pos
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
