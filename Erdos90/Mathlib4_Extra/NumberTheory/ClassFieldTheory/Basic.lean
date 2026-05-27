@@ -1333,6 +1333,21 @@ theorem card_gal_hcf_cyclotomic_three_eq_one
   rw [this]
   exact NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.three_pid (K := K))
 
+/-- `ℚ(ζ_3)` is a CM field.
+
+PROVED Lean: direct citation of Mathlib's
+`IsCyclotomicExtension.Rat.isCMField` applied with `S = {3}` and `n = 3`. -/
+theorem cyclotomic_three_isCMField
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.IsCMField K :=
+  IsCyclotomicExtension.Rat.isCMField (S := {3}) K ⟨3, by simp, by decide⟩
+
+/-- `ℚ(ζ_5)` is a CM field. -/
+theorem cyclotomic_five_isCMField
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.IsCMField K :=
+  IsCyclotomicExtension.Rat.isCMField (S := {5}) K ⟨5, by simp, by decide⟩
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
