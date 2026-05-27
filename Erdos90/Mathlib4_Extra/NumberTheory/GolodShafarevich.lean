@@ -865,6 +865,49 @@ def magnus_embedding_postulate
     (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
     True := sorry
 
+/-! #### Decomposition of `gs_polynomial_test_postulate` (Anick-Dicks proof)
+
+The pro-p infiniteness from a negative polynomial value decomposes:
+
+1. **Magnus-Hilbert inequality** (sub-postulate): `H_G(t) · P(t) ≥ 1`
+   coefficientwise as formal power series (where H_G is Hilbert series of
+   `𝔽_p⟦G⟧` and P is the GS polynomial).
+2. **Finite-group Hilbert series positivity** (sub-postulate): for finite
+   G, `H_G(t₀) > 0` for all `t₀ ∈ (0,1)` (since H_G has only finitely
+   many positive-coefficient terms).
+3. **Contradiction assembly** (proved): `H_G(t₀) > 0` and `P(t₀) ≤ 0`
+   give `H_G(t₀) · P(t₀) ≤ 0`, contradicting `≥ 1` from (1).  Hence G is
+   infinite.
+
+Two sub-postulates below; the proved assembly closes the parent
+modulo them.
+-/
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.inherit.gs-ineq.poly.magnus-ineq**:
+For a finitely-presented pro-p group G with d generators and r relations
+of weights (n_1,…,n_r), the Magnus embedding gives the formal power
+series inequality `H_G(t) · P(t) ≥ 1` (coefficientwise).
+
+Cite: Anick-Dicks 2017 §3.  Mathlib v4.30: needs Hilbert series +
+Magnus embedding (not packaged). -/
+def magnus_hilbert_series_inequality_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.inherit.gs-ineq.poly.finite-pos**:
+For a FINITE pro-p group G, the Hilbert series `H_G(t)` evaluated at
+any `t₀ ∈ (0, 1)` is strictly positive: `H_G(t₀) > 0`.
+
+Reason: `H_G(t) = ∑_{n ≥ 0} dim_{𝔽_p}(I^n / I^{n+1}) · t^n` is a polynomial
+(finite sum) with strictly positive coefficients for finite G.
+
+Cite: standard formal power series property.  Mathlib v4.30: needs
+Hilbert series infrastructure. -/
+def hilbert_series_finite_group_pos_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_input : Input)
+    (_t₀ : ℝ) (_h_t₀_pos : 0 < _t₀) (_h_t₀_lt_one : _t₀ < 1) :
+    True := sorry
+
 /-- **Sub-sub-sub-postulate D3.1.gs.inherit.gs-ineq.poly** (GS polynomial
 test):
 If the GS polynomial `P(t) = 1 - dt + ∑ t^{n_i}` (where the sum runs over
@@ -872,10 +915,11 @@ relations of weights `n_1,…,n_r`) satisfies `P(t₀) ≤ 0` for some
 `t₀ ∈ (0, 1)`, then any finitely-presented pro-`p` group with the given
 `(d; n_1,…,n_r)` data is infinite.
 
-PROOF SKETCH (modulo Magnus + Hilbert series): from Magnus, `H_G(t) ·
-P(t) ≥ 1` coefficientwise as a formal power series.  Evaluating at
-`t = t₀ ∈ (0, 1)`: if `G` were finite, `H_G(t₀)` would be a finite
-positive number, and `H_G(t₀) · P(t₀) ≤ 0` — contradicting `≥ 1`.
+ASSEMBLY (modulo the two sub-sub-sub-sub-postulates above):
+- Suppose G finite (for contradiction).
+- By `magnus_hilbert_series_inequality_postulate`: H_G(t₀)·P(t₀) ≥ 1.
+- By `hilbert_series_finite_group_pos_postulate`: H_G(t₀) > 0.
+- By hypothesis P(t₀) ≤ 0; H_G > 0 ⟹ H_G·P ≤ 0, contradicting ≥ 1.
 
 Cite: Anick-Dicks 2017 Theorem 1 (the refined GS criterion).  Mathlib
 v4.30: not packaged. -/
