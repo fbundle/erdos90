@@ -641,3 +641,19 @@ theorem pow_five_three : (5 : ℕ) ^ 3 = 125 := by decide
 
 /-- `2^10 = 1024`. -/
 theorem pow_two_ten : (2 : ℕ) ^ 10 = 1024 := by decide
+
+/-! ### Real.log composition -/
+
+/-- `log (exp x) = x` for all real x. -/
+theorem real_log_exp (x : ℝ) : Real.log (Real.exp x) = x := Real.log_exp x
+
+/-- `exp` and `log` cancel: `exp ∘ log = id` on positive reals. -/
+theorem real_exp_log_pos {x : ℝ} (hx : 0 < x) : Real.exp (Real.log x) = x :=
+  Real.exp_log hx
+
+/-- `Real.log` is strictly monotone on positive reals. -/
+theorem real_log_lt_log {x y : ℝ} (hx : 0 < x) (h : x < y) : Real.log x < Real.log y :=
+  Real.log_lt_log hx h
+
+/-- `Real.exp` is strictly monotone. -/
+theorem real_exp_strictMono : StrictMono Real.exp := Real.exp_strictMono
