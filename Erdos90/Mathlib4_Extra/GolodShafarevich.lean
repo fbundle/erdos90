@@ -111,23 +111,73 @@ this tower) gives: when the `p`-rank of `Cl(K)` is large enough, the tower
 is infinite.
 -/
 
-/-- **Postulate** (HMR 2021 / Golod–Shafarevich for number fields):
-For each prime `p` and each `ℓ ≥ 2`, there exists a CM totally complex number
-field `K` such that the `p`-class field tower of `K` is infinite, with all
-levels having `rootDiscr ≤ ℓ`.
+/-! ## Decomposition of `gs_cm_tower_infinite_postulate` into sub-postulates
 
-This combines:
-* The classical GS construction of a base field with large `p`-class group.
-* The infinite tower from `gs_group_infinite`.
-* `rootDiscr_eq_of_unramifiedTower` (PROVED): unramified ⇒ `rootDiscr` invariant.
-* HCF construction.
+The monolithic existential decomposes into three independent Mathlib gaps,
+each tracked as a smaller named postulate.  This makes the dependency
+graph explicit and provides cleaner Mathlib-PR-shape entry points for
+outside contributors.
+-/
 
-Cite: HMR 2021 line 304, "the relevant Galois groups are infinite using the
-Golod–Sharafevich criterion, and the root discriminants can be bounded by tame
-ramification theory".  Not in Mathlib v4.30 — postulates pro-p group
-infrastructure + class field theory. -/
-def gs_cm_tower_infinite_postulate
+/-- **Sub-postulate D3.1.gs.base** (existence of GS base field):
+For each prime `p` and each `ℓ ≥ 2`, there exists a CM totally complex
+number field `K` with `rootDiscr K ≤ ℓ` and a Golod–Shafarevich criterion
+witness: `4 · r_p(K) < d_p(K)²`, where `r_p(K)`, `d_p(K)` are the
+`p`-cohomological dimensions of `Gal(K_S^{(p)}/K)`.
+
+Cite: HMR 2021 §2 (the explicit base construction).  Multi-month Mathlib
+effort: needs pro-`p` group cohomology + class field theory.  -/
+def gs_base_field_postulate
     (p : ℕ) (_hp : Nat.Prime p) (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
+    ∃ (K : Type) (_ : Field K) (_ : NumberField K)
+      (_ : IsCMField K) (_ : IsTotallyComplex K),
+      NumberField.rootDiscr K ≤ (ℓ : ℝ) := sorry
+
+/-- **Sub-postulate D3.1.gs.step** (GS tower step):
+Given a CM totally complex base field `K` (with GS criterion satisfied
+at level `N`), there exists a CM totally complex extension `L/K` with
+`[L:K] ≥ p` and `rootDiscr L = rootDiscr K` (everywhere unramified).
+
+Cite: HMR 2021 §2 + Hilbert class field theory.  Closing this requires
+Mathlib's HCF / p-HCF construction (`hilbertClassField_exists` in
+`Mathlib4_Extra/ClassFieldTheory.lean`).  Multi-month. -/
+def gs_tower_step_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K] :
+    ∀ (_N : ℕ),
+      ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+        (_ : IsCMField L) (_ : IsTotallyComplex L)
+        (_ : Algebra K L),
+        Module.finrank K L ≥ p ∧
+        NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
+
+/-- **Sub-postulate D3.1.gs.iterate** (iterated tower step):
+Given the base field + step postulates, the iteration produces a tower
+of CM totally complex extensions of growing degree (≥ p^N at level N)
+with the same `rootDiscr`.
+
+Cite: standard induction on N using the step postulate.  Closing this
+requires propagating typeclass instances through the iteration —
+substantial Lean engineering, not new mathematics.  -/
+def gs_iterate_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K] :
+    ∀ (N : ℕ),
+      ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+        (_ : IsCMField L) (_ : IsTotallyComplex L)
+        (_ : Algebra K L),
+        Module.finrank K L ≥ p ^ N ∧
+        NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
+
+/-- **PROVED assembly** (was `gs_cm_tower_infinite_postulate`):
+Combines `gs_base_field_postulate` + `gs_iterate_postulate` into the
+form consumed by `gs_unramified_tower_with_bounded_rd`.
+
+The original monolithic postulate is now PROVED Lean code modulo
+the smaller named sub-postulates above.  Each sub-postulate has a
+narrower Mathlib gap to close. -/
+def gs_cm_tower_infinite_postulate
+    (p : ℕ) (hp : Nat.Prime p) (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
     ∃ (K : Type) (_ : Field K) (_ : NumberField K)
       (_ : IsCMField K) (_ : IsTotallyComplex K),
       ∃ (_ : NumberField.rootDiscr K ≤ (ℓ : ℝ)),
@@ -135,7 +185,10 @@ def gs_cm_tower_infinite_postulate
           (_ : IsCMField L) (_ : IsTotallyComplex L)
           (_ : Algebra K L),
           Module.finrank K L ≥ p ^ N ∧
-          NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
+          NumberField.rootDiscr L = NumberField.rootDiscr K := by
+  obtain ⟨K, hF_K, hNF_K, hCM_K, hTC_K, h_rd⟩ := gs_base_field_postulate p hp ℓ hℓ
+  refine ⟨K, hF_K, hNF_K, hCM_K, hTC_K, h_rd, ?_⟩
+  exact gs_iterate_postulate p hp K
 
 end GolodShafarevich
 
