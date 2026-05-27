@@ -260,8 +260,33 @@ def theta_K_plug_in_postulate
 /-- **D3.2b.zeta-FE.mellin** (Mellin = completed zeta):
 For `Re s > 1`, `Mellin (θ_K - 1)(s) = (Γ-factors)(s) · dedekindZeta K s`.
 
-Status: pure analytic manipulation modulo `theta_K_modular_postulate`. -/
+Status: pure analytic manipulation modulo `theta_K_modular_postulate`.
+
+DECOMPOSITION: 2 named pieces.
+1. **Gamma-as-Mellin** (1D bridge): `Γ(s) = Mellin (x ↦ exp(-x))(s)` —
+   PROVED in Mathlib as `GammaIntegral_eq_mellin`.
+2. **Theta-series integral** (assembly): combine Gamma-as-Mellin with the
+   exponential decay of θ_K - 1 to extract the L-series. -/
 def theta_K_mellin_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-- **D3.2b.zeta-FE.mellin.gamma-bridge** (Γ-function as a Mellin transform):
+For all `s : ℂ`, `GammaIntegral s = mellin (fun x ↦ Real.exp (-x)) s`
+(both sides are functions ℂ → ℂ, equality of the underlying functions).
+
+PROVED Lean: direct citation of Mathlib's `GammaIntegral_eq_mellin`. -/
+theorem theta_K_mellin_gamma_bridge_postulate :
+    Complex.GammaIntegral = mellin (fun x : ℝ ↦ (Real.exp (-x) : ℂ)) :=
+  Complex.GammaIntegral_eq_mellin
+
+/-- **D3.2b.zeta-FE.mellin.assembly** (Theta–Mellin assembly):
+Combine `theta_K_mellin_gamma_bridge_postulate` with the absolutely
+convergent expansion of `θ_K - 1 = ∑_{x ∈ 𝓞_K, x ≠ 0} exp(-π t ‖x‖²)`
+to derive `Mellin (θ_K - 1)(s) = (Γ-factors)(s) · ζ_K(s)` for Re s > 1.
+
+This is pure analytic manipulation modulo the Mellin–Gamma bridge above
+and exponential decay of the theta series. -/
+def theta_K_mellin_assembly_postulate
     (K : Type*) [Field K] [NumberField K] : True := sorry
 
 /-- **D3.2b.zeta-FE.fe-pair** (assemble WeakFEPair):
