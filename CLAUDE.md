@@ -50,19 +50,45 @@ Requires `leanprover/lean4:v4.30.0-rc2` and mathlib `master-2026-05-24`.  Build 
 
 The main theorem is proved modulo labelled `sorry` postulates that decompose into ever-smaller named sub-postulates.  See `grep -rn ":= sorry" Erdos90/` for the live list.
 
-### Proof path (load-bearing)
+### On-path (load-bearing — closing all of these = axiom-free theorem)
 
-- **`gs_cm_tower_infinite_postulate`** in `Mathlib4_Extra/GolodShafarevich.lean` — itself a proved assembly of `gs_base_field_postulate` (proved assembly of `gs_imagquad_with_p_rank_postulate` + `gs_cm_lift_postulate`) and `gs_iterate_postulate` (proved by induction modulo `gs_criterion_inherited_postulate` → `pHCF_p_dvd_classNumber_postulate`, etc.).
-- **`chebotarev_fixed_Q`** in `NumberFieldDeep_GSTower.lean` — Chebotarev/Ihara fixed split primes.  Tracked in `Mathlib4_Extra/Chebotarev.lean`.
+`brd_tower_data` is the gateway.  Its body calls three things, each pulling in a chain:
 
-### Off-path (Mathlib-PR-shaped, future work)
+1. **`hmr_brd_cm_tower`** → uses `gs_cm_tower` + `chebotarev_fixed_Q`
+   - `gs_cm_tower` → `gs_cm_tower_infinite_postulate` (in `Mathlib4_Extra/GolodShafarevich.lean`)
+     - decomposes into: `gs_base_field_postulate` (→ `gs_imagquad_with_p_rank_postulate`, `gs_cm_lift_postulate`) + `gs_iterate_postulate` (→ `gs_criterion_inherited_postulate` → `gs_tower_step_postulate` + `pHCF_p_dvd_classNumber_postulate`)
+     - leaf sorries: genus theory chain, Scholz-Reichardt chain, CM-lift chain, pHCF degree/CM/iso/descent chain, GS-inequality chain (Anick-Dicks Magnus / Hilbert series)
+   - `chebotarev_fixed_Q` → `splitPrimes_density_postulate` (→ Artin L-function chain: existence, meromorphic continuation via Brauer induction + Tate's thesis, non-vanishing on Re(s)=1, Wiener-Ikehara density)
 
-- `regulator_lower_bound_cm` (Friedman 1989) — proved modulo `friedman_regulator_lower_bound_postulate`; `zimmert_regulator_lower_bound_postulate` is the alternate weaker route.
-- `dedekind_residue_upper_bound_cm` (Louboutin 2000) — decomposed into `dedekindZeta_functional_equation_postulate` + `phragmen_lindelof_zeta_postulate`.
-- `hilbertClassField_exists` / `hilbertPClassField_exists` postulates in `Mathlib4_Extra/ClassFieldTheory.lean`.
-- `nat_le_four_mul_totient_sq` (n ≥ 17 case) — pure-Nat Mathlib PR target.
+2. **`class_num_bound_of_brd`** (PROVED Lean assembly) — uses Friedman/Louboutin/torsion chain.  **These ARE on-path now** (the assembly is wired in):
+   - `regulator_lower_bound_cm` (proved modulo `friedman_regulator_lower_bound_postulate` → `zeta_K_at_zero_postulate` (Stark/Tate) + `friedman_zeta_zero_bound_postulate`)
+   - `dedekind_residue_upper_bound_cm` (decomposed into `dedekindZeta_functional_equation_postulate` (→ multi-dim Poisson + θ_K modular + Mellin + WeakFEPair) + `phragmen_lindelof_zeta_postulate`)
+   - `torsionOrder_bound` (PROVED Lean)
+   - `classNumber_eq_residue_formula` (PROVED Lean)
 
 `brd_tower_data` is **proved Lean code** assembling these.  Phase D4 closed the `log_H ≥ 2 · log(2 · rd_F)` threshold by threading the hypothesis from `BRDTowerData.getTowerLevel` up to `exists_admissible_family` (which proves it via `C_class = 1`).
+
+### Off-path (NOT depended on by `erdos_unit_distance_false`)
+
+These files contain decomposition/scaffolding for the broader CFT landscape but are NOT in the dependency closure of the main theorem.  They live in `Mathlib4_Extra/` as Mathlib-PR-shaped infrastructure:
+
+- `hilbertClassField_exists` (full HCF) — only `hilbertPClassField_exists` (the p-version) is on-path via `gs_tower_step_postulate`
+- `hilbert_principal_ideal_postulate` (Hilbert 94) + transfer chain
+- `isCMField_postulate` (HCF CM preservation, full version) — only `pHCF_isCMField_postulate` is on-path
+- `cm_max_real_subfield_postulate` and friends in `ClassFieldTheory.lean` (proved, but not used by main theorem)
+- `iwasawa_main_conjecture_postulate` + Mazur-Wiles chain — `Iwasawa.lean`, `SelmerGroup.lean`
+- `hasseBrauerNoether_postulate` — `BrauerGroup.lean`
+- `cubic_reciprocity_postulate`, `biquadratic_reciprocity_postulate` — `ReciprocityLaws.lean`
+- `stickelberger_annihilator_postulate` — `Stickelberger.lean`
+- `lubinTate_artin_map_postulate` chain — `LubinTate.lean`
+- `hilbert_product_formula_postulate` — `HilbertSymbol.lean`
+- `globalArtinMap_postulate`/`localArtinMap_postulate` chains — `GlobalCFT.lean`, `LocalCFT.lean`
+- `tate_formula_postulate`, `GS_inequality_postulate` — `ProPGalois.lean`
+- `conductor_postulate` (closed with placeholder), `Conductor.lean`
+- `NormGroup.lean` (`index_eq_finrank_postulate`)
+- `nat_le_four_mul_totient_sq` is now PROVED (E13 chain)
+
+**Going forward**: focus closure effort on the on-path chain.  Off-path decompositions are documentation only — closing them doesn't reduce `erdos_unit_distance_false`'s axiom dependency.
 
 ### Proof flow
 
