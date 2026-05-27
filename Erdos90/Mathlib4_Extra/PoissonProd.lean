@@ -414,10 +414,86 @@ theorem tsum_partialFourier_eq_fourier2D (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
   refine tsum_congr (fun m => ?_)
   exact fourier_partialFourier_eq_fourier2D f n m
 
+/-! ## WithLp 2 transport: 2-D Fourier of Schwartz IS Schwartz
+
+We can transport a Schwartz function on `ℝ × ℝ` (Prod = L∞-norm) to a
+Schwartz function on `WithLp 2 (ℝ × ℝ)` (L²-norm = inner product space)
+via Mathlib's `WithLp.prodContinuousLinearEquiv`.  Then Mathlib's
+`SchwartzMap.fourierTransformCLM` (the 2-D Fourier as a Schwartz
+endomorphism) applies, giving a Schwartz function on `WithLp 2`.
+Transporting back gives a Schwartz function on `ℝ × ℝ` whose values
+match `fourier2D f`.
+
+This closes `summable_fourier2D_postulate` via `summable_2d_schwartz_proved`
+applied to the transported function.
+-/
+
+/-- Transport `f : 𝓢(ℝ × ℝ, ℂ)` to a Schwartz function on `WithLp 2 (ℝ × ℝ)`. -/
+noncomputable def schwartzWithLp (f : 𝓢(ℝ × ℝ, ℂ)) :
+    𝓢(WithLp 2 (ℝ × ℝ), ℂ) :=
+  SchwartzMap.compCLMOfContinuousLinearEquiv ℝ
+    (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ) f
+
+@[simp] theorem schwartzWithLp_apply (f : 𝓢(ℝ × ℝ, ℂ))
+    (v : WithLp 2 (ℝ × ℝ)) :
+    (schwartzWithLp f : WithLp 2 (ℝ × ℝ) → ℂ) v =
+      (f : ℝ × ℝ → ℂ) (WithLp.ofLp v) := by
+  simp [schwartzWithLp]
+
+/-- The full 2-D Fourier of f, packaged as a Schwartz function on `ℝ × ℝ`.
+
+Defined by going through `WithLp 2 (ℝ × ℝ)`: transport f to WithLp,
+apply Mathlib's `SchwartzMap.fourierTransformCLM`, then transport back. -/
+noncomputable def fourier2DSchwartz (f : 𝓢(ℝ × ℝ, ℂ)) :
+    𝓢(ℝ × ℝ, ℂ) :=
+  SchwartzMap.compCLMOfContinuousLinearEquiv ℝ
+    (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).symm
+    (SchwartzMap.fourierTransformCLM ℝ (schwartzWithLp f))
+
+/-- Values of `fourier2DSchwartz f` match `fourier2D f`. -/
+theorem fourier2DSchwartz_apply (f : 𝓢(ℝ × ℝ, ℂ)) (p : ℝ × ℝ) :
+    (fourier2DSchwartz f : ℝ × ℝ → ℂ) p = fourier2D f p.1 p.2 := by
+  show (𝓕 ((schwartzWithLp f : 𝓢(WithLp 2 (ℝ × ℝ), ℂ)) :
+      WithLp 2 (ℝ × ℝ) → ℂ))
+    ((WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).symm p) = fourier2D f p.1 p.2
+  rw [fourier_eq' ((schwartzWithLp f : 𝓢(WithLp 2 (ℝ × ℝ), ℂ)) :
+    WithLp 2 (ℝ × ℝ) → ℂ)
+    ((WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).symm p)]
+  unfold fourier2D
+  have hMP : MeasureTheory.MeasurePreserving
+      (@WithLp.toLp 2 (ℝ × ℝ)) :=
+    WithLp.volume_preserving_toLp (U := ℝ) (V := ℝ)
+  have hME : MeasurableEmbedding (@WithLp.toLp 2 (ℝ × ℝ)) :=
+    (MeasurableEquiv.toLp 2 (ℝ × ℝ)).measurableEmbedding
+  rw [← hMP.integral_comp hME
+      (fun v : WithLp 2 (ℝ × ℝ) =>
+        Complex.exp (((-2 * π * inner ℝ v
+          ((WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).symm p) : ℝ) : ℂ) * Complex.I) •
+          (schwartzWithLp f : WithLp 2 (ℝ × ℝ) → ℂ) v)]
+  refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun q => ?_)
+  simp only [smul_eq_mul, schwartzWithLp_apply]
+  have h_inner : (inner ℝ ((@WithLp.toLp 2 (ℝ × ℝ)) q)
+      ((WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).symm p) : ℝ) =
+      q.1 * p.1 + q.2 * p.2 := by
+    simp [WithLp.prod_inner_apply, RCLike.inner_apply, mul_comm]
+  show Complex.exp (((-2 * π * inner ℝ ((@WithLp.toLp 2 (ℝ × ℝ)) q)
+      ((WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).symm p) : ℝ) : ℂ) * Complex.I) *
+      (f : ℝ × ℝ → ℂ) (WithLp.ofLp ((@WithLp.toLp 2 (ℝ × ℝ)) q)) =
+    Complex.exp (-(2 * Real.pi * (p.1 * q.1 + p.2 * q.2)) * Complex.I) *
+      (f : ℝ × ℝ → ℂ) (q.1, q.2)
+  rw [h_inner]
+  have h_ofLp_toLp : (WithLp.ofLp ((@WithLp.toLp 2 (ℝ × ℝ)) q)) = q := rfl
+  rw [h_ofLp_toLp]
+  conv_lhs => rw [show q = (q.1, q.2) from Prod.mk.eta.symm]
+  congr 1
+  push_cast
+  ring
+
 /-! ## Towards full 2-D Schwartz Poisson summation
 
 We can now restate the row-Poisson chain in terms of `partialFourier`,
-then express the full 2-D Poisson identity modulo two Fubini swaps.
+then express the full 2-D Poisson identity modulo one remaining Fubini swap.
+The other Fubini swap is now CLOSED via `fourier2DSchwartz_apply`.
 -/
 
 /-- **Postulate** (summability of the partial-Fourier on `ℤ × ℤ`): the
@@ -432,17 +508,6 @@ Not in Mathlib v4.30 for `ℝ × ℝ`. -/
 def summable_partialFourier_2d_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
     Summable (Function.uncurry
       fun m n : ℤ => (partialFourier f n : ℝ → ℂ) m) := sorry
-
-/-- **Postulate** (summability of `fourier2D` on `ℤ × ℤ`): the function
-`(m, n) ↦ fourier2D f m n` is summable on `ℤ × ℤ`.
-
-TRUE: the full 2-D Fourier of a Schwartz function on `ℝ × ℝ` is itself
-Schwartz on `ℝ × ℝ` (Plancherel); summability on `ℤ × ℤ` follows from
-Schwartz decay.
-
-Cite: Stein–Shakarchi Ch. 4.  Not in Mathlib v4.30. -/
-def summable_fourier2D_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
-    Summable (Function.uncurry fun m n : ℤ => fourier2D f m n) := sorry
 
 /-- Mathlib's `EisensteinSeries.summable_one_div_norm_rpow` applied to k=3:
 the `‖·‖^(-3)` series is summable over `Fin 2 → ℤ`.
@@ -544,6 +609,21 @@ theorem summable_norm_2d_schwartz (f : 𝓢(ℝ × ℝ, ℂ)) :
     rw [norm_prod_int_eq, norm_finTwoArrow_symm_eq]
   -- Apply summable_of_isBigO with .norm_left for absolute summability
   exact summable_of_isBigO h_summ_bound h_decay_int.norm_left
+
+/-- **CLOSED** (formerly `summable_fourier2D_postulate`): summability of
+`fourier2D f` on `ℤ × ℤ`.
+
+PROVED via `fourier2DSchwartz f` (PROVED Schwartz function on `ℝ × ℝ` whose
+values match `fourier2D f`) + `summable_2d_schwartz_proved` (the absolute
+2-D summability of any Schwartz function on `ℤ × ℤ`).  -/
+theorem summable_fourier2D (f : 𝓢(ℝ × ℝ, ℂ)) :
+    Summable (Function.uncurry fun m n : ℤ => fourier2D f m n) := by
+  have h := summable_2d_schwartz_proved (fourier2DSchwartz f)
+  refine h.congr (fun p => ?_)
+  show (fourier2DSchwartz f : ℝ × ℝ → ℂ) (↑p.1, ↑p.2) =
+      Function.uncurry (fun m n : ℤ => fourier2D f m n) p
+  rw [fourier2DSchwartz_apply]
+  rfl
 
 /-! ## Summability via partial summability (PROVED)
 
@@ -692,14 +772,14 @@ theorem tsum_2d_schwartz_poisson (f : 𝓢(ℝ × ℝ, ℂ)) :
   have h_swap : (∑' n : ℤ, ∑' m : ℤ, fourier2D f m n) =
       ∑' m : ℤ, ∑' n : ℤ, fourier2D f m n :=
     Summable.tsum_comm (f := fun m n : ℤ => fourier2D f m n)
-      (summable_fourier2D_postulate f)
+      (summable_fourier2D f)
   rw [h_swap]
   -- Step 5: ∑' m, ∑' n, fourier2D f m n = ∑' p : ℤ × ℤ, fourier2D f p.1 p.2
   -- via Summable.tsum_prod (in reverse).
   have h_prod : (∑' p : ℤ × ℤ, fourier2D f p.1 p.2) =
       ∑' m : ℤ, ∑' n : ℤ, fourier2D f m n := by
     have h := Summable.tsum_prod (f := Function.uncurry
-      fun m n : ℤ => fourier2D f m n) (summable_fourier2D_postulate f)
+      fun m n : ℤ => fourier2D f m n) (summable_fourier2D f)
     -- h : ∑' p, uncurry F p = ∑' m, ∑' n, uncurry F (m, n)
     -- The LHS pattern is `∑' p, uncurry F p` = `∑' p, F p.1 p.2`
     -- which matches our target.
@@ -878,5 +958,6 @@ def tsum_eq_tsum_fourier_multi_postulate
     (∑' (n : Fin d → ℤ),
       𝓕 (f : EuclideanSpace ℝ (Fin d) → ℂ)
         ((EuclideanSpace.equiv (Fin d) ℝ).symm (fun i => (n i : ℝ)))) := sorry
+
 
 end SchwartzMap
