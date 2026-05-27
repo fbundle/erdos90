@@ -204,6 +204,16 @@ theorem T_set_inter_S_set_card : (T_set ∩ S_set).card = 9 := by decide
 /-- `T_set ∪ S_set` has 26 elements (13 + 22 - 9 by inclusion-exclusion). -/
 theorem T_set_union_S_set_card : (T_set ∪ S_set).card = 26 := by decide
 
+/-- `T_set \ S_set` has 4 elements: {31, 37, 41, 43}. -/
+theorem T_set_diff_S_set_card : (T_set \ S_set).card = 4 := by decide
+
+/-- `S_set \ T_set` has 13 elements: {2, 47, 71, 79, 97, 101, 107, 109,
+139, 151, 163, 167, 179}. -/
+theorem S_set_diff_T_set_card : (S_set \ T_set).card = 13 := by decide
+
+/-- `31 ∈ T_set \ S_set` (smallest element of T not in S). -/
+theorem T_diff_S_thirty_one_mem : 31 ∈ T_set \ S_set := by decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
