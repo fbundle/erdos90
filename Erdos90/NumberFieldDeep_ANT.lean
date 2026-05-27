@@ -152,6 +152,15 @@ theorem rd_KF_ge_one : 1 ≤ rd_KF := by
   have h : (1 : ℝ) ≤ (D_val : ℝ) := by exact_mod_cast D_val_pos
   linarith
 
+/-- `rd_KF ≥ 2` (since 4·D_val ≥ 4, so rd_KF ≥ √4 = 2). -/
+theorem rd_KF_ge_two : 2 ≤ rd_KF := by
+  unfold rd_KF
+  rw [show (2 : ℝ) = Real.sqrt 4 by
+    rw [show (4 : ℝ) = 2^2 by norm_num, Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2)]]
+  apply Real.sqrt_le_sqrt
+  have h : (1 : ℝ) ≤ (D_val : ℝ) := by exact_mod_cast D_val_pos
+  linarith
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
