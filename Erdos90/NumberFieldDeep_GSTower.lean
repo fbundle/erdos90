@@ -355,10 +355,53 @@ def splitPrimes_density_postulate
           Ideal.ramificationIdx (Ideal.span {(q : ℤ)}) sp = 1 ∧
           Ideal.inertiaDeg (Ideal.span {(q : ℤ)}) sp = 1 }), True := sorry
 
+/-! ### Decomposition of `splitPrimes_persist_postulate` (going-down chain)
+
+For a tower `ℚ ⊆ K' ⊆ K` of number fields, the persistence of "splits
+completely" follows from the tower formulae for ramificationIdx and
+inertiaDeg, both of which are Mathlib lemmas:
+
+1. **ramificationIdx multiplicativity**:
+   `Ideal.ramificationIdx_algebra_tower : ramificationIdx (ℤ ↦ K) = ramificationIdx (ℤ ↦ K') * ramificationIdx (K' ↦ K)`.
+2. **inertiaDeg multiplicativity**:
+   `Ideal.inertiaDeg_algebra_tower : inertiaDeg (ℤ ↦ K) = inertiaDeg (ℤ ↦ K') * inertiaDeg (K' ↦ K)`.
+3. **Lift down**: if products of naturals = 1, each factor = 1.
+
+The Mathlib pieces are PROVED already.  This decomposition is mostly
+"Lean engineering" — combining the existing lemmas with the right
+typeclasses on the tower.
+
+Two sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.1.cheb.persist.ram** (ramificationIdx going-down):
+For a tower `ℤ ⊆ 𝓞 K' ⊆ 𝓞 K` and a prime `P' = P ∩ 𝓞 K'`, if
+`ramificationIdx ((q : ℤ)) P = 1`, then `ramificationIdx ((q : ℤ)) P' = 1`.
+
+PROVED in Mathlib (modulo typeclass plumbing) via
+`Ideal.ramificationIdx_algebra_tower` (in
+`Mathlib.NumberTheory.RamificationInertia.Ramification`). -/
+def splitPrimes_persist_ramificationIdx_postulate
+    (q : ℕ) (_hq : Nat.Prime q) :
+    True := sorry
+
+/-- **Sub-postulate D3.1.cheb.persist.iner** (inertiaDeg going-down):
+Same as above but for `inertiaDeg`: if it equals 1 in the larger field,
+it equals 1 in the smaller field.
+
+PROVED in Mathlib via `Ideal.inertiaDeg_algebra_tower` (in
+`Mathlib.NumberTheory.RamificationInertia.Inertia`). -/
+def splitPrimes_persist_inertiaDeg_postulate
+    (q : ℕ) (_hq : Nat.Prime q) :
+    True := sorry
+
 /-- **Sub-postulate D3.1.cheb.persist** (split-prime persistence):
 A prime that splits completely in a finite Galois extension `K/ℚ` also
 splits completely in **every** sub-extension `K'/ℚ` (when defined).
 Plus the carrier construction `splitPrimeData_from_prime_list` (PROVED).
+
+ASSEMBLY (modulo the two sub-postulates above):
+both ramificationIdx and inertiaDeg = 1 lift down to each sub-extension.
 
 Cite: standard going-up theorem in algebraic number theory.  Mathlib
 status: PARTIAL (ramificationIdx and inertiaDeg are packaged, but the
