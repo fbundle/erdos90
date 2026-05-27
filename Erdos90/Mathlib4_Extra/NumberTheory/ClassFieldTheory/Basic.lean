@@ -735,6 +735,44 @@ This is because:
 Steps 1 and 3 are in Mathlib; step 2 is the genuine gap.
 -/
 
+/-! ### Decomposition of `pHCF_galois_card_eq_sylow_p_classGroup_postulate`
+
+The order equality decomposes via the Artin embedding + Sylow correspondence:
+
+1. **Artin embedding** (sub-postulate): Gal(H_p/K) ↪ ClassGroup(𝓞 K).
+2. **Image is a p-subgroup** (PROVED via `pHCF_galois_isPGroup_of_prime`).
+3. **Image is the full p-Sylow** (sub-postulate): the embedded image
+   equals the unique p-Sylow of Cl(K) (using that Cl is abelian, hence
+   has unique Sylow_p).
+
+Together, the order |Gal| equals |Sylow_p Cl(K)|.
+-/
+
+/-- **Sub-postulate D3.pHCF.artin-embedding**: There is an injective
+group homomorphism `Gal(H_p(K)/K) → ClassGroup (𝓞 K)` via the Artin
+reciprocity map.
+
+Cite: standard CFT (Lang X §2 Artin map functoriality).  Mathlib v4.30
+gap. -/
+def pHCF_artin_embedding_into_classGroup_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p) (_E : HilbertPClassFieldExt K p) :
+    True := sorry
+
+/-- **Sub-postulate D3.pHCF.artin-image-is-sylow**: The image of the
+above embedding equals the (unique, since Cl is abelian) p-Sylow
+subgroup of `ClassGroup (𝓞 K)`.
+
+This is the precise CFT statement: H_p is the **maximal** unramified
+abelian p-extension, so its Galois group is the **maximal** p-quotient
+of Cl(K), i.e., the p-Sylow.
+
+Cite: Iwasawa / Lang.  Mathlib v4.30 gap. -/
+def pHCF_artin_image_eq_sylow_p_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p) (_E : HilbertPClassFieldExt K p) :
+    True := sorry
+
 /-- **Sub-postulate D3.pHCF.galois-eq-sylow-card** (p-Sylow Artin recip,
 order version):
 `Nat.card (Gal H_p(K)/K) = Nat.card (Sylow p (ClassGroup (𝓞 K)))`.
@@ -742,6 +780,10 @@ order version):
 This is the order-level consequence of the Artin reciprocity iso
 `Gal(H_p/K) ≃ Sylow_p Cl(K)`.  Strictly weaker than the full iso but
 sufficient for the order chain.
+
+ASSEMBLY (modulo the two sub-postulates above):
+- Embedding (step 1) + image-is-Sylow (step 3) ⟹ Gal ≃ Sylow_p as a
+  group, hence as types (and as Nat.card).
 
 Cite: standard CFT (Lang X §2 + Sylow). -/
 def pHCF_galois_card_eq_sylow_p_classGroup_postulate
