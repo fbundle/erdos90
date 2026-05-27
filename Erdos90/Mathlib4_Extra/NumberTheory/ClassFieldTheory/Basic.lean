@@ -1443,6 +1443,28 @@ theorem cyclotomic_five_nrRealPlaces
     NumberField.InfinitePlace.nrRealPlaces K = 0 :=
   IsCyclotomicExtension.Rat.nrRealPlaces_eq_zero (n := 5) K (by decide)
 
+/-- The p-HCF of `ℚ(ζ_3)` is itself CM (since `ℚ(ζ_3)` has class number 1,
+the p-HCF equals `ℚ(ζ_3)` itself, which is CM).
+
+PROVED Lean: combine `cyclotomic_three_isCMField` (CM-ness of ℚ(ζ_3))
+with the identity p-HCF construction. -/
+theorem cyclotomic_three_pHCF_isCMField
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K]
+    (p : ℕ) :
+    haveI : IsCMField K := cyclotomic_three_isCMField K
+    IsCMField (HilbertPClassFieldExt.cyclotomic_three p K).H_p := by
+  haveI : IsCMField K := cyclotomic_three_isCMField K
+  exact inferInstanceAs (IsCMField K)
+
+/-- The p-HCF of `ℚ(ζ_5)` is itself CM. -/
+theorem cyclotomic_five_pHCF_isCMField
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K]
+    (p : ℕ) :
+    haveI : IsCMField K := cyclotomic_five_isCMField K
+    IsCMField (HilbertPClassFieldExt.cyclotomic_five p K).H_p := by
+  haveI : IsCMField K := cyclotomic_five_isCMField K
+  exact inferInstanceAs (IsCMField K)
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
