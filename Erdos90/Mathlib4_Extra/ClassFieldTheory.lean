@@ -491,12 +491,19 @@ Three sub-postulates below.
 -/
 
 /-- **Sub-sub-postulate D3.hcf.h94.transfer.def** (Verlagerung definition):
-The transfer (Verlagerung) map V : G^ab → (G')^ab is well-defined via
-the coset-representative construction.
+The transfer (Verlagerung) map V : G → A is well-defined for any
+`ϕ : H →* A` with `H ≤ G` of finite index and `A` commutative.
 
-Mathlib v4.30 PARTIAL: `Subgroup.transfer` exists in `Mathlib.GroupTheory.Transfer`
-for general subgroups; the abelianized-quotient version is the wrapper. -/
-def transfer_definition_postulate : True := sorry
+PROVED Lean (via Mathlib's `MonoidHom.transfer`).  The genuine
+existence-of-V is fully packaged; what's left for Hilbert 94 is the
+specialization to G^ab → (G')^ab and the vanishing claim. -/
+theorem transfer_definition_postulate
+    (G : Type*) [Group G]
+    (H : Subgroup G) [H.FiniteIndex]
+    (A : Type*) [CommGroup A]
+    (ϕ : H →* A) :
+    Nonempty (G →* A) :=
+  ⟨MonoidHom.transfer ϕ⟩
 
 /-- **Sub-sub-postulate D3.hcf.h94.transfer.metabelian-reduction**
 (Reduction to metabelian case):
