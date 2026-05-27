@@ -191,15 +191,52 @@ This is the assembly of `gs_tower_step_postulate` +
 mostly Lean engineering (typeclass propagation through iteration); once
 both step + inheritance are in Mathlib, this iteration is "just" induction. -/
 def gs_iterate_postulate
-    (p : ℕ) (_hp : Nat.Prime p)
+    (p : ℕ) (hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
-    (_h_p_dvd_cn : p ∣ NumberField.classNumber K) :
+    (h_p_dvd_cn : p ∣ NumberField.classNumber K) :
     ∀ (N : ℕ),
       ∃ (L : Type) (_ : Field L) (_ : NumberField L)
         (_ : IsCMField L) (_ : IsTotallyComplex L)
         (_ : Algebra K L),
         Module.finrank K L ≥ p ^ N ∧
-        NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
+        NumberField.rootDiscr L = NumberField.rootDiscr K := by
+  -- Strengthen: induction with the auxiliary `p ∣ classNumber L` carried through.
+  suffices h : ∀ (N : ℕ),
+      ∃ (L : Type) (_ : Field L) (_ : NumberField L)
+        (_ : IsCMField L) (_ : IsTotallyComplex L)
+        (_ : Algebra K L),
+        Module.finrank K L ≥ p ^ N ∧
+        NumberField.rootDiscr L = NumberField.rootDiscr K ∧
+        p ∣ NumberField.classNumber L by
+    intro N
+    obtain ⟨L, hF, hNF, hCM, hTC, hAlg, h1, h2, _⟩ := h N
+    exact ⟨L, hF, hNF, hCM, hTC, hAlg, h1, h2⟩
+  intro N
+  induction N with
+  | zero =>
+    refine ⟨K, inferInstance, inferInstance, inferInstance, inferInstance,
+            Algebra.id K, ?_, rfl, h_p_dvd_cn⟩
+    simp
+  | succ n ih =>
+    obtain ⟨L_n, hFL, hNFL, hCML, hTCL, hAlgL, hf_n, hrd_n, hdvd_n⟩ := ih
+    -- Apply gs_criterion_inherited_postulate to L_n to get L_{n+1} over L_n
+    obtain ⟨L_succ, hFL', hNFL', hCML', hTCL', hAlgL'_n, hf_step, hrd_step, hdvd_step⟩ :=
+      gs_criterion_inherited_postulate p hp L_n hdvd_n
+    -- Compose Algebra K L_n + Algebra L_n L_succ → Algebra K L_succ via RingHom composition
+    letI : Algebra K L_succ := RingHom.toAlgebra
+      ((algebraMap L_n L_succ).comp (algebraMap K L_n))
+    refine ⟨L_succ, hFL', hNFL', hCML', hTCL', inferInstance, ?_, ?_, hdvd_step⟩
+    · -- finrank K L_succ = finrank K L_n * finrank L_n L_succ ≥ p^n * p = p^(n+1)
+      letI : IsScalarTower K L_n L_succ := IsScalarTower.of_algebraMap_eq fun x => by
+        change algebraMap L_n L_succ (algebraMap K L_n x) = _
+        rfl
+      have h_tower : Module.finrank K L_succ = Module.finrank K L_n * Module.finrank L_n L_succ :=
+        (Module.finrank_mul_finrank K L_n L_succ).symm
+      calc Module.finrank K L_succ = Module.finrank K L_n * Module.finrank L_n L_succ := h_tower
+        _ ≥ p ^ n * p := Nat.mul_le_mul hf_n hf_step
+        _ = p ^ (n + 1) := by ring
+    · -- rootDiscr L_succ = rootDiscr L_n = rootDiscr K
+      rw [hrd_step, hrd_n]
 
 /-- **PROVED assembly** (was `gs_cm_tower_infinite_postulate`):
 Combines `gs_base_field_postulate` + `gs_iterate_postulate` into the
