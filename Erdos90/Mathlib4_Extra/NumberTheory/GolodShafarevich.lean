@@ -1160,6 +1160,21 @@ lemma gs_quadratic_polynomial_negative
     linarith
   linarith
 
+/-- **Concrete GS instance** (PROVED): for `d = 13, r = 36`, GS holds:
+`4 · 36 = 144 < 169 = 13²`.
+
+This is the smallest concrete `(d, r)` satisfying strict GS that exceeds
+the Sawin parameters `d ≥ 12, r ≤ 36`. -/
+theorem gs_concrete_13_36 : 4 * 36 < (13 : ℕ) ^ 2 := by decide
+
+/-- **Concrete GS instance** (PROVED): for `d = 14, r = 48`, GS holds:
+`4 · 48 = 192 < 196 = 14²`. -/
+theorem gs_concrete_14_48 : 4 * 48 < (14 : ℕ) ^ 2 := by decide
+
+/-- **Sawin boundary** (PROVED): for `d = 12, r = 36`, GS is NOT strict:
+`4 · 36 = 144 = 12²` (equality, not strict). -/
+theorem gs_sawin_boundary : 4 * 36 = (12 : ℕ) ^ 2 := by decide
+
 /-- **Sub-sub-postulate D3.1.gs.inherit.gs-ineq** (GS algebraic inequality):
 The fundamental Golod-Shafarevich-Anick-Dicks inequality: if a finitely-
 presented pro-`p` group `G` satisfies `4·r < d²` where `d = dim H¹(G, 𝔽_p)`
