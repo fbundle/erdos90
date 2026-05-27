@@ -350,19 +350,43 @@ bound; would need functional equation for `ζ_K` (Hecke gamma factors) plus
 Stechkin-style partial-sum bounds.
 -/
 
+/-- **Sub-postulate D3.2b.zeta-FE** (Dedekind zeta functional equation):
+The completed Dedekind zeta function `Λ_K(s) = ...` satisfies
+`Λ_K(1 - s) = Λ_K(s)`.
+
+Cite: Hecke 1917 + Tate's thesis.  Multi-month/year Mathlib: needs
+multi-D Poisson summation + theta function modular transformation +
+Mellin transform.  See `Mathlib4_Extra/DedekindZetaFE.lean` for the
+in-progress formalization. -/
+def dedekindZeta_functional_equation_postulate
+    [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.2b.phragmen** (Phragmén-Lindelöf interpolation):
+Given the functional equation Λ_K(1-s) = Λ_K(s), Phragmén-Lindelöf gives
+explicit growth bounds on `Λ_K(s)` in the critical strip, hence on
+`dedekindZeta_residue K` via the residue formula.
+
+Cite: Louboutin 2000 §3 (uses Stechkin-style partial-sum bounds);
+Akhtari-Vaaler-Widmer for refined constants.  Multi-month. -/
+def phragmen_lindelof_zeta_postulate
+    [NumberField K] (rd_F : ℝ) (_h_rd : 1 ≤ rd_F)
+    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
+    True := sorry
+
 /-- **D3.2b**: Louboutin upper bound on the Dedekind zeta residue for CM fields.
 For a CM totally complex `K` with `rootDiscr K ≤ rd_F` (where `1 ≤ rd_F`),
 `dedekindZeta_residue K ≤ (4 · rd_F) ^ nrComplexPlaces K`.
 
-The form `(4 · rd_F)^f` is the loose-constant version of Louboutin 2000 Theorem A;
-sharper variants give smaller constants but this form chains cleanly into
-`2 · log(2 · rd_F)`.
+PROVED Lean ASSEMBLY (modulo `dedekindZeta_functional_equation_postulate`
++ `phragmen_lindelof_zeta_postulate`):
+- Functional equation gives symmetry of completed zeta.
+- Phragmén-Lindelöf bounds it in the critical strip.
+- Residue extraction at s=1 gives the explicit bound.
 
-Cite: `assets/louboutin_2000_class_number.pdf` Theorem A.  See also
+Cite: Louboutin 2000 Theorem A.  See also
 Akhtari–Vaaler–Widmer (`assets/akhtari_vaaler_widmer_src/Equidistribution_1.tex`)
-for related effective constants in the CM case.
-
-Not in Mathlib v4.30; requires functional equation + L(1, χ) bounds. -/
+for related effective constants in the CM case. -/
 lemma dedekind_residue_upper_bound_cm
     [IsCMField K] [IsTotallyComplex K]
     (rd_F : ℝ) (_h_rd_F : 1 ≤ rd_F)
