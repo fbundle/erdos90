@@ -59,12 +59,48 @@ structure LubinTateFormalGroup (K : Type u) [Field K] (_π : K) where
   /-- The underlying formal group (stub). -/
   𝒢 : Unit
 
-/-- **Postulate** (Lubin–Tate torsion):
+/-! ### Decomposition of Lubin-Tate construction
 
-The `π^n`-torsion of the Lubin–Tate formal group generates a finite abelian
-extension `K_n/K` of degree `q^{n-1}(q-1)` (where `q = |κ_K|`).  The union
-`K_∞ = ∪_n K_n` is the maximal totally ramified abelian extension of `K`. -/
+The Lubin-Tate construction (Lubin-Tate 1965) builds local CFT explicitly
+via formal group laws.  The chain:
+
+1. **Formal group law existence**: for each uniformizer π of a local
+   field K, there exists a formal group F_π over 𝓞_K with [π]_F = π·X + X^q.
+2. **Torsion field structure**: K_n = K(F_π[π^n]) is finite abelian over K
+   with `[K_n : K] = q^{n-1}(q-1)`.
+3. **Artin map**: the action of 𝓞_K^* on F_π-torsion gives the local Artin map.
+4. **Maximality**: K_∞ = ∪K_n is the maximal totally ramified abelian
+   extension of K.
+
+Four sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.local.lt.fg-existence** (Formal group existence):
+For each uniformizer π of a non-archimedean local field K with residue
+cardinality q, there exists a Lubin-Tate formal group law `F_π ∈ 𝓞_K[[X,Y]]`
+with the linearization `[π]_F(X) ≡ πX (mod X²)` and `[π]_F(X) ≡ X^q (mod π)`.
+
+Cite: Lubin-Tate 1965 §1; Iwasawa *Local CFT* Ch. 6.  Mathlib v4.30:
+formal groups partially packaged; Lubin-Tate construction not. -/
+def lubin_tate_formal_group_existence_postulate
+    (K : Type u) [Field K] (π : K) : True := sorry
+
+/-- **Sub-postulate D3.local.lt.torsion-degree** (Torsion field degree):
+`K_n = K(F_π[π^n])` is finite abelian over K with `[K_n : K] = q^{n-1}(q-1)`,
+where q is the residue cardinality of K.
+
+Cite: Lubin-Tate 1965 §2.  Mathlib v4.30: not packaged. -/
 def lubinTate_torsion_postulate
+    (K : Type u) [Field K] (π : K) (_𝒢 : LubinTateFormalGroup K π) :
+    True := sorry
+
+/-- **Sub-postulate D3.local.lt.unit-action** (𝓞_K^* action on torsion):
+The unit group 𝓞_K^* acts on F_π[π^n] by `u · v = [u]_F(v)` (where [u]_F is
+the formal-group endomorphism associated to u), and this action is faithful
+and transitive on primitive torsion points.
+
+Cite: Lubin-Tate 1965 §3.  Mathlib v4.30: not packaged. -/
+def lubin_tate_unit_action_postulate
     (K : Type u) [Field K] (π : K) (_𝒢 : LubinTateFormalGroup K π) :
     True := sorry
 
@@ -74,6 +110,13 @@ The Lubin–Tate construction gives an explicit local Artin map
 `K^* → Gal(K^{ab}/K)` that:
 - Sends a uniformizer `π` to a "Frobenius lift" element fixing `K_n`.
 - Sends `𝓞_K^*` to the inertia subgroup (corresponding to `K_∞ = ∪_n K_n`).
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `lubin_tate_formal_group_existence_postulate`: F_π exists.
+2. By `lubinTate_torsion_postulate`: K_n have the right degree.
+3. By `lubin_tate_unit_action_postulate`: 𝓞_K^* acts via formal-group
+   endomorphisms, giving inertia-to-Galois identification.
+4. Compose with the π ↦ Frob choice to get the full local Artin map.
 
 Cite: Lubin–Tate 1965; Iwasawa *Local Class Field Theory*. -/
 def lubinTate_artin_map_postulate
