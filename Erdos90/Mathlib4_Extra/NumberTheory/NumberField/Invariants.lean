@@ -100,4 +100,9 @@ theorem units_rank_rat_eq_zero : NumberField.Units.rank ℚ = 0 := by
   rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
     nrRealPlaces_rat_eq_one, nrComplexPlaces_rat_eq_zero]
 
+/-- `Module.finrank ℚ ℚ = 1` — the degree `[ℚ:ℚ]`.
+
+PROVED Lean: direct citation of Mathlib's `Module.finrank_self`. -/
+theorem finrank_rat_eq_one : Module.finrank ℚ ℚ = 1 := Module.finrank_self ℚ
+
 end NumberField
