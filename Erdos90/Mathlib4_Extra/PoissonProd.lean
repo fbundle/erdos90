@@ -455,6 +455,83 @@ theorem schwartz_y_decay_div (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x y : ℝ) :
   rw [le_div_iff₀ h_pos, mul_comm]
   exact h_bound
 
+/-- Joint 2-D decay bound: `(1+‖x‖)^L · (1+‖y‖)^K · ‖f(x, y)‖ ≤
+2^(L+K) · (‖f‖_(0,0) + ‖f‖_(L+K, 0))`.
+
+PROVED via `(1+|x|) · (1+|y|) ≤ (1+‖(x,y)‖)^2` (for Prod sup norm) and
+the prod-norm Schwartz bound. -/
+theorem schwartz_xy_decay_bound (f : 𝓢(ℝ × ℝ, ℂ)) (L K : ℕ) (x y : ℝ) :
+    (1 + ‖x‖) ^ L * (1 + ‖y‖) ^ K * ‖(f : ℝ × ℝ → ℂ) (x, y)‖ ≤
+      2 ^ (L + K) *
+        (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ (L + K) 0 f) := by
+  have h_norm_x : ‖x‖ ≤ ‖((x, y) : ℝ × ℝ)‖ := by simp [Prod.norm_def]
+  have h_norm_y : ‖y‖ ≤ ‖((x, y) : ℝ × ℝ)‖ := by simp [Prod.norm_def]
+  -- (1+‖x‖)^L * (1+‖y‖)^K ≤ (1+‖(x,y)‖)^(L+K)
+  have h_factor : (1 + ‖x‖) ^ L * (1 + ‖y‖) ^ K ≤
+      (1 + ‖((x, y) : ℝ × ℝ)‖) ^ (L + K) := by
+    have h_x_le : 1 + ‖x‖ ≤ 1 + ‖((x, y) : ℝ × ℝ)‖ := by linarith
+    have h_y_le : 1 + ‖y‖ ≤ 1 + ‖((x, y) : ℝ × ℝ)‖ := by linarith
+    calc (1 + ‖x‖) ^ L * (1 + ‖y‖) ^ K
+        ≤ (1 + ‖((x, y) : ℝ × ℝ)‖) ^ L * (1 + ‖((x, y) : ℝ × ℝ)‖) ^ K := by
+          apply mul_le_mul
+          · exact pow_le_pow_left₀ (by linarith [norm_nonneg x]) h_x_le L
+          · exact pow_le_pow_left₀ (by linarith [norm_nonneg y]) h_y_le K
+          · positivity
+          · positivity
+      _ = (1 + ‖((x, y) : ℝ × ℝ)‖) ^ (L + K) := by rw [← pow_add]
+  -- Now use (1+‖(x,y)‖)^(L+K) · ‖f(x, y)‖ ≤ 2^(L+K) · (‖f‖_(0,0) + ‖f‖_(L+K, 0))
+  -- This is the prod-norm form of schwartz_y_decay_bound (use ‖(x,y)‖ in place of ‖y‖).
+  have h_prod_decay : (1 + ‖((x, y) : ℝ × ℝ)‖) ^ (L + K) *
+      ‖(f : ℝ × ℝ → ℂ) (x, y)‖ ≤
+        2 ^ (L + K) *
+          (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ (L + K) 0 f) := by
+    -- Apply the same case-split argument as in schwartz_y_decay_bound, but with
+    -- p := (x, y) and ‖p‖ in place of ‖y‖.
+    set p : ℝ × ℝ := (x, y) with hp_def
+    set k : ℕ := L + K
+    have h_seminorm_0 : ‖(f : ℝ × ℝ → ℂ) p‖ ≤ SchwartzMap.seminorm ℝ 0 0 f :=
+      SchwartzMap.norm_le_seminorm (𝕜 := ℝ) f p
+    have h_seminorm_k : ‖p‖ ^ k * ‖(f : ℝ × ℝ → ℂ) p‖ ≤
+        SchwartzMap.seminorm ℝ k 0 f :=
+      SchwartzMap.norm_pow_mul_le_seminorm (𝕜 := ℝ) f k p
+    have h_pow_bound : (1 + ‖p‖) ^ k ≤ 2 ^ k * (1 + ‖p‖ ^ k) := by
+      have h1 : 1 + ‖p‖ ≤ 2 * max 1 ‖p‖ := by
+        by_cases hp_le : ‖p‖ ≤ 1
+        · have hmax : max 1 ‖p‖ = 1 := max_eq_left hp_le
+          rw [hmax]; linarith
+        · push_neg at hp_le
+          have hmax : max 1 ‖p‖ = ‖p‖ := max_eq_right hp_le.le
+          rw [hmax]; linarith
+      have h2 : (max 1 ‖p‖ : ℝ) ^ k ≤ 1 + ‖p‖ ^ k := by
+        by_cases hp_le : ‖p‖ ≤ 1
+        · have hmax : max 1 ‖p‖ = 1 := max_eq_left hp_le
+          rw [hmax, one_pow]
+          linarith [pow_nonneg (norm_nonneg p) k]
+        · push_neg at hp_le
+          have hmax : max 1 ‖p‖ = ‖p‖ := max_eq_right hp_le.le
+          rw [hmax]
+          linarith [pow_nonneg (norm_nonneg p) k]
+      calc (1 + ‖p‖) ^ k
+          ≤ (2 * max 1 ‖p‖) ^ k := pow_le_pow_left₀ (by linarith [norm_nonneg p]) h1 k
+        _ = 2 ^ k * (max 1 ‖p‖) ^ k := by rw [mul_pow]
+        _ ≤ 2 ^ k * (1 + ‖p‖ ^ k) := by
+          apply mul_le_mul_of_nonneg_left h2 (by positivity)
+    calc (1 + ‖p‖) ^ k * ‖(f : ℝ × ℝ → ℂ) p‖
+        ≤ (2 ^ k * (1 + ‖p‖ ^ k)) * ‖(f : ℝ × ℝ → ℂ) p‖ := by
+          apply mul_le_mul_of_nonneg_right h_pow_bound (norm_nonneg _)
+      _ = 2 ^ k * (‖(f : ℝ × ℝ → ℂ) p‖ + ‖p‖ ^ k * ‖(f : ℝ × ℝ → ℂ) p‖) := by ring
+      _ ≤ 2 ^ k *
+            (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ k 0 f) := by
+          apply mul_le_mul_of_nonneg_left _ (by positivity)
+          linarith [h_seminorm_0, h_seminorm_k]
+  -- Combine: (1+‖x‖)^L · (1+‖y‖)^K · ‖f(x,y)‖ ≤ (1+‖(x,y)‖)^(L+K) · ‖f(x,y)‖ ≤ 2^(L+K) · ...
+  calc (1 + ‖x‖) ^ L * (1 + ‖y‖) ^ K * ‖(f : ℝ × ℝ → ℂ) (x, y)‖
+      ≤ (1 + ‖((x, y) : ℝ × ℝ)‖) ^ (L + K) * ‖(f : ℝ × ℝ → ℂ) (x, y)‖ := by
+        exact mul_le_mul_of_nonneg_right h_factor (norm_nonneg _)
+    _ ≤ 2 ^ (L + K) *
+          (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ (L + K) 0 f) :=
+        h_prod_decay
+
 /-- Symmetric to `schwartz_y_decay_bound`: bound in the x-direction.
 `(1+‖x‖)^k · ‖f(x, y)‖ ≤ 2^k · (‖f‖_(0,0) + ‖f‖_(k,0))` uniformly in `y`. -/
 theorem schwartz_x_decay_bound (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x y : ℝ) :
