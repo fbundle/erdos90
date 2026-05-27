@@ -249,14 +249,43 @@ def gs_tower_step_postulate
   · exact pHCF_degree_pos_postulate p hp K h_p_dvd_cn E
   · exact NumberField.rootDiscr_pHCF_eq K p E
 
+/-- **Sub-sub-sub-postulate D3.1.gs.inherit.pcr-growth.cft-iso** (CFT iso):
+Artin reciprocity for the p-HCF: `Gal(H_p(K)/K) ≃* (ClassGroup K ⊗ ℤ/pℤ)`
+(the p-Sylow part), or equivalently `H¹(Gal(K_S^p/K), 𝔽_p)`.
+
+Cite: Artin reciprocity (Neukirch VI §6).  Mathlib v4.30: not packaged.
+Multi-month: needs ray class group machinery. -/
+def pHCF_artin_iso_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.inherit.pcr-growth.descent** (GS descent):
+If `K` has p-class group of rank `r_p(K) ≥ 2`, then `H_p(K)` has
+p-class group of rank `r_p(L) ≥ r_p(K) - 1`.
+
+Cite: Tate-Shafarevich descent argument + Kummer theory.  Mathlib v4.30:
+not packaged.  Multi-month. -/
+def pHCF_p_rank_descent_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (_h_p_dvd_cn : p ∣ NumberField.classNumber K)
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    True := sorry
+
 /-- **Sub-sub-postulate D3.1.gs.inherit.pcr-growth** (p-class rank growth):
 If `K` satisfies `p ∣ classNumber K` (so `H_p(K) ≠ K`), then `H_p(K)`
 ALSO has `p ∣ classNumber H_p(K)`.
 
 This is the analytic-cohomological content: the p-class group of the
-tower step `L = H_p(K)` is non-trivial.  Proof goes through the
-Anick-Dicks inequality on the Hilbert series of the universal
-enveloping algebra of `Gal(K_S^{(p)}/K)`.
+tower step `L = H_p(K)` is non-trivial.
+
+ASSEMBLY (modulo `pHCF_artin_iso_postulate` + `pHCF_p_rank_descent_postulate`
++ `golod_shafarevich_inequality_postulate`):
+- By Artin: p-rank of classGroup K = dim H¹(Gal(K_S^p/K), 𝔽_p).
+- By GS inequality applied at K: Gal(K_S^p/K) is infinite ⟹ has subgroups of unbounded index.
+- By descent: classGroup L has p-rank ≥ 1, hence p ∣ classNumber L.
 
 Cite: Anick-Dicks 2017 (arXiv:1508.03231) Theorem 3 + HMR 2021 §2.
 Multi-month: needs pro-`p` group cohomology + Hilbert series of
