@@ -438,10 +438,39 @@ dedekindZeta functional equation applied at s = 0 + the Dirichlet
 class number formula at s = 1.
 
 Cite: Tate 1984 *Les conjectures de Stark sur les fonctions L d'Artin*.
-Mathlib v4.30: not packaged. -/
+Mathlib v4.30: not packaged.
+
+DECOMPOSITION: 2 named pieces.
+1. **Functional equation at s = 0**: Λ_K(1) = Λ_K(0).
+   Mathlib gap, see `dedekindZeta_functional_equation_postulate` in
+   `DedekindZetaFE.lean`.
+2. **Residue at s = 1 / value at s = 0 ratio**: from Dirichlet class
+   number formula (Mathlib HAS `tendsto_sub_one_mul_dedekindZeta_nhdsGT`).
+   Plug Λ_K(1) = Λ_K(0) into the formula. -/
 def zeta_K_at_zero_postulate
     [NumberField K]
     (_hrank : 1 ≤ NumberField.Units.rank K) :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.2c.friedman.stark.fe-at-zero**:
+The completed Dedekind zeta evaluated at s = 0 equals its value at s = 1
+(via the functional equation Λ_K(1-s) = Λ_K(s)).
+
+Cite: Hecke 1917 + Tate's thesis.  Mathlib gap; see
+`Mathlib4_Extra/NumberTheory/LSeries/DedekindZetaFE.lean`. -/
+def stark_completed_zeta_at_zero_postulate
+    [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.2c.friedman.stark.dirichlet-form**:
+The Dirichlet class number formula `Res_{s=1} ζ_K = c · R_K · h_K / w_K`
+combined with the gamma factors gives the special value formula for
+Λ_K(0).
+
+Cite: Mathlib's `NumberField.tendsto_sub_one_mul_dedekindZeta_nhdsGT`
++ `NumberField.dedekindZeta_residue_def`. -/
+def stark_dirichlet_formula_postulate
+    [NumberField K] :
     True := sorry
 
 /-- **Sub-sub-postulate D3.2c.friedman.integral-bound** (Friedman's
