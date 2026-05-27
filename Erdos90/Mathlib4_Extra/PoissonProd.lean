@@ -649,6 +649,37 @@ theorem continuous_partial_fourier_integrand (f : 𝓢(ℝ × ℝ, ℂ)) (n : �
     refine Continuous.comp f.continuous ?_
     fun_prop
 
+/-- Integrability of the partial Fourier integrand as a function of `x`.
+
+PROVED via `Integrable.integral_prod_left` applied to
+`fourier_mul_schwartz_integrable_2d f 0 n` (the integrability of
+`exp(-2πi n y) · f(x, y)` on ℝ × ℝ). -/
+theorem integrable_partial_fourier_integrand (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℝ) :
+    MeasureTheory.Integrable fun x : ℝ =>
+      ∫ y : ℝ, Complex.exp (-(2 * Real.pi * (n * y)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (x, y) := by
+  -- Use the fact that the 2-D integrand is integrable (Integrable.bdd_mul +
+  -- schwartz_integrable_2d), then apply Integrable.integral_prod_left to get
+  -- integrability of the inner integral as a function of x.
+  have h_f_int := schwartz_integrable_2d f
+  have h_exp_cts : Continuous fun p : ℝ × ℝ =>
+      Complex.exp (-(2 * Real.pi * (n * p.2)) * Complex.I) := by fun_prop
+  have h_exp_bd : ∀ p : ℝ × ℝ,
+      ‖Complex.exp (-(2 * Real.pi * (n * p.2)) * Complex.I)‖ ≤ 1 := by
+    intro p
+    have : ‖Complex.exp ((-(2 * Real.pi * (n * p.2)) : ℝ) * Complex.I)‖ = 1 :=
+      Complex.norm_exp_ofReal_mul_I _
+    convert this.le using 2
+    push_cast
+    ring
+  have h_2d_int : MeasureTheory.Integrable (fun p : ℝ × ℝ =>
+      Complex.exp (-(2 * Real.pi * (n * p.2)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (p.1, p.2)) :=
+    MeasureTheory.Integrable.bdd_mul h_f_int
+      h_exp_cts.aestronglyMeasurable
+      (MeasureTheory.ae_of_all _ h_exp_bd)
+  exact h_2d_int.integral_prod_left
+
 /-! ## Towards full 2-D Schwartz Poisson summation
 
 We can now restate the row-Poisson chain in terms of `partialFourier`,
