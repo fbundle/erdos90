@@ -389,7 +389,15 @@ subfield of `K` is `F`.
 Cite: standard CM field structure (Iwasawa *Local Class Field Theory*
 Ch. 6; Lang *Algebraic Number Theory* X §3).  Mathlib v4.30: CM field
 predicate exists (`IsCMField`) but the compositum-is-CM lemma is not
-packaged. -/
+packaged.
+
+DECOMPOSITION: the claim splits into:
+1. **Totally complex** (PROVED Lean via Mathlib's
+   `isTotallyComplex_of_algebra`): K₀ totally complex + K₀ → K ⟹ K
+   totally complex.
+2. **CM structure** (Mathlib gap): [K:F] = 2 with F totally real ⟹
+   K is CM (uses the IsCMField predicate and quadratic-extension
+   construction). -/
 def cm_compositum_postulate
     (K₀ : Type) [Field K₀] [NumberField K₀]
     (_h_imagquad : InfinitePlace.nrComplexPlaces K₀ = 1 ∧
@@ -397,6 +405,21 @@ def cm_compositum_postulate
     (F : Type) [Field F] [NumberField F]
     (_h_tot_real : InfinitePlace.nrComplexPlaces F = 0) :
     True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.cm-lift.compositum.totcomp** (Compositum
+of imag-quad with anything-over-K₀ is totally complex):
+
+If a number field `K` is an algebra over an imaginary quadratic field `K₀`
+(i.e. `K₀ ↪ K`), then `K` is also totally complex.
+
+PROVED Lean: direct citation of Mathlib's
+`NumberField.isTotallyComplex_of_algebra` applied with `K₀` as the
+totally complex sub-extension. -/
+theorem cm_compositum_totally_complex_postulate
+    (K₀ : Type*) [Field K₀] [NumberField K₀] [NumberField.IsTotallyComplex K₀]
+    (K : Type*) [Field K] [NumberField K] [Algebra K₀ K] :
+    NumberField.IsTotallyComplex K :=
+  NumberField.isTotallyComplex_of_algebra K₀ K
 
 /-- **Sub-sub-sub-postulate D3.1.gs.base.cm-lift.disc-bound**
 (Discriminant of compositum):
