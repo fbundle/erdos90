@@ -861,6 +861,28 @@ theorem sylow_classGroup_subsingleton
     Subsingleton (Sylow p (ClassGroup (𝓞 K))) :=
   sylow_subsingleton_of_commGroup p
 
+/-- **Companion (PROVED)**: any p-Sylow of `ClassGroup (𝓞 K)` has
+cardinality `p^padicValNat p (classNumber K)`.
+
+PROVED Lean: combine Mathlib's `Sylow.card_eq_multiplicity` (gives
+`Nat.card P = p^Nat.factorization (Nat.card G) p`),
+`Nat.factorization_def` (relates factorization to padicValNat for
+primes), and the definitional `Nat.card (ClassGroup K) = classNumber K`. -/
+theorem sylow_classGroup_card
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (hp : Nat.Prime p)
+    (P : Sylow p (ClassGroup (𝓞 K))) :
+    Nat.card P = p ^ padicValNat p (NumberField.classNumber K) := by
+  haveI : Fact p.Prime := ⟨hp⟩
+  have h1 : Nat.card P = p ^ Nat.factorization
+      (Nat.card (ClassGroup (𝓞 K))) p := P.card_eq_multiplicity
+  have h2 : Nat.factorization (Nat.card (ClassGroup (𝓞 K))) p =
+      padicValNat p (Nat.card (ClassGroup (𝓞 K))) :=
+    Nat.factorization_def _ hp
+  have h3 : Nat.card (ClassGroup (𝓞 K)) = NumberField.classNumber K := by
+    rw [NumberField.classNumber, Nat.card_eq_fintype_card]
+  rw [h1, h2, h3]
+
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
