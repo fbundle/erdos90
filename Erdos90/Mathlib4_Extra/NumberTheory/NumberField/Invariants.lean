@@ -135,3 +135,15 @@ theorem cyclotomic_two_polynomial_eq (R : Type*) [Ring R] :
 theorem cyclotomic_one_polynomial_eq (R : Type*) [Ring R] :
     Polynomial.cyclotomic 1 R = Polynomial.X - 1 :=
   Polynomial.cyclotomic_one R
+
+/-- **Cyclotomic polynomial** sanity: `Φ_0(X) = 1`. -/
+theorem cyclotomic_zero_polynomial_eq (R : Type*) [Ring R] :
+    Polynomial.cyclotomic 0 R = 1 :=
+  Polynomial.cyclotomic_zero R
+
+/-- **Cyclotomic polynomial sanity** (prime p): `Φ_p(X) = ∑_{i<p} X^i`.
+
+PROVED Lean: direct citation of Mathlib's `Polynomial.cyclotomic_prime`. -/
+theorem cyclotomic_prime_polynomial_eq (R : Type*) [Ring R] (p : ℕ) [Fact p.Prime] :
+    Polynomial.cyclotomic p R = ∑ i ∈ Finset.range p, Polynomial.X ^ i :=
+  Polynomial.cyclotomic_prime R p
