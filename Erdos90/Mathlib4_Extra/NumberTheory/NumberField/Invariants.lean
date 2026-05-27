@@ -410,6 +410,25 @@ theorem real_zero_rpow {x : ℝ} (hx : x ≠ 0) : (0 : ℝ) ^ x = 0 := Real.zero
 theorem real_rpow_pos_of_pos {x : ℝ} (hx : 0 < x) (y : ℝ) : 0 < x ^ y :=
   Real.rpow_pos_of_pos hx y
 
+/-- `x^(a+b) = x^a · x^b` for x > 0. -/
+theorem real_rpow_add {x : ℝ} (hx : 0 < x) (a b : ℝ) :
+    x ^ (a + b) = x ^ a * x ^ b :=
+  Real.rpow_add hx a b
+
+/-- `x^(a·b) = (x^a)^b` for x ≥ 0. -/
+theorem real_rpow_mul {x : ℝ} (hx : 0 ≤ x) (a b : ℝ) :
+    x ^ (a * b) = (x ^ a) ^ b :=
+  Real.rpow_mul hx a b
+
+/-- `x^(n : ℕ) = x · x · ... · x` (n times). -/
+theorem real_rpow_natCast (x : ℝ) (n : ℕ) : x ^ (n : ℝ) = x ^ n :=
+  Real.rpow_natCast x n
+
+/-- `(x · y)^a = x^a · y^a` for x ≥ 0, y ≥ 0. -/
+theorem real_mul_rpow {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) (a : ℝ) :
+    (x * y) ^ a = x ^ a * y ^ a :=
+  Real.mul_rpow hx hy
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
