@@ -596,3 +596,20 @@ theorem set_infinite_univ_nat : (Set.univ : Set ℕ).Infinite := Set.infinite_un
 
 /-- The integers are infinite. -/
 theorem set_infinite_univ_int : (Set.univ : Set ℤ).Infinite := Set.infinite_univ
+
+/-! ### Odd / Even sanity wrappers -/
+
+/-- Every odd prime ≠ 2 (≥ 3). -/
+theorem nat_prime_eq_two_or_odd {p : ℕ} (hp : p.Prime) :
+    p = 2 ∨ Odd p :=
+  hp.eq_two_or_odd'
+
+/-- Every odd prime ≠ 2. -/
+theorem nat_prime_odd_of_ne_two {p : ℕ} (hp : p.Prime) (h : p ≠ 2) : Odd p :=
+  Or.resolve_left hp.eq_two_or_odd' h
+
+/-- `3` is odd. -/
+theorem odd_three : Odd (3 : ℕ) := by decide
+
+/-- `5` is odd. -/
+theorem odd_five : Odd (5 : ℕ) := by decide
