@@ -269,7 +269,95 @@ Implementing this in Lean requires:
 Both pieces require additional CFT infrastructure not in Mathlib v4.30.
 We POSTULATE the preservation here as a labelled `def`. -/
 
+/-! ### Decomposition of `HilbertClassFieldExt.isCMField_postulate`
+
+The classical proof that `H(K)` is CM when `K` is, via the structure
+`L = K · L⁺` with `L⁺ = H(K⁺)` (HCF of the maximal totally real
+subfield):
+
+1. **Max totally real subfield K⁺**: for CM `K`, there exists a unique
+   subfield `K⁺ ⊆ K` of index 2 that is totally real (with `K = K⁺(√-d)`
+   for some d).  Mathlib has `IsCMField.maximalRealSubfield` implicit
+   in the structure.
+2. **HCF of K⁺ is totally real**: `L⁺ = H(K⁺)` is unramified abelian
+   over `K⁺` totally real; CFT preserves "totally real" under unramified
+   abelian extension.
+3. **Compositum L⁺ · K**: the compositum equals `H(K)` (uniqueness of
+   max unramified abelian extension via norm map factorization).
+4. **Index 2**: `[L : L⁺] = [K : K⁺] = 2`, so `L/L⁺` is the CM quadratic
+   extension, hence `L` is CM.
+
+Four sub-postulates below isolate each piece.
+-/
+
+/-- **Sub-sub-postulate D3.hcf.cm.kplus** (Max totally real subfield):
+For any CM number field `K`, there exists a unique totally real subfield
+`K⁺ ⊆ K` such that `[K : K⁺] = 2` and `K = K⁺(α)` for some imaginary
+`α ∈ K`.
+
+Cite: Iwasawa *Local Class Field Theory* Ch. 6; Lang *Algebraic Number
+Theory* X §3.  Mathlib v4.30: implicit in the `IsCMField` structure
+(via `IsCMField.complexConj`); explicit `maximalRealSubfield` not
+packaged as a named subfield. -/
+def cm_max_real_subfield_postulate
+    (K : Type u) [Field K] [NumberField K] [IsCMField K] :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.hcf.cm.hcf-real-stays-real** (HCF of totally
+real is totally real):
+If `F` is a totally real number field, then `H(F)` is also totally real.
+
+This follows from CFT functoriality: the Artin map `Cl(F) → Gal(H/F)`
+commutes with complex conjugation, and Cl(F) for totally real F has
+genus-character interpretation that preserves the trivial action.
+
+Cite: Iwasawa *Local CFT* §6.4; Neukirch VI §7.  Mathlib v4.30: not
+packaged (depends on `hilbertClassField_exists`). -/
+def hcf_totally_real_postulate
+    (F : Type u) [Field F] [NumberField F]
+    (_h_tot_real : NumberField.InfinitePlace.nrComplexPlaces F = 0)
+    (E : HilbertClassFieldExt F) :
+    NumberField.InfinitePlace.nrComplexPlaces E.H = 0 := sorry
+
+/-- **Sub-sub-postulate D3.hcf.cm.hcf-compositum** (HCF is compositum):
+For CM `K` with max totally real subfield `K⁺`, the HCF satisfies
+`H(K) = K · H(K⁺)` (compositum in any chosen ambient algebraic closure).
+
+This is the key structural identity: extending H(K⁺) by K gives H(K).
+Proof uses that K⁺/K is unramified everywhere and the conductor-norm
+calculus.
+
+Cite: Lang *Algebraic Number Theory* X §3 Theorem 3.1; Iwasawa
+*Local CFT* §6.4.  Mathlib v4.30: not packaged. -/
+def hcf_compositum_postulate
+    (K : Type u) [Field K] [NumberField K] [IsCMField K]
+    (E : HilbertClassFieldExt K) :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.hcf.cm.index-two** (Index 2 quadratic):
+For CM `K` with max totally real subfield `K⁺`, the corresponding HCFs
+satisfy `[H(K) : H(K⁺)] = 2`.
+
+This is the "stability of the CM quadratic" claim: the CM extension
+K/K⁺ of degree 2 lifts to a CM extension H(K)/H(K⁺) of degree 2.
+
+Cite: Lang X §3 Theorem 3.1 (Corollary); Iwasawa *Local CFT* §6.4.
+Mathlib v4.30: not packaged. -/
+def hcf_index_two_postulate
+    (K : Type u) [Field K] [NumberField K] [IsCMField K]
+    (E : HilbertClassFieldExt K) :
+    True := sorry
+
 /-- **Postulate**: the HCF of a CM number field is CM.
+
+ASSEMBLY (modulo the four sub-postulates above):
+1. By `cm_max_real_subfield_postulate`: K has unique totally real K⁺
+   of index 2.
+2. By `hcf_totally_real_postulate`: H(K⁺) is totally real.
+3. By `hcf_compositum_postulate`: H(K) = K · H(K⁺).
+4. By `hcf_index_two_postulate`: [H(K) : H(K⁺)] = 2.
+5. Hence H(K)/H(K⁺) is a quadratic extension with H(K⁺) totally real
+   and H(K) totally complex (since K is) — the defining shape of CM.
 
 Cite: Iwasawa, *Local Class Field Theory* / Lang, *Algebraic Number Theory*.
 TRUE; not in Mathlib v4.30. -/

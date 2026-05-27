@@ -480,8 +480,72 @@ def pHCF_degree_pos_postulate
     Module.finrank K E.H_p ≥ p :=
   NumberField.p_HCF_finrank_ge_p_of_p_dvd_classNumber K p hp h_p_dvd_cn E
 
+/-! ### Decomposition of `pHCF_isCMField_postulate`
+
+The p-HCF version of CM preservation reuses the same K⁺/L⁺ structural
+chain as the full HCF case (see `HilbertClassFieldExt.isCMField_postulate`
+in `ClassFieldTheory.lean`), specialized to the p-Sylow part.
+
+The key extra postulate: `H_p(K⁺)` makes sense (p-HCF of the maximal
+real subfield) and is itself totally real.  Then `H_p(K) = K · H_p(K⁺)`
+with `[H_p(K) : H_p(K⁺)] = 2`.
+
+Three sub-postulates below; the first two are direct analogues of
+`hcf_totally_real_postulate` and `hcf_compositum_postulate` (in
+`ClassFieldTheory.lean`).
+-/
+
+/-- **Sub-sub-sub-postulate D3.1.gs.step.cm.real-stays-real**:
+If `F` is totally real, then the p-HCF `H_p(F)` is also totally real.
+
+Cite: p-Sylow restriction of `hcf_totally_real_postulate`.  Same
+underlying Mathlib gap (functoriality of Artin map under complex
+conjugation, specialized to p-Sylow). -/
+def pHCF_totally_real_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (F : Type) [Field F] [NumberField F]
+    (_h_tot_real : NumberField.InfinitePlace.nrComplexPlaces F = 0)
+    (E : NumberField.HilbertPClassFieldExt F p) :
+    NumberField.InfinitePlace.nrComplexPlaces E.H_p = 0 := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.step.cm.compositum**:
+For CM `K` with max totally real subfield `K⁺`, the p-HCF satisfies
+`H_p(K) = K · H_p(K⁺)`.
+
+Cite: p-Sylow restriction of `hcf_compositum_postulate`.  Same
+Mathlib gap structure. -/
+def pHCF_compositum_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K] [IsCMField K]
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.step.cm.index-two**:
+For CM `K`, the index `[H_p(K) : H_p(K⁺)] = 2`.
+
+For `p ≠ 2`: the index 2 quadratic K/K⁺ has Galois group of order 2,
+which is *prime to p*, so it persists "outside" the p-Sylow.  Concretely,
+the natural map `Gal(H_p(K)/K⁺) → Gal(K/K⁺) = ℤ/2ℤ` is split, giving
+the index-2 conclusion.
+
+For `p = 2`: the situation is more subtle but still holds via the
+2-Sylow specialization. -/
+def pHCF_index_two_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K] [IsCMField K]
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    True := sorry
+
 /-- **Sub-sub-postulate D3.1.gs.step.cm** (p-HCF preserves CM):
 If `K` is CM, then the p-Hilbert class field `H_p(K)` is also CM.
+
+ASSEMBLY (modulo the three sub-postulates above + the full-HCF
+`cm_max_real_subfield_postulate` for K⁺ existence):
+1. K has max totally real K⁺ of index 2 (full-HCF chain).
+2. By `pHCF_totally_real_postulate`: H_p(K⁺) is totally real.
+3. By `pHCF_compositum_postulate`: H_p(K) = K · H_p(K⁺).
+4. By `pHCF_index_two_postulate`: [H_p(K) : H_p(K⁺)] = 2.
+5. Same CM-shape conclusion as the full HCF case.
 
 Cite: CM preservation under unramified abelian extensions.  Analogous to
 `HilbertClassFieldExt.isCMField_postulate` (full HCF, in

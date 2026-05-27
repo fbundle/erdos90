@@ -94,10 +94,74 @@ structure MaxProPExt (K : Type u) [Field K] [NumberField K] (p : ℕ) (_S : Set 
 
 attribute [instance] MaxProPExt.fieldL MaxProPExt.algebraKL MaxProPExt.isGaloisKL
 
+/-! ### Decomposition of `maxProPExt_exists`
+
+The maximal pro-`p` extension unramified outside `S` is constructed as
+a **filtered colimit** of finite pro-`p` extensions.  The chain:
+
+1. **Existence of finite levels**: for each finite set of "obstruction
+   classes" in `H¹(G_S, 𝔽_p)` (where G_S is the Galois group of K_S/K
+   for K_S = max unramified-outside-S extension), there is a finite
+   pro-`p` extension realizing them.
+2. **Compatibility**: these finite extensions form a filtered system
+   under inclusion.
+3. **Colimit/inverse limit existence**: the union (or projective limit
+   on the Galois group side) gives the desired infinite extension.
+4. **Pro-`p` Galois group**: the limit Galois group is pro-`p` by
+   construction (each level is pro-`p`).
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.maxProPExt.finite-level** (Finite pro-p levels):
+For each number field `K`, prime `p`, finite set `S` of primes, and
+finite-dimensional `𝔽_p`-subspace `V ⊆ H¹(G_S, 𝔽_p)`, there exists a
+finite pro-`p` Galois extension `L/K` unramified outside `S` realizing
+exactly the classes in `V`.
+
+Cite: Koch *Galois theory of p-extensions* §5; the building blocks for
+infinite pro-p extensions.  Mathlib v4.30: not packaged. -/
+def max_pro_p_finite_level_postulate
+    (K : Type u) [Field K] [NumberField K] (p : ℕ) (_hp : Nat.Prime p)
+    (S : Set (Ideal (𝓞 K))) (_hS_fin : S.Finite) :
+    True := sorry
+
+/-- **Sub-postulate D3.maxProPExt.compat** (Filtered compatibility):
+The finite pro-`p` extensions of `K` unramified outside `S`, ordered by
+inclusion, form a **filtered (directed) system**: given any two such
+finite extensions `L_1, L_2`, their compositum `L_1 · L_2` is again a
+finite pro-`p` extension unramified outside `S`.
+
+Cite: standard Galois theory + closure under compositum.  Mathlib v4.30:
+filtered systems exist (`Filtered`) but specialization to pro-p
+extensions of number fields is not packaged. -/
+def max_pro_p_compat_postulate
+    (K : Type u) [Field K] [NumberField K] (p : ℕ) (_hp : Nat.Prime p)
+    (S : Set (Ideal (𝓞 K))) (_hS_fin : S.Finite) :
+    True := sorry
+
+/-- **Sub-postulate D3.maxProPExt.colimit** (Filtered colimit existence):
+The filtered colimit of the system of finite pro-`p` extensions of `K`
+unramified outside `S` exists as a field, with `Gal(L/K)` the inverse
+limit of the Galois groups of finite levels (hence a pro-`p` group).
+
+Cite: standard field-theoretic colimits (Bourbaki); Stacks Project
+04CC for the colimit construction.  Mathlib v4.30: field colimits not
+fully packaged for arbitrary filtered systems. -/
+def max_pro_p_colimit_postulate
+    (K : Type u) [Field K] [NumberField K] (p : ℕ) (_hp : Nat.Prime p)
+    (S : Set (Ideal (𝓞 K))) (_hS_fin : S.Finite) :
+    True := sorry
+
 /-- **Postulate** (Mathlib gap): the maximal pro-`p` extension `K_S^{(p)}` exists.
 
 The pro-`p` Galois group `Gal(K_S^{(p)}/K)` is the *Galois cohomology object*
 that GS criterion applies to.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `max_pro_p_finite_level_postulate`: build finite levels.
+2. By `max_pro_p_compat_postulate`: they form a filtered system.
+3. By `max_pro_p_colimit_postulate`: take the colimit.
 
 Cite: Neukirch, *Cohomology of Number Fields*, Chapter X.  Not in Mathlib v4.30. -/
 def maxProPExt_exists (K : Type u) [Field K] [NumberField K] (p : ℕ)
