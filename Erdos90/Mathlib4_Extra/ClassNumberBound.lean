@@ -329,8 +329,11 @@ take `friedman_regulator_lower_bound_postulate` (gives 0.2052 ≥ 1/8).
 Cite: Friedman 1989; Zimmert 1981 (weaker constant alternative). -/
 lemma regulator_lower_bound_cm
     [IsCMField K] [IsTotallyComplex K]
-    (_hf : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces K) :
-    NumberField.Units.regulator K ≥ 1/8 := sorry
+    (hf : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces K) :
+    NumberField.Units.regulator K ≥ 1/8 := by
+  -- Apply Friedman's bound (gives 1/5) and observe 1/5 ≥ 1/8.
+  have h_friedman := friedman_regulator_lower_bound_postulate (K := K) hf
+  linarith
 
 /-! ## Phase E7 (D3.2b): Louboutin residue upper bound
 
