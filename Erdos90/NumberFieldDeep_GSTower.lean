@@ -52,19 +52,59 @@ structure BRDTowerData (ℓ : ℕ) where
 
 /-- **BRD tower data** (HMR 2021 + Friedman/Louboutin Brauer–Siegel, axiom).
 
-Bundles:
-1. HMR 2021 GS+Chebotarev: ∃ tower of CM totally complex K with bounded `rd_F`
-   and `SplitPrimeData K (t' * f)` having a tower-fixed `Q` constant.
-2. Quantitative Brauer–Siegel: `log(h_K)/f ≤ log_H` for the same K.
+Bundles two independent number-theoretic results:
 
-Cite: HMR 2021 `assets/hmr_2021_src/Cutting_towers_arxiv.tex` +
-Friedman 1989 *Analytic formulas for the regulator of a number field* +
-Louboutin 2000 *Explicit upper bounds for residues of Dedekind zeta functions*.
+**(1) HMR 2021 — Golod–Shafarevich CM tower with fixed split primes.**
 
-On the `full` branch this is a PROVED Lean assembly modulo four named on-path
-sub-postulates (`gs_cm_tower_infinite_postulate`, `chebotarev_fixed_Q`,
-`friedman_regulator_lower_bound_postulate`, `phragmen_lindelof_zeta_holds_postulate`).
-On this `master` branch it is a single axiom. -/
+For each `ℓ ≥ 2` there is a root-discriminant bound `rd_F` (with
+`log rd_F ≤ ℓ · log ℓ`) and a tower-fixed product `Q : ℕ` of split primes
+such that for every `M, t'` there is a CM totally-complex number field `K`
+of complex degree `f ≥ M` with `rootDiscr K ≤ rd_F` and a
+`SplitPrimeData K (t' · f)` whose `sp.Q = Q`.
+
+Citation:
+- Hajir, Maire, Ramakrishna, *Cutting class field theory towers*, 2021.
+  ArXiv:2103.05382.  Local copy: `assets/hmr_2021_src/Cutting_towers_arxiv.tex`.
+  See §3 `theo:ihara` (Ihara's split-prime persistence in the tower).
+- Golod, Shafarevich, *On the class field tower*, Izv. Akad. Nauk SSSR Ser.
+  Mat. 28 (1964), 261–272 (existence of infinite class field towers).
+- Standard CM lift: tensor the totally-real base field with `ℚ(√-d)` for
+  any d with controlled discriminant contribution.
+
+**(2) Friedman–Louboutin quantitative Brauer–Siegel for CM fields.**
+
+For CM totally-complex `K` of complex degree `f` with `rootDiscr K ≤ rd_F`
+(`f ≥ 5`),
+   `log (h_K) / f ≤ 2 · log (2 · rd_F)`
+where `h_K = |Cl(𝓞_K)|`.
+
+Citation:
+- Friedman, *Analytic formulas for the regulator of a number field*,
+  Inventiones 98 (1989), 599–622.  Lower bound `R_K ≥ 1/5` for CM TC K.
+- Louboutin, *Explicit upper bounds for residues of Dedekind zeta functions
+  and class numbers of CM-fields*, Math. Comp. 69 (2000), 311–339.  Upper
+  bound `Res_{s=1} ζ_K(s) ≤ (4 · rd_F)^f`.
+- Brauer, *On the zeta-functions of algebraic number fields*, Amer. J. Math.
+  69 (1947), 243–250 (the Brauer–Siegel chain).
+- Combined Brauer–Siegel: `log(h_K · R_K) = log |d_K|^{1/2} + O(1)`, see
+  Lang *Algebraic Number Theory* Ch. XVI.
+
+## Formalization status
+
+On the `full` branch this axiom is a PROVED Lean assembly modulo four named
+on-path sub-postulates that decompose the two results above:
+- `gs_cm_tower_infinite_postulate` (Mathlib gap: pro-`p` group + GS inequality
+  + HCF construction).
+- `chebotarev_fixed_Q` (Mathlib gap: Chebotarev density + L-function
+  continuation past `s = 1`).
+- `friedman_regulator_lower_bound_postulate` (Mathlib gap: Stark/Tate's
+  ζ_K(0) formula + Friedman's integral bound).
+- `phragmen_lindelof_zeta_holds_postulate` (Mathlib gap: `dedekindZeta`
+  functional equation + Phragmén–Lindelöf + boundary bounds via Stirling).
+
+On this `master` branch, the four sub-postulates are bundled into a single
+axiom.  When the four Mathlib gaps close, the axiom becomes a theorem with
+no source code change to `brd_cm_tower_postulate` or downstream callers. -/
 axiom brd_tower_data (ℓ : ℕ) (hℓ : ℓ ≥ 2) : BRDTowerData ℓ
 
 /-- **BRD CM tower postulate** — PROVED Lean assembly modulo `brd_tower_data`.
