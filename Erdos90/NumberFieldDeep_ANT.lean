@@ -190,6 +190,13 @@ theorem T_set_not_subset_S_set : ¬ T_set ⊆ S_set := by
   -- 31 ∉ S_set
   exact absurd this (by decide)
 
+/-- The converse: `S_set ⊆ T_set` is also FALSE — S_set contains 2,
+which T_set does not. -/
+theorem S_set_not_subset_T_set : ¬ S_set ⊆ T_set := by
+  intro h
+  have h2 : 2 ∈ T_set := h S_set_two_mem
+  exact absurd h2 T_set_two_notMem
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
