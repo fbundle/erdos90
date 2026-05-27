@@ -605,8 +605,37 @@ The completed Dedekind zeta function `Λ_K(s) = ...` satisfies
 Cite: Hecke 1917 + Tate's thesis.  Multi-month/year Mathlib: needs
 multi-D Poisson summation + theta function modular transformation +
 Mellin transform.  See `Mathlib4_Extra/DedekindZetaFE.lean` for the
-in-progress formalization. -/
+in-progress formalization.
+
+DECOMPOSITION: 2 named pieces.
+1. **K = ℚ case (Riemann zeta FE)** — PROVED in Mathlib as
+   `completedRiemannZeta_one_sub`.
+2. **General number field K** — Mathlib gap; needs the multi-D
+   Poisson + θ_K + Mellin chain in `DedekindZetaFE.lean`. -/
 def dedekindZeta_functional_equation_postulate
+    [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.2b.zeta-FE.riemann** (Riemann zeta FE — Mathlib
+citation):
+
+The completed Riemann zeta function `Λ(s) = π^{-s/2} · Γ(s/2) · ζ(s)`
+satisfies `Λ(1 - s) = Λ(s)`.
+
+PROVED Lean: direct citation of Mathlib's `completedRiemannZeta_one_sub`. -/
+theorem dedekindZeta_functional_equation_riemann_postulate (s : ℂ) :
+    completedRiemannZeta (1 - s) = completedRiemannZeta s :=
+  completedRiemannZeta_one_sub s
+
+/-- **Sub-sub-postulate D3.2b.zeta-FE.generalK** (General number field FE —
+Mathlib gap):
+
+For general number field `K` (not just ℚ), the completed Dedekind
+zeta `Λ_K(s)` satisfies `Λ_K(1 - s) = Λ_K(s)`.
+
+Mathlib v4.30: not packaged; needs the multi-D Poisson + θ_K + Mellin
+chain in `Mathlib4_Extra/NumberTheory/LSeries/DedekindZetaFE.lean`. -/
+def dedekindZeta_functional_equation_generalK_postulate
     [NumberField K] :
     True := sorry
 
