@@ -1368,6 +1368,25 @@ theorem cyclotomic_five_torsionOrder
   have := IsCyclotomicExtension.Rat.torsionOrder_eq (n := 5) (K := K)
   simpa [Nat.not_even_iff_odd, (by decide : Odd 5)] using this
 
+/-- `nrComplexPlaces ℚ(ζ_3) = 1` (since `φ(3) = 2`, `2/2 = 1`).
+
+PROVED Lean: direct citation of Mathlib's
+`IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two`. -/
+theorem cyclotomic_three_nrComplexPlaces
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.InfinitePlace.nrComplexPlaces K = 1 := by
+  have h := IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := 3) (K := K)
+  norm_num at h
+  exact h
+
+/-- `nrComplexPlaces ℚ(ζ_5) = 2` (since `φ(5) = 4`, `4/2 = 2`). -/
+theorem cyclotomic_five_nrComplexPlaces
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.InfinitePlace.nrComplexPlaces K = 2 := by
+  have h := IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two (n := 5) (K := K)
+  norm_num at h
+  exact h
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
