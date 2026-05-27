@@ -105,4 +105,16 @@ theorem units_rank_rat_eq_zero : NumberField.Units.rank ℚ = 0 := by
 PROVED Lean: direct citation of Mathlib's `Module.finrank_self`. -/
 theorem finrank_rat_eq_one : Module.finrank ℚ ℚ = 1 := Module.finrank_self ℚ
 
-end NumberField
+/-- **Sanity assembly note** (NOT YET PROVED): `dedekindZeta_residue ℚ = 1`.
+
+Plugs all K = ℚ sanity values into Mathlib's `dedekindZeta_residue_def`:
+`residue = 2^{r_1} · (2π)^{r_2} · R_K · h_K / (w_K · √|disc K|)`
+       = `2^1 · (2π)^0 · R_ℚ · 1 / (2 · √|1|)`
+       = `R_ℚ`.
+
+The final step requires `regulator ℚ = 1` (regulator is the determinant
+of an empty matrix when rank = 0), which is not directly packaged in
+Mathlib v4.30.  This sanity assembly is therefore left as
+documentation — the K = ℚ invariant-toolkit closures above are the
+individual citation wins. -/
+example : True := trivial  -- placeholder; see note above
