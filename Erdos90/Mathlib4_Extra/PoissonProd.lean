@@ -710,6 +710,95 @@ theorem fourier_partial_fourier_integrand_eq (f : 𝓢(ℝ × ℝ, ℂ)) (n : �
   push_cast
   ring
 
+/-! ## CLOSE `partial_fourier_is_Schwartz_postulate` via Fourier inversion
+
+With the helpers in place, we now PROVE the existential subtype
+that constitutes the postulate's content.  The construction:
+
+  `g := SchwartzMap.fourierInv ((fourier2DSchwartz f).leftPartial n)`
+
+is automatically Schwartz (Mathlib's `SchwartzMap.fourierInv` is CLM).
+
+The value spec follows from `Continuous.fourierInv_fourier_eq`
+applied to `I(x) := ∫ y, exp(-2πi n y) f(x, y) dy`:
+- I continuous (continuous_partial_fourier_integrand)
+- I integrable (integrable_partial_fourier_integrand)
+- 𝓕(I) integrable (= leftPartial n, Schwartz)
+- Conclude I = 𝓕⁻¹(𝓕 I) = 𝓕⁻¹(leftPartial n) = g.
+- And I(x) = 𝓕(f.rightPartial x)(n : ℝ) by Fubini direction (the integral
+  is the partial Fourier of f.rightPartial x at n).
+-/
+
+/-- **CLOSED** (PROVED): the partial Fourier `x ↦ 𝓕(f.rightPartial x)(n)` is
+Schwartz with the specified values.
+
+Returns the same subtype as `partial_fourier_is_Schwartz_postulate` but
+PROVED via the chain of helpers above.  The original
+`partial_fourier_is_Schwartz_postulate` could now be redefined to call
+this, but doing so requires a file reorganization (forward references).
+For now, this is a parallel theorem providing the closure as Lean code. -/
+noncomputable def partial_fourier_is_Schwartz_proved (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
+    { g : 𝓢(ℝ, ℂ) // ∀ x : ℝ,
+        (g : ℝ → ℂ) x = 𝓕 ((f.rightPartial x : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (n : ℝ) } := by
+  -- Define the Schwartz function via Fourier inverse of leftPartial of fourier2DSchwartz.
+  refine ⟨𝓕⁻ ((fourier2DSchwartz f).leftPartial n : 𝓢(ℝ, ℂ)), ?_⟩
+  intro x
+  -- Apply Continuous.fourierInv_fourier_eq to the integrand
+  --   I(x') := ∫ y, exp(-2πi (n:ℝ) y) f(x', y) dy
+  -- which is continuous + integrable + has integrable Fourier = leftPartial n.
+  set I : ℝ → ℂ := fun x' => ∫ y : ℝ,
+      Complex.exp (-(2 * Real.pi * ((n : ℝ) * y)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (x', y) with hI_def
+  -- I is continuous and integrable.
+  have hI_cont : Continuous I := continuous_partial_fourier_integrand f (n : ℝ)
+  have hI_int : MeasureTheory.Integrable I :=
+    integrable_partial_fourier_integrand f (n : ℝ)
+  -- 𝓕(I) = leftPartial n  (as functions)
+  have hF_I_eq : ∀ w : ℝ, 𝓕 I w =
+      ((fourier2DSchwartz f).leftPartial n : 𝓢(ℝ, ℂ)) w :=
+    fun w => fourier_partial_fourier_integrand_eq f (n : ℝ) w
+  -- 𝓕(I) is integrable (since it equals a Schwartz function pointwise)
+  have hF_I_int : MeasureTheory.Integrable (𝓕 I) := by
+    refine ((fourier2DSchwartz f).leftPartial n).integrable.congr ?_
+    refine Filter.Eventually.of_forall fun w => ?_
+    exact (hF_I_eq w).symm
+  -- Apply Fourier inversion to get I = 𝓕⁻¹(𝓕 I)
+  have hI_inv : 𝓕⁻ (𝓕 I) = I := hI_cont.fourierInv_fourier_eq hI_int hF_I_int
+  -- 𝓕⁻¹(𝓕 I) at x = I(x).
+  -- Also, 𝓕⁻¹(leftPartial n) = 𝓕⁻¹(𝓕 I) since leftPartial n = 𝓕 I.
+  -- So 𝓕⁻¹(leftPartial n) x = I(x).
+  -- Need: SchwartzMap.fourierInv ((fourier2DSchwartz f).leftPartial n) x = 𝓕(f.rightPartial x)(n : ℝ)
+  -- SchwartzMap.fourierInv g = 𝓕⁻¹ (g : ℝ → ℂ) at the coe level.
+  -- We have I(x) = 𝓕⁻¹(leftPartial n) x.
+  -- And I(x) = 𝓕(f.rightPartial x)(n : ℝ) (matches the goal modulo integral notation).
+  have h_inv_eq : 𝓕⁻ (((fourier2DSchwartz f).leftPartial n : 𝓢(ℝ, ℂ)) :
+      ℝ → ℂ) x = I x := by
+    have h_eq_funext : (((fourier2DSchwartz f).leftPartial n : 𝓢(ℝ, ℂ)) :
+        ℝ → ℂ) = 𝓕 I := by
+      ext w
+      exact (hF_I_eq w).symm
+    rw [h_eq_funext]
+    exact congrFun hI_inv x
+  -- Now bridge: SchwartzMap.fourierInv ((fourier2DSchwartz f).leftPartial n) x
+  --           = 𝓕⁻¹ (((fourier2DSchwartz f).leftPartial n : ℝ → ℂ)) x
+  -- via SchwartzMap.fourierInv_coe.
+  rw [show ((𝓕⁻ ((fourier2DSchwartz f).leftPartial n : 𝓢(ℝ, ℂ)) :
+      𝓢(ℝ, ℂ)) : ℝ → ℂ) x = 𝓕⁻ (((fourier2DSchwartz f).leftPartial n :
+      𝓢(ℝ, ℂ)) : ℝ → ℂ) x from by rw [SchwartzMap.fourierInv_coe]]
+  rw [h_inv_eq]
+  -- Now goal: I x = 𝓕(f.rightPartial x)(n : ℝ)
+  -- Compute RHS as integral
+  rw [hI_def]
+  rw [fourier_eq' ((f.rightPartial x : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (n : ℝ)]
+  refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun y => ?_)
+  simp only [smul_eq_mul, rightPartial_apply]
+  have h_inner : (inner ℝ y ((n : ℝ)) : ℝ) = y * (n : ℝ) := by
+    simp [RCLike.inner_apply, mul_comm]
+  rw [show (inner ℝ y ((n : ℝ)) : ℝ) = y * (n : ℝ) from h_inner]
+  congr 1
+  push_cast
+  ring
+
 /-! ## Towards full 2-D Schwartz Poisson summation
 
 We can now restate the row-Poisson chain in terms of `partialFourier`,
