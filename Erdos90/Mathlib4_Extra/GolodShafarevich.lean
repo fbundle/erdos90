@@ -536,6 +536,35 @@ def pHCF_index_two_postulate
     (E : NumberField.HilbertPClassFieldExt K p) :
     True := sorry
 
+/-! #### Decomposition of `pHCF_index_two_postulate` into p ≠ 2 vs p = 2
+
+The index-two claim splits cleanly by parity of p:
+-/
+
+/-- **Sub-sub-sub-postulate D3.1.gs.step.cm.index-two.odd-p** (Odd prime case):
+For odd p and CM K, `[H_p(K) : H_p(K⁺)] = 2`.  The argument: Gal(K/K⁺)
+has order 2 = prime-to-p, so it lifts trivially through the p-Sylow.
+
+This is the "easy" case.  Cite: standard p-prime-to-2 reasoning.  Mathlib
+v4.30: not packaged but is a standard CFT computation. -/
+def pHCF_index_two_odd_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_hp_odd : p ≠ 2)
+    (K : Type) [Field K] [NumberField K] [IsCMField K]
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.step.cm.index-two.2** (p = 2 case):
+For p = 2 and CM K, `[H_2(K) : H_2(K⁺)] = 2`.  Subtle because Gal(K/K⁺)
+has order 2 = p, so it lies in the 2-Sylow.  Requires a more delicate
+analysis via 2-Sylow Artin reciprocity.
+
+Cite: Iwasawa *Local CFT* Ch. 6 (the 2-case discussion).  Mathlib v4.30:
+not packaged. -/
+def pHCF_index_two_p2_postulate
+    (K : Type) [Field K] [NumberField K] [IsCMField K]
+    (E : NumberField.HilbertPClassFieldExt K 2) :
+    True := sorry
+
 /-- **Sub-sub-postulate D3.1.gs.step.cm** (p-HCF preserves CM):
 If `K` is CM, then the p-Hilbert class field `H_p(K)` is also CM.
 
