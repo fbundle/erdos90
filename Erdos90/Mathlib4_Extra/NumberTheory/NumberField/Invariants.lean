@@ -201,6 +201,20 @@ theorem totient_four_eq_two : Nat.totient 4 = 2 := by decide
 /-- `φ(6) = 2` (a non-prime example, φ(2·3) = φ(2)·φ(3) = 1·2). -/
 theorem totient_six_eq_two : Nat.totient 6 = 2 := by decide
 
+/-! ### π sanity wrappers -/
+
+/-- `π > 0`.  Direct citation of Mathlib's `Real.pi_pos`. -/
+theorem real_pi_pos : 0 < Real.pi := Real.pi_pos
+
+/-- `π ≠ 0`.  Direct citation of Mathlib's `Real.pi_ne_zero`. -/
+theorem real_pi_ne_zero : Real.pi ≠ 0 := Real.pi_ne_zero
+
+/-- `π > 3`.  Direct citation of Mathlib's `Real.pi_gt_three`. -/
+theorem real_pi_gt_three : 3 < Real.pi := Real.pi_gt_three
+
+/-- `π < 4`.  Direct citation of Mathlib's `Real.pi_lt_four`. -/
+theorem real_pi_lt_four : Real.pi < 4 := Real.pi_lt_four
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
