@@ -291,19 +291,42 @@ infrastructure (functional equation for `dedekindZeta`, analytic continuation,
 residue evaluation at `s = 0`).
 -/
 
+/-- **Sub-postulate D3.2c.zimmert** (Zimmert log-sieve bound, weakest form):
+For any number field K with unit rank ≥ 1, the regulator satisfies
+`regulator K ≥ 0.0023` (a very weak universal lower bound that doesn't
+require the dedekindZeta functional equation).
+
+Cite: Zimmert 1981, *"Ideale kleinster Norm in Idealklassen und eine Regulatorabschätzung"*,
+Inventiones 62:367-380.  Mathlib v4.30: not packaged.
+
+This is the "easy half" of regulator bounds (the hard half is Friedman's
+constant 0.2052, which needs dedekindZeta machinery). -/
+lemma zimmert_regulator_lower_bound_postulate
+    [NumberField K]
+    (_hrank : 1 ≤ NumberField.Units.rank K) :
+    NumberField.Units.regulator K ≥ 1/512 := sorry
+
+/-- **Sub-postulate D3.2c.friedman** (Friedman analytic regulator bound):
+For totally complex K with unit rank ≥ 1, `regulator K ≥ 0.2052`.
+
+Cite: Friedman 1989, *"Analytic formulas for the regulator of a number field"*,
+Inventiones 98:599-622.  Multi-month Mathlib: needs dedekindZeta functional
+equation + Stark conjecture relative case. -/
+lemma friedman_regulator_lower_bound_postulate
+    [IsCMField K] [IsTotallyComplex K]
+    (_hf : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces K) :
+    NumberField.Units.regulator K ≥ (1 / 5 : ℝ) := sorry
+
 /-- **D3.2c**: Friedman–Zimmert regulator lower bound for CM totally complex
-fields.  For a CM totally complex K with `nrComplexPlaces K ≥ 1` (i.e. unit
-rank `f - 1 ≥ 0`), `regulator K ≥ 1/8`.
+fields.  For a CM totally complex K with `nrComplexPlaces K ≥ 1`,
+`regulator K ≥ 1/8`.
 
 The constant `1/8` is a weakened form of Friedman's `R_K > 0.2052`.
 
-Cite: Friedman 1989, *"Analytic formulas for the regulator of a number field"*,
-Inventiones 98:599–622.  Zimmert 1981 gives a comparable bound via a log-sieve
-method.  Not in Mathlib v4.30.
+PROVED Lean ASSEMBLY (modulo `friedman_regulator_lower_bound_postulate`):
+take `friedman_regulator_lower_bound_postulate` (gives 0.2052 ≥ 1/8).
 
-See the decomposition above for the Mathlib roadmap.  The closure of this
-lemma is shared infrastructure with `dedekind_residue_upper_bound_cm` — both
-need the analytic continuation of `dedekindZeta` and the functional equation. -/
+Cite: Friedman 1989; Zimmert 1981 (weaker constant alternative). -/
 lemma regulator_lower_bound_cm
     [IsCMField K] [IsTotallyComplex K]
     (_hf : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces K) :
