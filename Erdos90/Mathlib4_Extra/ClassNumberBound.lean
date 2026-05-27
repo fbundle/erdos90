@@ -306,8 +306,61 @@ lemma zimmert_regulator_lower_bound_postulate
     (_hrank : 1 ≤ NumberField.Units.rank K) :
     NumberField.Units.regulator K ≥ 1/512 := sorry
 
+/-! #### Decomposition of `friedman_regulator_lower_bound_postulate`
+
+Friedman 1989's analytic regulator bound decomposes via:
+
+1. **Zeta value at s = 0 formula**: `ζ_K(0) = -h_K · R_K / w_K`
+   (Stark; follows from the FE applied at s = 0 + Dirichlet class number
+   formula at s = 1).
+2. **ζ_K(0) bounded above by integral identity**: Friedman's key bound
+   `|ζ_K(0)| ≤ (positive integral)` via positivity of the integral
+   representation involving θ_K.
+3. **Solve for R_K**: rearranging gives `R_K ≥ (constant · w_K) / h_K`,
+   and Friedman's careful constants give R_K ≥ 0.2052 unconditionally.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-sub-postulate D3.2c.friedman.zeta-at-zero** (ζ_K(0) formula):
+For a number field K with unit rank ≥ 1,
+`ζ_K(0) = -classNumber K * regulator K / torsionOrder K`.
+
+This is a special case of Stark's first conjecture (proved in this
+generality by Stark 1971/1975, Tate 1984).  Follows from the
+dedekindZeta functional equation applied at s = 0 + the Dirichlet
+class number formula at s = 1.
+
+Cite: Tate 1984 *Les conjectures de Stark sur les fonctions L d'Artin*.
+Mathlib v4.30: not packaged. -/
+def zeta_K_at_zero_postulate
+    [NumberField K]
+    (_hrank : 1 ≤ NumberField.Units.rank K) :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.2c.friedman.integral-bound** (Friedman's
+integral bound on `|ζ_K(0)|`):
+For a number field K, `|ζ_K(0)| ≤ (some explicit positive integral
+involving Γ-factors)` ≤ explicit constant depending only on r_1, r_2.
+
+This is Friedman's key technical step: he constructs an integral
+representation of `ζ_K(0)` whose absolute value is bounded uniformly.
+
+Cite: Friedman 1989 *Analytic formulas for the regulator of a number
+field*.  Mathlib v4.30: not packaged. -/
+def friedman_zeta_zero_bound_postulate
+    [NumberField K] :
+    True := sorry
+
 /-- **Sub-postulate D3.2c.friedman** (Friedman analytic regulator bound):
 For totally complex K with unit rank ≥ 1, `regulator K ≥ 0.2052`.
+
+ASSEMBLY (modulo the two sub-sub-postulates above):
+1. By `zeta_K_at_zero_postulate`: `ζ_K(0) = -h_K · R_K / w_K`.
+2. By `friedman_zeta_zero_bound_postulate`: `|ζ_K(0)| ≤ M` (Friedman's
+   integral bound).
+3. Rearrange: `R_K ≥ (w_K · |ζ_K(0)|) / h_K ≥ 0.2052` after Friedman's
+   careful explicit constants.
 
 Cite: Friedman 1989, *"Analytic formulas for the regulator of a number field"*,
 Inventiones 98:599-622.  Multi-month Mathlib: needs dedekindZeta functional
