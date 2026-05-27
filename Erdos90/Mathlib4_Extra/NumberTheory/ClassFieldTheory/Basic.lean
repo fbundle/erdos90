@@ -750,6 +750,24 @@ def pHCF_galois_card_eq_sylow_p_classGroup_postulate
     (P : Sylow p (ClassGroup (𝓞 K))) :
     Nat.card (E.H_p ≃ₐ[K] E.H_p) = Nat.card P := sorry
 
+/-- **Companion (PROVED)**: `Gal(H_p(K)/K)` is a p-group.
+
+PROVED Lean via Mathlib's `IsPGroup.of_card` + `card_aut_eq_finrank` +
+`finrank_is_pow_p`.
+
+This is the structural fact underlying the Sylow embedding — the
+Galois group is a p-group, hence sits inside a p-Sylow of any group
+it maps into. -/
+theorem pHCF_galois_isPGroup_of_prime
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
+    IsPGroup p (E.H_p ≃ₐ[K] E.H_p) := by
+  haveI : FiniteDimensional K E.H_p :=
+    HilbertPClassFieldExt.finiteDimensional_of_prime K p hp E
+  obtain ⟨n, hn⟩ := E.finrank_is_pow_p
+  refine IsPGroup.of_card (n := n) ?_
+  rw [IsGalois.card_aut_eq_finrank, hn]
+
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
