@@ -976,6 +976,384 @@ then express the full 2-D Poisson identity modulo one remaining Fubini swap.
 The other Fubini swap is now CLOSED via `fourier2DSchwartz_apply`.
 -/
 
+/-! ### Chain rule helper for `rightPartial` (toward closing
+`summable_partialFourier_2d_postulate`).
+
+`f.rightPartial x_0 = (f : ℝ×ℝ → ℂ) ∘ (fun y => (x_0, y))`.  The map
+`y ↦ (x_0, y) = (x_0, 0) + inr y` decomposes as a translation + the CLM
+`inr : ℝ → ℝ × ℝ`.  Combining translation invariance of `iteratedFDeriv`
+with `ContinuousLinearMap.iteratedFDeriv_comp_right` and the operator norm
+bound `‖inr‖ ≤ 1` yields:
+  `‖iteratedFDeriv ℝ q (f.rightPartial x_0) y‖ ≤ ‖iteratedFDeriv ℝ q f (x_0, y)‖`.
+This is the key bound that lets us push 2-D Schwartz seminorm decay
+(via `schwartz_xy_decay_bound_iteratedFDeriv`) through to bounds on
+`f.rightPartial m`'s iterated derivatives. -/
+theorem norm_iteratedFDeriv_rightPartial_le (f : 𝓢(ℝ × ℝ, ℂ))
+    (x_0 y : ℝ) (q : ℕ) :
+    ‖iteratedFDeriv ℝ q ((f.rightPartial x_0 : 𝓢(ℝ, ℂ)) : ℝ → ℂ) y‖ ≤
+      ‖iteratedFDeriv ℝ q ((f : 𝓢(ℝ × ℝ, ℂ)) : ℝ × ℝ → ℂ) (x_0, y)‖ := by
+  -- Rewrite f.rightPartial x_0 as ((fun w => f((x_0, 0) + w)) ∘ inr)
+  set inrCL : ℝ →L[ℝ] ℝ × ℝ := ContinuousLinearMap.inr ℝ ℝ ℝ
+  set g : ℝ × ℝ → ℂ := fun w => (f : ℝ × ℝ → ℂ) ((x_0, 0) + w) with hg_def
+  have h_smooth_g : ContDiff ℝ q g :=
+    (f.smooth q).comp (contDiff_const.add contDiff_id)
+  -- Coercion of f.rightPartial x_0 equals g ∘ inrCL pointwise.
+  have h_fun_eq : ((f.rightPartial x_0 : 𝓢(ℝ, ℂ)) : ℝ → ℂ) =
+      g ∘ (inrCL : ℝ → ℝ × ℝ) := by
+    funext z
+    show (f : ℝ × ℝ → ℂ) (x_0, z) = g (inrCL z)
+    show (f : ℝ × ℝ → ℂ) (x_0, z) = (f : ℝ × ℝ → ℂ) ((x_0, 0) + inrCL z)
+    congr 1
+    show (x_0, z) = (x_0, 0) + (inrCL z)
+    show (x_0, z) = (x_0, 0) + (0, z)
+    ext <;> simp
+  rw [h_fun_eq]
+  -- iteratedFDeriv on a CLM composition
+  rw [ContinuousLinearMap.iteratedFDeriv_comp_right inrCL h_smooth_g y le_rfl]
+  -- Bound by ‖inner‖ · ∏ ‖inrCL‖
+  refine le_trans
+    (ContinuousMultilinearMap.norm_compContinuousLinearMap_le _ _) ?_
+  -- Translation invariance: iteratedFDeriv q g (inrCL y) = iteratedFDeriv q f (x_0, y)
+  have h_trans : iteratedFDeriv ℝ q g (inrCL y) =
+      iteratedFDeriv ℝ q ((f : ℝ × ℝ → ℂ)) (x_0, y) := by
+    show iteratedFDeriv ℝ q (fun w => (f : ℝ × ℝ → ℂ) ((x_0, 0) + w)) (inrCL y) =
+        iteratedFDeriv ℝ q ((f : ℝ × ℝ → ℂ)) (x_0, y)
+    rw [iteratedFDeriv_comp_add_left (𝕜 := ℝ)]
+    congr 1
+    show (x_0, 0) + inrCL y = (x_0, y)
+    show (x_0, 0) + (0, y) = (x_0, y)
+    ext <;> simp
+  rw [h_trans]
+  -- ∏ ‖inrCL‖ ≤ 1 since ‖inrCL‖ ≤ 1.
+  have h_prod_le_one :
+      ∏ _i : Fin q, ‖(inrCL : ℝ →L[ℝ] ℝ × ℝ)‖ ≤ 1 := by
+    apply Finset.prod_le_one
+    · intro _ _; exact norm_nonneg _
+    · intro _ _; exact ContinuousLinearMap.norm_inr_le_one ℝ ℝ ℝ
+  calc ‖iteratedFDeriv ℝ q ((f : ℝ × ℝ → ℂ)) (x_0, y)‖ *
+        ∏ _i : Fin q, ‖(inrCL : ℝ →L[ℝ] ℝ × ℝ)‖
+      ≤ ‖iteratedFDeriv ℝ q ((f : ℝ × ℝ → ℂ)) (x_0, y)‖ * 1 := by
+        gcongr
+    _ = ‖iteratedFDeriv ℝ q ((f : ℝ × ℝ → ℂ)) (x_0, y)‖ := mul_one _
+
+/-- Pointwise (1+|m|)^L · (1+|v|)^2 decay on iteratedFDeriv of rightPartial,
+combining the chain-rule helper and `schwartz_xy_decay_bound_iteratedFDeriv`. -/
+theorem rightPartial_iteratedFDeriv_decay_pointwise
+    (f : 𝓢(ℝ × ℝ, ℂ)) (L q : ℕ) (m v : ℝ) :
+    (1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2 *
+        ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖ ≤
+      2 ^ (L + 2) *
+        (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (L + 2) q f) := by
+  have h1 := norm_iteratedFDeriv_rightPartial_le f m v q
+  have h2 := schwartz_xy_decay_bound_iteratedFDeriv f L 2 q m v
+  calc (1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2 *
+        ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖
+      ≤ (1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2 *
+          ‖iteratedFDeriv ℝ q ((f : ℝ × ℝ → ℂ)) (m, v)‖ := by
+        gcongr
+    _ ≤ 2 ^ (L + 2) *
+          (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (L + 2) q f) := h2
+
+/-- Pointwise: `‖∂^q (f.rightPartial m) v‖ ≤ C / ((1+|m|)^L · (1+|v|)^2)`. -/
+theorem rightPartial_iteratedFDeriv_decay_div
+    (f : 𝓢(ℝ × ℝ, ℂ)) (L q : ℕ) (m v : ℝ) :
+    ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖ ≤
+      2 ^ (L + 2) *
+        (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (L + 2) q f) /
+        ((1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2) := by
+  have h_pos_m : (0 : ℝ) < (1 + ‖m‖) ^ L := by positivity
+  have h_pos_v : (0 : ℝ) < (1 + ‖v‖) ^ 2 := by positivity
+  have h_pos_prod : (0 : ℝ) < (1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2 := mul_pos h_pos_m h_pos_v
+  have h := rightPartial_iteratedFDeriv_decay_pointwise f L q m v
+  rw [le_div_iff₀ h_pos_prod, mul_comm]
+  convert h using 1
+
+/-- The integral `∫ (1 + ‖v‖)^(-2) dv` over ℝ is finite. -/
+theorem integral_one_add_norm_pow_neg_two_finite :
+    ∃ I : ℝ, 0 ≤ I ∧ ∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ)) = I := by
+  refine ⟨∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ)), ?_, rfl⟩
+  apply MeasureTheory.integral_nonneg
+  intro v
+  apply Real.rpow_nonneg
+  linarith [norm_nonneg v]
+
+/-- The integrand `‖∂^q (f.rightPartial m)‖` is integrable.  Follows from
+`(f.rightPartial m).integrable_pow_mul_iteratedFDeriv` at `k = 0`. -/
+theorem integrable_norm_iteratedFDeriv_rightPartial
+    (f : 𝓢(ℝ × ℝ, ℂ)) (q : ℕ) (m : ℝ) :
+    MeasureTheory.Integrable
+      (fun v : ℝ => ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖) := by
+  have h := (f.rightPartial m).integrable_pow_mul_iteratedFDeriv (μ := MeasureTheory.volume) 0 q
+  -- h : Integrable fun v => ‖v‖^0 * ‖iteratedFDeriv ℝ q (f.rightPartial m) v‖
+  refine h.congr (Filter.Eventually.of_forall fun v => ?_)
+  simp
+
+/-- Integral version: `(1+|m|)^L · ∫ ‖∂^q (f.rightPartial m) v‖ dv ≤ Const(L, q, f)`. -/
+theorem integral_iteratedFDeriv_rightPartial_decay
+    (f : 𝓢(ℝ × ℝ, ℂ)) (L q : ℕ) (m : ℝ) :
+    (1 + ‖m‖) ^ L *
+        ∫ v : ℝ,
+          ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖ ≤
+      2 ^ (L + 2) *
+        (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (L + 2) q f) *
+        ∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ)) := by
+  set C : ℝ := 2 ^ (L + 2) *
+      (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (L + 2) q f) with hC_def
+  have hC_nonneg : 0 ≤ C := by
+    apply mul_nonneg (by positivity)
+    apply add_nonneg <;> exact apply_nonneg _ _
+  have h_pos_m : (0 : ℝ) < (1 + ‖m‖) ^ L := by positivity
+  have h_pos_m_le : (0 : ℝ) ≤ (1 + ‖m‖) ^ L := le_of_lt h_pos_m
+  -- pointwise bound: ‖∂^q (f.rightPartial m) v‖ ≤ C / ((1+|m|)^L · (1+|v|)^2)
+  have h_pt : ∀ v : ℝ,
+      ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖ ≤
+        C / ((1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2) := by
+    intro v; exact rightPartial_iteratedFDeriv_decay_div f L q m v
+  -- multiply through by (1+|m|)^L to get
+  -- (1+|m|)^L · ‖∂^q ...‖ ≤ C / (1+|v|)^2
+  have h_pt_mul : ∀ v : ℝ,
+      (1 + ‖m‖) ^ L *
+        ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖ ≤
+          C * (1 + ‖v‖) ^ (-(2 : ℝ)) := by
+    intro v
+    have h_v_pos : (0 : ℝ) < (1 + ‖v‖) := by linarith [norm_nonneg v]
+    have h_v_sq_pos : (0 : ℝ) < (1 + ‖v‖) ^ 2 := by positivity
+    have h_prod_pos : (0 : ℝ) < (1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2 := mul_pos h_pos_m h_v_sq_pos
+    have := mul_le_mul_of_nonneg_left (h_pt v) h_pos_m_le
+    -- this : (1+|m|)^L * ‖...‖ ≤ (1+|m|)^L * (C / ((1+|m|)^L · (1+|v|)^2))
+    have h_eq : (1 + ‖m‖) ^ L * (C / ((1 + ‖m‖) ^ L * (1 + ‖v‖) ^ 2)) =
+        C / (1 + ‖v‖) ^ 2 := by
+      field_simp
+    rw [h_eq] at this
+    -- this : (1+|m|)^L * ‖...‖ ≤ C / (1+|v|)^2
+    have h_rpow_eq : (1 + ‖v‖) ^ (-(2 : ℝ)) = 1 / (1 + ‖v‖) ^ 2 := by
+      rw [Real.rpow_neg h_v_pos.le]
+      rw [show (1 + ‖v‖) ^ (2 : ℝ) = (1 + ‖v‖) ^ (2 : ℕ) from by
+        rw [← Real.rpow_natCast]; norm_num]
+      exact (one_div _).symm
+    rw [h_rpow_eq]
+    calc (1 + ‖m‖) ^ L *
+          ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖
+        ≤ C / (1 + ‖v‖) ^ 2 := this
+      _ = C * (1 / (1 + ‖v‖) ^ 2) := by ring
+  -- integrate
+  have h_int_bound : MeasureTheory.Integrable
+      (fun v : ℝ => C * (1 + ‖v‖) ^ (-(2 : ℝ))) := by
+    have h_inv_rpow : MeasureTheory.Integrable
+        (fun v : ℝ => (1 + ‖v‖) ^ (-(2 : ℝ))) := by
+      apply integrable_one_add_norm (μ := MeasureTheory.volume)
+      simp
+    exact h_inv_rpow.const_mul C
+  have h_int_g : MeasureTheory.Integrable
+      (fun v : ℝ =>
+        (1 + ‖m‖) ^ L *
+          ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖) :=
+    (integrable_norm_iteratedFDeriv_rightPartial f q m).const_mul _
+  have h_int_le := MeasureTheory.integral_mono h_int_g h_int_bound h_pt_mul
+  -- h_int_le : ∫ (1+|m|)^L · ‖...‖ ≤ ∫ C · (1+|v|)^(-2)
+  rw [MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul] at h_int_le
+  -- h_int_le : (1+|m|)^L · ∫ ‖...‖ ≤ C · ∫ (1+|v|)^(-2)
+  exact h_int_le
+
+/-- Apply `pow_mul_norm_iteratedFDeriv_fourier_le` to `f.rightPartial m`
+with `k = 0`, getting `‖w‖^N · ‖𝓕(f.rightPartial m) w‖ ≤ 2^N · Σ ∫ ‖∂^q (f.rightPartial m)‖`. -/
+theorem fourier_rightPartial_pow_bound
+    (f : 𝓢(ℝ × ℝ, ℂ)) (m : ℝ) (N : ℕ) (w : ℝ) :
+    ‖w‖ ^ N *
+        ‖𝓕 (((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)) w‖ ≤
+      2 ^ N *
+        ∑ q ∈ Finset.range (N + 1),
+          ∫ v : ℝ,
+            ‖iteratedFDeriv ℝ q ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ) v‖ := by
+  set g : ℝ → ℂ := ((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)
+  have hg_smooth : ContDiff ℝ (⊤ : ℕ∞) g := (f.rightPartial m).smooth ⊤
+  have hg_int : ∀ (k n : ℕ), k ≤ (0 : ℕ∞) → n ≤ (⊤ : ℕ∞) →
+      MeasureTheory.Integrable
+        (fun v : ℝ => ‖v‖ ^ k * ‖iteratedFDeriv ℝ n g v‖) := by
+    intro k n _ _
+    exact (f.rightPartial m).integrable_pow_mul_iteratedFDeriv
+      (μ := MeasureTheory.volume) k n
+  have h_main := pow_mul_norm_iteratedFDeriv_fourier_le (E := ℂ) (V := ℝ) (f := g)
+    hg_smooth hg_int (k := 0) (n := N) (by simp) (by simp) w
+  -- h_main: ‖w‖^N * ‖iteratedFDeriv ℝ 0 (𝓕 g) w‖ ≤ (2π)^0 * (2*0+2)^N *
+  --             ∑ p ∈ range 1 × range (N+1), ∫ ‖v‖^p.1 * ‖iteratedFDeriv ℝ p.2 g v‖
+  rw [norm_iteratedFDeriv_zero] at h_main
+  -- h_main: ‖w‖^N * ‖𝓕 g w‖ ≤ 1 * 2^N * ∑ p, ∫ ‖v‖^p.1 * ‖iteratedFDeriv ℝ p.2 g v‖
+  refine h_main.trans ?_
+  rw [show ((2 * Real.pi) ^ (0 : ℕ) : ℝ) = 1 from by simp]
+  rw [show ((2 : ℝ) * (0 : ℕ) + 2) = 2 from by push_cast; ring]
+  rw [one_mul]
+  -- Rewrite ∑_{p ∈ range 1 × range (N+1)} as ∑_{q ∈ range (N+1)} (since p.1 = 0)
+  have h_sum_simplify :
+      ∑ p ∈ Finset.range (0 + 1) ×ˢ Finset.range (N + 1),
+        ∫ v : ℝ, ‖v‖ ^ p.1 * ‖iteratedFDeriv ℝ p.2 g v‖ =
+      ∑ q ∈ Finset.range (N + 1),
+        ∫ v : ℝ, ‖iteratedFDeriv ℝ q g v‖ := by
+    rw [show (0 + 1 : ℕ) = 1 from rfl, Finset.range_one, Finset.singleton_product,
+      Finset.sum_map]
+    apply Finset.sum_congr rfl
+    intro q _
+    simp [Function.Embedding.coeFn_mk]
+  rw [h_sum_simplify]
+
+/-- Combined bound on `(1+|m|)^L · |n|^N · |partialFourier f n m|`. -/
+theorem partialFourier_pow_decay
+    (f : 𝓢(ℝ × ℝ, ℂ)) (L N : ℕ) (m : ℝ) (w : ℝ) :
+    (1 + ‖m‖) ^ L * ‖w‖ ^ N *
+        ‖𝓕 (((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)) w‖ ≤
+      2 ^ N *
+        ∑ q ∈ Finset.range (N + 1),
+          (2 ^ (L + 2) *
+            (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (L + 2) q f)) *
+        ∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ)) := by
+  have h_bound := fourier_rightPartial_pow_bound f m N w
+  have h_pos_m : (0 : ℝ) ≤ (1 + ‖m‖) ^ L := by positivity
+  -- Multiply h_bound by (1+‖m‖)^L
+  have h_mul := mul_le_mul_of_nonneg_left h_bound h_pos_m
+  -- h_mul : (1+|m|)^L * (‖w‖^N * ‖𝓕 g w‖) ≤ (1+|m|)^L * (2^N * ∑ ∫ ...)
+  have h_lhs_eq : (1 + ‖m‖) ^ L * (‖w‖ ^ N *
+      ‖𝓕 (((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)) w‖) =
+      (1 + ‖m‖) ^ L * ‖w‖ ^ N *
+      ‖𝓕 (((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)) w‖ := by ring
+  rw [h_lhs_eq] at h_mul
+  refine h_mul.trans ?_
+  -- (1+|m|)^L * (2^N * Σ ∫ ‖∂^q g‖) ≤ 2^N * Σ [(1+|m|)^L * ∫ ‖∂^q g‖]
+  --                                ≤ 2^N * Σ [Const(L, q, f) * IntFactor]
+  have h_pos_2N : (0 : ℝ) ≤ 2 ^ N := by positivity
+  calc (1 + ‖m‖) ^ L *
+        (2 ^ N * ∑ q ∈ Finset.range (N + 1),
+          ∫ v : ℝ,
+            ‖iteratedFDeriv ℝ q (((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)) v‖)
+      = 2 ^ N * ((1 + ‖m‖) ^ L * ∑ q ∈ Finset.range (N + 1),
+            ∫ v : ℝ,
+              ‖iteratedFDeriv ℝ q (((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)) v‖) := by
+          ring
+    _ = 2 ^ N * (∑ q ∈ Finset.range (N + 1),
+            (1 + ‖m‖) ^ L *
+              ∫ v : ℝ,
+                ‖iteratedFDeriv ℝ q (((f.rightPartial m : 𝓢(ℝ, ℂ)) : ℝ → ℂ)) v‖) := by
+          rw [Finset.mul_sum]
+    _ ≤ 2 ^ N * ∑ q ∈ Finset.range (N + 1),
+            (2 ^ (L + 2) *
+              (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (L + 2) q f)) *
+              ∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ)) := by
+          apply mul_le_mul_of_nonneg_left _ h_pos_2N
+          apply Finset.sum_le_sum
+          intro q _
+          exact integral_iteratedFDeriv_rightPartial_decay f L q m
+
+/-- `(1+x)^3 ≤ 8 · (1 + x^3)` for `x ≥ 0` (used to convert `|n|^3` to `(1+|n|)^3`). -/
+theorem one_add_cubed_le (x : ℝ) (hx : 0 ≤ x) :
+    (1 + x) ^ 3 ≤ 8 * (1 + x ^ 3) := by nlinarith [sq_nonneg (x - 1), sq_nonneg x, sq_nonneg (x + 1)]
+
+/-- The decay constant `C(f) = 8 · I · (Const(3, 0) + 8 · ∑_{q ≤ 3} Const(3, q))`. -/
+noncomputable def partialFourier_decay_const (f : 𝓢(ℝ × ℝ, ℂ)) : ℝ :=
+  8 * (∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ))) *
+    ((2 ^ 5 * (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ 5 0 f)) +
+     8 * ∑ q ∈ Finset.range 4,
+       (2 ^ 5 * (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ 5 q f)))
+
+/-- The main decay bound:
+`(1+|m|)^3 · (1+|n|)^3 · ‖(partialFourier f n)(m)‖ ≤ partialFourier_decay_const f`. -/
+theorem partialFourier_decay_bound (f : 𝓢(ℝ × ℝ, ℂ)) (m n : ℤ) :
+    (1 + ‖(m : ℝ)‖) ^ 3 * (1 + ‖(n : ℝ)‖) ^ 3 *
+        ‖((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (m : ℝ)‖ ≤
+      partialFourier_decay_const f := by
+  set g : ℝ → ℂ := ((f.rightPartial (m : ℝ) : 𝓢(ℝ, ℂ)) : ℝ → ℂ) with hg_def
+  -- Rewrite ‖partialFourier f n m‖ = ‖𝓕 g (n : ℝ)‖
+  have h_eval : ((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (m : ℝ) = 𝓕 g ((n : ℝ)) :=
+    partialFourier_apply f n (m : ℝ)
+  rw [h_eval]
+  -- Bound 1: (1+|m|)^3 * ‖𝓕 g ((n:ℝ))‖ ≤ Const(3, 0, f) * IntFactor
+  --   (via partialFourier_pow_decay with L=3, N=0)
+  have h_L1 := partialFourier_pow_decay f 3 0 (m : ℝ) ((n : ℝ))
+  -- h_L1 : (1+|m|)^3 * ‖(n:ℝ)‖^0 * ‖𝓕 g ((n:ℝ))‖ ≤
+  --        2^0 * ∑_{q ∈ range 1} Const(3, q, f) * IntFactor
+  rw [pow_zero, mul_one] at h_L1
+  rw [show (2 : ℝ) ^ (0 : ℕ) = 1 from by simp, one_mul] at h_L1
+  rw [Finset.sum_range_one] at h_L1
+  -- h_L1 : (1+|m|)^3 * ‖𝓕 g (n:ℝ)‖ ≤ Const(3, 0, f) * IntFactor
+  -- Bound 2: (1+|m|)^3 * |(n:ℝ)|^3 * ‖𝓕 g ((n:ℝ))‖ ≤ 2^3 * ∑_{q ≤ 3} Const(3, q, f) * IntFactor
+  --   (via partialFourier_pow_decay with L=3, N=3)
+  have h_L2 := partialFourier_pow_decay f 3 3 (m : ℝ) ((n : ℝ))
+  -- (1+|n|)^3 ≤ 8(1 + |n|^3) so (1+|n|)^3 · X ≤ 8X + 8|n|^3 · X
+  -- (1+|m|)^3 · (1+|n|)^3 · ‖𝓕 g (n:ℝ)‖ ≤ 8 · (h_L1 + h_L2_pulled)
+  have h_n_cube : (1 + ‖(n : ℝ)‖) ^ 3 ≤ 8 * (1 + ‖(n : ℝ)‖ ^ 3) :=
+    one_add_cubed_le _ (norm_nonneg _)
+  have h_norm_nonneg : (0 : ℝ) ≤ ‖𝓕 g ((n : ℝ))‖ := norm_nonneg _
+  have h_m_nonneg : (0 : ℝ) ≤ (1 + ‖(m : ℝ)‖) ^ 3 := by positivity
+  have h_prod_nonneg : (0 : ℝ) ≤ (1 + ‖(m : ℝ)‖) ^ 3 * ‖𝓕 g ((n : ℝ))‖ := by positivity
+  -- Combine
+  calc (1 + ‖(m : ℝ)‖) ^ 3 * (1 + ‖(n : ℝ)‖) ^ 3 * ‖𝓕 g ((n : ℝ))‖
+      = (1 + ‖(n : ℝ)‖) ^ 3 * ((1 + ‖(m : ℝ)‖) ^ 3 * ‖𝓕 g ((n : ℝ))‖) := by ring
+    _ ≤ 8 * (1 + ‖(n : ℝ)‖ ^ 3) * ((1 + ‖(m : ℝ)‖) ^ 3 * ‖𝓕 g ((n : ℝ))‖) := by
+          apply mul_le_mul_of_nonneg_right h_n_cube h_prod_nonneg
+    _ = 8 * ((1 + ‖(m : ℝ)‖) ^ 3 * ‖𝓕 g ((n : ℝ))‖) +
+          8 * ((1 + ‖(m : ℝ)‖) ^ 3 * ‖(n : ℝ)‖ ^ 3 * ‖𝓕 g ((n : ℝ))‖) := by ring
+    _ ≤ 8 * ((2 : ℝ) ^ (3 + 2) * (SchwartzMap.seminorm ℝ 0 0 f +
+              SchwartzMap.seminorm ℝ (3 + 2) 0 f) *
+            ∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ))) +
+          8 * ((2 : ℝ) ^ 3 *
+            ∑ q ∈ Finset.range (3 + 1),
+              (2 ^ (3 + 2) *
+                (SchwartzMap.seminorm ℝ 0 q f + SchwartzMap.seminorm ℝ (3 + 2) q f)) *
+              ∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ))) := by
+          gcongr
+    _ = partialFourier_decay_const f := by
+          unfold partialFourier_decay_const
+          rw [show (3 + 2 : ℕ) = 5 from rfl, show (3 + 1 : ℕ) = 4 from rfl]
+          rw [← Finset.sum_mul, ← Finset.mul_sum]
+          ring
+
+/-- `(1 + ‖(n : ℝ)‖)^(-3)` is summable on `ℤ` (via decomposition `ℕ ⊕ -ℕ-1`
+and the `p`-series test, applied to the shifted sequence). -/
+theorem summable_one_add_norm_int_neg_three :
+    Summable (fun n : ℤ => (1 + ‖(n : ℝ)‖) ^ (-(3 : ℝ))) := by
+  -- Helper: Summable (fun n : ℕ => ((n + c : ℕ) : ℝ)^(-3)) for c ≥ 1.
+  have h_shift : ∀ (c : ℕ), 1 ≤ c →
+      Summable (fun n : ℕ => ((n + c : ℕ) : ℝ) ^ (-(3 : ℝ))) := by
+    intro c hc
+    have h_base : Summable (fun n : ℕ => (n : ℝ) ^ (-(3 : ℝ))) :=
+      summable_nat_rpow.mpr (by norm_num : (-(3 : ℝ)) < -1)
+    have h_inj : Function.Injective (fun n : ℕ => n + c) := by
+      intro a b hab; simp at hab; exact hab
+    exact h_base.comp_injective h_inj
+  apply Summable.of_nat_of_neg_add_one
+  · -- Part 1: Summable on ℕ ↪ ℤ.
+    have h := h_shift 1 (le_refl 1)
+    refine h.congr (fun n => ?_)
+    have h_norm : ‖((n : ℤ) : ℝ)‖ = (n : ℝ) := by
+      have h_nn : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+      rw [Real.norm_eq_abs]
+      push_cast
+      exact abs_of_nonneg h_nn
+    rw [h_norm]
+    congr 1
+    push_cast
+    ring
+  · -- Part 2: Summable on the negative tail.
+    have h := h_shift 2 (by norm_num)
+    refine h.congr (fun n => ?_)
+    have h_norm : ‖((-((n : ℤ) + 1) : ℤ) : ℝ)‖ = (n : ℝ) + 1 := by
+      have h_nn : (0 : ℝ) ≤ (n : ℝ) + 1 := by positivity
+      rw [Real.norm_eq_abs]
+      push_cast
+      rw [abs_neg, abs_of_nonneg h_nn]
+    rw [h_norm]
+    congr 1
+    push_cast
+    ring
+
+/-- Product summability of `(m, n) ↦ (1 + |m|)^(-3) · (1 + |n|)^(-3)` on `ℤ × ℤ`. -/
+theorem summable_one_add_norm_int_neg_three_prod :
+    Summable (fun p : ℤ × ℤ =>
+      (1 + ‖(p.1 : ℝ)‖) ^ (-(3 : ℝ)) * (1 + ‖(p.2 : ℝ)‖) ^ (-(3 : ℝ))) :=
+  Summable.mul_of_nonneg
+    summable_one_add_norm_int_neg_three
+    summable_one_add_norm_int_neg_three
+    (fun n => Real.rpow_nonneg (by linarith [norm_nonneg ((n : ℝ))]) _)
+    (fun n => Real.rpow_nonneg (by linarith [norm_nonneg ((n : ℝ))]) _)
+
 /-- **Postulate** (summability of the partial-Fourier on `ℤ × ℤ`): the
 function `(m, n) ↦ (partialFourier f n) m` is summable on `ℤ × ℤ`.
 
@@ -1013,12 +1391,73 @@ summability immediately.  Construction is the hard part — requires a
 endomorphism, which isn't a direct Mathlib lemma.  Could be built from
 SchwartzMap.fourierTransformCLM + ad-hoc transport.  ~200-300 LOC.
 
-Both routes need Mathlib infrastructure either not in v4.30 or not in
-the right shape for direct use.  This remains the last sorry in
-PoissonProd.lean as of 2026-05-27 session. -/
-def summable_partialFourier_2d_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
+**Closed (2026-05-27)** via Route A: direct pointwise bound through
+`pow_mul_norm_iteratedFDeriv_fourier_le` applied to `f.rightPartial m`
+(getting `|n|^N · |𝓕(g)(n)| ≤ 2^N · Σ ∫ ‖∂^q g‖`), combined with the
+chain-rule helper `norm_iteratedFDeriv_rightPartial_le` and the 2-D
+Schwartz decay bound `schwartz_xy_decay_bound_iteratedFDeriv`.  See
+`partialFourier_decay_bound` (the pointwise `(1+|m|)^3 · (1+|n|)^3`
+bound) and `summable_one_add_norm_int_neg_three_prod` (the product
+summability of the comparison function). -/
+theorem summable_partialFourier_2d_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
     Summable (Function.uncurry
-      fun m n : ℤ => (partialFourier f n : ℝ → ℂ) m) := sorry
+      fun m n : ℤ => (partialFourier f n : ℝ → ℂ) m) := by
+  set C : ℝ := partialFourier_decay_const f with hC_def
+  have hC_nonneg : 0 ≤ C := by
+    -- Each term in the bound is nonneg (∫ (1+‖v‖)^(-2) ≥ 0, seminorms ≥ 0).
+    rw [hC_def, partialFourier_decay_const]
+    have h_int_nn : 0 ≤ ∫ v : ℝ, (1 + ‖v‖) ^ (-(2 : ℝ)) := by
+      apply MeasureTheory.integral_nonneg
+      intro v
+      apply Real.rpow_nonneg
+      linarith [norm_nonneg v]
+    apply mul_nonneg (mul_nonneg (by norm_num) h_int_nn)
+    apply add_nonneg
+    · apply mul_nonneg (by positivity)
+      apply add_nonneg <;> exact apply_nonneg _ _
+    · apply mul_nonneg (by norm_num)
+      apply Finset.sum_nonneg
+      intros _ _
+      apply mul_nonneg (by positivity)
+      apply add_nonneg <;> exact apply_nonneg _ _
+  -- Compare with C · (1+|m|)^(-3) · (1+|n|)^(-3).
+  have h_bound_summ : Summable (fun p : ℤ × ℤ =>
+      C * ((1 + ‖(p.1 : ℝ)‖) ^ (-(3 : ℝ)) * (1 + ‖(p.2 : ℝ)‖) ^ (-(3 : ℝ)))) :=
+    summable_one_add_norm_int_neg_three_prod.mul_left C
+  -- Pointwise bound:
+  --   ‖partialFourier f n m‖ ≤ C · (1+|m|)^(-3) · (1+|n|)^(-3)
+  -- (Rearrange partialFourier_decay_bound by dividing by (1+|m|)^3 · (1+|n|)^3.)
+  apply Summable.of_norm_bounded (g := fun p : ℤ × ℤ =>
+      C * ((1 + ‖(p.1 : ℝ)‖) ^ (-(3 : ℝ)) * (1 + ‖(p.2 : ℝ)‖) ^ (-(3 : ℝ))))
+    h_bound_summ
+  rintro ⟨m, n⟩
+  show ‖((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (m : ℝ)‖ ≤
+    C * ((1 + ‖(m : ℝ)‖) ^ (-(3 : ℝ)) * (1 + ‖(n : ℝ)‖) ^ (-(3 : ℝ)))
+  have h_bound := partialFourier_decay_bound f m n
+  -- h_bound: (1+|m|)^3 · (1+|n|)^3 · ‖∂^q ...‖ ≤ C
+  set a : ℝ := (1 + ‖(m : ℝ)‖) ^ 3 with ha_def
+  set b : ℝ := (1 + ‖(n : ℝ)‖) ^ 3 with hb_def
+  have h_a_pos : 0 < a := by positivity
+  have h_b_pos : 0 < b := by positivity
+  have h_ab_pos : 0 < a * b := mul_pos h_a_pos h_b_pos
+  have h_rpow_m : (1 + ‖(m : ℝ)‖) ^ (-(3 : ℝ)) = 1 / a := by
+    rw [ha_def, Real.rpow_neg (by linarith [norm_nonneg ((m : ℝ))])]
+    rw [show ((1 + ‖(m : ℝ)‖) ^ (3 : ℝ)) = ((1 + ‖(m : ℝ)‖) ^ (3 : ℕ)) from by
+      rw [← Real.rpow_natCast]; norm_num]
+    exact (one_div _).symm
+  have h_rpow_n : (1 + ‖(n : ℝ)‖) ^ (-(3 : ℝ)) = 1 / b := by
+    rw [hb_def, Real.rpow_neg (by linarith [norm_nonneg ((n : ℝ))])]
+    rw [show ((1 + ‖(n : ℝ)‖) ^ (3 : ℝ)) = ((1 + ‖(n : ℝ)‖) ^ (3 : ℕ)) from by
+      rw [← Real.rpow_natCast]; norm_num]
+    exact (one_div _).symm
+  rw [h_rpow_m, h_rpow_n]
+  -- goal: ‖...‖ ≤ C * (1/a * (1/b)) = C / (a*b)
+  rw [show C * (1 / a * (1 / b)) = C / (a * b) from by field_simp]
+  rw [le_div_iff₀ h_ab_pos]
+  -- goal: ‖...‖ * (a * b) ≤ C
+  calc ‖((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (m : ℝ)‖ * (a * b)
+      = a * b * ‖((partialFourier f n : 𝓢(ℝ, ℂ)) : ℝ → ℂ) (m : ℝ)‖ := by ring
+    _ ≤ C := h_bound
 
 /-- Mathlib's `EisensteinSeries.summable_one_div_norm_rpow` applied to k=3:
 the `‖·‖^(-3)` series is summable over `Fin 2 → ℤ`.
