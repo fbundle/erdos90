@@ -809,7 +809,16 @@ is exact, where `G_K = Gal(K_S^p/K)`, `G_L = Gal(K_S^p/L)`.
 Cite: Hochschild-Serre 1953; Neukirch-Schmidt-Wingberg *Cohomology of
 Number Fields* II §1 Theorem 1.4.1.  Mathlib v4.30: 5-term exact
 sequence for group extensions exists (`Mathlib.RepresentationTheory`)
-but the profinite version for pro-p Galois groups not packaged. -/
+but the profinite version for pro-p Galois groups not packaged.
+
+DECOMPOSITION: 4 named maps + exactness statements.
+- `inf`: H¹(Gal(L/K), M) → H¹(G_K, M) (inflation)
+- `res`: H¹(G_K, M) → H¹(G_L, M)^{Gal(L/K)} (restriction)
+- `trans`: H¹(G_L, M)^{Gal(L/K)} → H²(Gal(L/K), M) (transgression)
+- exactness at each of 3 positions.
+
+For pro-p number-field Galois groups (G_K = Gal(K_S^p/K)), this needs
+profinite group cohomology specialization. -/
 def inflation_restriction_postulate
     (p : ℕ) (_hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K]
