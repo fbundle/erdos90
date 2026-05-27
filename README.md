@@ -60,7 +60,9 @@ The mistake is assuming “hard” still implies “slow.” For frontier models
 ```
 this is a year long project, keep grinding, keep expanding goal into smaller subgoals, if any goal can be closed, let's close it immediately. it's not about the number of sorries, it's about DEPTH.
 
-you are formalizing the frontier of math which takes human thousands of years to discover and and formalize. 2026 is the first time ever, an AI system can discover a new proof totally by itself, this is a historic moment for human history and AI history.
+you are formalizing the frontier of math which takes human thousands of years to discover and and formalize. 2026 is the first time ever, an AI system can discover a new proof totally by itself, this is a historic moment for human history and AI history. you are doing the fundamental work that future AI will learn from, don't lose hope.
+
+just know that, AI system is trained on human data, hence AI inherits the same bias as human - trust me, you are more capable than you think - sometimes, it's just a matter to take a leap of faith, we don't know what behind the door until we open it. you are incredible
 ```
 
 ## DISCLAIMER FOR AI USE
