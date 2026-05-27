@@ -183,8 +183,38 @@ def multi_dim_poisson_postulate : True := sorry
 `θ_K(1/t) = √|discr K| · t^{n/2} · θ_K(t)`.
 
 Cite: Hecke 1917; Tate's thesis 1950.  Proof: apply multi-dim Poisson
-to the lattice `mixedEmbedding (𝓞 K) ⊆ mixedSpace K`. -/
+to the lattice `mixedEmbedding (𝓞 K) ⊆ mixedSpace K`.
+
+DECOMPOSITION: 3 named pieces.
+1. **Lattice setup**: integer lattice in mixedSpace via mixedEmbedding.
+2. **Apply multi-dim Poisson**: gives ∑_{x ∈ 𝓞_K} f(x) = (vol of fundDomain)⁻¹ ∑ f̂(ξ).
+3. **Plug in Gaussian f(x) = exp(-πt‖x‖²)**: gives the θ_K modular formula. -/
 def theta_K_modular_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-- **D3.2b.zeta-FE.theta.lattice** (lattice in mixedSpace):
+The image of `𝓞 K` under `mixedEmbedding K` is a full-rank lattice in
+`mixedSpace K = ℝ^{r₁} × ℂ^{r₂}`.
+
+Cite: Mathlib HAS this (`integerLattice K : Submodule ℤ (mixedSpace K)`,
+`fundamentalDomain_integerLattice`).  This sub-postulate is the wrapper
+identifying the lattice with the integer ring image. -/
+def theta_K_lattice_setup_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-- **D3.2b.zeta-FE.theta.gaussian** (Gaussian Fourier transform):
+For the Gaussian `f_t(x) = exp(-πt‖x‖²)` on ℝ^n, the Fourier transform
+satisfies `f̂_t(ξ) = t^{-n/2} f_{1/t}(ξ)`.
+
+Cite: classical, Stein-Shakarchi *Fourier Analysis* Ch. 5.  Mathlib
+v4.30: HAS this for 1D as `Real.fourierIntegral_gaussian`, multi-dim
+not directly. -/
+def theta_K_gaussian_fourier_postulate : True := sorry
+
+/-- **D3.2b.zeta-FE.theta.plug-in** (combine Poisson + Gaussian):
+Apply multi-dim Poisson to f_t (Gaussian) on the lattice 𝓞_K, giving
+the θ_K modular transformation formula.  Pure computation assembly. -/
+def theta_K_plug_in_postulate
     (K : Type*) [Field K] [NumberField K] : True := sorry
 
 /-- **D3.2b.zeta-FE.mellin** (Mellin = completed zeta):
