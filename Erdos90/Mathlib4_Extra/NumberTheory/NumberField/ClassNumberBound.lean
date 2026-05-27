@@ -370,14 +370,20 @@ Two sub-postulates below.
 -/
 
 /-- **Sub-sub-postulate D3.2c.zimmert.small-norm** (Small-norm ideals):
-For each ideal class, there is a representative ideal of norm ≤ the
-Minkowski bound `M K`.
+For each ideal class `C`, there is a representative ideal of norm ≤ the
+Minkowski bound `(4/π)^{r₂} · n! / n^n · √|disc K|`.
 
-Mathlib PROVED: `NumberField.exists_ideal_in_class_of_norm_le`.  This
-sub-postulate is essentially the wrapper — no Mathlib gap. -/
-def zimmert_small_norm_postulate
-    [NumberField K] :
-    True := sorry
+PROVED Lean: direct citation of Mathlib's
+`NumberField.exists_ideal_in_class_of_norm_le`. -/
+theorem zimmert_small_norm_postulate
+    [NumberField K] (C : ClassGroup (𝓞 K)) :
+    ∃ I : (Ideal (𝓞 K))⁰, ClassGroup.mk0 I = C ∧
+      (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) ≤
+        (4 / Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *
+          ((Module.finrank ℚ K).factorial /
+              (Module.finrank ℚ K : ℝ) ^ Module.finrank ℚ K *
+              Real.sqrt |NumberField.discr K|) :=
+  NumberField.exists_ideal_in_class_of_norm_le C
 
 /-- **Sub-sub-postulate D3.2c.zimmert.log-sieve** (Log-sieve bound):
 The regulator `R_K` is bounded below by a universal log-sieve estimate
