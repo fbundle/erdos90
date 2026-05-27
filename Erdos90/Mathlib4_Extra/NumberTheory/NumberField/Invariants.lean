@@ -86,4 +86,9 @@ PROVED Lean: ℚ is totally real (`IsTotallyReal ℚ` Mathlib instance). -/
 theorem nrComplexPlaces_rat_eq_zero : NumberField.InfinitePlace.nrComplexPlaces ℚ = 0 :=
   NumberField.IsTotallyReal.nrComplexPlaces_eq_zero ℚ
 
+/-- `discr ℚ = 1`.
+
+PROVED Lean: direct citation of Mathlib's `NumberField.discr_rat`. -/
+theorem discr_rat_eq_one : NumberField.discr ℚ = 1 := NumberField.discr_rat
+
 end NumberField
