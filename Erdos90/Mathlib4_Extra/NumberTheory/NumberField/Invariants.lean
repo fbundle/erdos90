@@ -449,6 +449,26 @@ theorem real_log_div {x y : ℝ} (hx : x ≠ 0) (hy : y ≠ 0) :
     Real.log (x / y) = Real.log x - Real.log y :=
   Real.log_div hx hy
 
+/-! ### Real.exp algebraic laws -/
+
+/-- `exp 0 = 1`. -/
+theorem real_exp_zero : Real.exp 0 = 1 := Real.exp_zero
+
+/-- `exp (x + y) = exp x · exp y`. -/
+theorem real_exp_add (x y : ℝ) : Real.exp (x + y) = Real.exp x * Real.exp y :=
+  Real.exp_add x y
+
+/-- `exp (-x) = (exp x)⁻¹`. -/
+theorem real_exp_neg (x : ℝ) : Real.exp (-x) = (Real.exp x)⁻¹ := Real.exp_neg x
+
+/-- `exp (x - y) = exp x / exp y`. -/
+theorem real_exp_sub (x y : ℝ) : Real.exp (x - y) = Real.exp x / Real.exp y :=
+  Real.exp_sub x y
+
+/-- `exp (n · x) = (exp x)^n` for natural n. -/
+theorem real_exp_nat_mul (x : ℝ) (n : ℕ) : Real.exp (n * x) = Real.exp x ^ n :=
+  Real.exp_nat_mul x n
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
