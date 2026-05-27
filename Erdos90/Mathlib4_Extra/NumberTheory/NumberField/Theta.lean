@@ -44,20 +44,133 @@ noncomputable def numberFieldTheta (t : ℝ) : ℂ :=
   ∑' a : 𝓞 K,
     Complex.exp (-Real.pi * t * normSq_mixedEmbedding K (a : K))
 
-/-- **C2.summ — Convergence of `θ_K(t)` for `t > 0`** (postulate).
+/-! ### Convergence of `θ_K(t)` for `t > 0`
 
-The Gaussian decay `cexp(-π·t·‖x‖²)` plus the lattice-counting bound
-on `‖mixedEmbedding K a‖` (Minkowski-style) suffices for absolute
-summability.
+We prove `Summable (fun a : 𝓞 K => cexp(-π·t·normSq_mixedEmbedding K (a : K)))`
+for `t > 0` via:
+1. Reduce to summability over coordinate space `(idx → ℤ)` via the integral
+   basis `RingOfIntegers.basis K`.
+2. Express `normSq_mixedEmbedding K (∑_i k_i • α_i)` as a positive-definite
+   quadratic form `Q : (idx → ℝ) → ℝ`.
+3. Lower-bound `Q k ≥ λ · ‖k‖²` via extreme value theorem on the unit sphere
+   (compact since idx is finite, Q continuous + positive on it).
+4. Compare with the Gaussian sum on `(idx → ℤ)` proved as Step B
+   (`summable_cexp_neg_pi_mul_finset_sum_sq` in `GaussianThetaMultiDim.lean`).
+-/
 
-DECOMPOSITION:
-1. The lattice `mixedEmbedding K (𝓞_K)` has only finitely many points in
-   any ball of fixed radius (Mathlib's
-   `integerLattice.inter_ball_finite`).
-2. Gaussian decay outpaces the polynomial growth of the lattice-point
-   count in radius.
-3. Conclude `Summable` by comparison with a 1-D Gaussian on the radius. -/
-def numberFieldTheta_summable_postulate
+/-- The integral basis of `𝓞 K` as a ℤ-module (Mathlib's `RingOfIntegers.basis K`). -/
+local notation3 "ιK" => Module.Free.ChooseBasisIndex ℤ (𝓞 K)
+
+/-- The basis vectors, viewed in `mixedSpace K` via `mixedEmbedding`. -/
+noncomputable def basisInMixed (i : ιK) : mixedEmbedding.mixedSpace K :=
+  mixedEmbedding K (((RingOfIntegers.basis K) i : 𝓞 K) : K)
+
+/-- The "real expansion" of `normSq_mixedEmbedding` via the integral basis.
+For `k : ιK → ℝ`, this is `‖∑_i k_i • basisInMixed K i‖²` in `mixedSpace K`'s
+L²-norm convention (the explicit ∑_real + ∑_complex form). -/
+noncomputable def basisQuadForm (k : ιK → ℝ) : ℝ := by
+  classical
+  let v : mixedEmbedding.mixedSpace K := ∑ i, k i • basisInMixed K i
+  exact (∑ w : {w : InfinitePlace K // IsReal w}, v.1 w ^ 2) +
+    (∑ w : {w : InfinitePlace K // IsComplex w}, ‖v.2 w‖ ^ 2)
+
+/-- For integer coordinates `k : ιK → ℤ`, the basis expansion in `K`
+recovers the corresponding ring-of-integers element via the basis. -/
+theorem basisQuadForm_eq_normSq (k : ιK → ℤ) :
+    basisQuadForm K (fun i => ((k i : ℤ) : ℝ)) =
+      normSq_mixedEmbedding K
+        ((((RingOfIntegers.basis K).equivFun.symm k : 𝓞 K)) : K) := by
+  sorry
+
+/-- The map from coordinates `(ιK → ℤ)` to ring-of-integers `𝓞 K`
+via `Basis.equivFun.symm`. -/
+noncomputable def basisCoordSymm (k : ιK → ℤ) : 𝓞 K :=
+  (RingOfIntegers.basis K).equivFun.symm k
+
+/-- The map `basisCoordSymm` is bijective (it's the inverse of a Basis equivalence). -/
+theorem basisCoordSymm_bijective : Function.Bijective (basisCoordSymm K) :=
+  (RingOfIntegers.basis K).equivFun.symm.bijective
+
+/-- `Equiv` between `ιK → ℤ` and `𝓞 K`. -/
+noncomputable def basisCoordEquiv : (ιK → ℤ) ≃ 𝓞 K :=
+  (RingOfIntegers.basis K).equivFun.toEquiv.symm
+
+/-! ### Positive-definiteness of `basisQuadForm` and lower bound
+
+We prove `∃ λ > 0, ∀ k : ιK → ℝ, basisQuadForm K k ≥ λ · ‖k‖²` via:
+- `basisQuadForm K` is continuous (polynomial in the coords).
+- Positive at every nonzero `k` (since the basis is linearly independent
+  in mixedSpace K, via injectivity of mixedEmbedding K).
+- Extreme value theorem on the unit sphere of `(ιK → ℝ)` gives a positive
+  minimum.
+- Homogeneity (degree 2) gives the bound for all `k`.
+-/
+
+/-- `basisQuadForm K k` is continuous in `k`. -/
+theorem basisQuadForm_continuous : Continuous (basisQuadForm K) := by
+  classical
+  unfold basisQuadForm
+  -- The expression is polynomial in k (linear combos of finite sums).
+  fun_prop
+
+/-- `basisQuadForm K k ≥ 0` (it's a sum of squares). -/
+theorem basisQuadForm_nonneg (k : ιK → ℝ) : 0 ≤ basisQuadForm K k := by
+  classical
+  unfold basisQuadForm
+  positivity
+
+/-- Positive-definiteness: `basisQuadForm K k = 0 ↔ k = 0`.
+
+Direction `←` is trivial. Direction `→` uses linear independence of
+`basisInMixed K i` over ℝ (since `mixedEmbedding K` is injective on `K`
+and the basis is linearly independent over ℚ, hence over ℝ after extension). -/
+theorem basisQuadForm_eq_zero_iff (k : ιK → ℝ) :
+    basisQuadForm K k = 0 ↔ k = 0 := by
+  classical
+  sorry
+
+/-- Lower bound: there exists `λ > 0` such that `basisQuadForm K k ≥ λ · ‖k‖²`
+for all `k : ιK → ℝ`.  Proof via extreme value theorem on the unit sphere. -/
+theorem basisQuadForm_lower_bound :
+    ∃ lam : ℝ, 0 < lam ∧ ∀ k : ιK → ℝ,
+      lam * (∑ i, (k i) ^ 2) ≤ basisQuadForm K k := by
+  classical
+  sorry
+
+/-! ### Lifted Step B + final assembly
+
+The infrastructure above (basisInMixed, basisQuadForm) and the lower-bound
+`basisQuadForm_lower_bound` (sorried — extreme value theorem application)
+together with Step B's `summable_cexp_neg_pi_mul_finset_sum_sq` give the
+summability via:
+- bound `‖cexp(-π·t·normSq)‖ ≤ exp(-π·t·λ·∑(k i)²)`
+- transfer summability from `Fin (card ιK) → ℤ` (Step B) to `ιK → ℤ` via
+  the Fintype.equivFin bijection
+- transfer summability from `ιK → ℤ` to `𝓞 K` via the integral basis
+  equivalence.
+
+The proof is sketched but final assembly is left sorried since closing it
+requires multiple ~50-LOC sub-steps (Equiv.piCongrLeft transfer chain,
+real-vs-complex Re manipulation, basis-coord identification).  These are
+mechanical Lean engineering, not new mathematics — they're the kind of
+"plumbing" that Mathlib could absorb in a focused PR.
+-/
+
+/-- **C2.summ — Convergence of `θ_K(t)` for `t > 0`** — sorried.
+
+PROOF STRUCTURE (modulo `basisQuadForm_lower_bound`):
+1. Get `λ > 0` with `basisQuadForm K k ≥ λ · ‖k‖²` (positive-definiteness).
+2. Equivalence `𝓞 K ≃ (ιK → ℤ)` via the basis sends our function to
+   `fun k => cexp(-π·t·basisQuadForm(k : ιK → ℝ))`.
+3. Norm bound via `λ`: `‖cexp(-π·t·basisQuadForm(k))‖ = exp(-π·t·basisQuadForm(k)) ≤
+   exp(-π·t·λ·∑(k i)²)`.
+4. Step B lifted to fintype `ιK` (via `Fintype.equivFin`) gives summability
+   of the bound.
+5. `Summable.of_norm_bounded` finishes.
+
+See preceding `basisQuadForm_lower_bound` for the positive-definiteness
+lower-bound dependency. -/
+theorem numberFieldTheta_summable_postulate
     (t : ℝ) (_ht : 0 < t) :
     Summable (fun a : 𝓞 K =>
       Complex.exp (-Real.pi * t * normSq_mixedEmbedding K (a : K))) :=
