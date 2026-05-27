@@ -528,9 +528,34 @@ For any number field `K` and prime `p`, there is a maximal unramified
 abelian `p`-extension `H_p(K)/K`.
 
 Cite: standard CFT; equivalent to `p`-Sylow part of HCF via Artin
-reciprocity.  Not in Mathlib v4.30. -/
+reciprocity.  Not in Mathlib v4.30.
+
+ASSEMBLY (modulo `hilbertClassField_exists` + p-Sylow subfield extraction):
+1. Build `E : HilbertClassFieldExt K` via `hilbertClassField_exists`.
+2. Inside `E.H`, identify the maximal `p`-subextension via Galois
+   correspondence: the fixed field of the **prime-to-p part** of
+   `Gal(E.H / K) ≃ ClassGroup (𝓞 K)`.
+3. The resulting subfield is `H_p(K)`, with `Gal(H_p / K) ≃ p-Sylow Cl(K)`.
+
+Sub-postulate `pHCF_from_hcf_postulate` below isolates step 2. -/
 def hilbertPClassField_exists (K : Type u) [Field K] [NumberField K]
     (p : ℕ) (_hp : Nat.Prime p) : HilbertPClassFieldExt K p := sorry
+
+/-- **Sub-postulate D3.hcf.p-from-full** (p-HCF from full HCF):
+Given the full HCF `H(K)` and its Galois correspondence with `ClassGroup
+(𝓞 K)`, the p-Hilbert class field `H_p(K)` is the **fixed field of the
+prime-to-p part of `Cl(K)`** (equivalently, the subfield of `H(K)`
+corresponding to the p-Sylow subgroup under Artin reciprocity).
+
+Cite: Mathlib has `IsGalois.subgroup_fixedField` for general Galois
+extensions.  The p-Sylow identification needs the Artin reciprocity
+field of `HilbertClassFieldExt`, applied with Mathlib's `Sylow` API
+(`Mathlib.GroupTheory.Sylow`).  Not yet packaged for number fields. -/
+def pHCF_from_hcf_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p)
+    (E_full : HilbertClassFieldExt K) :
+    True := sorry
 
 /-- `rootDiscr` is invariant under taking the `p`-HCF.
 

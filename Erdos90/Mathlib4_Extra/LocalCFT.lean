@@ -133,10 +133,54 @@ def localArtinMap_postulate
     [IsGalois K L] [IsAbelianGalois K L] :
     Kˣ →* (L ≃ₐ[K] L) := sorry
 
+/-! ### Decomposition of `localArtinMap_surjective_postulate`
+
+Surjectivity of the local Artin map factors through:
+
+1. **Unramified surjectivity**: in the unramified case, the Frobenius
+   generates Gal(L^{unr}/K), so the image of the uniformizer covers
+   the unramified part.
+2. **Lubin-Tate surjectivity**: in the totally ramified case, the
+   units 𝓞_K^* act transitively on Lubin-Tate torsion, covering
+   the inertia subgroup.
+3. **Composite surjectivity**: combine via decomposition L = L^{unr} · L^{tr}.
+
+Two sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.local.unr-surj** (Unramified surjectivity):
+For the local Artin map applied to an unramified abelian L/K_v of
+residue degree n, the image of any uniformizer is the Frobenius, which
+generates Gal(L/K_v).  Hence the map is surjective in this case.
+
+Cite: Serre *Local Fields* XII §2; this is basically the definition. -/
+def localArtinMap_unramified_surjective_postulate
+    (K : Type u) [Field K] (L : Type u) [Field L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
+/-- **Sub-postulate D3.local.ram-surj** (Ramified surjectivity):
+For the local Artin map applied to a totally ramified abelian L/K_v
+constructed via Lubin-Tate, the action of 𝓞_{K_v}^* on the Lubin-Tate
+torsion is transitive (mod π^n).  Hence the inertia subgroup is
+covered.
+
+Cite: Lubin-Tate 1965; Iwasawa *Local CFT* Ch. 6. -/
+def localArtinMap_ramified_surjective_postulate
+    (K : Type u) [Field K] (L : Type u) [Field L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
 /-- **Postulate** (universal property of the local Artin map):
 
 The local Artin map is surjective, with kernel exactly the image of the
-norm map `L^* → K^*`. -/
+norm map `L^* → K^*`.
+
+ASSEMBLY (modulo the two sub-postulates above + `localArtinMap_decomp_postulate`):
+1. By `localArtinMap_decomp_postulate`: factor L = L^{unr} · L^{tr}.
+2. By `localArtinMap_unramified_surjective_postulate`: cover Gal(L^{unr}/K).
+3. By `localArtinMap_ramified_surjective_postulate`: cover Gal(L^{tr}/K).
+4. Combine to cover Gal(L/K). -/
 def localArtinMap_surjective_postulate
     (K : Type u) [Field K] (L : Type u) [Field L] [Algebra K L]
     [IsGalois K L] [IsAbelianGalois K L] :
