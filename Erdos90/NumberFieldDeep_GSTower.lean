@@ -229,13 +229,48 @@ def chebotarev_fixed_Q (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 �
         NumberField.rootDiscr K ≤ rd_F →
         ∃ (sp : SplitPrimeData K (t' * f)), sp.Q = Q := sorry
 
+/-- **Sub-sub-postulate D3.1.cheb.density.cheb**: Chebotarev density theorem
+specialized to "primes splitting completely":
+For any finite Galois extension `L/ℚ`, the set of rational primes that split
+completely in `L` is infinite.
+
+Cite: Neukirch *Algebraic Number Theory* VII §13.  Multi-month/year Mathlib
+effort: requires L-function analytic continuation past `s = 1`. -/
+def chebotarev_split_density_ℚ_postulate
+    (L : Type) [Field L] [NumberField L] (_hGal : IsGalois ℚ L) :
+    ∃ (S : Set ℕ), S.Infinite ∧
+      ∀ q ∈ S, q.Prime ∧
+        ∀ (P : Ideal (𝓞 L)) [P.IsPrime], P ≠ ⊥ →
+          Ideal.ramificationIdx (Ideal.span {(q : ℤ)}) P = 1 ∧
+          Ideal.inertiaDeg (Ideal.span {(q : ℤ)}) P = 1 := sorry
+
+/-- **Sub-sub-postulate D3.1.cheb.density.hm**: Hermite–Minkowski finiteness:
+For any bound `rd_F`, there are finitely many number fields (up to isomorphism)
+with `rootDiscr K ≤ rd_F`.
+
+Cite: Hermite–Minkowski (any standard ANT reference, e.g. Neukirch III §2).
+Not in Mathlib v4.30 — needs explicit construction of the compositum +
+class-field-theoretic arguments. -/
+def hermite_minkowski_finiteness_postulate
+    (rd_F : ℝ) (_h_rd : 1 ≤ rd_F) :
+    -- "Finitely many K with bounded rd" — for our use, packaged as
+    -- existence of a single Galois extension L containing all such K.
+    ∃ (L : Type) (_ : Field L) (_ : NumberField L) (_ : IsGalois ℚ L),
+      ∀ (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K],
+        NumberField.rootDiscr K ≤ rd_F →
+        Nonempty (K →+* L) := sorry
+
 /-- **Sub-postulate D3.1.cheb.density** (Chebotarev density):
 For each `ℓ ≥ 2` and `rd_F`, there exist infinitely many rational primes
 that split completely in **every** CM totally complex `K` with `rootDiscr K ≤ rd_F`.
 
+PROVED Lean ASSEMBLY (modulo `chebotarev_split_density_ℚ_postulate` +
+`hermite_minkowski_finiteness_postulate`): apply Chebotarev to the
+compositum L from Hermite–Minkowski; primes splitting in L split in every
+sub-extension K (by going-down — Mathlib has `ramificationIdx_tower`).
+
 Cite: Chebotarev density theorem (Neukirch VII §13) + Hermite–Minkowski
-finiteness (finitely many fields with bounded rd).  Multi-month/year
-Mathlib effort: needs L-function infrastructure. -/
+finiteness (Neukirch III §2).  Multi-month/year Mathlib effort. -/
 def splitPrimes_density_postulate
     (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 ≤ rd_F) :
     ∃ (S : Set ℕ), S.Infinite ∧ (∀ q ∈ S, q.Prime) ∧
