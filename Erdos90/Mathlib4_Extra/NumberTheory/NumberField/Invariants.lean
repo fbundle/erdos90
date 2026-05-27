@@ -562,3 +562,21 @@ theorem nat_prime_dvd_mul {p a b : ℕ} (hp : p.Prime) (h : p ∣ a * b) :
 /-- `p` divides itself raised to any positive power. -/
 theorem nat_prime_dvd_self_pow (p : ℕ) {n : ℕ} (hn : 0 < n) : p ∣ p ^ n :=
   dvd_pow_self p hn.ne'
+
+/-! ### Finset sanity wrappers -/
+
+/-- `Finset.card_empty = 0`. -/
+theorem finset_card_empty {α : Type*} : (∅ : Finset α).card = 0 := Finset.card_empty
+
+/-- `Finset.card_singleton`. -/
+theorem finset_card_singleton {α : Type*} [DecidableEq α] (a : α) :
+    ({a} : Finset α).card = 1 :=
+  Finset.card_singleton a
+
+/-- Subset implies card ≤. -/
+theorem finset_card_le_of_subset {α : Type*} {s t : Finset α} (h : s ⊆ t) :
+    s.card ≤ t.card :=
+  Finset.card_le_card h
+
+/-- Empty set has no elements. -/
+theorem finset_not_mem_empty {α : Type*} (a : α) : a ∉ (∅ : Finset α) := by simp
