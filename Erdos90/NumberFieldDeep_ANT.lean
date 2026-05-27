@@ -197,6 +197,13 @@ theorem S_set_not_subset_T_set : ¬ S_set ⊆ T_set := by
   have h2 : 2 ∈ T_set := h S_set_two_mem
   exact absurd h2 T_set_two_notMem
 
+/-- `T_set ∩ S_set` has exactly 9 elements (the first 9 odd primes
+3, 5, 7, 11, 13, 17, 19, 23, 29). -/
+theorem T_set_inter_S_set_card : (T_set ∩ S_set).card = 9 := by decide
+
+/-- `T_set ∪ S_set` has 26 elements (13 + 22 - 9 by inclusion-exclusion). -/
+theorem T_set_union_S_set_card : (T_set ∪ S_set).card = 26 := by decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
