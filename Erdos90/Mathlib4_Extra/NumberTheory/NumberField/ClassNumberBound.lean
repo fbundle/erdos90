@@ -609,16 +609,30 @@ The Phragmén-Lindelöf interpolation argument decomposes:
 Three sub-postulates below.
 -/
 
-/-- **Sub-sub-postulate D3.2b.phragmen.maxprinciple** (Phragmén-Lindelöf):
-A holomorphic function `f : ℂ → ℂ` defined on a strip `a ≤ Re s ≤ b` with
-sub-exponential growth (`|f(s)| ≤ C · exp(|s|^{1-δ})`) and bounded on the
-two boundary lines (`|f(a + it)| ≤ M_a`, `|f(b + it)| ≤ M_b`) satisfies the
-interior bound `|f(σ + it)| ≤ M_a^{(b-σ)/(b-a)} · M_b^{(σ-a)/(b-a)}`.
+/-- **Sub-sub-postulate D3.2b.phragmen.maxprinciple** (Phragmén-Lindelöf
+in a vertical strip — Mathlib citation):
 
-Cite: Phragmén-Lindelöf 1908; Titchmarsh *Theory of Functions* §5.6.
-Mathlib v4.30: maximum modulus principle packaged for disks; PL for
-strips not specifically. -/
-def phragmen_lindelof_max_principle_postulate : True := sorry
+For `f : ℂ → ℂ` differentiable on the open strip `a < Re z < b`,
+continuous on its closure, with sub-exponential growth in `|im z|`
+(`f = O(exp(B · exp(c · |im z|)))` for some `c < π / (b-a)`), and
+boundary bound `‖f z‖ ≤ C` on both vertical lines `Re z = a` and
+`Re z = b`, the same bound holds in the closed strip
+`a ≤ Re z ≤ b`.
+
+PROVED Lean: direct citation of Mathlib's
+`Complex.PhragmenLindelof.vertical_strip`. -/
+theorem phragmen_lindelof_max_principle_postulate
+    {f : ℂ → ℂ} {a b C : ℝ} {z : ℂ}
+    (hfd : DiffContOnCl ℂ f (Complex.re ⁻¹' Set.Ioo a b))
+    (hB : ∃ c < Real.pi / (b - a), ∃ B,
+      f =O[Filter.comap (_root_.abs ∘ Complex.im) Filter.atTop ⊓
+            Filter.principal (Complex.re ⁻¹' Set.Ioo a b)]
+        fun z ↦ Real.exp (B * Real.exp (c * |z.im|)))
+    (hle_a : ∀ z : ℂ, z.re = a → ‖f z‖ ≤ C)
+    (hle_b : ∀ z : ℂ, z.re = b → ‖f z‖ ≤ C)
+    (hza : a ≤ z.re) (hzb : z.re ≤ b) :
+    ‖f z‖ ≤ C :=
+  PhragmenLindelof.vertical_strip hfd hB hle_a hle_b hza hzb
 
 /-- **Sub-sub-postulate D3.2b.phragmen.right-bound** (Euler product bound):
 On `Re s ≥ 1 + ε`, the Dedekind zeta `ζ_K(s)` is bounded:
