@@ -183,20 +183,50 @@ def gs_base_field_postulate
     gs_imagquad_with_p_rank_postulate p hp
   exact gs_cm_lift_postulate p hp ℓ hℓ K₀ ⟨h_compl, h_real⟩ h_dvd₀
 
-/-- **Sub-postulate D3.1.gs.step** (GS tower step — conditional):
-Given a CM totally complex field `K` such that the `p`-class group of `K`
-is **non-trivial** (i.e., `p ∣ classNumber K`), there exists a CM totally
-complex extension `L/K` with `[L:K] = p` (or some power of `p` > 1) and
-`rootDiscr L = rootDiscr K` (everywhere unramified).
+/-- **Sub-sub-postulate D3.1.gs.step.degree** (p-HCF degree positivity):
+If `p ∣ classNumber K`, then `[H_p(K) : K] ≥ p`.
 
-This is the SHALLOW step: just use the p-Hilbert class field
-`hilbertPClassField_exists K p` of `K`.  The DEEP content of GS is that
-the criterion `4·r_p(K) < d_p(K)²` is **inherited** by L (so the iteration
-can continue) — this is `gs_criterion_inherited_postulate` below, NOT this
-step lemma.
+Cite: standard CFT — `[H_p(K) : K]` equals the p-part of classNumber K.
+If p divides classNumber K, then the p-part is at least p.
 
-Cite: standard CFT.  Closing this requires `hilbertPClassField_exists`
-(`Mathlib4_Extra/ClassFieldTheory.lean`).  Weeks once HCF is in Mathlib. -/
+Closing this requires the EQUALITY (not just divisibility) in
+`p_HCF_finrank_divides_classNumber_postulate` from ClassFieldTheory.lean. -/
+def pHCF_degree_pos_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (_h_p_dvd_cn : p ∣ NumberField.classNumber K)
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    Module.finrank K E.H_p ≥ p := sorry
+
+/-- **Sub-sub-postulate D3.1.gs.step.cm** (p-HCF preserves CM):
+If `K` is CM, then the p-Hilbert class field `H_p(K)` is also CM.
+
+Cite: CM preservation under unramified abelian extensions.  Analogous to
+`HilbertClassFieldExt.isCMField_postulate` (full HCF, in
+ClassFieldTheory.lean) but for the p-HCF. -/
+def pHCF_isCMField_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K] [IsCMField K]
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    IsCMField E.H_p := sorry
+
+/-- **Sub-postulate D3.1.gs.step** (GS tower step):
+Given a CM totally complex `K` with `p ∣ classNumber K`, there exists
+a CM totally complex `L/K` with `[L:K] ≥ p` and `rootDiscr L = rootDiscr K`
+(everywhere unramified).
+
+**Decomposition** (toward closure): take `L := H_p(K)` via
+`hilbertPClassField_exists`, then:
+- degree bound: `pHCF_degree_pos_postulate` above
+- CM preservation: `pHCF_isCMField_postulate` above
+- TC preservation: `HilbertPClassFieldExt.isTotallyComplex` (PROVED)
+- rootDiscr invariance: `rootDiscr_pHCF_eq` (PROVED)
+
+The assembly is essentially `obtain + refine` modulo the universe-bridging
+(`HilbertPClassFieldExt.H_p : Type v` vs the conclusion's `L : Type`).
+
+This last step is "Lean engineering, not new mathematics" — analogous to
+the universe plumbing needed for `gs_iterate_postulate`. -/
 def gs_tower_step_postulate
     (p : ℕ) (_hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
