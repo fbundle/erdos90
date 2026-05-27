@@ -720,6 +720,18 @@ theorem HilbertPClassFieldExt.isAlgebraic_rat
     Algebra.IsAlgebraic ℚ E.H_p :=
   NumberField.isAlgebraic (K := E.H_p)
 
+/-- The `p`-HCF is algebraic over `K`.
+
+PROVED Lean: combine `HilbertPClassFieldExt.finiteDimensional_of_prime`
+with `Algebra.IsAlgebraic.of_finite`. -/
+theorem HilbertPClassFieldExt.isAlgebraic_baseField
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
+    Algebra.IsAlgebraic K E.H_p := by
+  haveI : FiniteDimensional K E.H_p :=
+    HilbertPClassFieldExt.finiteDimensional_of_prime K p hp E
+  exact Algebra.IsAlgebraic.of_finite K E.H_p
+
 /-! ## Connection between HCF and p-HCF
 
 The p-HCF is a subfield of the HCF.  More precisely:
