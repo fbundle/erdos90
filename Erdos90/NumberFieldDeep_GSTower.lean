@@ -287,19 +287,19 @@ def chebotarev_split_density_ℚ_postulate
           Ideal.inertiaDeg (Ideal.span {(q : ℤ)}) P = 1 := sorry
 
 /-- **Sub-sub-sub-postulate D3.1.cheb.density.hm.minkbnd**: Minkowski's
-discriminant lower bound (PARTIALLY in Mathlib).
+discriminant lower bound.
 
-For a number field `K` of degree `n` with signature `(r₁, r₂)`,
-`|discr K| ≥ (n^n / n!)² · (π/4)^(2 r₂)` (Minkowski bound, classical).
+For a number field `K` of degree `n` with `r₂` complex places,
+`(n^{2n}) / ((4/π)^{2 r₂} · (n!)²) ≤ |discr K|`.
 
-This says: `rootDiscr K = |discr K|^(1/n) ≥ const(r₁, r₂)`, monotone in n.
-
-Mathlib v4.30: `NumberField.discr_bound_minkowski` exists for the integer
-norm Minkowski bound; the explicit `n^n/n!` constant is implicit. -/
-def minkowski_discr_lower_bound_postulate
+PROVED Lean: direct citation of Mathlib's `NumberField.abs_discr_ge'`
+(in `Mathlib/NumberTheory/NumberField/Discriminant/Basic.lean`).  -/
+theorem minkowski_discr_lower_bound_postulate
     (K : Type) [Field K] [NumberField K] :
-    -- Concrete statement: rootDiscr K is bounded below by a function of degree
-    True := sorry
+    ((Module.finrank ℚ K : ℝ) ^ (2 * Module.finrank ℚ K) /
+      ((4 / Real.pi) ^ (2 * NumberField.InfinitePlace.nrComplexPlaces K) *
+        (Module.finrank ℚ K).factorial ^ 2)) ≤ ((|NumberField.discr K| : ℤ) : ℝ) := by
+  exact_mod_cast NumberField.abs_discr_ge' K
 
 /-- **Sub-sub-sub-postulate D3.1.cheb.density.hm.hermite**: Hermite's theorem:
 For each natural `n` and bound `D`, there are finitely many number fields
