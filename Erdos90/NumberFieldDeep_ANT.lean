@@ -89,6 +89,15 @@ theorem D_val_eq : D_val = 6541380665835015 := by
   unfold D_val T_set
   decide
 
+/-- All 13 primes in `T_set` are odd (the construction requires odd
+primes for the GS tower base quadratic). -/
+theorem T_set_all_odd (q : ℕ) (hq : q ∈ T_set) : Odd q := by
+  fin_cases hq <;> decide
+
+/-- All 13 elements of `T_set` are prime. -/
+theorem T_set_all_prime (q : ℕ) (hq : q ∈ T_set) : q.Prime := by
+  fin_cases hq <;> decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
