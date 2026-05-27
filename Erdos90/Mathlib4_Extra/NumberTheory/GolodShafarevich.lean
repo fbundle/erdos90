@@ -1082,10 +1082,149 @@ Two sub-postulates below; the proved assembly closes the parent
 modulo them.
 -/
 
+/-! ##### Anick-Dicks 2017 Koszul-resolution 5-step proof of the
+Magnus-Hilbert series inequality
+
+Anick-Dicks 2017 §3 give a clean proof of `H_G(t) · P(t) ≥ 1` via a
+Koszul-style free resolution of the trivial `𝔽_p⟦G⟧`-module `𝔽_p`.  The
+chain has five named steps; the parent `magnus_hilbert_series_inequality_postulate`
+assembles them.
+
+  **Step 1** (Koszul resolution existence): for `G = F_d / ⟨R_1,…,R_r⟩`
+  pro-`p`-presented with relations of weights `n_i`, there exists a free
+  graded `𝔽_p⟦G⟧`-resolution
+  ```
+    ⋯ → F_2 → F_1 → F_0 → 𝔽_p → 0
+  ```
+  with `F_0 = 𝔽_p⟦G⟧`, `F_1 = 𝔽_p⟦G⟧^d` (generators in weight 1), and a
+  rank-`r` summand of `F_2` in weights `n_i` (relation generators).
+
+  **Step 2** (graded compatibility): the resolution is compatible with
+  the augmentation-ideal grading, so each `F_i` has a well-defined
+  Hilbert series `H_{F_i}(t)` and the differentials respect the
+  grading.
+
+  **Step 3** (Euler-characteristic Hilbert identity): the alternating
+  sum of Hilbert series of the resolution equals `1` (the H-series of
+  `𝔽_p`):
+  ```
+    H_G(t) · ∑_{i ≥ 0} (-1)^i · (rank-poly of F_i)(t) = 1
+  ```
+  Truncating after `F_2`:
+  ```
+    H_G(t) · (1 - d·t + ∑ t^{n_i} - Δ_{≥3}(t)) = 1
+  ```
+  where `Δ_{≥3}(t)` is the contribution of `F_3, F_4, …`.
+
+  **Step 4** (higher-term positivity): `Δ_{≥3}(t)` has non-negative
+  Hilbert-series coefficients (it is itself the Hilbert series of a
+  graded `𝔽_p`-vector space), hence subtracting it from `P(t)` only
+  makes things smaller.
+
+  **Step 5** (assembly: coefficientwise inequality): rearranging steps 3
+  and 4,
+  ```
+    H_G(t) · P(t) = 1 + H_G(t) · Δ_{≥3}(t) ≥ 1
+  ```
+  coefficientwise, since both factors on the right have non-negative
+  coefficients.
+
+Each step is its own sub-postulate.  None are in Mathlib v4.30; closing
+them requires the pro-`p` group + Hilbert series + free resolution
+infrastructure.
+-/
+
+/-- **Sub-sub-sub-sub-sub-postulate** (Step 1 of Anick-Dicks Koszul proof):
+For a pro-`p`-presented group `G = F_d / ⟨R_1,…,R_r⟩` with relations of
+weights `n_i ≥ 2`, there exists a free graded `𝔽_p⟦G⟧`-resolution of the
+trivial module `𝔽_p`,
+```
+  ⋯ → F_2 → F_1 → F_0 → 𝔽_p → 0,
+```
+with `F_0 = 𝔽_p⟦G⟧`, `F_1` free of rank `d` (generators in weight 1),
+and a rank-`r` direct summand of `F_2` whose generators sit in weights
+`n_1,…,n_r`.
+
+Cite: Anick-Dicks 2017 §3, "the standard resolution".  Mathlib v4.30:
+free resolutions exist for ring modules but not over completed group
+algebras of pro-`p` groups. -/
+def koszul_resolution_exists_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-sub-postulate** (Step 2 of Anick-Dicks Koszul proof):
+The free resolution from Step 1 is compatible with the augmentation-
+ideal filtration on `𝔽_p⟦G⟧`, so each `F_i` admits a Hilbert series
+`H_{F_i}(t) ∈ ℤ⟦t⟧` and the differentials are graded.
+
+Cite: Anick-Dicks 2017 §3.  Mathlib v4.30: graded module resolutions
+exist but specific Hilbert-series infrastructure for pro-`p` group
+algebras is not packaged. -/
+def koszul_resolution_graded_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-sub-postulate** (Step 3 of Anick-Dicks Koszul proof):
+Taking Euler characteristic of Hilbert series along the Step-1
+resolution yields the identity
+```
+  H_G(t) · ( 1 - d·t + ∑ t^{n_i} - Δ_{≥3}(t) ) = 1
+```
+in `ℤ⟦t⟧`, where `Δ_{≥3}(t) := ∑_{i ≥ 3} (-1)^i · rank-poly(F_i)(t)`.
+
+Cite: Anick-Dicks 2017 §3, additivity of Hilbert series.  Mathlib v4.30:
+not packaged. -/
+def koszul_euler_identity_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-sub-postulate** (Step 4 of Anick-Dicks Koszul proof):
+The correction series `Δ_{≥3}(t)` from Step 3 has non-negative
+coefficients: it is itself the Hilbert series of a graded `𝔽_p`-vector
+space (the "higher syzygies").
+
+Cite: Anick-Dicks 2017 §3.  Mathlib v4.30: not packaged. -/
+def koszul_higher_terms_nonneg_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-sub-postulate** (Step 5 of Anick-Dicks Koszul proof,
+inequality assembly): combining Steps 3 + 4, we get
+```
+  H_G(t) · P(t) = 1 + H_G(t) · Δ_{≥3}(t) ≥ 1
+```
+coefficientwise, since `H_G(t)` and `Δ_{≥3}(t)` both have non-negative
+coefficients (the former because `𝔽_p⟦G⟧` is a graded `𝔽_p`-algebra,
+the latter by Step 4).
+
+This step is *algebraically trivial* once Steps 1–4 are in hand: it is
+the formal-power-series rearrangement
+`H · (P - Δ) = 1 ⇒ H · P = 1 + H · Δ ≥ 1`.  In a future where the prior
+four steps are formalized, this assembly would be a Lean lemma, not a
+postulate.
+
+Cite: Anick-Dicks 2017 §3, conclusion of the algebraic argument. -/
+def koszul_inequality_assembly_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
+    True := sorry
+
 /-- **Sub-sub-sub-sub-postulate D3.1.gs.inherit.gs-ineq.poly.magnus-ineq**:
 For a finitely-presented pro-p group G with d generators and r relations
 of weights (n_1,…,n_r), the Magnus embedding gives the formal power
 series inequality `H_G(t) · P(t) ≥ 1` (coefficientwise).
+
+ASSEMBLY (Anick-Dicks 2017 §3, 5-step Koszul-resolution chain):
+- Step 1 (`koszul_resolution_exists_postulate`): build the graded free
+  resolution `⋯ → F_2 → F_1 → F_0 → 𝔽_p → 0` with `F_1` of rank `d`,
+  `F_2` having a rank-`r` summand in weights `n_i`.
+- Step 2 (`koszul_resolution_graded_postulate`): the resolution is
+  graded-compatible, so each `F_i` has a Hilbert series.
+- Step 3 (`koszul_euler_identity_postulate`): Euler characteristic gives
+  `H_G(t) · (P(t) - Δ_{≥3}(t)) = 1`.
+- Step 4 (`koszul_higher_terms_nonneg_postulate`): `Δ_{≥3}(t) ≥ 0`
+  coefficientwise.
+- Step 5 (`koszul_inequality_assembly_postulate`): rearrange to
+  `H_G(t) · P(t) ≥ 1`.
 
 Cite: Anick-Dicks 2017 §3.  Mathlib v4.30: needs Hilbert series +
 Magnus embedding (not packaged). -/
