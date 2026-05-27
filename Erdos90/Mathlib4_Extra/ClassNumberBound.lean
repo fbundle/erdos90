@@ -192,6 +192,69 @@ theorem classNumber_le_minkowski_pow_degree :
   (classNumber_le_card_ideals_of_norm_le_minkowski K).trans
     (card_ideals_of_norm_le_bound K ⌊minkBound K⌋₊)
 
+/-! ### Mathlib v4.30 asymptotic ideal-count (UPGRADE candidate)
+
+`Mathlib.NumberTheory.NumberField.Ideal.Asymptotics` provides the **exact**
+asymptotic:
+
+  `Tendsto (fun s ↦ |{I // absNorm I ≤ s}| / s) atTop (𝓝 (dedekindZeta_residue K))`
+
+(`Ideal.tendsto_norm_le_div_atTop₀`).  This is much sharper than our crude
+`card_ideals_of_norm_le_bound` and gives a tight O(N) bound for large N.
+
+The wrapper below converts the asymptotic into a usable concrete bound: for
+each ε > 0, there exists N₀ such that for N ≥ N₀, the count is bounded by
+`(dedekindZeta_residue + ε) · N`.
+
+This is the "analytic ideal count" lemma we previously called out as the
+missing Mathlib piece in the D3.2 Brauer-Siegel chain — and it's been
+in Mathlib since v4.30. -/
+theorem card_ideals_norm_le_eventually_O_N
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ N₀ : ℕ, ∀ N : ℕ, N₀ ≤ N →
+      (Nat.card {I : (Ideal (𝓞 K))⁰ // Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N} : ℝ)
+        ≤ (NumberField.dedekindZeta_residue K + ε) * N := by
+  -- Use Mathlib's tendsto_norm_le_div_atTop₀ + Tendsto.eventually_le.
+  have h_lim := NumberField.Ideal.tendsto_norm_le_div_atTop₀ (K := K)
+  -- h_lim : Tendsto (fun s : ℝ ↦ count(s) / s) atTop (𝓝 (residue))
+  -- The residue equals dedekindZeta_residue K (definitionally).
+  have h_def : ((2 ^ NumberField.InfinitePlace.nrRealPlaces K *
+      (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *
+      NumberField.Units.regulator K * NumberField.classNumber K) /
+      (NumberField.Units.torsionOrder K * Real.sqrt |(NumberField.discr K : ℝ)|)) =
+      NumberField.dedekindZeta_residue K := rfl
+  rw [h_def] at h_lim
+  -- eventually count(s)/s ≤ residue + ε (in the real-s filter)
+  have h_event :=
+    h_lim.eventually_le_const (show NumberField.dedekindZeta_residue K
+      < NumberField.dedekindZeta_residue K + ε by linarith)
+  -- Extract S₀ from the real-valued Filter.eventually atTop
+  rw [Filter.eventually_atTop] at h_event
+  obtain ⟨S₀, hS₀⟩ := h_event
+  refine ⟨⌈S₀⌉₊ + 1, fun N hN => ?_⟩
+  have hN_real : S₀ ≤ (N : ℝ) := by
+    have h1 : S₀ ≤ (⌈S₀⌉₊ : ℝ) := Nat.le_ceil S₀
+    have h2 : (⌈S₀⌉₊ : ℝ) ≤ N := by exact_mod_cast (by omega : ⌈S₀⌉₊ ≤ N)
+    linarith
+  have h_pos_N : (0 : ℝ) < N := by
+    have : 1 ≤ N := by omega
+    exact_mod_cast this
+  have h := hS₀ (N : ℝ) hN_real
+  rw [div_le_iff₀ h_pos_N] at h
+  -- h has count over { I // ↑(absNorm I) ≤ ↑N } (real-valued);
+  -- our goal has count over { I // absNorm I ≤ N } (Nat-valued).
+  -- The two subtypes are equivalent via Nat.cast_le.
+  have h_eq : Nat.card {I : (Ideal (𝓞 K))⁰ //
+      ((Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) ≤ (N : ℝ))} =
+      Nat.card {I : (Ideal (𝓞 K))⁰ //
+        Ideal.absNorm (I : Ideal (𝓞 K)) ≤ N} := by
+    apply Nat.card_congr
+    refine Equiv.subtypeEquivProp ?_
+    funext I
+    exact propext (by exact_mod_cast Iff.rfl)
+  rw [h_eq] at h
+  exact h
+
 /-! ## Phase E5: analytic class number formula as an algebraic identity
 
 The Dirichlet class number formula gives `(s - 1) · ζ_K(s) → R_K` as `s → 1⁺`, where
