@@ -63,4 +63,12 @@ PROVED Lean: direct citation of Mathlib's `Rat.classNumber_eq`. -/
 theorem classNumber_rat_eq_one : NumberField.classNumber ℚ = 1 :=
   Rat.classNumber_eq
 
+/-- `torsionOrder ℚ = 2` (the roots of unity in ℤ are ±1).
+
+PROVED Lean: direct application of Mathlib's
+`Units.torsionOrder_eq_two_of_odd_finrank` to `[ℚ : ℚ] = 1`. -/
+theorem torsionOrder_rat_eq_two : NumberField.Units.torsionOrder ℚ = 2 :=
+  NumberField.Units.torsionOrder_eq_two_of_odd_finrank
+    (by simp [Module.finrank_self])
+
 end NumberField
