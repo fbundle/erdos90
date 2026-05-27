@@ -253,9 +253,45 @@ end GaussianFourier
 
 /-- **D3.2b.zeta-FE.theta.plug-in** (combine Poisson + Gaussian):
 Apply multi-dim Poisson to f_t (Gaussian) on the lattice 𝓞_K, giving
-the θ_K modular transformation formula.  Pure computation assembly. -/
+the θ_K modular transformation formula.  Pure computation assembly.
+
+With the prerequisites now PROVED (`theta_K_lattice_setup_postulate`
+identifies the lattice; `theta_K_gaussian_fourier_postulate` gives the
+multi-dim Gaussian Fourier transform), this step is numerical
+assembly: compose them through `multi_dim_poisson_lift_postulate` and
+fix the discriminant factor.
+
+DECOMPOSITION: 3 named pieces.
+1. **Gaussian on lattice**: instantiate the Gaussian at the 𝓞_K image.
+2. **Poisson summation step**: apply n-D Poisson to the Gaussian.
+3. **Discriminant factor**: identify `vol(fundDomain) = √|disc K|`. -/
 def theta_K_plug_in_postulate
     (K : Type*) [Field K] [NumberField K] : True := sorry
+
+section DiscFactor
+open scoped Classical ENNReal NNReal
+open MeasureTheory MeasureTheory.Measure ZSpan NumberField NumberField.mixedEmbedding
+
+/-- **D3.2b.zeta-FE.theta.plug-in.disc-factor** (Discriminant as
+fundamental-domain volume):
+
+For a number field `K`, the volume of a fundamental domain for the
+integer lattice `𝓞_K` in the mixed space is
+`(1/2)^{r₂} · √‖disc K‖₊`.
+
+PROVED Lean: direct restatement of Mathlib's
+`NumberField.mixedEmbedding.volume_fundamentalDomain_latticeBasis`.
+
+This is the lattice covolume that appears as the discriminant factor
+in the θ_K modular transformation formula. -/
+theorem theta_K_disc_factor_postulate
+    (K : Type*) [Field K] [NumberField K] :
+    volume (fundamentalDomain (latticeBasis K)) =
+      (2 : ℝ≥0∞)⁻¹ ^ NumberField.InfinitePlace.nrComplexPlaces K *
+        NNReal.sqrt ‖NumberField.discr K‖₊ :=
+  NumberField.mixedEmbedding.volume_fundamentalDomain_latticeBasis K
+
+end DiscFactor
 
 /-- **D3.2b.zeta-FE.mellin** (Mellin = completed zeta):
 For `Re s > 1`, `Mellin (θ_K - 1)(s) = (Γ-factors)(s) · dedekindZeta K s`.
