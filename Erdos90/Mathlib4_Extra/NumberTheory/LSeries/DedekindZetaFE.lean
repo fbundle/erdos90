@@ -464,3 +464,123 @@ theorem completedDedekindZeta_FE_from_theta_modular_postulate
   sorry
 
 end NumberField
+
+/-! ## C4 — `WeakFEPair` instance construction (decomposed)
+
+We construct the `AbstractFuncEq.WeakFEPair ℂ` whose `functional_equation`
+yields the FE for `completedDedekindZeta K`.
+
+The instance has:
+- `f = g = (fun t : ℝ => (numberFieldTheta K t - 1 : ℂ))` (self-dual).
+- `k = (Module.finrank ℚ K : ℝ) / 2` (= [K:ℚ]/2).
+- `ε = 1` (no root number, since ζ_K is self-dual after symmetric
+  normalisation; the `√|d_K|` factor is absorbed into the WeakFEPair via
+  the `h_feq` field's normalised form).
+- `f₀ = g₀ = 0` (θ_K(t) - 1 → 0 as t → ∞).
+
+Each WeakFEPair field is a separate named postulate below.
+
+After construction, `WeakFEPair.functional_equation` gives `Λ(k - s) = ε · Λ(s)`,
+i.e., `Mellin(θ_K - 1)(k - s) = Mellin(θ_K - 1)(s)`.  Identifying the
+Mellin transform with `completedDedekindZeta` (via `theta_K_mellin_eq_completedZeta_postulate`)
+gives `completedDedekindZeta K (n - 2s) = completedDedekindZeta K (2s)`,
+which after substituting `s ↦ (1 - s')/2` rearranges to
+`completedDedekindZeta K (1 - s') = completedDedekindZeta K s'`. -/
+
+namespace NumberField
+
+open Real Complex MeasureTheory Set
+
+variable (K : Type*) [Field K] [NumberField K]
+
+/-- The `f` (= `g`) of the WeakFEPair: `θ_K(t) − 1`. -/
+noncomputable def feTheta (t : ℝ) : ℂ := numberFieldTheta K t - 1
+
+/-- The weight: `k = [K:ℚ] / 2`. -/
+noncomputable def feK : ℝ := (Module.finrank ℚ K : ℝ) / 2
+
+/-- The root number: `ε = √|disc K|`.
+
+(The √|d_K| factor in the theta modular relation absorbs into the
+WeakFEPair as the root number when we choose the symmetric normalisation
+of `f`.  An alternative convention takes `ε = 1` after pre-scaling `f`
+by `|d_K|^(s/2)`; we choose the more direct route here.) -/
+noncomputable def feEpsilon : ℂ :=
+  ((Real.sqrt |((NumberField.discr K : ℤ) : ℝ)| : ℝ) : ℂ)
+
+/-- **C4.weight-positive**: `feK K > 0` for any number field (since `[K:ℚ] ≥ 1`). -/
+theorem feK_pos : 0 < feK K := by
+  unfold feK
+  have : (1 : ℕ) ≤ Module.finrank ℚ K := Module.finrank_pos
+  have : (1 : ℝ) ≤ (Module.finrank ℚ K : ℝ) := by exact_mod_cast this
+  linarith
+
+/-- **C4.ε-nonzero**: `feEpsilon K ≠ 0` since `|disc K| ≠ 0` for number fields. -/
+theorem feEpsilon_ne_zero : feEpsilon K ≠ 0 := by
+  unfold feEpsilon
+  rw [ne_eq, Complex.ofReal_eq_zero]
+  have h : NumberField.discr K ≠ 0 := NumberField.discr_ne_zero K
+  have h_abs_pos : 0 < |((NumberField.discr K : ℤ) : ℝ)| :=
+    abs_pos.mpr (by exact_mod_cast h)
+  exact ne_of_gt (Real.sqrt_pos.mpr h_abs_pos)
+
+/-- **C4.locally-integrable**: `feTheta K` is locally integrable on `(0, ∞)` —
+sorried (follows from continuity of `numberFieldTheta` on `(0, ∞)`, which
+itself depends on `numberFieldTheta_summable_postulate`). -/
+def feTheta_locallyIntegrable_postulate :
+    LocallyIntegrableOn (feTheta K) (Set.Ioi (0 : ℝ)) := sorry
+
+/-- **C4.h_feq**: the WeakFEPair functional-equation field.
+
+Concretely: `feTheta K (1 / x) = (feEpsilon K * x^(feK K)) • feTheta K x`
+for all `x > 0`.
+
+This is the normalised form of the θ_K modular transformation
+`θ_K(1/t) = √|d_K| · t^{n/2} · θ_K(t)`, adjusted to match WeakFEPair's
+convention with `f = θ_K - 1`. -/
+def feTheta_h_feq_postulate :
+    ∀ x ∈ Set.Ioi (0 : ℝ),
+      feTheta K (1 / x) = (feEpsilon K * ((x ^ feK K : ℝ) : ℂ)) • feTheta K x :=
+  sorry
+
+/-- **C4.hf_top**: `feTheta K` decays at `∞` faster than any power.
+
+Since `feTheta K t = θ_K(t) - 1 = ∑_{a ≠ 0} cexp(-π·t·‖σ(a)‖²)`, this
+sum is bounded by the smallest non-zero `‖σ(a)‖²` (call it `c > 0`)
+times the lattice point count:
+  `|feTheta K t| ≤ ∑_{a ≠ 0} exp(-π·t·c · ‖σ(a)‖²/c) ≤ C · exp(-π·t·c)`
+which is faster-than-any-power decay. -/
+def feTheta_decay_postulate :
+    ∀ (r : ℝ), (feTheta K · - 0) =O[Filter.atTop] (· ^ r) := sorry
+
+/-- **C4 — WeakFEPair instance** (sorried).
+
+Built from `feTheta K`, `feK K`, `feEpsilon K` together with the sub-postulates
+above for locally-integrable + functional-equation + decay. -/
+noncomputable def numberFieldWeakFEPair : WeakFEPair ℂ where
+  f := feTheta K
+  g := feTheta K
+  k := feK K
+  ε := feEpsilon K
+  f₀ := 0
+  g₀ := 0
+  hf_int := feTheta_locallyIntegrable_postulate K
+  hg_int := feTheta_locallyIntegrable_postulate K
+  hk := feK_pos K
+  hε := feEpsilon_ne_zero K
+  h_feq := feTheta_h_feq_postulate K
+  hf_top := feTheta_decay_postulate K
+  hg_top := feTheta_decay_postulate K
+
+/-- **C4.fe-output**: the FE of `(numberFieldWeakFEPair K).Λ`.
+
+This is the direct output of `WeakFEPair.functional_equation`.
+What's left for `completedDedekindZeta_one_sub` is to identify
+`(numberFieldWeakFEPair K).Λ s` with `completedDedekindZeta K (2s)` up to
+the factor `|d_K|^s` (see `theta_K_mellin_eq_completedZeta_postulate`). -/
+theorem numberFieldWeakFEPair_FE (s : ℂ) :
+    (numberFieldWeakFEPair K).Λ ((feK K : ℂ) - s) =
+      feEpsilon K • (numberFieldWeakFEPair K).symm.Λ s :=
+  (numberFieldWeakFEPair K).functional_equation s
+
+end NumberField
