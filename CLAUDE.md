@@ -135,6 +135,16 @@ In `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 - **`Classical.choose` for Type-valued existentials**: when destructuring `∃ x : Type, ...` to build a structure, use `Classical.choose`/`Classical.choose_spec`, not `obtain`.
 - **Commit often** with descriptive messages.  End commit messages with the co-author line.
 
+## External CFT formalization (vendor/)
+
+`vendor/ClassFieldTheory/` is Kevin Buzzard's [ClassFieldTheory project](https://github.com/kbuzzard/ClassFieldTheory), the main repo for the 2025 Clay Maths summer school on formalizing CFT.  It has ~105 Lean files with only ~27 sorries, covering:
+- Tate cohomology + finite cyclic + augmentation modules + splitting modules
+- Local invariant `H²(ℤ/nℤ, ℤ) ≅ ℤ/nℤ`
+- Non-archimedean local fields: valuation, ramification, tower, unramified extensions, Herbrand quotient
+- Local CFT building blocks (Continuity, Teichmuller)
+
+**Version mismatch**: Buzzard's repo uses Lean v4.29.0 + Mathlib at commit `3bd2603b81` (≈ v4.29).  Our repo uses Lean v4.30.0 + Mathlib v4.30.0.  Direct import is not possible without aligning toolchain versions.  Useful as reference for: which API names already exist in their formalization, which decompositions they use, which Mathlib lemmas they leverage.
+
 ## Memory
 
 Persistent memory is at `/Users/khanh/.claude/projects/-Volumes-Hippopotamus-vault-code-erd46/memory/`.  Store user preferences and non-obvious context there; the README of that directory (`MEMORY.md`) is auto-loaded.
