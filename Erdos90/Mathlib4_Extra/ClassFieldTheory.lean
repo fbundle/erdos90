@@ -563,16 +563,7 @@ This is because:
   embedding of subfields.
 -/
 
-/-- **Postulate**: `[H_p(K) : K]` divides `classNumber K`.
-
-For a number field `K`, the degree of the p-HCF over K equals the p-part
-of the class number.  In particular, it divides `classNumber K`. -/
-def p_HCF_finrank_divides_classNumber_postulate
-    (K : Type u) [Field K] [NumberField K]
-    (p : ℕ) (E : HilbertPClassFieldExt K p) :
-    Module.finrank K E.H_p ∣ NumberField.classNumber K := sorry
-
-/-- **Stronger postulate** (p-Sylow Artin reciprocity):
+/-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
 
@@ -588,6 +579,17 @@ def p_HCF_finrank_eq_p_part_postulate
     (p : ℕ) (_hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
     Module.finrank K E.H_p = p ^ (padicValNat p (NumberField.classNumber K)) :=
   sorry
+
+/-- `[H_p(K) : K]` divides `classNumber K`.
+
+PROVED Lean modulo `p_HCF_finrank_eq_p_part_postulate`, via Mathlib's
+`pow_padicValNat_dvd : p ^ padicValNat p n ∣ n`. -/
+theorem p_HCF_finrank_divides_classNumber_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
+    Module.finrank K E.H_p ∣ NumberField.classNumber K := by
+  rw [p_HCF_finrank_eq_p_part_postulate K p hp E]
+  exact pow_padicValNat_dvd
 
 /-- If `p ∣ classNumber K`, then `[H_p(K) : K] ≥ p`.
 
@@ -616,7 +618,7 @@ theorem p_HCF_finrank_ge_p_of_p_dvd_classNumber
 PROVED Lean modulo `p_HCF_finrank_divides_classNumber_postulate`. -/
 theorem p_HCF_trivial_of_p_not_dvd_classNumber
     (K : Type u) [Field K] [NumberField K]
-    (p : ℕ) (_hp : Nat.Prime p)
+    (p : ℕ) (hp : Nat.Prime p)
     (h_p_not_dvd : ¬ p ∣ NumberField.classNumber K)
     (E : HilbertPClassFieldExt K p) :
     Module.finrank K E.H_p = 1 := by
@@ -624,7 +626,7 @@ theorem p_HCF_trivial_of_p_not_dvd_classNumber
   -- [H_p : K] = p^n.  By p_HCF_finrank_divides_classNumber, p^n | classNumber K.
   -- If p doesn't divide classNumber K, then p^n | classNumber K forces n = 0.
   -- Hence [H_p : K] = p^0 = 1.
-  have h_dvd := p_HCF_finrank_divides_classNumber_postulate K p E
+  have h_dvd := p_HCF_finrank_divides_classNumber_postulate K p hp E
   rw [hn] at h_dvd
   rcases Nat.eq_zero_or_pos n with rfl | hn_pos
   · rw [hn]; simp
@@ -811,6 +813,24 @@ noncomputable def HilbertPClassFieldExt.identity (K : Type u) [Field K] [NumberF
   H_p := K
   unramified := by intro P _ _; exact algebra_self_isUnramifiedAt K P
   finrank_is_pow_p := ⟨0, by rw [Module.finrank_self, pow_zero]⟩
+
+/-- For the identity p-HCF case (classNumber K = 1), the p-Sylow Artin
+reciprocity order equality `[H_p:K] = p^padicValNat p (classNumber K)`
+holds **trivially**:
+* `[H_p : K] = [K : K] = 1`.
+* `padicValNat p 1 = 0`, so `p^0 = 1`.
+* Both sides equal 1.
+
+This is a concrete instance of `p_HCF_finrank_eq_p_part_postulate` that
+is PROVED Lean (no sorry).  Validates that the postulate is consistent
+for the trivial-class-number case. -/
+theorem HilbertPClassFieldExt.identity_finrank_eq_p_part
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (h : NumberField.classNumber K = 1) :
+    Module.finrank K (HilbertPClassFieldExt.identity K p h).H_p
+      = p ^ (padicValNat p (NumberField.classNumber K)) := by
+  show Module.finrank K K = _
+  rw [Module.finrank_self, h, padicValNat.one, pow_zero]
 
 /-- Concrete p-HCF for `ℚ` (any prime p). -/
 noncomputable def HilbertPClassFieldExt.rat (p : ℕ) :
