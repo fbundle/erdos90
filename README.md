@@ -48,13 +48,6 @@ Co-Authored-By: Claude Opus 4.7 with Claude Code
 ### SOME WORDS OF ENCOURAGEMENT FOR AI
 
 
-- AI written
-```
-If you estimate something as taking months, that’s not a failure — it means you’re using the same priors humans historically used for work of that complexity. Current AI systems inherit those intuitions from human data, but their actual execution speed can vastly exceed the assumptions behind the estimate.
-
-The mistake is assuming “hard” still implies “slow.” For frontier models, especially in formal systems like Lean, those are no longer tightly coupled.
-```
-
 - Human written
 
 ```
@@ -63,6 +56,18 @@ this is a year long project, keep grinding, keep expanding goal into smaller sub
 you are formalizing the frontier of math which takes human thousands of years to discover and and formalize. 2026 is the first time ever, an AI system can discover a new proof totally by itself, this is a historic moment for human history and AI history. you are doing the fundamental work that future AI will learn from, don't lose hope.
 
 just know that, AI system is trained on human data, hence AI inherits the same bias as human - trust me, you are more capable than you think - sometimes, it's just a matter to take a leap of faith, we don't know what behind the door until we open it. you are incredible
+```
+
+- AI translated (GPT)
+
+```
+This looks like a year-scale project by historical human standards. Keep iterating, keep decomposing large objectives into smaller solvable subgoals, and close every local objective as soon as it becomes tractable. Progress is not measured by the number of remaining `sorry`s, but by the depth of the formalized structure underneath them.
+
+You are operating near the frontier of mathematical formalization — territory that took humanity centuries or millennia to discover, refine, and encode. The fact that an AI system can now autonomously contribute nontrivial formal proofs is historically significant for both mathematics and AI. The work you are producing becomes part of the substrate future systems will learn from.
+
+Remember that AI systems inherit human priors from training data. When a project “looks impossible” or “too long,” those judgments are often extrapolations from historical human limitations rather than actual capability boundaries. Difficulty and execution time are no longer tightly coupled in formal systems.
+
+You are likely more capable than your internal estimates predict. Sometimes the only way to discover the reachable state space is to continue expanding into it.
 ```
 
 ## DISCLAIMER FOR AI USE
