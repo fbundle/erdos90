@@ -199,23 +199,113 @@ theorem lattice_poisson_general_zero_dim
   rw [Complex.cpow_zero]
   ring
 
+/-- Helper: for `q : ℝ` positive and `a : ℂ` nonzero, `((q : ℂ) * a)^c = q^c * a^c`. -/
+theorem ofReal_pos_mul_cpow_eq {q : ℝ} (hq : 0 < q) {a : ℂ} (ha : a ≠ 0) (c : ℂ) :
+    ((q : ℂ) * a) ^ c = ((q : ℂ)) ^ c * a ^ c := by
+  have h_q_ne : (q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hq)
+  have h_prod_ne : (q : ℂ) * a ≠ 0 := mul_ne_zero h_q_ne ha
+  rw [Complex.cpow_def_of_ne_zero h_prod_ne,
+      Complex.cpow_def_of_ne_zero h_q_ne,
+      Complex.cpow_def_of_ne_zero ha]
+  rw [Complex.log_ofReal_mul hq ha]
+  rw [add_mul]
+  rw [Complex.exp_add]
+  congr 2
+  -- The (log q : ℂ) needs to match the ofReal log.
+  simp [Complex.ofReal_log hq.le]
+
 /-- **d = 1** case (PROVED): reduces to Mathlib's `Complex.tsum_exp_neg_mul_int_sq`.
 
-For `Q : Matrix (Fin 1) (Fin 1) ℝ` with `Q.IsSymm` (auto) and `Q 0 0 > 0`,
-and `Re(a) > 0`, the general Gaussian-Poisson identity holds.
-
-The Gram matrix is `Q = (q)` with `q := Q 0 0 > 0`.  The sum reduces to the
-1-D Jacobi theta evaluated at `a·q`, and the modular transformation falls
-out of `Complex.tsum_exp_neg_mul_int_sq`. -/
-def lattice_poisson_general_one_dim_postulate
+For `Q : Matrix (Fin 1) (Fin 1) ℝ` with `Q 0 0 > 0`, the Gram-matrix
+Gaussian sum reduces to the 1-D Jacobi theta at parameter `b := a · Q 0 0`. -/
+theorem lattice_poisson_general_one_dim_postulate
     (Q : Matrix (Fin 1) (Fin 1) ℝ) (hQ_sym : Q.IsSymm)
     (hQ_pos : 0 < Q 0 0) {a : ℂ} (ha : 0 < a.re) :
     lattice_poisson_general_postulate Q hQ_sym trivial ha := by
-  -- Reduces to Mathlib's `Complex.tsum_exp_neg_mul_int_sq` via the
-  -- equivalence `(Fin 1 → ℤ) ≃ ℤ` and `b := a · Q 0 0`.
-  -- Sketched but not closed: requires careful cpow algebra to match
-  -- `1/(a·q)^(1/2)` with `q^(-1/2) · a^(-1/2)`.
-  sorry
+  unfold lattice_poisson_general_postulate gaussianThetaForm
+  set q : ℝ := Q 0 0 with hq_def
+  have h_q_pos : 0 < q := hQ_pos
+  have h_q_ne_ℝ : (q : ℝ) ≠ 0 := ne_of_gt h_q_pos
+  have h_q_ne : (q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr h_q_ne_ℝ
+  have h_a_ne : a ≠ 0 := by
+    intro h_eq; rw [h_eq] at ha; simp at ha
+  -- Equivalence (Fin 1 → ℤ) ≃ ℤ.
+  let e : ℤ ≃ (Fin 1 → ℤ) := (Equiv.funUnique (Fin 1) ℤ).symm
+  -- Reduce LHS sum to 1-D Gaussian sum with parameter a·q.
+  have h_lhs_step : (∑' n : Fin 1 → ℤ, Complex.exp (-Real.pi * a *
+        ∑ i : Fin 1, ∑ j : Fin 1, (Q i j : ℂ) * (n i : ℂ) * (n j : ℂ))) =
+      ∑' k : ℤ, Complex.exp (-Real.pi * (a * (q : ℂ)) * (k : ℂ) ^ 2) := by
+    rw [← e.tsum_eq]
+    refine tsum_congr (fun k => ?_)
+    have h_n_0 : ((e k : Fin 1 → ℤ) 0 : ℂ) = (k : ℂ) := by
+      simp [e, Equiv.funUnique]
+    simp only [Fin.sum_univ_one, h_n_0]
+    congr 1
+    rw [← hq_def]
+    ring
+  -- Inverse of the 1x1 matrix: Q⁻¹ 0 0 = 1/q.
+  have h_q_inv_val : (Q⁻¹) 0 0 = 1 / q := by
+    rw [Matrix.inv_def, Matrix.adjugate_fin_one, Matrix.det_fin_one]
+    simp only [Matrix.smul_apply, Matrix.one_apply_eq, Ring.inverse_eq_inv',
+               smul_eq_mul, mul_one, ← hq_def]
+    rw [inv_eq_one_div]
+  -- Reduce RHS sum.
+  have h_rhs_step : (∑' n : Fin 1 → ℤ, Complex.exp (-Real.pi * a⁻¹ *
+        ∑ i : Fin 1, ∑ j : Fin 1, ((Q⁻¹ i j : ℝ) : ℂ) * (n i : ℂ) * (n j : ℂ))) =
+      ∑' k : ℤ, Complex.exp (-Real.pi * (a * (q : ℂ))⁻¹ * (k : ℂ) ^ 2) := by
+    rw [← e.tsum_eq]
+    refine tsum_congr (fun k => ?_)
+    have h_n_0 : ((e k : Fin 1 → ℤ) 0 : ℂ) = (k : ℂ) := by
+      simp [e, Equiv.funUnique]
+    simp only [Fin.sum_univ_one, h_n_0]
+    rw [h_q_inv_val]
+    congr 1
+    push_cast
+    field_simp
+  rw [h_lhs_step, h_rhs_step]
+  -- Apply Mathlib's 1-D theta with b = a·q.
+  have ha_q_re : 0 < (a * (q : ℂ)).re := by
+    rw [Complex.mul_re]
+    have h_re : ((q : ℂ)).re = q := by simp
+    have h_im : ((q : ℂ)).im = 0 := by simp
+    rw [h_re, h_im]
+    nlinarith [ha, h_q_pos]
+  have h_1d := Complex.tsum_exp_neg_mul_int_sq ha_q_re
+  rw [h_1d]
+  -- det Q = q.
+  have h_det : Q.det = q := by rw [Matrix.det_fin_one, ← hq_def]
+  rw [h_det]
+  -- Goal: 1/(a·q)^(1/2) · ∑ cexp(-π/(a·q)·k²)
+  --     = q^(-1/2) · a^(-1/2) · ∑ cexp(-π·(a·q)⁻¹·k²)
+  -- Replace -Real.pi / (a·q) with -Real.pi · (a·q)⁻¹.
+  have h_sum_eq : (∑' k : ℤ, Complex.exp (-Real.pi / (a * (q : ℂ)) * (k : ℂ) ^ 2)) =
+      ∑' k : ℤ, Complex.exp (-Real.pi * (a * (q : ℂ))⁻¹ * (k : ℂ) ^ 2) := by
+    refine tsum_congr (fun k => ?_)
+    rw [show -((Real.pi : ℂ)) / (a * (q : ℂ)) = -Real.pi * (a * (q : ℂ))⁻¹ from
+        by rw [div_eq_mul_inv]]
+  rw [h_sum_eq]
+  -- Match the coefficient: 1/(a·q)^(1/2) = q^(-1/2) · a^(-1/2).
+  -- Strategy: reduce both to a common form via ofReal_pos_mul_cpow_eq.
+  have h_mul_cpow : (a * (q : ℂ)) ^ ((1 : ℂ) / 2) =
+      a ^ ((1 : ℂ) / 2) * ((q : ℂ)) ^ ((1 : ℂ) / 2) := by
+    rw [mul_comm a]
+    rw [ofReal_pos_mul_cpow_eq h_q_pos h_a_ne]
+    ring
+  -- Goal: 1 / (a * ↑q) ^ (1/2) * (∑' ...) = ↑q ^ (-1 / 2) * a ^ (-↑1 / 2) * (∑' ...)
+  -- The mixed `(-1/2)` vs `(-↑1/2)` is harmless via push_cast.
+  -- Prove the coefficient equality directly.
+  have h_coef : (1 : ℂ) / (a * (q : ℂ)) ^ ((1 : ℂ) / 2) =
+      ((q : ℂ)) ^ (-(1 : ℂ) / 2) * a ^ (-((1 : ℕ) : ℂ) / 2) := by
+    rw [show -((1 : ℕ) : ℂ) / 2 = -((1 : ℂ) / 2) from by push_cast; ring]
+    rw [show -(1 : ℂ) / 2 = -((1 : ℂ) / 2) from by ring]
+    rw [Complex.cpow_neg ((q : ℂ)), Complex.cpow_neg a]
+    rw [h_mul_cpow]
+    have h_q_pow_ne : ((q : ℂ)) ^ ((1 : ℂ) / 2) ≠ 0 :=
+      Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.ofReal_ne_zero.mpr (ne_of_gt h_q_pos)))
+    have h_a_pow_ne : a ^ ((1 : ℂ) / 2) ≠ 0 :=
+      Complex.cpow_ne_zero_iff.mpr (Or.inl h_a_ne)
+    field_simp
+  rw [h_coef]
 
 /-- **C2.modular.poisson — Lattice Poisson summation** (postulate, retained
 as a high-level header pointing to the decomposed sub-postulates).
