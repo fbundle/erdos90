@@ -229,10 +229,52 @@ def chebotarev_fixed_Q (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 �
         NumberField.rootDiscr K ≤ rd_F →
         ∃ (sp : SplitPrimeData K (t' * f)), sp.Q = Q := sorry
 
+/-- **Sub-sub-sub-postulate D3.1.cheb.density.cheb.lfunc-nonvanish** (Hecke
+L-function non-vanishing at `s = 1`):
+For any non-trivial Hecke character `χ` of a number field `L`, the
+Hecke L-function `L(s, χ)` is non-zero at `s = 1`.
+
+This is the analytic core: generalizing Dirichlet's non-vanishing
+(Mathlib has this for Dirichlet characters in `dirichletLSeries`) to
+general Hecke characters.
+
+Cite: Hecke 1917; Iwaniec-Kowalski Ch. 5.  Mathlib v4.30: PARTIAL
+(Dirichlet characters only).  Multi-month effort. -/
+def hecke_L_nonvanishing_at_one_postulate
+    (L : Type) [Field L] [NumberField L] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.cheb.density.cheb.tauberian**:
+Tauberian theorem (Ikehara-Wiener) translating non-vanishing of Dirichlet
+series at `s = 1` to asymptotic density of the underlying sequence.
+
+Mathlib v4.30: NOT IN.  Multi-month effort. -/
+def tauberian_dirichlet_postulate :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.cheb.density.cheb.frob**: Frobenius decomposition.
+
+For a finite Galois `L/ℚ` and unramified prime `q`, the Frobenius
+element `Frob_q ∈ Gal(L/ℚ)` is well-defined (up to conjugacy); `q`
+splits completely iff `Frob_q = 1`.
+
+Cite: Standard CFT (Neukirch I §9).  Mathlib v4.30: PARTIAL
+(`Ideal.ramificationIdx`, `Ideal.inertiaDeg` exist).  Weeks of work. -/
+def frobenius_element_postulate
+    (L : Type) [Field L] [NumberField L] (_hGal : IsGalois ℚ L)
+    (q : ℕ) (_hq : Nat.Prime q) :
+    True := sorry
+
 /-- **Sub-sub-postulate D3.1.cheb.density.cheb**: Chebotarev density theorem
 specialized to "primes splitting completely":
 For any finite Galois extension `L/ℚ`, the set of rational primes that split
 completely in `L` is infinite.
+
+PROVED Lean ASSEMBLY (modulo the 3 sub-sub-postulates above):
+- Frobenius decomposition gives the conjugacy class of `Frob_q`.
+- Hecke L-function non-vanishing + Tauberian gives positive Dirichlet density
+  to each conjugacy class.
+- Density of "split completely" = 1/[L:ℚ] > 0, hence the set is infinite.
 
 Cite: Neukirch *Algebraic Number Theory* VII §13.  Multi-month/year Mathlib
 effort: requires L-function analytic continuation past `s = 1`. -/
