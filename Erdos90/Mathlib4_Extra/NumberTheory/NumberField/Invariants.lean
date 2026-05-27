@@ -392,6 +392,24 @@ theorem int_natAbs_one : ((1 : ℤ)).natAbs = 1 := by decide
 /-- `(-3 : ℤ) ≠ 0`. -/
 theorem int_neg_three_ne_zero : (-(3 : ℤ)) ≠ 0 := by decide
 
+/-! ### Real.rpow sanity wrappers -/
+
+/-- `x^0 = 1` for non-zero x. -/
+theorem real_rpow_zero (x : ℝ) : x ^ (0 : ℝ) = 1 := Real.rpow_zero x
+
+/-- `x^1 = x`. -/
+theorem real_rpow_one (x : ℝ) : x ^ (1 : ℝ) = x := Real.rpow_one x
+
+/-- `1^x = 1`. -/
+theorem real_one_rpow (x : ℝ) : (1 : ℝ) ^ x = 1 := Real.one_rpow x
+
+/-- `0^x = 0` for non-zero x. -/
+theorem real_zero_rpow {x : ℝ} (hx : x ≠ 0) : (0 : ℝ) ^ x = 0 := Real.zero_rpow hx
+
+/-- Positivity: `x > 0 → x^y > 0`. -/
+theorem real_rpow_pos_of_pos {x : ℝ} (hx : 0 < x) (y : ℝ) : 0 < x ^ y :=
+  Real.rpow_pos_of_pos hx y
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
