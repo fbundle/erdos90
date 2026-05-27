@@ -508,6 +508,32 @@ def cm_compositum_classNumber_postulate
     (F : Type) [Field F] [NumberField F] :
     True := sorry
 
+/-- **Companion (PROVED)**: divisibility of class numbers from a
+surjective `ClassGroup` homomorphism.
+
+PROVED Lean: direct citation of Mathlib's
+`Subgroup.card_dvd_of_surjective` for the surjective group hom.
+
+Given a surjective group hom `f : Cl(K) →* Cl(K₀)` between finite class
+groups, we have `Nat.card Cl(K₀) ∣ Nat.card Cl(K)`, i.e.
+`classNumber K₀ ∣ classNumber K`.
+
+This is the **closure assembly** of `cm_compositum_classNumber_postulate`
+once the norm-surjection is established. -/
+theorem classNumber_dvd_of_surjective_norm
+    (K₀ K : Type*) [Field K₀] [NumberField K₀] [Field K] [NumberField K]
+    (f : ClassGroup (𝓞 K) →* ClassGroup (𝓞 K₀))
+    (hf : Function.Surjective f) :
+    NumberField.classNumber K₀ ∣ NumberField.classNumber K := by
+  have h_dvd : Nat.card (ClassGroup (𝓞 K₀)) ∣ Nat.card (ClassGroup (𝓞 K)) :=
+    Subgroup.card_dvd_of_surjective f hf
+  have h_K₀ : Nat.card (ClassGroup (𝓞 K₀)) = NumberField.classNumber K₀ := by
+    rw [NumberField.classNumber, Nat.card_eq_fintype_card]
+  have h_K : Nat.card (ClassGroup (𝓞 K)) = NumberField.classNumber K := by
+    rw [NumberField.classNumber, Nat.card_eq_fintype_card]
+  rw [h_K₀, h_K] at h_dvd
+  exact h_dvd
+
 /-- **Sub-sub-postulate D3.1.gs.base.cm-lift**: CM lift via compositum.
 
 Given an imaginary quadratic K₀, the CM lift K = K₀ · F (for an
