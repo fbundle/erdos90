@@ -212,7 +212,22 @@ This bundles "partial Fourier preserves Schwartz" together with the value
 equation, so callers can both apply 1-D Poisson to `g` and rewrite the
 sum back into the original `f`-form.
 
-Cite: Stein–Shakarchi *Fourier Analysis* Chapter 4.  Not in Mathlib v4.30. -/
+Cite: Stein–Shakarchi *Fourier Analysis* Chapter 4.  Not in Mathlib v4.30.
+
+**Attack route** (multi-day Lean engineering, not yet done):
+The Schwartz part is constructible as
+`𝓕⁻¹ ((fourier2DSchwartz f).leftPartial n) : 𝓢(ℝ, ℂ)` using Mathlib's
+`SchwartzMap.fourierInv` (which is the inverse to `fourierTransformCLM`).
+This is automatically Schwartz.  The value spec requires Fubini +
+`Continuous.fourierInv_fourier_eq` (Mathlib's `Analysis/Fourier/Inversion.lean`)
+applied to the candidate function `h(x) := 𝓕(f.rightPartial x)(n)`:
+1. Prove `h` continuous via `continuous_of_dominated` with bound
+   `‖f‖_{(0, k), 0}` for k ≥ 2.
+2. Prove `h` integrable via Schwartz decay of f in the x direction.
+3. Compute `𝓕(h)(w) = fourier2D f w n` by Fubini.
+4. Conclude `h = 𝓕⁻¹((fourier2DSchwartz f).leftPartial n)` via inversion.
+The infrastructure for steps 1-2 is in `MeasureTheory.Integral.Bochner.Basic`
+and `Analysis.Fourier.FourierTransformDeriv`. -/
 def partial_fourier_is_Schwartz_postulate
     (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℤ) :
     { g : 𝓢(ℝ, ℂ) // ∀ x : ℝ,
@@ -504,7 +519,16 @@ function on `ℝ × ℝ` is itself Schwartz on `ℝ × ℝ`; summability on `ℤ
 then follows from Schwartz decay (as in `summable_2d_schwartz_proved`).
 
 Cite: Stein–Shakarchi Ch. 4 (Fourier preserves Schwartz, multidim version).
-Not in Mathlib v4.30 for `ℝ × ℝ`. -/
+Not in Mathlib v4.30 for `ℝ × ℝ`.
+
+**Attack route**: would follow from a 2-D Schwartz function
+`partial2DSchwartz f : 𝓢(ℝ × ℝ, ℂ)` such that
+`partial2DSchwartz f (m, n) = (partialFourier f n)(m)` (the intermediate
+2-D Fourier as a Schwartz function on ℝ × ℝ).  Constructing this requires
+"partial Fourier preserves Schwartz on ℝ × ℝ" which is not directly in
+Mathlib v4.30 — would need ~150-200 LOC building on `fourier2DSchwartz`
++ inversion-style arguments per fiber.  Once available, summability
+follows immediately from `summable_2d_schwartz_proved`. -/
 def summable_partialFourier_2d_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
     Summable (Function.uncurry
       fun m n : ℤ => (partialFourier f n : ℝ → ℂ) m) := sorry
