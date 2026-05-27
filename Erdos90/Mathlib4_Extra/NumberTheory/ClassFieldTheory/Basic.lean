@@ -318,6 +318,15 @@ theorem cm_complex_conj_order_two_postulate
     orderOf (NumberField.IsCMField.complexConj K) = 2 :=
   NumberField.IsCMField.orderOf_complexConj K
 
+/-- **Companion corollary**: complex conjugation is an involution.
+
+PROVED Lean: direct citation of Mathlib's
+`NumberField.IsCMField.complexConj_apply_apply`. -/
+theorem cm_complex_conj_apply_apply
+    (K : Type u) [Field K] [NumberField K] [IsCMField K] (x : K) :
+    NumberField.IsCMField.complexConj K (NumberField.IsCMField.complexConj K x) = x :=
+  NumberField.IsCMField.complexConj_apply_apply (K := K) x
+
 /-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.fixed-field** (Fixed field
 construction):
 The fixed field of complex conjugation `K⁺ := maximalRealSubfield K`,
