@@ -231,6 +231,16 @@ theorem chebotarev_density_dirichlet_ap_postulate
     {p : ℕ | p.Prime ∧ (p : ZMod q) = a}.Infinite :=
   Nat.infinite_setOf_prime_and_eq_mod ha
 
+/-- **Constructive form** (PROVED): for any natural number `n`, there exists a
+prime `p > n` with `(p : ZMod q) = a` (for `a` a unit mod `q`).
+
+PROVED Lean: direct citation of Mathlib's
+`Nat.forall_exists_prime_gt_and_eq_mod`. -/
+theorem chebotarev_density_dirichlet_ap_constructive_postulate
+    {q : ℕ} [NeZero q] {a : ZMod q} (ha : IsUnit a) (n : ℕ) :
+    ∃ p > n, p.Prime ∧ (p : ZMod q) = a :=
+  Nat.forall_exists_prime_gt_and_eq_mod ha n
+
 /-- **Chebotarev density theorem** (labelled postulate).
 
 For any number field `K`, infinitely many rational primes split completely
