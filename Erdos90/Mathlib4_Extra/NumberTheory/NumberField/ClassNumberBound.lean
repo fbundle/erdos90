@@ -462,16 +462,27 @@ def stark_completed_zeta_at_zero_postulate
     [NumberField K] :
     True := sorry
 
-/-- **Sub-sub-postulate D3.2c.friedman.stark.dirichlet-form**:
-The Dirichlet class number formula `Res_{s=1} ζ_K = c · R_K · h_K / w_K`
-combined with the gamma factors gives the special value formula for
-Λ_K(0).
+/-- **Sub-sub-postulate D3.2c.friedman.stark.dirichlet-form** (Dirichlet
+class number formula, residue at `s = 1`):
 
-Cite: Mathlib's `NumberField.tendsto_sub_one_mul_dedekindZeta_nhdsGT`
-+ `NumberField.dedekindZeta_residue_def`. -/
-def stark_dirichlet_formula_postulate
+The Dedekind zeta residue at `s = 1` admits the explicit formula
+`Res_{s=1} ζ_K = (2^{r₁} · (2π)^{r₂} · R_K · h_K) / (w_K · √|disc K|)`,
+i.e., the limit `(s - 1) · ζ_K(s) → Res_{s=1} ζ_K` as `s → 1⁺` (Mathlib's
+`tendsto_sub_one_mul_dedekindZeta_nhdsGT`), AND the residue value is
+the explicit ratio above (Mathlib's `dedekindZeta_residue_def`).
+
+PROVED Lean: direct conjunction of both Mathlib facts. -/
+theorem stark_dirichlet_formula_postulate
     [NumberField K] :
-    True := sorry
+    Filter.Tendsto (fun s : ℝ ↦ (s - 1) * NumberField.dedekindZeta K s)
+        (nhdsWithin 1 (Set.Ioi 1)) (nhds (NumberField.dedekindZeta_residue K)) ∧
+      NumberField.dedekindZeta_residue K =
+        (2 ^ NumberField.InfinitePlace.nrRealPlaces K *
+            (2 * Real.pi) ^ NumberField.InfinitePlace.nrComplexPlaces K *
+            NumberField.Units.regulator K * NumberField.classNumber K) /
+          (NumberField.Units.torsionOrder K * Real.sqrt |NumberField.discr K|) :=
+  ⟨NumberField.tendsto_sub_one_mul_dedekindZeta_nhdsGT K,
+   NumberField.dedekindZeta_residue_def K⟩
 
 /-- **Sub-sub-postulate D3.2c.friedman.integral-bound** (Friedman's
 integral bound on `|ζ_K(0)|`):
