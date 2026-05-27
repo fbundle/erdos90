@@ -261,3 +261,216 @@ theorem gaussianThetaMultiDim_modular
       rw [abs_lt] at h_arg
       nlinarith [Real.pi_pos]
     linarith [h2]
+
+/-! ## C1 — Anisotropic d-D Jacobi theta modular transformation
+
+We extend Step B to anisotropic (per-coordinate) Gaussians:
+  `∑' n : Fin d → ℤ, cexp(-π·∑_i (a i)·(n i)²)`
+with `a i : ℂ`, `Re(a i) > 0` for each `i`.
+
+This covers the case of a lattice that is the image of `ℤ^d` under a
+**diagonal** invertible linear map, which suffices for any number field
+whose canonical-embedding Gram matrix can be diagonalised by choice of
+basis (e.g. for CM fields where one picks a basis adapted to the
+embeddings).
+
+Full anisotropic lattice modular transformation (for non-diagonal Gram
+matrices) would require general Poisson summation on lattices — a
+separate Step C1.next.
+-/
+
+/-- Anisotropic d-D Gaussian sum `∑' n, cexp(-π · ∑_i (a i) · (n i)²)`. -/
+noncomputable def thetaAniso (d : ℕ) (a : Fin d → ℂ) : ℂ :=
+  ∑' n : Fin d → ℤ, Complex.exp (-Real.pi * ∑ i, (a i) * (n i : ℂ) ^ 2)
+
+/-- Factorize: `cexp(-π·∑_i (a i)·(n i)²) = ∏_i cexp(-π·(a i)·(n i)²)`. -/
+theorem cexp_neg_pi_aniso_finset_sum (d : ℕ) (a : Fin d → ℂ) (n : Fin d → ℂ) :
+    Complex.exp (-Real.pi * ∑ i, (a i) * n i ^ 2) =
+      ∏ i, Complex.exp (-Real.pi * (a i) * n i ^ 2) := by
+  rw [← Complex.exp_sum]
+  congr 1
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl (fun i _ => ?_)
+  ring
+
+/-- Summability of the anisotropic d-D Gaussian over `Fin d → ℤ`. -/
+theorem summable_thetaAniso :
+    ∀ (d : ℕ) (a : Fin d → ℂ), (∀ i, 0 < (a i).re) →
+      Summable (fun n : Fin d → ℤ =>
+        Complex.exp (-Real.pi * ∑ i, (a i) * (n i : ℂ) ^ 2)) := by
+  intro d
+  induction d with
+  | zero =>
+    intro a _
+    refine summable_of_hasFiniteSupport ?_
+    apply Set.Finite.subset (Set.finite_univ : (Set.univ : Set (Fin 0 → ℤ)).Finite)
+    intro _ _; trivial
+  | succ d IH =>
+    intro a ha
+    -- Use Fin.consEquiv to split (Fin (d+1) → ℤ) ≃ ℤ × (Fin d → ℤ).
+    let e : ℤ × (Fin d → ℤ) ≃ (Fin (d + 1) → ℤ) := Fin.consEquiv (fun _ => ℤ)
+    -- The "head" a 0 and the "tail" Fin.tail a are positive-real.
+    have ha_head : 0 < (a 0).re := ha 0
+    have ha_tail : ∀ i, 0 < (Fin.tail a i).re := fun i => ha i.succ
+    have h_1d := summable_cexp_neg_pi_mul_int_sq ha_head
+    have h_norm_1d := summable_norm_cexp_neg_pi_mul_int_sq ha_head
+    have h_d_summ := IH (Fin.tail a) ha_tail
+    -- Pulling back via e: F (e (z, n')) = cexp(-π·(a 0)·z²) · cexp(-π·∑_i (Fin.tail a i)·(n' i)²)
+    have h_e_apply : ∀ (z : ℤ) (n' : Fin d → ℤ),
+        Complex.exp (-Real.pi *
+            ∑ i, (a i) * (((e (z, n')) i : ℤ) : ℂ) ^ 2) =
+          Complex.exp (-Real.pi * (a 0) * (z : ℂ) ^ 2) *
+          Complex.exp (-Real.pi * ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2) := by
+      intro z n'
+      simp only [e, Fin.consEquiv, Equiv.coe_fn_mk]
+      rw [show (∑ i, (a i) * ((Fin.cons z n' : Fin (d + 1) → ℤ) i : ℂ) ^ 2) =
+              (a 0) * (z : ℂ) ^ 2 +
+              ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2 from ?_]
+      · rw [show (-Real.pi : ℂ) * ((a 0) * (z : ℂ) ^ 2 +
+            ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2) =
+            (-Real.pi * (a 0) * (z : ℂ) ^ 2) +
+            (-Real.pi * ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2) from by ring]
+        rw [Complex.exp_add]
+      · rw [Fin.sum_univ_succ]
+        simp [Fin.cons_zero, Fin.cons_succ, Fin.tail]
+    have h_prod_norm_summ : Summable (fun p : ℤ × (Fin d → ℤ) =>
+        ‖Complex.exp (-Real.pi * (a 0) * (p.1 : ℂ) ^ 2)‖ *
+        ‖Complex.exp (-Real.pi *
+            ∑ i, (Fin.tail a i) * ((p.2 i : ℤ) : ℂ) ^ 2)‖) :=
+      Summable.mul_of_nonneg h_norm_1d h_d_summ.norm
+        (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)
+    have h_prod_summ : Summable (fun p : ℤ × (Fin d → ℤ) =>
+        Complex.exp (-Real.pi * (a 0) * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi *
+            ∑ i, (Fin.tail a i) * ((p.2 i : ℤ) : ℂ) ^ 2)) := by
+      refine h_prod_norm_summ.of_norm_bounded_eventually (g := fun p =>
+          ‖Complex.exp (-Real.pi * (a 0) * (p.1 : ℂ) ^ 2)‖ *
+          ‖Complex.exp (-Real.pi *
+              ∑ i, (Fin.tail a i) * ((p.2 i : ℤ) : ℂ) ^ 2)‖) ?_
+      refine Filter.Eventually.of_forall (fun p => ?_)
+      rw [norm_mul]
+    have h_F_e : Summable (fun p : ℤ × (Fin d → ℤ) =>
+        Complex.exp (-Real.pi * ∑ i, (a i) * (((e p) i : ℤ) : ℂ) ^ 2)) := by
+      refine h_prod_summ.congr (fun p => ?_)
+      exact (h_e_apply p.1 p.2).symm
+    exact e.summable_iff.mp h_F_e
+
+/-- The anisotropic d-D Gaussian theta equals the product of 1-D thetas. -/
+theorem thetaAniso_eq_prod_theta1 :
+    ∀ (d : ℕ) (a : Fin d → ℂ), (∀ i, 0 < (a i).re) →
+      thetaAniso d a = ∏ i, theta1 (a i) := by
+  intro d
+  induction d with
+  | zero =>
+    intro a _
+    unfold thetaAniso
+    have h_one : ∀ n : Fin 0 → ℤ,
+        Complex.exp (-Real.pi * ∑ i, (a i) * (n i : ℂ) ^ 2) = 1 := by
+      intro n
+      have h_sum : (∑ i : Fin 0, (a i) * (n i : ℂ) ^ 2) = 0 := by simp
+      rw [h_sum]; simp
+    rw [tsum_congr h_one, tsum_const]
+    rw [show ∏ i : Fin 0, theta1 (a i) = 1 from Finset.prod_empty]
+    simp
+  | succ d IH =>
+    intro a ha
+    have ha_head : 0 < (a 0).re := ha 0
+    have ha_tail : ∀ i, 0 < (Fin.tail a i).re := fun i => ha i.succ
+    have h_1d := summable_cexp_neg_pi_mul_int_sq ha_head
+    have h_norm_1d := summable_norm_cexp_neg_pi_mul_int_sq ha_head
+    have h_d_summ := summable_thetaAniso d (Fin.tail a) ha_tail
+    let e : ℤ × (Fin d → ℤ) ≃ (Fin (d + 1) → ℤ) := Fin.consEquiv (fun _ => ℤ)
+    have h_e_apply : ∀ (z : ℤ) (n' : Fin d → ℤ),
+        Complex.exp (-Real.pi *
+            ∑ i, (a i) * (((e (z, n')) i : ℤ) : ℂ) ^ 2) =
+          Complex.exp (-Real.pi * (a 0) * (z : ℂ) ^ 2) *
+          Complex.exp (-Real.pi * ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2) := by
+      intro z n'
+      simp only [e, Fin.consEquiv, Equiv.coe_fn_mk]
+      rw [show (∑ i, (a i) * ((Fin.cons z n' : Fin (d + 1) → ℤ) i : ℂ) ^ 2) =
+              (a 0) * (z : ℂ) ^ 2 +
+              ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2 from ?_]
+      · rw [show (-Real.pi : ℂ) * ((a 0) * (z : ℂ) ^ 2 +
+            ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2) =
+            (-Real.pi * (a 0) * (z : ℂ) ^ 2) +
+            (-Real.pi * ∑ i, (Fin.tail a i) * ((n' i : ℤ) : ℂ) ^ 2) from by ring]
+        rw [Complex.exp_add]
+      · rw [Fin.sum_univ_succ]
+        simp [Fin.cons_zero, Fin.cons_succ, Fin.tail]
+    have h_prod_norm_summ : Summable (fun p : ℤ × (Fin d → ℤ) =>
+        ‖Complex.exp (-Real.pi * (a 0) * (p.1 : ℂ) ^ 2)‖ *
+        ‖Complex.exp (-Real.pi *
+            ∑ i, (Fin.tail a i) * ((p.2 i : ℤ) : ℂ) ^ 2)‖) :=
+      Summable.mul_of_nonneg h_norm_1d h_d_summ.norm
+        (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)
+    have h_prod_summ : Summable (fun p : ℤ × (Fin d → ℤ) =>
+        Complex.exp (-Real.pi * (a 0) * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi *
+            ∑ i, (Fin.tail a i) * ((p.2 i : ℤ) : ℂ) ^ 2)) := by
+      refine h_prod_norm_summ.of_norm_bounded_eventually (g := fun p =>
+          ‖Complex.exp (-Real.pi * (a 0) * (p.1 : ℂ) ^ 2)‖ *
+          ‖Complex.exp (-Real.pi *
+              ∑ i, (Fin.tail a i) * ((p.2 i : ℤ) : ℂ) ^ 2)‖) ?_
+      refine Filter.Eventually.of_forall (fun p => ?_)
+      rw [norm_mul]
+    unfold thetaAniso
+    rw [← e.tsum_eq]
+    rw [show (∑' p : ℤ × (Fin d → ℤ),
+            Complex.exp (-Real.pi * ∑ i, (a i) * (((e p) i : ℤ) : ℂ) ^ 2)) =
+        ∑' p : ℤ × (Fin d → ℤ),
+          Complex.exp (-Real.pi * (a 0) * (p.1 : ℂ) ^ 2) *
+          Complex.exp (-Real.pi *
+              ∑ i, (Fin.tail a i) * ((p.2 i : ℤ) : ℂ) ^ 2) from
+        tsum_congr (fun p => h_e_apply p.1 p.2)]
+    rw [← h_1d.tsum_mul_tsum h_d_summ h_prod_summ]
+    show theta1 (a 0) * (∑' n : Fin d → ℤ,
+            Complex.exp (-Real.pi * ∑ i, (Fin.tail a i) * (n i : ℂ) ^ 2)) =
+        ∏ i, theta1 (a i)
+    rw [show (∑' n : Fin d → ℤ,
+              Complex.exp (-Real.pi * ∑ i, (Fin.tail a i) * (n i : ℂ) ^ 2)) =
+            thetaAniso d (Fin.tail a) from rfl]
+    rw [IH (Fin.tail a) ha_tail]
+    rw [Fin.prod_univ_succ]
+    rfl
+
+/-- **C1 — Anisotropic d-D Jacobi theta modular transformation** (PROVED):
+For `a : Fin d → ℂ` with `Re(a i) > 0` for each `i`,
+  `thetaAniso d a = (∏_i 1 / (a i)^(1/2)) · thetaAniso d (fun i => (a i)⁻¹)`.
+
+Equivalently:
+  `∑' n : Fin d → ℤ, cexp(-π·∑_i (a i)·(n i)²)
+    = (∏_i (a i)^(-1/2)) · ∑' n, cexp(-π·∑_i (a i)⁻¹·(n i)²)`.
+
+This generalizes Step B (`gaussianThetaMultiDim_modular`) from the isotropic
+(scalar) case to per-coordinate scaling, suitable for diagonal-Gram-matrix
+lattices in `ℝ^d`. -/
+theorem thetaAniso_modular
+    {d : ℕ} (a : Fin d → ℂ) (ha : ∀ i, 0 < (a i).re) :
+    thetaAniso d a =
+      (∏ i, 1 / (a i) ^ (1 / 2 : ℂ)) *
+        thetaAniso d (fun i => (a i)⁻¹) := by
+  have ha_inv : ∀ i, 0 < ((a i)⁻¹).re := by
+    intro i
+    rw [Complex.inv_re]
+    have hai := ha i
+    have h_ne : (a i) ≠ 0 := fun h => by simp [h] at hai
+    exact div_pos hai (Complex.normSq_pos.mpr h_ne)
+  -- Factor: thetaAniso d a = ∏_i theta1 (a i).
+  rw [thetaAniso_eq_prod_theta1 d a ha]
+  rw [thetaAniso_eq_prod_theta1 d (fun i => (a i)⁻¹) ha_inv]
+  -- Per-factor 1-D theta: theta1 (a i) = (1/(a i)^(1/2)) · theta1 (a i)⁻¹.
+  have h_factor_eq : ∀ i : Fin d,
+      theta1 (a i) = 1 / (a i) ^ (1 / 2 : ℂ) * theta1 (a i)⁻¹ := by
+    intro i
+    have h_inv_eq : theta1 (a i)⁻¹ =
+        ∑' n : ℤ, Complex.exp (-Real.pi / (a i) * (n : ℂ) ^ 2) := by
+      unfold theta1
+      refine tsum_congr (fun n => ?_)
+      rw [show (-Real.pi * (a i)⁻¹ : ℂ) = -Real.pi / (a i) from by rw [div_eq_mul_inv]]
+    rw [h_inv_eq]
+    exact Complex.tsum_exp_neg_mul_int_sq (ha i)
+  -- Take the product over i.
+  rw [show (∏ i, theta1 (a i)) =
+      ∏ i, (1 / (a i) ^ (1 / 2 : ℂ) * theta1 (a i)⁻¹) from
+      Finset.prod_congr rfl (fun i _ => h_factor_eq i)]
+  rw [Finset.prod_mul_distrib]
