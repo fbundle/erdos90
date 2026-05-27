@@ -806,6 +806,19 @@ theorem p_HCF_finrank_eq_p_part_postulate
     rw [NumberField.classNumber, Nat.card_eq_fintype_card]
   rw [h1, h2, h3, h4, h5]
 
+/-- **Companion corollary**: |Gal(H_p(K)/K)| = p^padicValNat p (classNumber K).
+
+PROVED Lean: combine `p_HCF_finrank_eq_p_part_postulate` (just proved)
+with `IsGalois.card_aut_eq_finrank`. -/
+theorem pHCF_galois_card_eq_p_part
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
+    Nat.card (E.H_p ≃ₐ[K] E.H_p) =
+      p ^ (padicValNat p (NumberField.classNumber K)) := by
+  haveI : FiniteDimensional K E.H_p :=
+    HilbertPClassFieldExt.finiteDimensional_of_prime K p hp E
+  rw [IsGalois.card_aut_eq_finrank, p_HCF_finrank_eq_p_part_postulate K p hp E]
+
 /-- `[H_p(K) : K]` divides `classNumber K`.
 
 PROVED Lean modulo `p_HCF_finrank_eq_p_part_postulate`, via Mathlib's
