@@ -305,6 +305,25 @@ theorem real_sqrt_nine : Real.sqrt 9 = 3 := by
 /-- `0 < √x` iff `0 < x` (positive sqrt is positive). -/
 theorem real_sqrt_pos {x : ℝ} : 0 < Real.sqrt x ↔ 0 < x := Real.sqrt_pos
 
+/-- `√x ≥ 0` for all x. -/
+theorem real_sqrt_nonneg (x : ℝ) : 0 ≤ Real.sqrt x := Real.sqrt_nonneg x
+
+/-- `(√x)² = x` for `x ≥ 0`. -/
+theorem real_sq_sqrt {x : ℝ} (hx : 0 ≤ x) : Real.sqrt x ^ 2 = x :=
+  Real.sq_sqrt hx
+
+/-- `√(x²) = |x|`. -/
+theorem real_sqrt_sq_abs (x : ℝ) : Real.sqrt (x^2) = |x| := Real.sqrt_sq_eq_abs x
+
+/-- Monotonicity: `x ≤ y → √x ≤ √y` (for `x ≥ 0`). -/
+theorem real_sqrt_le_sqrt {x y : ℝ} (h : x ≤ y) : Real.sqrt x ≤ Real.sqrt y :=
+  Real.sqrt_le_sqrt h
+
+/-- `√(x · y) = √x · √y` for non-negative x. -/
+theorem real_sqrt_mul {x : ℝ} (hx : 0 ≤ x) (y : ℝ) :
+    Real.sqrt (x * y) = Real.sqrt x * Real.sqrt y :=
+  Real.sqrt_mul hx y
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
