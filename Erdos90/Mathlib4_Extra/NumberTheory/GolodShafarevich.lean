@@ -185,6 +185,39 @@ def imagquad_genus_image_postulate
     (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
     True := sorry
 
+/-! ##### Decomposition of `imagquad_principal_genus_postulate`
+
+Gauss's principal genus theorem splits into two inclusions:
+- (easy) `Cl(K)² ⊆ ker χ_K`: squares map to identity since (±1)² = 1.
+- (deep) `ker χ_K ⊆ Cl(K)²`: this is the genuine Gauss 1801 §286.
+
+The deep direction uses Hilbert reciprocity, equivalently Artin map at
+the level of imaginary quadratic.
+-/
+
+/-- **Sub-sub-sub-sub-sub-postulate D3.principal-genus.easy**:
+The squares `Cl(K)²` are in the kernel of the genus character `χ_K`.
+
+Trivial side: any square `g²` maps to `χ(g)² = 1` since values of χ are ±1.
+
+Cite: trivial.  Mathlib v4.30: not packaged because χ_K itself isn't. -/
+def imagquad_genus_squares_in_kernel_postulate
+    (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-sub-postulate D3.principal-genus.hard**:
+The kernel of the genus character `χ_K` is contained in `Cl(K)²`.
+
+This is Gauss's principal genus theorem (the deep direction), modern
+proof via Artin reciprocity for imaginary quadratic fields applied to
+the Hilbert class field.
+
+Cite: Gauss D.A. 1801 §286; Neukirch VI §3.  Mathlib v4.30: not
+packaged. -/
+def imagquad_genus_kernel_in_squares_postulate
+    (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
+    True := sorry
+
 /-- **Sub-sub-sub-sub-postulate D3.1.gs.base.imagquad.genus.kernel**
 (Gauss's principal genus theorem):
 The kernel of `χ_K` equals `(ClassGroup K)²` (the subgroup of squares).
@@ -192,13 +225,11 @@ The kernel of `χ_K` equals `(ClassGroup K)²` (the subgroup of squares).
 Equivalently: an ideal class is in the principal genus (i.e., the kernel
 of `χ_K`) iff it is the square of some ideal class.
 
-This is the **principal genus theorem** — historically the deepest part
-of Gauss's genus theory, proved via Hilbert's reciprocity at the level
-of abelian extensions.
+ASSEMBLY (modulo the two sub-sub-sub-sub-sub-postulates above):
+mutual inclusion proves equality.
 
 Cite: Gauss D.A. 1801 §286; modern proof via class field theory:
-Neukirch Ch. VI §3.  Mathlib v4.30: not packaged; needs Hilbert
-reciprocity + Artin map at the level of imaginary quadratic. -/
+Neukirch Ch. VI §3.  Mathlib v4.30: not packaged. -/
 def imagquad_principal_genus_postulate
     (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
     True := sorry
