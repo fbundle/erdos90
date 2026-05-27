@@ -308,14 +308,15 @@ Three sub-postulates below.
 
 /-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.conj-order-2** (Complex
 conjugation has order 2):
-For CM K, the complex conjugation `IsCMField.complexConj : K →+* K` is
-an involution (order-2 automorphism).
+For CM K, the complex conjugation `IsCMField.complexConj : K ≃ₐ[K⁺] K`
+has order exactly 2.
 
-Cite: Mathlib's `IsCMField` structure (already proved as a structure
-field for cyclotomic K).  Standard. -/
-def cm_complex_conj_order_two_postulate
+PROVED Lean: direct citation of Mathlib's
+`NumberField.IsCMField.orderOf_complexConj`. -/
+theorem cm_complex_conj_order_two_postulate
     (K : Type u) [Field K] [NumberField K] [IsCMField K] :
-    True := sorry
+    orderOf (NumberField.IsCMField.complexConj K) = 2 :=
+  NumberField.IsCMField.orderOf_complexConj K
 
 /-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.fixed-field** (Fixed field
 construction):
