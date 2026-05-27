@@ -458,6 +458,46 @@ def friedman_zeta_zero_bound_postulate
     [NumberField K] :
     True := sorry
 
+/-! ##### Decomposition of `friedman_zeta_zero_bound_postulate`
+
+Friedman's integral bound on `|ζ_K(0)|` decomposes:
+
+1. **Integral representation** (sub-postulate): `ζ_K(0)` can be written
+   as an integral involving theta series and Γ-factors.  Comes from the
+   completed zeta `Λ_K(s)` via Mellin transform at s = 0.
+2. **Positivity / integral bound** (sub-postulate): the integral is
+   bounded uniformly by an explicit constant `M(r_1, r_2)` depending
+   only on the signature.
+3. **Assembly**: integral representation + bound ⟹ `|ζ_K(0)| ≤ M`.
+
+Two sub-postulates below; assembly is direct chaining.
+-/
+
+/-- **Sub-sub-postulate D3.2c.friedman.integral-rep**:
+The value `ζ_K(0)` admits an integral representation via the completed
+zeta `Λ_K(s)`:
+
+  `ζ_K(0) = ∫₀^∞ (θ_K(t) - 1) · ψ(t) dt`
+
+for an explicit kernel `ψ` involving Γ-factors.
+
+Cite: standard from Mellin transform theory (Tate's thesis).  Mathlib
+v4.30: needs theta + Mellin infrastructure (in `Mathlib4_Extra/.../DedekindZetaFE.lean`). -/
+def friedman_zeta_integral_rep_postulate
+    [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.2c.friedman.integral-bound**:
+The Friedman integral `∫₀^∞ (θ_K(t) - 1) · ψ(t) dt` is bounded in
+absolute value by an explicit constant `M(r₁, r₂)` depending only on
+the number of real / complex places.
+
+Cite: Friedman 1989 §3 (the careful positivity analysis).  Mathlib
+v4.30: not packaged. -/
+def friedman_integral_uniform_bound_postulate
+    [NumberField K] :
+    True := sorry
+
 /-- **Sub-postulate D3.2c.friedman** (Friedman analytic regulator bound):
 For totally complex K with unit rank ≥ 1, `regulator K ≥ 0.2052`.
 
