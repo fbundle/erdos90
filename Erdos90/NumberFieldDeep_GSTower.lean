@@ -302,17 +302,18 @@ theorem minkowski_discr_lower_bound_postulate
   exact_mod_cast NumberField.abs_discr_ge' K
 
 /-- **Sub-sub-sub-postulate D3.1.cheb.density.hm.hermite**: Hermite's theorem:
-For each natural `n` and bound `D`, there are finitely many number fields
-of degree `n` with `|discr K| ≤ D` (up to isomorphism).
+There are only finitely many number fields (in a fixed extension of ℚ) with
+discriminant bounded by `N`.
 
-Cite: Hermite 1857; Neukirch III §2.  Closing this requires Minkowski's
-lattice point theorem applied to ring-of-integers lattices.
-
-Mathlib v4.30: `NumberField.IsBoundedDiscr.finite_setOf_isBoundedDiscr` exists
-(in `Mathlib/NumberTheory/NumberField/FinitelyManyDiscr.lean`) — PARTIAL. -/
-def hermite_finiteness_postulate
-    (n : ℕ) (D : ℝ) (_h_n_pos : 0 < n) (_h_D : 1 ≤ D) :
-    True := sorry
+PROVED Lean: direct citation of Mathlib's `NumberField.finite_of_discr_bdd`
+(in `vendor/mathlib4/Mathlib/NumberTheory/NumberField/Discriminant/Basic.lean`,
+namespace `hermiteTheorem`). -/
+theorem hermite_finiteness_postulate
+    (A : Type*) [Field A] [CharZero A] (N : ℕ) :
+    {K : { F : IntermediateField ℚ A // FiniteDimensional ℚ F} |
+      haveI : NumberField K := @NumberField.mk _ _ inferInstance K.prop
+      |NumberField.discr K| ≤ N}.Finite :=
+  NumberField.finite_of_discr_bdd A N
 
 /-- **Sub-postulate D3.1.cheb.density.hm**: Hermite–Minkowski finiteness:
 For any bound `rd_F`, there are finitely many number fields (up to isomorphism)
