@@ -204,14 +204,26 @@ theorem theta_K_lattice_setup_postulate
       L = NumberField.mixedEmbedding.integerLattice K :=
   ⟨_, rfl⟩
 
-/-- **D3.2b.zeta-FE.theta.gaussian** (Gaussian Fourier transform):
-For the Gaussian `f_t(x) = exp(-πt‖x‖²)` on ℝ^n, the Fourier transform
-satisfies `f̂_t(ξ) = t^{-n/2} f_{1/t}(ξ)`.
+section GaussianFourier
+open scoped FourierTransform RealInnerProductSpace
 
-Cite: classical, Stein-Shakarchi *Fourier Analysis* Ch. 5.  Mathlib
-v4.30: HAS this for 1D as `Real.fourierIntegral_gaussian`, multi-dim
-not directly. -/
-def theta_K_gaussian_fourier_postulate : True := sorry
+/-- **D3.2b.zeta-FE.theta.gaussian** (Gaussian Fourier transform on V):
+For any finite-dim real inner-product space `V` and `b : ℂ` with `b.re > 0`,
+the Fourier transform of `v ↦ exp(-b·‖v‖²)` at `w` equals
+`(π/b)^(dim V / 2) · exp(-π²·‖w‖²/b)`.
+
+PROVED: direct restatement of Mathlib's
+`fourier_gaussian_innerProductSpace`. -/
+theorem theta_K_gaussian_fourier_postulate
+    {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+    [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
+    {b : ℂ} (hb : 0 < b.re) (w : V) :
+    𝓕 (fun (v : V) ↦ Complex.exp (-b * ‖v‖ ^ 2)) w =
+      (Real.pi / b) ^ (Module.finrank ℝ V / 2 : ℂ) *
+        Complex.exp (-Real.pi ^ 2 * ‖w‖ ^ 2 / b) :=
+  fourier_gaussian_innerProductSpace hb w
+
+end GaussianFourier
 
 /-- **D3.2b.zeta-FE.theta.plug-in** (combine Poisson + Gaussian):
 Apply multi-dim Poisson to f_t (Gaussian) on the lattice 𝓞_K, giving
