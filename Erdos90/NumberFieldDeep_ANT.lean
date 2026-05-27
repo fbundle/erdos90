@@ -272,6 +272,85 @@ theorem S_set_diff_two_union_T_set :
       ({47, 71, 79, 97, 101, 107, 109, 139, 151, 163, 167, 179} : Finset ℕ) := by
   decide
 
+/-! ##### Sawin's explicit k(p) parameters
+
+In the proof of `Theorem main` (line ~274 of
+`assets/sawin_src/erdos-lower-bound.tex`), Sawin chooses explicit
+positive integer parameters `k(p)` for each `p ∈ S_set`, controlling
+how much each prime power contributes to the unit-distance count.
+With these k-values and `R = 72`, his Proposition 4.1 gives the
+explicit `δ ≈ 0.014114`.
+
+We encode `sawin_k` as a function with the 22 values from his proof,
+and verify the explicit values via small sanity checks.
+-/
+
+/-- Sawin's explicit k(p) function from line ~274 of his paper.
+Returns 0 outside `S_set`.
+
+Values (in order of `S_set`):
+- `k(2) = 50, k(3) = 31, k(5) = 21, k(7) = 17, k(11) = 14, k(13) = 13`
+- `k(17) = 12, k(19) = 11, k(23) = 10, k(29) = 10`
+- `k(47) = 8`
+- `k(71) = k(79) = k(97) = k(101) = k(107) = k(109) = 7`
+- `k(139) = k(151) = k(163) = k(167) = k(179) = 6`
+-/
+def sawin_k : ℕ → ℕ
+  | 2 => 50
+  | 3 => 31
+  | 5 => 21
+  | 7 => 17
+  | 11 => 14
+  | 13 => 13
+  | 17 => 12
+  | 19 => 11
+  | 23 => 10
+  | 29 => 10
+  | 47 => 8
+  | 71 => 7 | 79 => 7 | 97 => 7 | 101 => 7 | 107 => 7 | 109 => 7
+  | 139 => 6 | 151 => 6 | 163 => 6 | 167 => 6 | 179 => 6
+  | _ => 0
+
+/-- **Sawin Constant R**: the bound `R = 72` from his Theorem main proof. -/
+def sawin_R : ℕ := 72
+
+/-- Sanity: `sawin_R > 1` (the formula requires `R > 1`). -/
+theorem sawin_R_gt_one : 1 < sawin_R := by decide
+
+/-- All 22 values of `sawin_k` on `S_set` are strictly positive (so
+each prime contributes nontrivially). -/
+theorem sawin_k_pos_on_S_set (p : ℕ) (hp : p ∈ S_set) : 0 < sawin_k p := by
+  fin_cases hp <;> decide
+
+/-- Sum of `sawin_k` over `S_set` = explicit total exponent in Sawin's
+formula.
+
+Per-prime breakdown:
+- First ten primes `{2,3,5,7,11,13,17,19,23,29}`:
+  `50+31+21+17+14+13+12+11+10+10 = 189`.
+- `k(47) = 8`.
+- Next six `{71,79,97,101,107,109}` each contribute `7`: `6·7 = 42`.
+- Last five `{139,151,163,167,179}` each contribute `6`: `5·6 = 30`.
+
+Total: `189 + 8 + 42 + 30 = 269`. -/
+theorem sawin_k_sum_on_S_set :
+    (S_set.sum sawin_k) = 269 := by decide
+
+/-- Sanity: `sawin_k` is monotone non-increasing in p across S_set:
+larger primes get smaller k(p).  Spot-checks: `k(2) > k(3)`, `k(43)`
+(off-set since 43 ∉ S_set, so `k = 0` ≤ anything), `k(71) > k(139)`.
+-/
+theorem sawin_k_two_ge_three : sawin_k 3 ≤ sawin_k 2 := by decide
+
+theorem sawin_k_seventy_one_ge_one_seven_nine : sawin_k 179 ≤ sawin_k 71 := by decide
+
+/-- `sawin_k` returns 0 outside `S_set`.  Spot-checks for primes in
+`T_set \ S_set = {31, 37, 41, 43}`. -/
+theorem sawin_k_thirty_one : sawin_k 31 = 0 := by decide
+theorem sawin_k_thirty_seven : sawin_k 37 = 0 := by decide
+theorem sawin_k_forty_one : sawin_k 41 = 0 := by decide
+theorem sawin_k_forty_three : sawin_k 43 = 0 := by decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
