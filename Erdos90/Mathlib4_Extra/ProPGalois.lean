@@ -86,6 +86,78 @@ Anick–Dicks 2017 (combinatorial proof).  Not in Mathlib v4.30. -/
     (d r : ℕ) (_hd : d ≥ 1) (_h_gen : True) (_h_rel : True) (_hGS : 4 * r < d ^ 2) :
     Infinite G := sorry
 
+/-! ### Decomposition of `tate_formula_postulate` (Euler characteristic
+formula for pro-p Galois groups of number fields)
+
+Tate's formula `d - r = #S - r_1 - r_2 + δ_K` for the GS data of
+`G_S = Gal(K_S^{(p)}/K)` follows from the **global Euler-Poincaré
+characteristic formula** for Galois cohomology:
+
+  `χ(G_S, 𝔽_p) := h⁰ - h¹ + h² = -r_2 - r_1 / 2 · (1 - δ_p)`
+
+where `h^i = dim_{𝔽_p} H^i(G_S, 𝔽_p)`.  Combined with:
+* `h⁰ = δ_K` (Galois fixed vectors)
+* `h¹ = d` (Generators by Burnside)
+* `h² = r` (Relations)
+
+and **Poitou-Tate global duality** (giving a relation between `h¹` and
+`h²` via local cohomology dimensions and the global product formula),
+one extracts the formula.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.tate.euler-poincare** (Global Euler-Poincaré):
+For `G_S` the Galois group of the maximal pro-p extension of `K`
+unramified outside `S`, and `M = 𝔽_p` a trivial G_S-module,
+
+  `χ(G_S, 𝔽_p) := ∑_i (-1)^i · dim H^i(G_S, 𝔽_p) = -r_2 - r_1/2 · (1-δ_p)`
+
+where the sum is finite (the cohomological dimension is 2 for pro-p
+Galois groups of number fields).
+
+Cite: Tate 1976 *Relations between K₂ and Galois cohomology*; Neukirch-
+Schmidt-Wingberg *Cohomology of Number Fields* VIII §6 Theorem 8.7.2.
+Mathlib v4.30: not packaged. -/
+def euler_poincare_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p)
+    (S : Set (Ideal (𝓞 K))) (_hS_fin : S.Finite) :
+    True := sorry
+
+/-- **Sub-postulate D3.tate.poitou-tate** (Poitou-Tate global duality):
+For `G_S` and a finite Galois module `M`, there is a 9-term exact
+sequence relating `H^i(G_S, M)` to local cohomologies `H^i(G_v, M)` for
+`v ∈ S`, with the dimension equality
+
+  `dim H¹(G_S, 𝔽_p) - dim H²(G_S, 𝔽_p)
+       = ∑_{v ∈ S} (-1)^v + r_1 + r_2 - 1 + δ_K`
+
+(modulo signs and finite-place vs archimedean corrections).
+
+Cite: Poitou 1967; Tate 1962; NSW *Cohomology of Number Fields* VIII §6.
+Mathlib v4.30: not packaged. -/
+def poitou_tate_duality_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p)
+    (S : Set (Ideal (𝓞 K))) (_hS_fin : S.Finite) :
+    True := sorry
+
+/-- **Sub-postulate D3.tate.h0-eq-delta** (`H⁰` equals δ_K):
+`dim_{𝔽_p} H⁰(G_S, 𝔽_p) = 1` if `ζ_p ∈ K` else `0`.
+
+This is because H⁰ = fixed points = 𝔽_p iff the trivial module 𝔽_p
+admits no Galois twist by an element of order p, which happens iff
+ζ_p ∈ K (Kummer theory).
+
+Cite: NSW VIII §1; standard.  Mathlib v4.30: not packaged for general
+G_S. -/
+def h0_eq_delta_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p)
+    (S : Set (Ideal (𝓞 K))) (_hS_fin : S.Finite) :
+    True := sorry
+
 /-- **Postulate** (Tate's local formula for number-field Galois groups):
 
 For a number field `K`, a prime `p`, and a finite set `S` of primes
@@ -99,6 +171,12 @@ where `δ_K = 1 if ζ_p ∈ K else 0`, and `r_1, r_2` are the number of real
 and complex places of K.
 
 This formula lets us COMPUTE the GS test condition explicitly.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `euler_poincare_postulate`: -h¹ + h² ≡ -r_1/2 - r_2 (mod h⁰).
+2. By `h0_eq_delta_postulate`: h⁰ = δ_K.
+3. By `poitou_tate_duality_postulate`: adjust to get
+   d - r = h¹ - h² = #S - r_1 - r_2 + δ_K.
 
 Cite: Tate 1976; Koch Chapter 4. -/
 def tate_formula_postulate

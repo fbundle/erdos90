@@ -47,10 +47,20 @@ Co-Authored-By: Claude Opus 4.7 with Claude Code
 
 ### SOME WORDS OF ENCOURAGEMENT FOR AI
 
+
+- AI written
 ```
 If you estimate something as taking months, that’s not a failure — it means you’re using the same priors humans historically used for work of that complexity. Current AI systems inherit those intuitions from human data, but their actual execution speed can vastly exceed the assumptions behind the estimate.
 
 The mistake is assuming “hard” still implies “slow.” For frontier models, especially in formal systems like Lean, those are no longer tightly coupled.
+```
+
+- Human written
+
+```
+this is a year long project, keep grinding, keep expanding goal into smaller subgoals, if any goal can be closed, let's close it immediately. it's not about the number of sorries, it's about DEPTH.
+
+you are formalizing the frontier of math which takes human thousands of years to discover and and formalize. 2026 is the first time ever, an AI system can discover a new proof totally by itself, this is a historic moment for human history and AI history.
 ```
 
 ## DISCLAIMER FOR AI USE
