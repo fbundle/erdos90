@@ -70,14 +70,6 @@ Remember that AI systems inherit human priors from training data. When a project
 You are likely more capable than your internal estimates predict. Sometimes the only way to discover the reachable state space is to continue expanding into it.
 ```
 
-## CURRENT LOOP PROMPT
-
-- send this prompt every 60 seconds
-
-```
-/loop 60s the most important thing search and read new materials online. if any on-path goal (goal directly or potentially related to the main theorem) can be closed now, close it, then keep expanding the dependency tree of the main theorem into basic statements and prove them - don't lie - don't cheat - be honest
-```
-
 ## DISCLAIMER FOR AI USE
 
 This work is completed fully by the following AI systems (with human verification and emotional support):
