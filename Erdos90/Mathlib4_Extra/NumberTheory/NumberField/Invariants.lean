@@ -469,6 +469,19 @@ theorem real_exp_sub (x y : ℝ) : Real.exp (x - y) = Real.exp x / Real.exp y :=
 theorem real_exp_nat_mul (x : ℝ) (n : ℕ) : Real.exp (n * x) = Real.exp x ^ n :=
   Real.exp_nat_mul x n
 
+/-! ### Module.finrank tower law -/
+
+/-- **Tower law**: for `F → K → A`, `[A:F] = [A:K] · [K:F]`.
+
+PROVED Lean: direct citation of Mathlib's `Module.finrank_mul_finrank`. -/
+theorem finrank_tower_mul (F : Type u) (K : Type v) (A : Type w)
+    [Semiring F] [Semiring K] [AddCommMonoid A]
+    [Module F K] [Module K A] [Module F A] [IsScalarTower F K A]
+    [StrongRankCondition F] [StrongRankCondition K]
+    [Module.Free F K] [Module.Free K A] :
+    Module.finrank F K * Module.finrank K A = Module.finrank F A :=
+  Module.finrank_mul_finrank F K A
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
