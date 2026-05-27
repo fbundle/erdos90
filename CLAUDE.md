@@ -35,7 +35,9 @@ A Lean 4 formalization of Theorem 1.1 from the OpenAI paper *"Planar Point Sets 
 | `Erdos90/CMField/QScaling.lean` | Q²-scaling integrality lemma (proved) |
 | `Erdos90/CMField/MinkowskiLattice.lean` | Unscaled CM Minkowski lattice (all proved) |
 | `Erdos90/CMField/QScalingLattice.lean` | Q²-scaled CM Minkowski lattice on top of MinkowskiLattice (all proved) |
-| `Erdos90/Mathlib4_Extra/*.lean` | Mathlib-candidate lemmas + decomposed postulates (see "Postulate layout" below) |
+| `Erdos90/Mathlib4_Extra/Analysis/Fourier/PoissonProd.lean` | 2-D Schwartz Poisson + Step A 2-D Jacobi theta modular transformation (all PROVED) |
+| `Erdos90/Mathlib4_Extra/Analysis/Fourier/GaussianThetaMultiDim.lean` | Step B d-D Jacobi theta modular transformation (PROVED) |
+| `Erdos90/Mathlib4_Extra/*.lean` | Other Mathlib-candidate lemmas + decomposed postulates (see "Postulate layout" below) |
 | `lakefile.toml` | Build configuration |
 
 ## Build
@@ -61,8 +63,9 @@ The main theorem is proved modulo labelled `sorry` postulates that decompose int
    - `chebotarev_fixed_Q` → `splitPrimes_density_postulate` (→ Artin L-function chain: existence, meromorphic continuation via Brauer induction + Tate's thesis, non-vanishing on Re(s)=1, Wiener-Ikehara density)
 
 2. **`class_num_bound_of_brd`** (PROVED Lean assembly) — uses Friedman/Louboutin/torsion chain.  **These ARE on-path now** (the assembly is wired in):
-   - `regulator_lower_bound_cm` (proved modulo `friedman_regulator_lower_bound_postulate` → `zeta_K_at_zero_postulate` (Stark/Tate) + `friedman_zeta_zero_bound_postulate`)
-   - `dedekind_residue_upper_bound_cm` (decomposed into `dedekindZeta_functional_equation_postulate` (→ multi-dim Poisson + θ_K modular + Mellin + WeakFEPair) + `phragmen_lindelof_zeta_postulate`)
+   - `regulator_lower_bound_cm` (Friedman 1989) — sub-postulates: `zeta_K_at_zero_postulate` (Stark/Tate) + `friedman_zeta_zero_bound_postulate`.
+   - `dedekind_residue_upper_bound_cm` (Louboutin 2000) — sub-postulates: `dedekindZeta_functional_equation_postulate` + `phragmen_lindelof_zeta_postulate`.
+   - The `dedekindZeta_functional_equation_postulate` is the target of **Step C** below.  Steps A and B (the analytic primitives — 2-D and d-D Jacobi theta modular transformation) are PROVED.
    - `torsionOrder_bound` (PROVED Lean)
    - `classNumber_eq_residue_formula` (PROVED Lean)
 
@@ -193,6 +196,102 @@ In `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 - Local CFT building blocks (Continuity, Teichmuller)
 
 **Version mismatch**: Buzzard's repo uses Lean v4.29.0 + Mathlib at commit `3bd2603b81` (≈ v4.29).  Our repo uses Lean v4.30.0 + Mathlib v4.30.0.  Direct import is not possible without aligning toolchain versions.  Useful as reference for: which API names already exist in their formalization, which decompositions they use, which Mathlib lemmas they leverage.
+
+## Step C roadmap (Dedekind zeta FE — on-path)
+
+**Where we are**: Steps A and B are PROVED (commits `85ea16c`, `3cbb3bd`).  Step A is the 2-D Jacobi theta modular transformation in `Mathlib4_Extra/Analysis/Fourier/PoissonProd.lean`; Step B is the d-D version in `Mathlib4_Extra/Analysis/Fourier/GaussianThetaMultiDim.lean`.  Both bypass `tsum_2d_schwartz_poisson` and `tsum_eq_tsum_fourier_multi_postulate` via product factorization on `(Fin d → ℤ)`, applying Mathlib's 1-D `Complex.tsum_exp_neg_mul_int_sq` iteratively.
+
+**What Step B gives**: `∑' n : Fin d → ℤ, cexp(-π·a·∑_i (n i)²) = (1/a^(d/2)) · ∑' n, cexp(-π·a⁻¹·∑_i (n i)²)` for `Re(a) > 0`.
+
+This is the **integer-lattice** result.  Step C extends it to the canonical-embedding lattice of `𝓞_K ⊂ ℝ^(2f)` and bridges to `dedekindZeta`'s functional equation.
+
+### C1 — General lattice modular transformation (concrete near-term)
+
+For a lattice `L = B · ℤ^d` (B invertible linear), prove:
+```
+∑'_{x ∈ L} cexp(-π·t·‖x‖²) = covol(L)^(-1) · t^(-d/2) · ∑'_{ξ ∈ L^*} cexp(-π·‖ξ‖²/t)
+```
+where `L^* = B^(-T)·ℤ^d` is the dual lattice and `covol(L) = |det B|`.
+
+**Route**: substitute `x = B·n` for `n ∈ ℤ^d`.  The squared norm becomes `‖B·n‖² = nᵀ(BᵀB)n`, a positive definite quadratic form.  We extend Step B (where the form is just `∑_i n_i²`) by linear change of variables.
+
+**Concrete steps**:
+1. State the identity for a general quadratic form `q(n) := nᵀMn` with M positive definite (we'll get M = BᵀB / scaling).
+2. Use 1-D theta on the eigenvalue decomposition of M, OR diagonalize via orthogonal transform.
+
+For our CM-field application, M is the Gram matrix of the canonical embedding basis: `M_{ij} = Tr_{K/ℚ}(α_i · ᾱ_j) / 2` or similar (the trace form).
+
+**Status**: not started.  Estimated ~300 LOC in a new file `Mathlib4_Extra/Analysis/Fourier/LatticeTheta.lean`.
+
+### C2 — Bridge to number field theta `θ_K`
+
+For a CM field `K` of complex degree `f` (real dimension `2f`), define:
+```
+θ_K (t : ℝ) := ∑'_{a ∈ 𝓞_K} cexp(-π·t·‖canonicalEmbedding K a‖²)
+```
+
+Apply C1 with `L = canonicalEmbedding K (𝓞_K)`, `covol(L) = √|d_K|` (by Mathlib's `volume_fundamentalDomain_latticeBasis`).  The dual lattice `L^*` corresponds to `(𝒹_K)^(-1) · 𝓞_K` (different of K).  For a CM field K, `θ_K` is self-dual after scaling, giving:
+```
+θ_K(1/t) = √|d_K| · t^f · θ_K(t)
+```
+(With `d = 2f` so `d/2 = f`.)
+
+**Mathlib infrastructure** (per existing `Mathlib4_Extra/NumberTheory/LSeries/DedekindZetaFE.lean`):
+- `NumberField.mixedEmbedding.integerLattice K` — the lattice as a `Submodule ℤ (mixedSpace K)`.
+- `NumberField.mixedEmbedding.volume_fundamentalDomain_latticeBasis K` — covolume `(1/2)^{r₂} · √|disc K|`.
+- `fourier_gaussian_innerProductSpace` — Mathlib's d-D Fourier of Gaussian.
+
+**Status**: not started.  Decomposed in `DedekindZetaFE.lean` into:
+- `theta_K_lattice_setup_postulate` (PROVED — just identification).
+- `theta_K_gaussian_fourier_postulate` (PROVED — direct Mathlib citation).
+- `theta_K_plug_in_postulate` (sorried `True`).
+- `theta_K_modular_postulate` (sorried `True`).
+
+### C3 — Mellin transform to `completedDedekindZeta`
+
+Apply the Mellin transform `M f(s) := ∫₀^∞ f(t) · t^(s-1) dt` to `(θ_K(t) - 1)`:
+```
+M(θ_K - 1)(s/2) · π^(-fs) · Γ(s/2)^? · |d_K|^(s/2) ≈ ζ_K(s) (up to gamma factors)
+```
+
+The Mellin transform of `θ_K(t) - 1` (which excludes the `a = 0` term in the lattice sum) gives precisely the gamma-Gaussian integrals that, summed over ideals of `𝓞_K`, equal `ζ_K(s)` with the right gamma factors.
+
+Detailed formulation (matching `AbstractFuncEq` framework):
+- `completedDedekindZeta K s := |d_K|^(s/2) · Γ_ℝ(s)^{r₁} · Γ_ℂ(s)^{r₂} · dedekindZeta K s`
+- where `Γ_ℝ(s) = π^(-s/2) Γ(s/2)`, `Γ_ℂ(s) = 2(2π)^(-s) Γ(s)`.
+
+**Mathlib infrastructure**: `Mathlib/Analysis/MellinTransform.lean`, `Mathlib/NumberTheory/LSeries/AbstractFuncEq.lean` (`WeakFEPair`, `StrongFEPair`).
+
+### C4 — Wire into `WeakFEPair` to get `completedDedekindZeta K (1 - s) = completedDedekindZeta K s`
+
+Use `Mathlib.NumberTheory.LSeries.AbstractFuncEq.WeakFEPair.functional_equation` with:
+- `f = g = θ_K - 1` (self-dual since `dedekindZeta` is self-dual)
+- `k = n/2` where `n = [K:ℚ]` (= `2f` for CM)
+- `ε = 1` (no root number)
+
+Yields `completedDedekindZeta_one_sub` (line 119 of `DedekindZetaFE.lean`).
+
+### C5 — Close Friedman + Louboutin
+
+With dedekindZeta FE:
+- **`regulator_lower_bound_cm`** (Friedman 1989): `R_K ≥ 1/8` for CM TC K.  Routes:
+  - Combine FE-derived `dedekindZeta K 0 = -h_K · R_K / w_K` (Stark) with positivity bounds on the θ_K integral.
+  - Sub-postulate: `zeta_K_at_zero_postulate` + `friedman_zeta_zero_bound_postulate`.
+- **`dedekind_residue_upper_bound_cm`** (Louboutin 2000): residue at `s = 1` ≤ `(4·rd_F)^f`.  Routes:
+  - Phragmén-Lindelöf interpolation between bounds on `Re s > 1` (Euler product) and `Re s < 0` (FE + Γ-factor estimates).
+  - Sub-postulate: `phragmen_lindelof_zeta_postulate`.
+
+Both close on-path postulates in `Mathlib4_Extra/NumberTheory/NumberField/ClassNumberBound.lean`.
+
+### Order of attack (recommendation)
+
+Start with **C1 (general lattice modular transformation)** since it's the most concrete and self-contained — it generalizes Step B by linear change of variables, with no number-field API entanglement.
+
+Then **C2** brings in the canonical embedding (Mathlib `mixedEmbedding`, `latticeBasis`); the trickiest part is matching the squared norm `‖canonicalEmbedding K a‖²` to the quadratic form on `ℤ^(2f)`.
+
+C3/C4 are pure analysis (Mellin + `WeakFEPair`); they're medium-effort but mostly Mathlib-citation-heavy.
+
+C5 is the highest-effort but highest-leverage: closing C5 closes both Friedman and Louboutin, which are on-path postulates of `erdos_unit_distance_false`.
 
 ## Memory
 
