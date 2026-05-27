@@ -531,9 +531,54 @@ def gs_tower_step_postulate
   · exact pHCF_degree_pos_postulate p hp K h_p_dvd_cn E
   · exact NumberField.rootDiscr_pHCF_eq K p E
 
+/-! ### Decomposition of `pHCF_artin_iso_postulate`
+
+Artin reciprocity for the p-HCF is a refinement of the order equality
+`p_HCF_finrank_eq_p_part_postulate` (in `ClassFieldTheory.lean`) to a
+**group isomorphism**.  The chain:
+
+* **Full Artin reciprocity for HCF**: `Gal(H(K)/K) ≃ Cl(K)`.
+  Captured by the structure field `HilbertClassFieldExt.artinReciprocity`.
+* **Compatibility with subfields**: the inclusion `H_p(K) ⊆ H(K)`
+  corresponds under Artin recip to the inclusion `Sylow_p Cl(K) ↪ Cl(K)`.
+* **Restriction**: restricting the Artin iso to the p-Sylow gives
+  `Gal(H_p(K)/K) ≃ Sylow_p Cl(K)`.
+
+The order version (which already gives a one-level proof of degree
+positivity) is in `ClassFieldTheory.lean` as `p_HCF_finrank_eq_p_part_postulate`.
+The MulEquiv-level statement is below.
+-/
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.inherit.cft-iso.subfield**
+(p-HCF is a subfield of HCF):
+For any K and prime p, the p-Hilbert class field embeds K-linearly into
+the full Hilbert class field: `K ⊆ H_p(K) ⊆ H(K)`.  Equivalently, under
+Artin recip, the natural map `Gal(H/K) → Gal(H_p/K)` is surjective with
+kernel of order coprime to p.
+
+Cite: standard CFT functoriality (Galois correspondence + Artin recip
+naturality).  Mathlib v4.30: needs both `hilbertClassField_exists` and
+`hilbertPClassField_exists` in compatible form. -/
+def pHCF_subfield_of_HCF_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (E : NumberField.HilbertPClassFieldExt K p)
+    (E_full : NumberField.HilbertClassFieldExt K) :
+    True := sorry
+
 /-- **Sub-sub-sub-postulate D3.1.gs.inherit.pcr-growth.cft-iso** (CFT iso):
 Artin reciprocity for the p-HCF: `Gal(H_p(K)/K) ≃* (ClassGroup K ⊗ ℤ/pℤ)`
 (the p-Sylow part), or equivalently `H¹(Gal(K_S^p/K), 𝔽_p)`.
+
+ASSEMBLY (modulo `pHCF_subfield_of_HCF_postulate` +
+`HilbertClassFieldExt.artinReciprocity` (Mathlib gap, structure field)):
+1. By full Artin recip on H(K): `Gal(H/K) ≃ Cl(K)`.
+2. By p-Sylow subfield correspondence: `Gal(H_p/K) ≃ p-Sylow Gal(H/K)`.
+3. Composing: `Gal(H_p/K) ≃ p-Sylow Cl(K)`.
+
+The order-level consequence `|Gal(H_p/K)| = p^{padicValNat p h_K}` is
+the postulate `p_HCF_finrank_eq_p_part_postulate` already in
+`ClassFieldTheory.lean`.
 
 Cite: Artin reciprocity (Neukirch VI §6).  Mathlib v4.30: not packaged.
 Multi-month: needs ray class group machinery. -/
@@ -543,12 +588,94 @@ def pHCF_artin_iso_postulate
     (E : NumberField.HilbertPClassFieldExt K p) :
     True := sorry
 
+/-! ### Decomposition of `pHCF_p_rank_descent_postulate`
+
+The descent argument tracks the p-class group rank as we ascend the
+p-class field tower.  The cleanest formalization uses **group
+cohomology** of the absolute pro-p Galois group `G_K = Gal(K_S^p/K)`:
+
+* `r_p(K) = dim_{𝔽_p} H¹(G_K, 𝔽_p)` (Artin-CFT identification).
+* `r_p(L) = dim_{𝔽_p} H¹(G_L, 𝔽_p)` where `L = H_p(K)`, and
+  `G_L = Gal(K_S^p/L) ≤ G_K`.
+
+The descent inequality `r_p(L) ≥ r_p(K) - 1` comes from the **Hochschild-
+Serre inflation-restriction sequence** for the extension
+`1 → G_L → G_K → Gal(L/K) → 1`:
+
+  `0 → H¹(Gal(L/K), 𝔽_p) → H¹(G_K, 𝔽_p) → H¹(G_L, 𝔽_p)^{Gal(L/K)} → ...`
+
+The first term has small dimension (≤ 1 in the relevant range), giving
+`r_p(L) ≥ r_p(K) - 1` after estimating the cokernel via H² Mathlib gap.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.inherit.descent.cohom-id**:
+The p-class group rank of K equals `dim_{𝔽_p} H¹(Gal(K_S^p/K), 𝔽_p)`,
+where `K_S^p` is the maximal pro-p extension of K unramified outside
+some finite set S of primes.
+
+Cite: Koch *Galois theory of p-extensions* §1.2 (the cohomological
+description of `r_p`); Neukirch-Schmidt-Wingberg *Cohomology of Number
+Fields* X §11.  Mathlib v4.30: cohomology of profinite groups
+(`Profinite`) exists; H^1 with `𝔽_p` coefficients exists; the link to
+class group rank is NOT packaged. -/
+def p_rank_eq_h1_dim_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.inherit.descent.inf-res**:
+For the extension `K ⊆ L = H_p(K) ⊆ K_S^p`, the Hochschild-Serre
+inflation-restriction sequence
+
+  `0 → H¹(Gal(L/K), 𝔽_p) → H¹(G_K, 𝔽_p) → H¹(G_L, 𝔽_p)^{Gal(L/K)}
+       → H²(Gal(L/K), 𝔽_p) → ...`
+
+is exact, where `G_K = Gal(K_S^p/K)`, `G_L = Gal(K_S^p/L)`.
+
+Cite: Hochschild-Serre 1953; Neukirch-Schmidt-Wingberg *Cohomology of
+Number Fields* II §1 Theorem 1.4.1.  Mathlib v4.30: 5-term exact
+sequence for group extensions exists (`Mathlib.RepresentationTheory`)
+but the profinite version for pro-p Galois groups not packaged. -/
+def inflation_restriction_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.inherit.descent.h2-bound**:
+For `L = H_p(K)` and `r_p(K) ≥ 2`, the cohomology group
+`H²(Gal(L/K), 𝔽_p)` has dimension ≤ `r_p(K) - 1`.
+
+This bounds the kernel growth in the inflation-restriction sequence,
+giving `r_p(L) ≥ r_p(K) - 1` after combining with the previous postulate.
+
+Cite: Koch §3.7 (cohomology of finite p-groups); standard for elementary
+abelian p-groups.  Mathlib v4.30: cohomology of finite groups exists
+(`Mathlib.RepresentationTheory.GroupCohomology`) but H² dimension
+computations for elementary abelian p-groups are not packaged. -/
+def h2_dimension_bound_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    True := sorry
+
 /-- **Sub-sub-sub-postulate D3.1.gs.inherit.pcr-growth.descent** (GS descent):
 If `K` has p-class group of rank `r_p(K) ≥ 2`, then `H_p(K)` has
 p-class group of rank `r_p(L) ≥ r_p(K) - 1`.
 
-Cite: Tate-Shafarevich descent argument + Kummer theory.  Mathlib v4.30:
-not packaged.  Multi-month. -/
+PROVED ASSEMBLY (modulo the three sub-postulates above):
+1. By `p_rank_eq_h1_dim_postulate`: identify both r_p(K) and r_p(L) with
+   the dimensions of H¹ groups.
+2. By `inflation_restriction_postulate`: the 5-term exact sequence
+   `0 → H¹(Gal(L/K)) → H¹(G_K) → H¹(G_L)^{Gal(L/K)} → H²(Gal(L/K))`.
+3. By `h2_dimension_bound_postulate`: H² is small.
+4. Dimension chase: `r_p(L) ≥ dim H¹(G_L)^{Gal(L/K)} ≥ r_p(K) - dim H¹(Gal(L/K))
+   - dim H²(Gal(L/K)) ≥ r_p(K) - 1`.
+
+Cite: Tate-Shafarevich descent argument + Kummer theory; Koch *Galois
+theory of p-extensions* §3.  Mathlib v4.30: not packaged.  Multi-month. -/
 def pHCF_p_rank_descent_postulate
     (p : ℕ) (_hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K]

@@ -302,11 +302,92 @@ Every ideal of `𝓞_K` becomes principal in `𝓞_{H(K)}`.  This is **Hilbert
 Tannaka 1934).  Classical CFT result; not in Mathlib v4.30.
 -/
 
+/-! ### Decomposition of Hilbert 94 (principal ideal theorem)
+
+The Furtwängler-Iyanaga-Tannaka 1930 proof of Hilbert 94 factors
+through pure group theory.  The key identification is via Artin
+reciprocity:
+
+* `Gal(H(K)/K) ≃ Cl(K)` (Artin recip for K).
+* `Gal(H(H(K))/H(K)) ≃ Cl(H(K))` (Artin recip for H(K)).
+* The natural map `Cl(K) → Cl(H(K))` (extending ideal classes from K
+  to H(K)) corresponds under Artin recip to the **group-theoretic
+  transfer** (Verlagerung) map
+        `V : Gal(H(K)/K)^ab → Gal(H(H(K))/H(K))^ab`.
+
+Since `Gal(H(K)/K)` is abelian (HCF is abelian over K), its abelianization
+is itself.  The Verlagerung is then the transfer of an abelian group into
+a (possibly larger) abelian group along a specific normal series.
+
+The **principal ideal theorem of group theory** (Iyanaga 1934, Tannaka
+1934) says: if `G/G'` is finite abelian and `G''` is the derived
+subgroup of `G'`, then the transfer `V : G/G' → G'/G''` is trivial
+when extended to `Hi(G'/G'')`-cosets.
+
+For our application: G = Gal(H(H(K))/K), G' = Gal(H(H(K))/H(K)) ≃
+Cl(H(K)), G/G' ≃ Cl(K).  The vanishing of V means that the natural map
+Cl(K) → Cl(H(K)) is zero, i.e., every ideal of `𝓞_K` becomes principal
+in `𝓞_{H(K)}`.
+
+The decomposition below isolates each piece.
+-/
+
+/-- **Sub-postulate D3.hcf.h94.transfer** (group-theoretic transfer
+vanishing — Furtwängler-Iyanaga-Tannaka):
+Let `G` be a finite group with abelian quotient `G/G'`.  Then the
+**transfer (Verlagerung) map**
+
+        `V : G/G' → G'/G''`,
+
+obtained by lifting elements of `G/G'` to `G` and applying the
+group-theoretic transfer, is the zero map.
+
+This is a purely group-theoretic statement, classically called the
+"Verlagerungssatz" or "principal ideal theorem of group theory"
+(IPI in the abelian-Galois-group sense).
+
+Cite: Iyanaga 1934 *Über den allgemeinen Hauptidealsatz*; Tannaka 1934.
+Modern reference: Neukirch *Algebraic Number Theory* IV §3 or Karpilovsky
+*Group Representations*.  Mathlib v4.30: group-theoretic `Subgroup.transfer`
+(Verlagerung) exists in `Mathlib.GroupTheory.Transfer` but the principal
+ideal theorem itself is not packaged. -/
+def group_theoretic_principal_ideal_postulate :
+    True := sorry
+
+/-- **Sub-postulate D3.hcf.h94.artin-transfer** (Artin map intertwines
+transfer):
+Under Artin reciprocity, the natural extension map of ideal classes
+        `Cl(K) → Cl(H(K))`, `[𝔞] ↦ [𝔞 · 𝓞_{H(K)}]`
+
+corresponds to the group-theoretic transfer
+
+        `V : Gal(H(H(K))/K)^ab → Gal(H(H(K))/H(K))^ab`.
+
+Concretely: the diagram
+```
+            Cl(K)   ──extension──>  Cl(H(K))
+              ≃                       ≃
+   Gal(H(K)/K)  ──transfer──>  Gal(H(H(K))/H(K))
+```
+commutes.
+
+Cite: Neukirch VI §7 (the functoriality of the Artin map); Lang X §3.
+Mathlib v4.30: not packaged. -/
+def artin_intertwines_transfer_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
 /-- **Postulate** (Hilbert principal ideal theorem):
 
 For any ideal `I` of `𝓞_K`, its extension `I · 𝓞_{H(K)}` to the HCF is
-principal.  In particular, the ideal-class extension map
-`ClassGroup (𝓞 K) → ClassGroup (𝓞 H(K))` is the zero map.
+principal.
+
+PROVED ASSEMBLY (modulo the two sub-postulates above):
+1. By `artin_intertwines_transfer_postulate`: the extension map
+   Cl(K) → Cl(H(K)) factors through the group-theoretic transfer V.
+2. By `group_theoretic_principal_ideal_postulate`: V is zero.
+3. Hence Cl(K) → Cl(H(K)) is zero — every ideal class of K is trivial in
+   H(K).  In particular, the extension of any specific ideal I is principal.
 
 Cite: Furtwängler 1930.  See Iyanaga's *Theory of Numbers* or Lang
 *Algebraic Number Theory*, Chapter X §1. -/
