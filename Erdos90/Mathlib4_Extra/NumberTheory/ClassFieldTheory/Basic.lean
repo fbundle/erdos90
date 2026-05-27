@@ -1387,6 +1387,25 @@ theorem cyclotomic_five_nrComplexPlaces
   norm_num at h
   exact h
 
+/-- `[ℚ(ζ_3) : ℚ] = 2`.
+
+PROVED Lean: direct citation of Mathlib's `IsCyclotomicExtension.Rat.finrank`
+with `k = 3` and `φ(3) = 2`. -/
+theorem cyclotomic_three_finrank
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    Module.finrank ℚ K = 2 := by
+  have h := IsCyclotomicExtension.Rat.finrank (k := 3) K
+  norm_num at h
+  exact h
+
+/-- `[ℚ(ζ_5) : ℚ] = 4`. -/
+theorem cyclotomic_five_finrank
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    Module.finrank ℚ K = 4 := by
+  have h := IsCyclotomicExtension.Rat.finrank (k := 5) K
+  norm_num at h
+  exact h
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
