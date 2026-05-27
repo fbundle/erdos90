@@ -883,6 +883,22 @@ theorem sylow_classGroup_card
     rw [NumberField.classNumber, Nat.card_eq_fintype_card]
   rw [h1, h2, h3]
 
+/-- **Companion (PROVED)**: in a commutative finite group `G`, every
+p-subgroup is contained in the (unique) p-Sylow.
+
+PROVED Lean: combine `IsPGroup.exists_le_sylow` (Mathlib's
+Sylow's first theorem) with `sylow_subsingleton_of_commGroup`
+(uniqueness in the commutative case).  The unique Sylow is then
+the supremum p-subgroup. -/
+theorem pSubgroup_le_unique_sylow_of_commGroup
+    {G : Type*} [CommGroup G] [Finite G] {p : ℕ} [Fact p.Prime]
+    {Q : Subgroup G} (hQ : IsPGroup p Q) (P : Sylow p G) :
+    Q ≤ (P : Subgroup G) := by
+  haveI : Subsingleton (Sylow p G) := sylow_subsingleton_of_commGroup p
+  obtain ⟨R, hR⟩ := hQ.exists_le_sylow
+  have : R = P := Subsingleton.elim _ _
+  rwa [this] at hR
+
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
