@@ -463,10 +463,27 @@ The completed Dedekind zeta evaluated at s = 0 equals its value at s = 1
 (via the functional equation Λ_K(1-s) = Λ_K(s)).
 
 Cite: Hecke 1917 + Tate's thesis.  Mathlib gap; see
-`Mathlib4_Extra/NumberTheory/LSeries/DedekindZetaFE.lean`. -/
+`Mathlib4_Extra/NumberTheory/LSeries/DedekindZetaFE.lean`.
+
+DECOMPOSITION: 2 named pieces.
+1. **K = ℚ case**: `riemannZeta 0 = -1/2`, which matches the formula
+   `-h_K R_K / w_K = -1·1/2 = -1/2` for K = ℚ.  PROVED in Mathlib.
+2. **General K**: needs the general Dedekind zeta FE.  Mathlib gap. -/
 def stark_completed_zeta_at_zero_postulate
     [NumberField K] :
     True := sorry
+
+/-- **Sub-sub-sub-postulate D3.2c.friedman.stark.fe-at-zero.riemann**
+(Riemann zeta at zero — Mathlib citation):
+
+`ζ(0) = -1/2`.  This is the K = ℚ specialization of the Stark formula
+`ζ_K(0) = -h_K · R_K / w_K`: for K = ℚ, `h = 1, R = 1, w = 2`, giving
+`ζ(0) = -1/2`.
+
+PROVED Lean: direct citation of Mathlib's `riemannZeta_zero`. -/
+theorem stark_completed_zeta_at_zero_riemann_postulate :
+    riemannZeta 0 = -1 / 2 :=
+  riemannZeta_zero
 
 /-- **Sub-sub-postulate D3.2c.friedman.stark.dirichlet-form** (Dirichlet
 class number formula, residue at `s = 1`):
