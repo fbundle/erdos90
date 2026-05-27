@@ -193,14 +193,16 @@ def theta_K_modular_postulate
     (K : Type*) [Field K] [NumberField K] : True := sorry
 
 /-- **D3.2b.zeta-FE.theta.lattice** (lattice in mixedSpace):
-The image of `𝓞 K` under `mixedEmbedding K` is a full-rank lattice in
-`mixedSpace K = ℝ^{r₁} × ℂ^{r₂}`.
+The image of `𝓞 K` under `mixedEmbedding K` is a full-rank `ℤ`-submodule
+of `mixedSpace K = ℝ^{r₁} × ℂ^{r₂}`.
 
-Cite: Mathlib HAS this (`integerLattice K : Submodule ℤ (mixedSpace K)`,
-`fundamentalDomain_integerLattice`).  This sub-postulate is the wrapper
-identifying the lattice with the integer ring image. -/
-def theta_K_lattice_setup_postulate
-    (K : Type*) [Field K] [NumberField K] : True := sorry
+PROVED Lean: direct citation of Mathlib's
+`NumberField.mixedEmbedding.integerLattice K`. -/
+theorem theta_K_lattice_setup_postulate
+    (K : Type*) [Field K] [NumberField K] :
+    ∃ (L : Submodule ℤ (NumberField.mixedEmbedding.mixedSpace K)),
+      L = NumberField.mixedEmbedding.integerLattice K :=
+  ⟨_, rfl⟩
 
 /-- **D3.2b.zeta-FE.theta.gaussian** (Gaussian Fourier transform):
 For the Gaussian `f_t(x) = exp(-πt‖x‖²)` on ℝ^n, the Fourier transform
