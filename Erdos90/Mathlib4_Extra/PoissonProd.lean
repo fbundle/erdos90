@@ -572,6 +572,83 @@ theorem schwartz_y_decay_bound (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x y : ℝ)
         apply mul_le_mul_of_nonneg_left _ h_2k_pos
         linarith [h_seminorm_0, h_y_pow_bound]
 
+/-- Pointwise norm bound following from `schwartz_y_decay_bound`:
+`‖f(x, y)‖ ≤ C / (1+‖y‖)^k` uniformly in `x`. -/
+theorem schwartz_y_decay_div (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x y : ℝ) :
+    ‖(f : ℝ × ℝ → ℂ) (x, y)‖ ≤
+      (2 ^ k * (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ k 0 f)) /
+        (1 + ‖y‖) ^ k := by
+  have h_pos : 0 < (1 + ‖y‖) ^ k := by positivity
+  have h_bound := schwartz_y_decay_bound f k x y
+  rw [le_div_iff₀ h_pos, mul_comm]
+  exact h_bound
+
+/-- Continuity of the partial Fourier in `x`: for Schwartz `f` and real `n`,
+the function `x ↦ ∫ y, exp(-2πi n y) · f(x, y) dy` is continuous.
+
+PROVED via `MeasureTheory.continuous_of_dominated` with the integrable
+bound `y ↦ C / (1+|y|)^2` (from `schwartz_y_decay_div` at `k = 2`). -/
+theorem continuous_partial_fourier_integrand (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℝ) :
+    Continuous fun x : ℝ =>
+      ∫ y : ℝ, Complex.exp (-(2 * Real.pi * (n * y)) * Complex.I) *
+        (f : ℝ × ℝ → ℂ) (x, y) := by
+  -- Set up the parametric integral framework
+  set C : ℝ := 2 ^ 2 * (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ 2 0 f)
+  set bound : ℝ → ℝ := fun y => C / (1 + ‖y‖) ^ 2
+  -- bound is integrable
+  have h_bound_int : MeasureTheory.Integrable bound := by
+    have h_inv_rpow : MeasureTheory.Integrable
+        (fun y : ℝ => (1 + ‖y‖) ^ (-(2 : ℝ))) := by
+      apply integrable_one_add_norm (μ := MeasureTheory.volume)
+      simp
+    -- Convert rpow form to division form
+    have h_pow_eq : ∀ y : ℝ, (1 + ‖y‖) ^ (-(2 : ℝ)) = 1 / (1 + ‖y‖) ^ 2 := by
+      intro y
+      have h_pos : (0 : ℝ) < 1 + ‖y‖ := by linarith [norm_nonneg y]
+      rw [Real.rpow_neg h_pos.le]
+      rw [show (1 + ‖y‖) ^ (2 : ℝ) = (1 + ‖y‖) ^ (2 : ℕ) from by
+        rw [← Real.rpow_natCast]; norm_num]
+      exact (one_div _).symm
+    have h_inv_div : MeasureTheory.Integrable
+        (fun y : ℝ => 1 / (1 + ‖y‖) ^ 2) := by
+      refine h_inv_rpow.congr ?_
+      exact Filter.Eventually.of_forall (fun y => h_pow_eq y)
+    -- bound = C * (1 / (1+|y|)^2)
+    show MeasureTheory.Integrable (fun y : ℝ => C / (1 + ‖y‖) ^ 2)
+    have h_eq : (fun y : ℝ => C / (1 + ‖y‖) ^ 2) =
+        (fun y : ℝ => C * (1 / (1 + ‖y‖) ^ 2)) := by
+      ext y; ring
+    rw [h_eq]
+    exact h_inv_div.const_mul C
+  -- Apply continuous_of_dominated
+  apply MeasureTheory.continuous_of_dominated
+  · -- AEStronglyMeasurable for each x
+    intro x
+    refine Continuous.aestronglyMeasurable ?_
+    refine Continuous.mul ?_ ?_
+    · fun_prop
+    · refine Continuous.comp f.continuous ?_
+      fun_prop
+  · -- bound: ∀ x, ∀ᵐ y, ‖F x y‖ ≤ bound y
+    intro x
+    refine Filter.Eventually.of_forall fun y => ?_
+    -- ‖exp(...) · f(x, y)‖ = ‖f(x, y)‖ ≤ bound y
+    rw [norm_mul]
+    have h_exp_norm : ‖Complex.exp (-(2 * Real.pi * (n * y)) * Complex.I)‖ = 1 := by
+      have := norm_fourier_char_eq_one (n * y)
+      convert this using 2
+      push_cast
+      ring
+    rw [h_exp_norm, one_mul]
+    exact schwartz_y_decay_div f 2 x y
+  · -- bound is integrable
+    exact h_bound_int
+  · -- ∀ᵐ y, x ↦ F x y is continuous
+    refine Filter.Eventually.of_forall fun y => ?_
+    refine Continuous.mul continuous_const ?_
+    refine Continuous.comp f.continuous ?_
+    fun_prop
+
 /-! ## Towards full 2-D Schwartz Poisson summation
 
 We can now restate the row-Poisson chain in terms of `partialFourier`,
