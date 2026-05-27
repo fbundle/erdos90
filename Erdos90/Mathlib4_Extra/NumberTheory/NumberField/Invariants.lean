@@ -227,6 +227,25 @@ theorem real_pi_gt_d6 : 3.141592 < Real.pi := Real.pi_gt_d6
 /-- `π < 3.141593`.  Mathlib's `Real.pi_lt_d6`. -/
 theorem real_pi_lt_d6 : Real.pi < 3.141593 := Real.pi_lt_d6
 
+/-! ### Real.log/exp sanity wrappers -/
+
+/-- `log 1 = 0`. -/
+theorem real_log_one : Real.log 1 = 0 := Real.log_one
+
+/-- `log e = 1` (where e = Real.exp 1). -/
+theorem real_log_exp_one : Real.log (Real.exp 1) = 1 := Real.log_exp 1
+
+/-- `log` is monotone on positive reals (`Real.log_le_log`). -/
+theorem real_log_le_of_le {x y : ℝ} (hx : 0 < x) (hxy : x ≤ y) : Real.log x ≤ Real.log y :=
+  Real.log_le_log hx hxy
+
+/-- `exp x > 0` for all real x. -/
+theorem real_exp_pos (x : ℝ) : 0 < Real.exp x := Real.exp_pos x
+
+/-- `exp` is monotone (`Real.exp_lt_exp`). -/
+theorem real_exp_lt_of_lt {x y : ℝ} (h : x < y) : Real.exp x < Real.exp y :=
+  Real.exp_lt_exp.mpr h
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
