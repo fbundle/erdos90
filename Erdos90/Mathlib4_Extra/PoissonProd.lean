@@ -455,6 +455,57 @@ theorem schwartz_y_decay_div (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x y : ℝ) :
   rw [le_div_iff₀ h_pos, mul_comm]
   exact h_bound
 
+/-- Symmetric to `schwartz_y_decay_bound`: bound in the x-direction.
+`(1+‖x‖)^k · ‖f(x, y)‖ ≤ 2^k · (‖f‖_(0,0) + ‖f‖_(k,0))` uniformly in `y`. -/
+theorem schwartz_x_decay_bound (f : 𝓢(ℝ × ℝ, ℂ)) (k : ℕ) (x y : ℝ) :
+    (1 + ‖x‖) ^ k * ‖(f : ℝ × ℝ → ℂ) (x, y)‖ ≤
+      2 ^ k * (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ k 0 f) := by
+  have h_norm_x : ‖x‖ ≤ ‖((x, y) : ℝ × ℝ)‖ := by simp [Prod.norm_def]
+  have h_seminorm_0 : ‖(f : ℝ × ℝ → ℂ) (x, y)‖ ≤ SchwartzMap.seminorm ℝ 0 0 f :=
+    SchwartzMap.norm_le_seminorm (𝕜 := ℝ) f (x, y)
+  have h_seminorm_k : ‖((x, y) : ℝ × ℝ)‖ ^ k * ‖(f : ℝ × ℝ → ℂ) (x, y)‖ ≤
+      SchwartzMap.seminorm ℝ k 0 f :=
+    SchwartzMap.norm_pow_mul_le_seminorm (𝕜 := ℝ) f k (x, y)
+  have h_pow_bound : (1 + ‖x‖) ^ k ≤ 2 ^ k * (1 + ‖x‖ ^ k) := by
+    have h1 : 1 + ‖x‖ ≤ 2 * max 1 ‖x‖ := by
+      by_cases hx_le : ‖x‖ ≤ 1
+      · have hmax : max 1 ‖x‖ = 1 := max_eq_left hx_le
+        rw [hmax]; linarith
+      · push_neg at hx_le
+        have hmax : max 1 ‖x‖ = ‖x‖ := max_eq_right hx_le.le
+        rw [hmax]; linarith
+    have h2 : (max 1 ‖x‖ : ℝ) ^ k ≤ 1 + ‖x‖ ^ k := by
+      by_cases hx_le : ‖x‖ ≤ 1
+      · have hmax : max 1 ‖x‖ = 1 := max_eq_left hx_le
+        rw [hmax, one_pow]
+        linarith [pow_nonneg (norm_nonneg x) k]
+      · push_neg at hx_le
+        have hmax : max 1 ‖x‖ = ‖x‖ := max_eq_right hx_le.le
+        rw [hmax]
+        linarith [pow_nonneg (norm_nonneg x) k]
+    calc (1 + ‖x‖) ^ k
+        ≤ (2 * max 1 ‖x‖) ^ k := pow_le_pow_left₀ (by linarith [norm_nonneg x]) h1 k
+      _ = 2 ^ k * (max 1 ‖x‖) ^ k := by rw [mul_pow]
+      _ ≤ 2 ^ k * (1 + ‖x‖ ^ k) := by
+        apply mul_le_mul_of_nonneg_left h2 (by positivity)
+  have h_x_pow_bound : ‖x‖ ^ k * ‖(f : ℝ × ℝ → ℂ) (x, y)‖ ≤
+      SchwartzMap.seminorm ℝ k 0 f := by
+    calc ‖x‖ ^ k * ‖(f : ℝ × ℝ → ℂ) (x, y)‖
+        ≤ ‖((x, y) : ℝ × ℝ)‖ ^ k * ‖(f : ℝ × ℝ → ℂ) (x, y)‖ := by
+          apply mul_le_mul_of_nonneg_right
+          · exact pow_le_pow_left₀ (norm_nonneg _) h_norm_x k
+          · exact norm_nonneg _
+      _ ≤ SchwartzMap.seminorm ℝ k 0 f := h_seminorm_k
+  have h_2k_pos : (0 : ℝ) ≤ 2 ^ k := by positivity
+  calc (1 + ‖x‖) ^ k * ‖(f : ℝ × ℝ → ℂ) (x, y)‖
+      ≤ (2 ^ k * (1 + ‖x‖ ^ k)) * ‖(f : ℝ × ℝ → ℂ) (x, y)‖ := by
+        apply mul_le_mul_of_nonneg_right h_pow_bound (norm_nonneg _)
+    _ = 2 ^ k * (‖(f : ℝ × ℝ → ℂ) (x, y)‖ + ‖x‖ ^ k * ‖(f : ℝ × ℝ → ℂ) (x, y)‖) := by ring
+    _ ≤ 2 ^ k *
+          (SchwartzMap.seminorm ℝ 0 0 f + SchwartzMap.seminorm ℝ k 0 f) := by
+        apply mul_le_mul_of_nonneg_left _ h_2k_pos
+        linarith [h_seminorm_0, h_x_pow_bound]
+
 /-- Continuity of the partial Fourier in `x`: for Schwartz `f` and real `n`,
 the function `x ↦ ∫ y, exp(-2πi n y) · f(x, y) dy` is continuous.
 
