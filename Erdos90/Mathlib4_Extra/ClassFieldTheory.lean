@@ -794,11 +794,25 @@ theorem HilbertClassFieldExt.identity_isCMField (K : Type u) [Field K] [NumberFi
   -- (HilbertClassFieldExt.identity K h).H = K, so IsCMField follows trivially.
   exact inferInstanceAs (IsCMField K)
 
--- (HilbertClassFieldExt.identity_hilbert_principal omitted: the underlying
--- claim is that for classNumber=1 K, the Hilbert principal ideal theorem
--- holds trivially because 𝓞 K is a PID.  The Lean statement requires
--- unfolding the structure projection `(identity K h).H = K`, which is
--- def-eq but doesn't propagate to the algebraMap typeclass resolution.)
+/-- For the identity HCF case (classNumber K = 1), the Hilbert principal
+ideal theorem holds trivially: every ideal of `𝓞 K` is already principal
+(since `𝓞 K` is a PID when `classNumber K = 1`), and its "extension" to
+`𝓞 (identity.H) = 𝓞 K` is itself.
+
+PROVED Lean using `classNumber_eq_one_iff` (Mathlib).  This is the
+trivial-class-number case of `hilbert_principal_ideal_postulate`. -/
+theorem HilbertClassFieldExt.identity_hilbert_principal
+    (K : Type u) [Field K] [NumberField K]
+    (h : NumberField.classNumber K = 1)
+    (I : Ideal (𝓞 K)) :
+    (I.map (algebraMap (𝓞 K) (𝓞 (HilbertClassFieldExt.identity K h).H))).IsPrincipal := by
+  -- (identity K h).H = K def-eq, so 𝓞 (identity.H) = 𝓞 K.
+  -- 𝓞 K is a PID (classNumber = 1), hence every ideal is principal.
+  haveI h_pid : IsPrincipalIdealRing (𝓞 K) :=
+    NumberField.classNumber_eq_one_iff.mp h
+  -- Transport the PID instance through the def-eq.
+  show (I.map (algebraMap (𝓞 K) (𝓞 K))).IsPrincipal
+  exact IsPrincipalIdealRing.principal _
 
 /-! ## Concrete HCF instances
 
