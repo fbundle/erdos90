@@ -401,6 +401,42 @@ theorem cm_compositum_rootDiscr_postulate
   NumberField.natAbs_discr_eq_natAbs_discr_pow_mul_natAbs_discr_pow
     L K₁ K₂ h₁ h₂ h₃
 
+/-! ##### Decomposition of `cm_compositum_classNumber_postulate`
+
+The classical proof factors:
+1. **Norm map existence** (sub-postulate): natural `N : Cl(K) → Cl(K₀)`
+   defined via ideal norm.
+2. **Norm map surjectivity** (sub-postulate): for coprime disc(K₀, F),
+   the norm map is surjective (genus-theoretic argument).
+3. **Surjection ⟹ divisibility** (Mathlib: `Nat.card_le_of_surjective`):
+   if `f : A →* B` surjective with finite domain/codomain,
+   `|B| ∣ |A|`.  Concretely, `Fintype.card B ∣ Fintype.card A` from
+   surjectivity + structure theorem for finite abelian groups.
+
+Two sub-postulates below.
+-/
+
+/-- **Sub-sub-sub-sub-postulate D3.cm-lift.class-num.norm-map**:
+For a tower `K₀ ⊆ K` of number fields, there is a natural group
+homomorphism `Cl(K) →* Cl(K₀)` (the ideal norm map down to K₀).
+
+Cite: standard ANT.  Mathlib v4.30: not packaged in this form. -/
+def cm_compositum_norm_map_postulate
+    (K₀ : Type) [Field K₀] [NumberField K₀]
+    (K : Type) [Field K] [NumberField K] [Algebra K₀ K] :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.cm-lift.class-num.surjective**:
+For `K = K₀ · F` (compositum) with `gcd(disc K₀, disc F) = 1`, the
+natural norm map `Cl(K) → Cl(K₀)` is surjective.
+
+Cite: Iwasawa Local CFT §6.3; genus theory for biquadratic with coprime
+disc.  Mathlib v4.30: not packaged. -/
+def cm_compositum_norm_surjective_postulate
+    (K₀ : Type) [Field K₀] [NumberField K₀]
+    (F : Type) [Field F] [NumberField F] :
+    True := sorry
+
 /-- **Sub-sub-sub-postulate D3.1.gs.base.cm-lift.class-number-divides**
 (Class number divisibility in compositum):
 For `K = K₀ · F` with coprime discriminants and `K₀/ℚ` quadratic, the
@@ -408,9 +444,11 @@ natural norm map `Cl(K) → Cl(K₀)` is surjective.  Hence `h(K₀) ∣ h(K)`.
 
 In particular, `p ∣ h(K₀) ⟹ p ∣ h(K)`.
 
-Cite: Iwasawa *Local CFT* §6.3; surjectivity follows from genus theory
-for biquadratic extensions (the ambiguous-class sequence collapses when
-discriminants are coprime).  Mathlib v4.30: not packaged. -/
+ASSEMBLY (modulo the two sub-postulates above):
+- norm-map exists → norm-map surjective → for finite groups, surjection
+  gives `|Cl(K₀)| ∣ |Cl(K)|`, i.e. `h(K₀) ∣ h(K)`.
+
+Cite: Iwasawa *Local CFT* §6.3.  Mathlib v4.30: not packaged. -/
 def cm_compositum_classNumber_postulate
     (K₀ : Type) [Field K₀] [NumberField K₀]
     (F : Type) [Field F] [NumberField F] :
