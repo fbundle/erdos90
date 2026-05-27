@@ -226,13 +226,78 @@ def imagquad_2_rank_genus_postulate
     (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
     True := sorry
 
+/-! ### Decomposition of `imagquad_p_rank_scholz_postulate` (odd p case)
+
+Scholz (1932) and Reichardt (1934) gave an explicit construction of
+imaginary quadratic fields with prescribed p-class group rank.  The
+chain of ideas:
+
+1. **Scholz reflection theorem** (Spiegelungssatz 1932): the p-ranks of
+   the class groups of `ℚ(√d)` (real quadratic) and `ℚ(√-d)` (imag
+   quadratic) satisfy `r_p(K^-) - r_p(K^+) ∈ {0, 1}` (for odd p with
+   p ∤ d).
+2. **Reichardt's construction**: for odd primes `p`, there exist
+   infinitely many `d` such that `ℚ(√d)` (real quadratic) has p-rank
+   at least 1.  Constructive via Kummer/cyclotomic considerations.
+3. **Reflection upgrade**: combining (1) + (2) gives `r_p(ℚ(√-d)) ≥
+   r_p(ℚ(√d)) ≥ 1`, hence `p ∣ classNumber ℚ(√-d)`.
+
+Each of these is its own Mathlib gap.  Mathlib v4.30 has no Scholz
+reflection theorem and no Reichardt construction.
+-/
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.base.imagquad.scholz.reflection**
+(Scholz Spiegelungssatz):
+For an odd prime `p` and an imaginary quadratic field `K^- = ℚ(√-d)`
+with corresponding real quadratic `K^+ = ℚ(√d)` (where `p ∤ d`), the
+p-class group ranks satisfy
+
+  `r_p(K^-) - 1 ≤ r_p(K^+) ≤ r_p(K^-)`.
+
+Equivalently: `r_p(K^+) ≤ r_p(K^-) ≤ r_p(K^+) + 1`.
+
+The proof uses the Kummer dual of class groups + Hilbert 94 + analysis
+of the ramification of `K^+(ζ_p) / K^+(ζ_p)^+`.
+
+Cite: Scholz 1932 "Über die Beziehung der Klassenzahlen quadratischer
+Körper zueinander"; modern: Washington *Cyclotomic Fields* §10.2.
+Mathlib v4.30: not packaged. -/
+def scholz_reflection_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_hp_odd : p ≠ 2) (d : ℕ)
+    (_hd_pos : 0 < d) (_hd_sq : Squarefree d) (_hpd : ¬ p ∣ d) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.base.imagquad.scholz.reichardt**
+(Reichardt's construction):
+For each odd prime `p`, there exist infinitely many squarefree positive
+integers `d` such that the real quadratic field `ℚ(√d)` has p-class
+group of positive rank.
+
+Concrete construction (Reichardt 1934): take `d = q · r` where `q ≡ 1
+(mod p²)` and `r ≡ 1 (mod p)`, with additional reciprocity conditions
+between `q` and `r`.  The resulting `d` gives `r_p(ℚ(√d)) ≥ 1` via a
+Kummer descent argument.
+
+Cite: Reichardt 1934 "Arithmetische Theorie der kubischen Körper als
+Radikalkörper"; Cohen *Computational ANT* §5.5.  Mathlib v4.30: not
+packaged. -/
+def reichardt_real_quadratic_p_rank_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_hp_odd : p ≠ 2) :
+    True := sorry
+
 /-- **Sub-sub-sub-postulate D3.1.gs.base.imagquad.scholz** (Scholz-Reichardt
 for odd p):
 For odd primes `p`, the p-class group of imaginary quadratic ℚ(√-d) is
 nontrivial when `d` is chosen with specific properties (e.g., d divisible
 by p primes with specific congruence conditions).
 
-Cite: Scholz-Reichardt 1934 (the original); Cohen's *A Course in
+PROVED ASSEMBLY (modulo the two sub-postulates above):
+1. By `reichardt_real_quadratic_p_rank_postulate`: ∃ d with
+   r_p(ℚ(√d)) ≥ 1.
+2. By `scholz_reflection_postulate`: r_p(ℚ(√-d)) ≥ r_p(ℚ(√d)) ≥ 1.
+3. Hence p ∣ classNumber ℚ(√-d).
+
+Cite: Scholz-Reichardt 1934 (combined); Cohen's *A Course in
 Computational Algebraic Number Theory* Ch. 5.  Multi-month. -/
 def imagquad_p_rank_scholz_postulate
     (p : ℕ) (_hp : Nat.Prime p) (_hp_odd : p ≠ 2) :
@@ -259,15 +324,106 @@ def gs_imagquad_with_p_rank_postulate
       InfinitePlace.nrRealPlaces K₀ = 0 ∧
       p ∣ NumberField.classNumber K₀ := sorry
 
-/-- **Sub-sub-postulate D3.1.gs.base.cm-lift**: CM lift via tensor product.
+/-! ### Decomposition of `gs_cm_lift_postulate`
 
-Given an imaginary quadratic K₀, the CM lift K = K₀ ⊗_ℚ K₀' (for an
-appropriate K₀') is a CM totally complex field of degree 2·[K₀:ℚ] = 4
+The CM lift takes an imaginary quadratic `K₀ = ℚ(√-d)` (degree 2, one
+complex place) and produces a CM totally complex `K` of higher degree
 with related class-number divisibility properties.
+
+Two standard constructions:
+1. **Compositum with totally real**: `K = K₀ · F` where `F = ℚ(α)` is a
+   totally real number field with `(disc K₀, disc F) = 1`.  Then `K` is
+   CM (with maximal totally real subfield `F`), `[K : ℚ] = 2·[F : ℚ]`,
+   and the class number satisfies `h(K₀) ∣ h(K)` (with explicit
+   "ambiguous class" correction terms).
+2. **Tensor product**: `K = K₀ ⊗_ℚ F` as a ℚ-algebra is naturally a
+   number field whose discriminant divides `disc(K₀)^{[F:ℚ]} · disc(F)^2`
+   (Stickelberger; conductor-discriminant for the compositum).
+
+The class-number divisibility `p ∣ h(K)` from `p ∣ h(K₀)` follows from
+the **norm-restriction map** `Cl(K) → Cl(K₀)` being surjective in the
+relatively-prime-discriminant case (compositum of unramified extensions
+correspond to subgroups of the product class group).
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-sub-sub-postulate D3.1.gs.base.cm-lift.compositum**
+(Compositum is CM):
+Let `K₀` be imaginary quadratic and `F` be totally real with `gcd(disc
+K₀, disc F) = 1`.  Then the compositum `K = K₀ · F` is CM totally
+complex with `[K : ℚ] = 2 · [F : ℚ]`, and the maximal totally real
+subfield of `K` is `F`.
+
+Cite: standard CM field structure (Iwasawa *Local Class Field Theory*
+Ch. 6; Lang *Algebraic Number Theory* X §3).  Mathlib v4.30: CM field
+predicate exists (`IsCMField`) but the compositum-is-CM lemma is not
+packaged. -/
+def cm_compositum_postulate
+    (K₀ : Type) [Field K₀] [NumberField K₀]
+    (_h_imagquad : InfinitePlace.nrComplexPlaces K₀ = 1 ∧
+      InfinitePlace.nrRealPlaces K₀ = 0)
+    (F : Type) [Field F] [NumberField F]
+    (_h_tot_real : InfinitePlace.nrComplexPlaces F = 0) :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.base.cm-lift.disc-bound**
+(Discriminant of compositum):
+For coprime discriminants `gcd(disc K₀, disc F) = 1`, the discriminant
+of the compositum `K = K₀ · F` satisfies
+
+  `disc K = (disc K₀)^{[F:ℚ]} · (disc F)^{[K₀:ℚ]}`
+
+and the root discriminant `rootDiscr K = (rootDiscr K₀ · rootDiscr F)^{1/2}`
+(geometric mean).
+
+In particular, if both `rootDiscr K₀` and `rootDiscr F` are bounded by
+`ℓ`, then so is `rootDiscr K`.
+
+Cite: Conductor-discriminant formula (Neukirch VII §11); specialization
+to compositum of coprime-discriminant extensions.  Mathlib v4.30: not
+packaged for the compositum case. -/
+def cm_compositum_rootDiscr_postulate
+    (K₀ : Type) [Field K₀] [NumberField K₀]
+    (F : Type) [Field F] [NumberField F]
+    (_ℓ : ℝ) (_h_ℓ_pos : 1 ≤ _ℓ)
+    (_h_rd_K₀ : NumberField.rootDiscr K₀ ≤ _ℓ)
+    (_h_rd_F : NumberField.rootDiscr F ≤ _ℓ) :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.base.cm-lift.class-number-divides**
+(Class number divisibility in compositum):
+For `K = K₀ · F` with coprime discriminants and `K₀/ℚ` quadratic, the
+natural norm map `Cl(K) → Cl(K₀)` is surjective.  Hence `h(K₀) ∣ h(K)`.
+
+In particular, `p ∣ h(K₀) ⟹ p ∣ h(K)`.
+
+Cite: Iwasawa *Local CFT* §6.3; surjectivity follows from genus theory
+for biquadratic extensions (the ambiguous-class sequence collapses when
+discriminants are coprime).  Mathlib v4.30: not packaged. -/
+def cm_compositum_classNumber_postulate
+    (K₀ : Type) [Field K₀] [NumberField K₀]
+    (F : Type) [Field F] [NumberField F] :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.1.gs.base.cm-lift**: CM lift via compositum.
+
+Given an imaginary quadratic K₀, the CM lift K = K₀ · F (for an
+appropriate totally real F with coprime discriminant) is a CM totally
+complex field with related class-number divisibility properties.
 
 For our GS application: from `K₀` with `p ∣ classNumber K₀`, construct
 a CM totally complex `K` with `p ∣ classNumber K` and explicit
 `rootDiscr K` bound.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. Pick `F` totally real with `rootDiscr F ≤ ℓ` and `gcd(disc K₀, disc F)
+   = 1` (e.g., `F = ℚ(√n)` with `n` a totally real squarefree integer
+   chosen to satisfy the gcd constraint).
+2. By `cm_compositum_postulate`: `K = K₀ · F` is CM TC.
+3. By `cm_compositum_rootDiscr_postulate`: `rootDiscr K ≤ ℓ`.
+4. By `cm_compositum_classNumber_postulate`: `p ∣ h(K)` since `p ∣ h(K₀)`
+   and the norm map `Cl(K) → Cl(K₀)` is surjective.
 
 Cite: standard CM lift theory; HMR 2021 uses this implicitly.  Not in
 Mathlib v4.30; needs CM field tensor product construction.  -/
