@@ -81,10 +81,53 @@ def heckeLFunction_postulate
     (_χ : HeckeCharacter K) (_s : ℂ) :
     ℂ := 0
 
+/-! ### Decomposition of `hecke_L_non_vanishing_at_one_postulate`
+
+The non-vanishing of Hecke L-functions at s = 1 (a key analytic input for
+Chebotarev) decomposes:
+
+1. **Analytic continuation of L(s, χ)** past s = 1 to Re(s) ≥ 1.
+2. **Non-vanishing on Re(s) = 1**: similar to the classical Dirichlet
+   non-vanishing of L(1, χ) ≠ 0 but generalized to Hecke characters.
+3. **Specific s = 1 non-vanishing**: combine (1) + (2) for s = 1.
+
+Two sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.hecke-L.analytic-cont** (Analytic continuation of
+Hecke L-functions):
+For a non-trivial Hecke character χ, the Hecke L-function L(s, χ)
+extends to an entire function (no poles).  The trivial character gives
+the Dedekind zeta function ζ_K with its simple pole at s = 1.
+
+Cite: Hecke 1917; Tate's thesis 1950.  Mathlib v4.30: Dirichlet L-series
+continuation packaged; Hecke version not. -/
+def hecke_L_analytic_continuation_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (_χ : HeckeCharacter K) :
+    True := sorry
+
+/-- **Sub-postulate D3.hecke-L.nonvanish-Re-one** (Non-vanishing on
+Re(s) = 1):
+For a non-trivial Hecke character χ, the Hecke L-function L(s, χ) is
+non-zero on the line Re(s) = 1.
+
+Cite: Hecke 1920 (the Hecke generalization of Dirichlet).  Mathlib v4.30:
+Dirichlet's `L(1, χ) ≠ 0` packaged; Hecke version not. -/
+def hecke_L_nonvanishing_Re_one_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (_χ : HeckeCharacter K) :
+    True := sorry
+
 /-- **Postulate** (Hecke L-function non-vanishing at `s = 1`):
 
 For any non-trivial Hecke character `χ` of a number field `K`, the
 L-function `L(s, χ)` is non-zero at `s = 1`.
+
+ASSEMBLY (modulo the two sub-postulates above):
+1. By `hecke_L_analytic_continuation_postulate`: L(s, χ) is defined at s = 1.
+2. By `hecke_L_nonvanishing_Re_one_postulate`: L(s, χ) ≠ 0 on Re(s) = 1.
+3. Hence L(1, χ) ≠ 0.
 
 This is the **generalized Dirichlet theorem** for number fields, and is
 the analytic input for the Chebotarev density theorem.

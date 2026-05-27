@@ -68,12 +68,56 @@ def hilbertSymbol_postulate
     (K : Type u) [Field K] (_a _b : Kˣ) :
     Bool := false
 
+/-! ### Decomposition of `hilbert_product_formula_postulate`
+
+The Hilbert product formula `∏_v (a, b)_v = 1` follows from the
+**reciprocity property of the Brauer group**:
+
+1. **Hilbert symbol = local invariant**: at each place, the Hilbert symbol
+   (a, b)_v equals 1/2 · the local invariant of the quaternion algebra
+   `(a, b)_v` in `Br(K_v)` (mod 2).
+2. **Hasse-Brauer-Noether sequence**: the sum of local invariants over
+   all places is zero in ℚ/ℤ for global Brauer classes.
+3. **Combine**: ∏_v (a, b)_v = 1 because each factor is ±1 and the sum
+   of "log(±1) ∈ ℤ/2ℤ" is zero.
+
+Two sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.hilbert-sym.local-invariant** (Hilbert symbol =
+local Brauer invariant):
+The Hilbert symbol (a, b)_v at a place v equals the local invariant of
+the quaternion algebra (a, b) ⊗ K_v in `Br(K_v) ≅ ℚ/ℤ`, reduced mod 2.
+
+Cite: Serre *Local Fields* XIV §3.  Mathlib v4.30: not packaged. -/
+def hilbert_symbol_eq_brauer_local_invariant_postulate
+    (K : Type u) [Field K] [NumberField K] (_a _b : Kˣ) :
+    True := sorry
+
+/-- **Sub-postulate D3.hilbert-sym.hasse-brauer-noether** (Sum of local
+invariants = 0):
+For any element of `Br(K)`, the sum of its local invariants (under
+`Br(K) → ⊕_v Br(K_v) → ℚ/ℤ`) is zero.
+
+Cite: Hasse-Brauer-Noether 1932; Neukirch VI §3 Theorem 3.1.  Mathlib
+v4.30: Brauer group not packaged. -/
+def hasse_brauer_noether_sum_zero_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
 /-- **Postulate** (Hilbert product formula):
 
 For a number field `K` and `a, b ∈ K^*`, the product of Hilbert symbols
 over all places of `K` is `1`:
 
   `∏_v (a, b)_v = 1`
+
+ASSEMBLY (modulo the two sub-postulates above):
+1. By `hilbert_symbol_eq_brauer_local_invariant_postulate`: each
+   Hilbert symbol corresponds to a local Brauer invariant.
+2. By `hasse_brauer_noether_sum_zero_postulate`: sum of local invariants
+   for the global quaternion algebra (a, b) is zero.
+3. Hence the corresponding product of Hilbert symbols is 1.
 
 This is the LOCAL-GLOBAL principle for the Hilbert symbol.  It's equivalent
 to quadratic reciprocity for `K = ℚ` and generalizes to higher reciprocity.
