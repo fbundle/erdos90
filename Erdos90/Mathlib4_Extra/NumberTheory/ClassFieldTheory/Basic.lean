@@ -1348,6 +1348,26 @@ theorem cyclotomic_five_isCMField
     NumberField.IsCMField K :=
   IsCyclotomicExtension.Rat.isCMField (S := {5}) K ⟨5, by simp, by decide⟩
 
+/-- `torsionOrder ℚ(ζ_3) = 6`.
+
+PROVED Lean: direct citation of Mathlib's
+`IsCyclotomicExtension.Rat.torsionOrder_eq` for `n = 3` (odd, so
+`2 · 3 = 6`). -/
+theorem cyclotomic_three_torsionOrder
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.Units.torsionOrder K = 6 := by
+  have := IsCyclotomicExtension.Rat.torsionOrder_eq (n := 3) (K := K)
+  simpa [Nat.not_even_iff_odd, (by decide : Odd 3)] using this
+
+/-- `torsionOrder ℚ(ζ_5) = 10`.
+
+PROVED Lean: same pattern as cyclotomic_three_torsionOrder for `n = 5`. -/
+theorem cyclotomic_five_torsionOrder
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.Units.torsionOrder K = 10 := by
+  have := IsCyclotomicExtension.Rat.torsionOrder_eq (n := 5) (K := K)
+  simpa [Nat.not_even_iff_odd, (by decide : Odd 5)] using this
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
