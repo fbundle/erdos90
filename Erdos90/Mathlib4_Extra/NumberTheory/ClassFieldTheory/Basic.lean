@@ -1480,6 +1480,25 @@ theorem cyclotomic_five_classNumber
     NumberField.classNumber K = 1 :=
   NumberField.classNumber_eq_one_iff.mpr (IsCyclotomicExtension.Rat.five_pid (K := K))
 
+/-- `|Gal(ℚ(ζ_3)/ℚ)| = 2`.
+
+PROVED Lean: combine `cyclotomic_three_finrank = 2` with Mathlib's
+`IsGalois.card_aut_eq_finrank` (and `IsCyclotomicExtension.isGalois`). -/
+theorem cyclotomic_three_card_aut
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    Nat.card (K ≃ₐ[ℚ] K) = 2 := by
+  haveI : IsGalois ℚ K := IsCyclotomicExtension.isGalois {3} ℚ K
+  rw [IsGalois.card_aut_eq_finrank ℚ K]
+  exact cyclotomic_three_finrank K
+
+/-- `|Gal(ℚ(ζ_5)/ℚ)| = 4`. -/
+theorem cyclotomic_five_card_aut
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    Nat.card (K ≃ₐ[ℚ] K) = 4 := by
+  haveI : IsGalois ℚ K := IsCyclotomicExtension.isGalois {5} ℚ K
+  rw [IsGalois.card_aut_eq_finrank ℚ K]
+  exact cyclotomic_five_finrank K
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
