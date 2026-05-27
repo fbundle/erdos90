@@ -173,6 +173,15 @@ theorem exp_log_rd_KF : Real.exp (Real.log rd_KF) = rd_KF :=
 theorem log_rd_KF_ge_log_two : Real.log 2 ≤ Real.log rd_KF :=
   Real.log_le_log (by norm_num) rd_KF_ge_two
 
+/-- Sum of T_set elements = 3 + 5 + 7 + 11 + 13 + 17 + 19 + 23 + 29 + 31 + 37 + 41 + 43 = 279. -/
+theorem T_set_sum : T_set.sum id = 279 := by decide
+
+/-- Sum of S_set elements. -/
+theorem S_set_sum : S_set.sum id =
+    2 + 3 + 5 + 7 + 11 + 13 + 17 + 19 + 23 + 29 +
+    47 + 71 + 79 + 97 + 101 + 107 + 109 + 139 + 151 + 163 + 167 + 179 := by
+  decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
