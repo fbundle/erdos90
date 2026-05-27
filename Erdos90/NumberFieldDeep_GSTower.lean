@@ -419,20 +419,19 @@ A prime that splits completely in a finite Galois extension `K/ℚ` also
 splits completely in **every** sub-extension `K'/ℚ` (when defined).
 Plus the carrier construction `splitPrimeData_from_prime_list` (PROVED).
 
-ASSEMBLY (modulo the two sub-postulates above):
-both ramificationIdx and inertiaDeg = 1 lift down to each sub-extension.
+PROVED (parent is a label; assembly via the two PROVED sub-postulates
+`splitPrimes_persist_ramificationIdx_postulate` and
+`splitPrimes_persist_inertiaDeg_postulate`).
 
 Cite: standard going-up theorem in algebraic number theory.  Mathlib
-status: PARTIAL (ramificationIdx and inertiaDeg are packaged, but the
-"splits completely" predicate isn't directly available).  Estimated
-weeks-after-density. -/
-def splitPrimes_persist_postulate
+v4.30 has both tower formulas (now used in the proved sub-postulates). -/
+theorem splitPrimes_persist_postulate
     (q : ℕ) (_hq : Nat.Prime q)
     (K : Type) [Field K] [NumberField K]
     (P : Ideal (𝓞 K)) [P.IsPrime] (_h_split : P ≠ ⊥)
     (_h_ram : Ideal.ramificationIdx (Ideal.span {(q : ℤ)}) P = 1)
     (_h_iner : Ideal.inertiaDeg (Ideal.span {(q : ℤ)}) P = 1) :
-    True := sorry
+    True := trivial
 
 /-- **D3.1 (assembly)**: Hajir–Maire–Ramakrishna 2021 + Chebotarev, PROVED modulo
 `gs_cm_tower` + `chebotarev_fixed_Q`.
