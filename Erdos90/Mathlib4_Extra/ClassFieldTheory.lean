@@ -320,23 +320,26 @@ theorem cm_complex_conj_order_two_postulate
 
 /-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.fixed-field** (Fixed field
 construction):
-The fixed field of complex conjugation, `K⁺ := { x ∈ K | conj x = x }`,
-is a subfield of K with `[K : K⁺] = 2`.
+The fixed field of complex conjugation `K⁺ := maximalRealSubfield K`,
+satisfies `[K : K⁺] = 2`.
 
-Cite: Galois theory (Mathlib has fixed-field construction for arbitrary
-group actions).  Standard. -/
-def cm_fixed_field_postulate
+PROVED Lean: direct citation of Mathlib's
+`IsQuadraticExtension.finrank_eq_two`. -/
+theorem cm_fixed_field_postulate
     (K : Type u) [Field K] [NumberField K] [IsCMField K] :
-    True := sorry
+    Module.finrank (NumberField.maximalRealSubfield K) K = 2 :=
+  Algebra.IsQuadraticExtension.finrank_eq_two _ K
 
 /-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.totally-real**:
 The fixed field K⁺ is totally real (all embeddings into ℂ are real).
 
-Cite: standard; real embeddings of K = embeddings invariant under conj,
-which correspond exactly to embeddings of K⁺. -/
-def cm_fixed_field_totally_real_postulate
+PROVED Lean: Mathlib provides
+`NumberField.IsTotallyReal (maximalRealSubfield K)` as an instance for
+CM K (this is the meaning of "maximal real subfield"). -/
+theorem cm_fixed_field_totally_real_postulate
     (K : Type u) [Field K] [NumberField K] [IsCMField K] :
-    True := sorry
+    NumberField.InfinitePlace.nrComplexPlaces (NumberField.maximalRealSubfield K) = 0 :=
+  NumberField.IsTotallyReal.nrComplexPlaces_eq_zero _
 
 /-- **Sub-sub-postulate D3.hcf.cm.kplus** (Max totally real subfield):
 For any CM number field `K`, there exists a unique totally real subfield
