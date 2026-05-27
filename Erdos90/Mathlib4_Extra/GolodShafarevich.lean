@@ -369,27 +369,37 @@ def cm_compositum_postulate
 
 /-- **Sub-sub-sub-postulate D3.1.gs.base.cm-lift.disc-bound**
 (Discriminant of compositum):
-For coprime discriminants `gcd(disc K₀, disc F) = 1`, the discriminant
-of the compositum `K = K₀ · F` satisfies
+For two intermediate number fields `K₁, K₂ ⊆ L` with coprime different
+ideals (in `𝓞_L`), the discriminant of L satisfies
 
-  `disc K = (disc K₀)^{[F:ℚ]} · (disc F)^{[K₀:ℚ]}`
+  `|disc L| = |disc K₁|^[K₂:ℚ] · |disc K₂|^[K₁:ℚ]`
 
-and the root discriminant `rootDiscr K = (rootDiscr K₀ · rootDiscr F)^{1/2}`
-(geometric mean).
+PROVED Lean: direct citation of Mathlib's
+`NumberField.natAbs_discr_eq_natAbs_discr_pow_mul_natAbs_discr_pow` in
+`NumberTheory/NumberField/Discriminant/Different.lean`.
 
-In particular, if both `rootDiscr K₀` and `rootDiscr F` are bounded by
-`ℓ`, then so is `rootDiscr K`.
+For the rootDiscriminant version (taking [L:ℚ]-th root):
+  `rootDiscr L = rootDiscr K₁ · rootDiscr K₂`
 
-Cite: Conductor-discriminant formula (Neukirch VII §11); specialization
-to compositum of coprime-discriminant extensions.  Mathlib v4.30: not
-packaged for the compositum case. -/
-def cm_compositum_rootDiscr_postulate
-    (K₀ : Type) [Field K₀] [NumberField K₀]
-    (F : Type) [Field F] [NumberField F]
-    (_ℓ : ℝ) (_h_ℓ_pos : 1 ≤ _ℓ)
-    (_h_rd_K₀ : NumberField.rootDiscr K₀ ≤ _ℓ)
-    (_h_rd_F : NumberField.rootDiscr F ≤ _ℓ) :
-    True := sorry
+(This is the PRODUCT, not the geometric mean — a docstring correction
+from the original — so bounding `rootDiscr K₁, rootDiscr K₂ ≤ ℓ` only
+gives `rootDiscr L ≤ ℓ²`, not `≤ ℓ`.  The GS chain assembly using this
+needs the actual square bound, or other constraints.)
+
+Cite: Mathlib `NumberField.natAbs_discr_eq_natAbs_discr_pow_mul_natAbs_discr_pow`
+(linearly-disjoint, coprime-different case).  -/
+theorem cm_compositum_rootDiscr_postulate
+    (L : Type*) [Field L] [NumberField L]
+    (K₁ K₂ : IntermediateField ℚ L)
+    (h₁ : K₁.LinearDisjoint K₂) (h₂ : K₁ ⊔ K₂ = ⊤)
+    (h₃ : IsCoprime
+      ((differentIdeal ℤ (𝓞 K₁)).map (algebraMap (𝓞 K₁) (𝓞 L)))
+      ((differentIdeal ℤ (𝓞 K₂)).map (algebraMap (𝓞 K₂) (𝓞 L)))) :
+    (NumberField.discr L).natAbs =
+      (NumberField.discr K₁).natAbs ^ Module.finrank ℚ K₂ *
+        (NumberField.discr K₂).natAbs ^ Module.finrank ℚ K₁ :=
+  NumberField.natAbs_discr_eq_natAbs_discr_pow_mul_natAbs_discr_pow
+    L K₁ K₂ h₁ h₂ h₃
 
 /-- **Sub-sub-sub-postulate D3.1.gs.base.cm-lift.class-number-divides**
 (Class number divisibility in compositum):
