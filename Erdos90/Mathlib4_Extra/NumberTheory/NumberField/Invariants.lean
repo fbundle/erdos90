@@ -246,6 +246,26 @@ theorem real_exp_pos (x : ℝ) : 0 < Real.exp x := Real.exp_pos x
 theorem real_exp_lt_of_lt {x y : ℝ} (h : x < y) : Real.exp x < Real.exp y :=
   Real.exp_lt_exp.mpr h
 
+/-- `e = exp 1 > 2.7182818283` (9 decimal digits).
+
+PROVED Lean: direct citation of Mathlib's `Real.exp_one_gt_d9`. -/
+theorem real_exp_one_gt_d9 : (2.7182818283 : ℝ) < Real.exp 1 :=
+  Real.exp_one_gt_d9
+
+/-- `e = exp 1 < 2.7182818286` (9 decimal digits).
+
+PROVED Lean: direct citation of Mathlib's `Real.exp_one_lt_d9`. -/
+theorem real_exp_one_lt_d9 : Real.exp 1 < 2.7182818286 :=
+  Real.exp_one_lt_d9
+
+/-- `2 < e`.  Useful sanity bound. -/
+theorem real_exp_one_gt_two : (2 : ℝ) < Real.exp 1 :=
+  lt_trans (by norm_num) Real.exp_one_gt_d9
+
+/-- `e < 3`. -/
+theorem real_exp_one_lt_three : Real.exp 1 < 3 :=
+  lt_trans Real.exp_one_lt_d9 (by norm_num)
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
