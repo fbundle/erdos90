@@ -228,14 +228,26 @@ The assembly is essentially `obtain + refine` modulo the universe-bridging
 This last step is "Lean engineering, not new mathematics" — analogous to
 the universe plumbing needed for `gs_iterate_postulate`. -/
 def gs_tower_step_postulate
-    (p : ℕ) (_hp : Nat.Prime p)
+    (p : ℕ) (hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
-    (_h_p_dvd_cn : p ∣ NumberField.classNumber K) :
+    (h_p_dvd_cn : p ∣ NumberField.classNumber K) :
     ∃ (L : Type) (_ : Field L) (_ : NumberField L)
       (_ : IsCMField L) (_ : IsTotallyComplex L)
       (_ : Algebra K L),
       Module.finrank K L ≥ p ∧
-      NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
+      NumberField.rootDiscr L = NumberField.rootDiscr K := by
+  let E : NumberField.HilbertPClassFieldExt.{0, 0} K p :=
+    NumberField.hilbertPClassField_exists K p hp
+  letI : Field E.H_p := E.fieldH_p
+  letI : NumberField E.H_p := E.numberFieldH_p
+  letI : Algebra K E.H_p := E.algebraKH_p
+  letI : IsCMField E.H_p := pHCF_isCMField_postulate p hp K E
+  letI : IsTotallyComplex E.H_p :=
+    NumberField.HilbertPClassFieldExt.isTotallyComplex K p E
+  refine ⟨E.H_p, inferInstance, inferInstance, inferInstance, inferInstance,
+          inferInstance, ?_, ?_⟩
+  · exact pHCF_degree_pos_postulate p hp K h_p_dvd_cn E
+  · exact NumberField.rootDiscr_pHCF_eq K p E
 
 /-- **Sub-sub-postulate D3.1.gs.inherit.pcr-growth** (p-class rank growth):
 If `K` satisfies `p ∣ classNumber K` (so `H_p(K) ≠ K`), then `H_p(K)`
