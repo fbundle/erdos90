@@ -199,8 +199,36 @@ This is the **generalized Dirichlet theorem** for number fields, and is
 the analytic input for the Chebotarev density theorem.
 
 Cite: Neukirch VII §6, Iwaniec–Kowalski Chapter 5.  Not in Mathlib v4.30
-for general Hecke characters. -/
+for general Hecke characters.
+
+DECOMPOSITION: 2 named pieces.
+1. **K = ℚ case**: Dirichlet's `L(1, χ) ≠ 0` — PROVED in Mathlib as
+   `DirichletCharacter.LFunction_apply_one_ne_zero`.
+2. **General K**: Hecke generalization — Mathlib gap. -/
 def hecke_L_non_vanishing_at_one_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (_χ : HeckeCharacter K) :
+    True := sorry
+
+/-- **Sub-postulate D3.hecke-L.s-one.dirichlet** (Dirichlet's L(1, χ) ≠ 0
+— Mathlib citation):
+
+For a non-trivial Dirichlet character `χ` mod `N`, the value of its
+L-function at `s = 1` is non-zero: `L(1, χ) ≠ 0`.
+
+PROVED Lean: direct citation of Mathlib's
+`DirichletCharacter.LFunction_apply_one_ne_zero`. -/
+theorem hecke_L_non_vanishing_at_one_dirichlet_postulate
+    {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N} (hχ : χ ≠ 1) :
+    DirichletCharacter.LFunction χ 1 ≠ 0 :=
+  DirichletCharacter.LFunction_apply_one_ne_zero hχ
+
+/-- **Sub-postulate D3.hecke-L.s-one.hecke-lift** (Hecke L(1, χ) ≠ 0 —
+Mathlib gap):
+
+Generalize the Dirichlet `L(1, χ) ≠ 0` to arbitrary Hecke characters
+of an arbitrary number field K. -/
+def hecke_L_non_vanishing_at_one_hecke_lift_postulate
     (K : Type u) [Field K] [NumberField K]
     (_χ : HeckeCharacter K) :
     True := sorry
