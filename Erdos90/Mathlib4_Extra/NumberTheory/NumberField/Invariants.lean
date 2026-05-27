@@ -197,3 +197,17 @@ PROVED Lean: direct citation of Mathlib's `Nat.totient_prime_pow`. -/
 theorem totient_prime_pow_eq {p : ℕ} (hp : p.Prime) {n : ℕ} (hn : 0 < n) :
     Nat.totient (p ^ n) = p ^ (n - 1) * (p - 1) :=
   Nat.totient_prime_pow hp hn
+
+/-- **Totient on 2·odd**: `φ(2n) = φ(n)` for odd `n`.
+
+PROVED Lean: direct citation of Mathlib's `Nat.totient_two_mul_of_odd`. -/
+theorem totient_two_mul_of_odd_eq {n : ℕ} (hn : Odd n) :
+    Nat.totient (2 * n) = Nat.totient n :=
+  Nat.totient_two_mul_of_odd hn
+
+/-- **Totient on 2·even**: `φ(2n) = 2 · φ(n)` for even `n`.
+
+PROVED Lean: direct citation of Mathlib's `Nat.totient_two_mul_of_even`. -/
+theorem totient_two_mul_of_even_eq {n : ℕ} (hn : Even n) :
+    Nat.totient (2 * n) = 2 * Nat.totient n :=
+  Nat.totient_two_mul_of_even hn
