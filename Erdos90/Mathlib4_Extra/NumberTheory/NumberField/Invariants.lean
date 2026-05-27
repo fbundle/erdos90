@@ -342,6 +342,23 @@ theorem nat_coprime_three_five : (3 : ℕ).Coprime 5 := by decide
 /-- Distinct primes are coprime. -/
 theorem nat_coprime_seven_eleven : (7 : ℕ).Coprime 11 := by decide
 
+/-! ### Nat.Prime sanity wrappers -/
+
+/-- A prime is at least 2. -/
+theorem nat_prime_two_le {p : ℕ} (hp : p.Prime) : 2 ≤ p := hp.two_le
+
+/-- A prime is greater than 1. -/
+theorem nat_prime_one_lt {p : ℕ} (hp : p.Prime) : 1 < p := hp.one_lt
+
+/-- A prime is positive. -/
+theorem nat_prime_pos {p : ℕ} (hp : p.Prime) : 0 < p := hp.pos
+
+/-- A prime is not zero. -/
+theorem nat_prime_ne_zero {p : ℕ} (hp : p.Prime) : p ≠ 0 := hp.ne_zero
+
+/-- A prime is not 1. -/
+theorem nat_prime_ne_one {p : ℕ} (hp : p.Prime) : p ≠ 1 := hp.ne_one
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
