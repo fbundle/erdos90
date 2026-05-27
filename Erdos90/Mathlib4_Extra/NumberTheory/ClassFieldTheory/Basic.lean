@@ -1599,6 +1599,21 @@ theorem cyclotomic_five_isAbelianGalois
     IsAbelianGalois ℚ K :=
   IsCyclotomicExtension.isAbelianGalois {5} ℚ K
 
+/-- `ℚ(ζ_3)` contains a primitive 3rd root of unity.
+
+PROVED Lean: direct citation of Mathlib's
+`IsCyclotomicExtension.zeta_spec`. -/
+theorem cyclotomic_three_exists_primitiveRoot
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    ∃ ζ : K, IsPrimitiveRoot ζ 3 :=
+  IsCyclotomicExtension.exists_isPrimitiveRoot ℚ K (Set.mem_singleton _) (by decide)
+
+/-- `ℚ(ζ_5)` contains a primitive 5th root of unity. -/
+theorem cyclotomic_five_exists_primitiveRoot
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    ∃ ζ : K, IsPrimitiveRoot ζ 5 :=
+  IsCyclotomicExtension.exists_isPrimitiveRoot ℚ K (Set.mem_singleton _) (by decide)
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
