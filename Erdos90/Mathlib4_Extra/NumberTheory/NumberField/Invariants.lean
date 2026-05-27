@@ -219,3 +219,7 @@ theorem totient_pos {n : ℕ} (hn : 0 < n) : 0 < Nat.totient n :=
 /-- **Totient is at most n−1 for prime n** — and equality iff n is prime. -/
 theorem totient_lt_self {n : ℕ} (h : 2 ≤ n) : Nat.totient n < n :=
   Nat.totient_lt n h
+
+/-- **Totient is always at most n**: `φ(n) ≤ n`. -/
+theorem totient_le_self (n : ℕ) : Nat.totient n ≤ n :=
+  Nat.totient_le n
