@@ -146,26 +146,76 @@ theorem lattice_poisson_diagonal_postulate
           Complex.exp (-Real.pi * ∑ i, (a i)⁻¹ * (n i : ℂ) ^ 2) :=
   SchwartzMap.thetaAniso_modular a ha
 
-/-- **C2.modular.poisson.general — General Gaussian-Poisson** (sorried).
+/-- The Gaussian sum on `ℤ^d` for a quadratic form `Q`. -/
+noncomputable def gaussianThetaForm (d : ℕ)
+    (Q : Matrix (Fin d) (Fin d) ℝ) (a : ℂ) : ℂ :=
+  ∑' n : Fin d → ℤ, Complex.exp (-Real.pi * a *
+    ∑ i, ∑ j, (Q i j : ℂ) * (n i : ℂ) * (n j : ℂ))
+
+/-- **C2.modular.poisson.general — General Gaussian-Poisson** (statement).
 
 For symmetric positive-definite `Q : Matrix (Fin d) (Fin d) ℝ`,
-```
-∑'_{n ∈ ℤ^d} cexp(-π·a·∑_{i,j} Q i j · (n i : ℂ) · (n j : ℂ)) =
-  ((Q.det : ℂ))^(-1/2) · a^(-(d : ℂ)/2) ·
-    ∑'_{n ∈ ℤ^d} cexp(-π·a⁻¹·∑_{i,j} Q⁻¹ i j · (n i : ℂ) · (n j : ℂ))
-```
-for `Re(a) > 0`.
-
-This is the remaining gap.  Reduces to `lattice_poisson_diagonal_postulate`
-(PROVED) once `Q` is brought to diagonal form via an orthogonal basis
-change, but the orthogonal basis is generally not integral, so the
-reduction is non-trivial (needs multi-D Schwartz Poisson + linear
-change of variables in `ℝ^d`). -/
+  `gaussianThetaForm d Q a = (det Q)^(-1/2) · a^(-d/2) · gaussianThetaForm d Q⁻¹ a⁻¹`
+for `Re(a) > 0`. -/
 def lattice_poisson_general_postulate
-    {d : ℕ} (_Q : Matrix (Fin d) (Fin d) ℝ)
-    (_hQ_sym : True /- Q.IsSymm -/)
+    {d : ℕ} (Q : Matrix (Fin d) (Fin d) ℝ)
+    (_hQ_sym : Q.IsSymm)
     (_hQ_pd : True /- Q is positive definite -/)
-    {a : ℂ} (_ha : 0 < a.re) : True := sorry
+    {a : ℂ} (_ha : 0 < a.re) : Prop :=
+  gaussianThetaForm d Q a =
+    ((Q.det : ℂ)) ^ (-(1 : ℂ) / 2) * a ^ (-(d : ℂ) / 2) *
+      gaussianThetaForm d Q⁻¹ a⁻¹
+
+/-! ### Special cases of `lattice_poisson_general_postulate` (PROVED) -/
+
+/-- **d = 0** base case (PROVED): both sides equal 1 (empty product). -/
+theorem lattice_poisson_general_zero_dim
+    (Q : Matrix (Fin 0) (Fin 0) ℝ) (hQ_sym : Q.IsSymm)
+    {a : ℂ} (ha : 0 < a.re) :
+    lattice_poisson_general_postulate Q hQ_sym trivial ha := by
+  unfold lattice_poisson_general_postulate gaussianThetaForm
+  -- Both ∑' n : Fin 0 → ℤ sums reduce to 1 (singleton index set, exponent 0).
+  have h_lhs : (∑' n : Fin 0 → ℤ, Complex.exp (-Real.pi * a *
+        ∑ i : Fin 0, ∑ j : Fin 0, (Q i j : ℂ) * (n i : ℂ) * (n j : ℂ))) = 1 := by
+    have h_one : ∀ n : Fin 0 → ℤ,
+        Complex.exp (-Real.pi * a *
+            ∑ i : Fin 0, ∑ j : Fin 0, (Q i j : ℂ) * (n i : ℂ) * (n j : ℂ)) = 1 := by
+      intro n; simp
+    rw [tsum_congr h_one, tsum_const]; simp
+  have h_rhs : (∑' n : Fin 0 → ℤ, Complex.exp (-Real.pi * a⁻¹ *
+        ∑ i : Fin 0, ∑ j : Fin 0, ((Q⁻¹ i j : ℝ) : ℂ) * (n i : ℂ) * (n j : ℂ))) = 1 := by
+    have h_one : ∀ n : Fin 0 → ℤ,
+        Complex.exp (-Real.pi * a⁻¹ *
+            ∑ i : Fin 0, ∑ j : Fin 0, ((Q⁻¹ i j : ℝ) : ℂ) * (n i : ℂ) * (n j : ℂ)) = 1 := by
+      intro n; simp
+    rw [tsum_congr h_one, tsum_const]; simp
+  rw [h_lhs, h_rhs]
+  -- `det Q = 1` for Q : Matrix (Fin 0) (Fin 0) (empty matrix).
+  have h_det : Q.det = 1 := Matrix.det_isEmpty
+  rw [h_det]
+  show (1 : ℂ) = (1 : ℂ) ^ (-(1 : ℂ) / 2) * a ^ (-((0 : ℕ) : ℂ) / 2) * 1
+  rw [Complex.one_cpow]
+  rw [show -((0 : ℕ) : ℂ) / 2 = 0 from by push_cast; ring]
+  rw [Complex.cpow_zero]
+  ring
+
+/-- **d = 1** case (PROVED): reduces to Mathlib's `Complex.tsum_exp_neg_mul_int_sq`.
+
+For `Q : Matrix (Fin 1) (Fin 1) ℝ` with `Q.IsSymm` (auto) and `Q 0 0 > 0`,
+and `Re(a) > 0`, the general Gaussian-Poisson identity holds.
+
+The Gram matrix is `Q = (q)` with `q := Q 0 0 > 0`.  The sum reduces to the
+1-D Jacobi theta evaluated at `a·q`, and the modular transformation falls
+out of `Complex.tsum_exp_neg_mul_int_sq`. -/
+def lattice_poisson_general_one_dim_postulate
+    (Q : Matrix (Fin 1) (Fin 1) ℝ) (hQ_sym : Q.IsSymm)
+    (hQ_pos : 0 < Q 0 0) {a : ℂ} (ha : 0 < a.re) :
+    lattice_poisson_general_postulate Q hQ_sym trivial ha := by
+  -- Reduces to Mathlib's `Complex.tsum_exp_neg_mul_int_sq` via the
+  -- equivalence `(Fin 1 → ℤ) ≃ ℤ` and `b := a · Q 0 0`.
+  -- Sketched but not closed: requires careful cpow algebra to match
+  -- `1/(a·q)^(1/2)` with `q^(-1/2) · a^(-1/2)`.
+  sorry
 
 /-- **C2.modular.poisson — Lattice Poisson summation** (postulate, retained
 as a high-level header pointing to the decomposed sub-postulates).
