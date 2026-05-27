@@ -251,6 +251,16 @@ theorem chebotarev_density_dirichlet_ap_modEq_postulate
     ∃ p > n, p.Prime ∧ p ≡ a [MOD q] :=
   Nat.forall_exists_prime_gt_and_modEq n hq h
 
+/-- **Filter form** (PROVED): "frequently at top, the prime is in residue class
+mod q" — useful for downstream lim-sup arguments.
+
+PROVED Lean: direct citation of Mathlib's
+`Nat.frequently_atTop_prime_and_modEq`. -/
+theorem chebotarev_density_dirichlet_ap_frequently_postulate
+    {q a : ℕ} (hq : q ≠ 0) (h : a.Coprime q) :
+    ∃ᶠ p in Filter.atTop, p.Prime ∧ p ≡ a [MOD q] :=
+  Nat.frequently_atTop_prime_and_modEq hq h
+
 /-- **Chebotarev density theorem** (labelled postulate).
 
 For any number field `K`, infinitely many rational primes split completely
