@@ -176,8 +176,34 @@ Then `WeakFEPair.functional_equation` finishes the proof of FE.
 /-- **D3.2b.zeta-FE.poisson** (multi-dim Poisson):
 For `f : ℝ^n → ℂ` Schwartz, `∑_{x ∈ ℤ^n} f(x) = ∑_{ξ ∈ ℤ^n} f̂(ξ)`.
 
-Status: Mathlib has 1D Poisson; n-dim generalization needed. -/
+Status: Mathlib has 1D Poisson; n-dim generalization needed.
+
+DECOMPOSITION: 2 named pieces.
+1. **1D base case**: PROVED in Mathlib (`SchwartzMap.tsum_eq_tsum_fourier`).
+2. **n-dim lift via Fubini**: induction on `n` using product of Schwartz functions. -/
 def multi_dim_poisson_postulate : True := sorry
+
+section PoissonBase
+open scoped FourierTransform SchwartzMap
+
+/-- **D3.2b.zeta-FE.poisson.base** (1D Poisson — Schwartz form):
+PROVED Lean: direct citation of Mathlib's
+`SchwartzMap.tsum_eq_tsum_fourier`.
+
+Statement: for `f : 𝓢(ℝ, ℂ)` Schwartz and `x : ℝ`,
+`∑_{n ∈ ℤ} f(x + n) = ∑_{n ∈ ℤ} 𝓕(f)(n) · fourier n x`. -/
+theorem multi_dim_poisson_base_postulate (f : 𝓢(ℝ, ℂ)) (x : ℝ) :
+    ∑' n : ℤ, f (x + n) = ∑' n : ℤ, 𝓕 f n * fourier n (x : UnitAddCircle) :=
+  SchwartzMap.tsum_eq_tsum_fourier f x
+
+end PoissonBase
+
+/-- **D3.2b.zeta-FE.poisson.lift** (n-dim Poisson via Fubini):
+Lift 1D Poisson to product spaces by iterated Fubini.  For Schwartz
+`f : 𝓢(ℝ^n, ℂ)` (or more generally rapidly decaying), apply the 1D
+identity in each coordinate.  This is the only remaining gap in the
+multi-dim Poisson chain after `multi_dim_poisson_base_postulate`. -/
+def multi_dim_poisson_lift_postulate : True := sorry
 
 /-- **D3.2b.zeta-FE.theta** (θ_K modular transformation):
 `θ_K(1/t) = √|discr K| · t^{n/2} · θ_K(t)`.
