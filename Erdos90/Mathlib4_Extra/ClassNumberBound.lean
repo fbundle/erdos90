@@ -365,10 +365,71 @@ def dedekindZeta_functional_equation_postulate
     [NumberField K] :
     True := sorry
 
+/-! #### Decomposition of `phragmen_lindelof_zeta_postulate`
+
+The Phragmén-Lindelöf interpolation argument decomposes:
+
+1. **Phragmén-Lindelöf maximum principle**: a holomorphic function in a
+   strip with controlled growth on the boundary admits interpolated
+   bounds in the interior.
+2. **Boundary bounds on `Λ_K(s)`**: explicit bounds on the right
+   (`Re s ≥ 1+ε`, via Euler product) and on the left (`Re s ≤ -ε`, via
+   functional equation + Gamma estimates).
+3. **Stechkin-style partial-sum bound**: refining the boundary bound via
+   careful sum estimates on the Dirichlet coefficients.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-sub-postulate D3.2b.phragmen.maxprinciple** (Phragmén-Lindelöf):
+A holomorphic function `f : ℂ → ℂ` defined on a strip `a ≤ Re s ≤ b` with
+sub-exponential growth (`|f(s)| ≤ C · exp(|s|^{1-δ})`) and bounded on the
+two boundary lines (`|f(a + it)| ≤ M_a`, `|f(b + it)| ≤ M_b`) satisfies the
+interior bound `|f(σ + it)| ≤ M_a^{(b-σ)/(b-a)} · M_b^{(σ-a)/(b-a)}`.
+
+Cite: Phragmén-Lindelöf 1908; Titchmarsh *Theory of Functions* §5.6.
+Mathlib v4.30: maximum modulus principle packaged for disks; PL for
+strips not specifically. -/
+def phragmen_lindelof_max_principle_postulate : True := sorry
+
+/-- **Sub-sub-postulate D3.2b.phragmen.right-bound** (Euler product bound):
+On `Re s ≥ 1 + ε`, the Dedekind zeta `ζ_K(s)` is bounded:
+`|ζ_K(s)| ≤ ζ(1 + ε)^{[K:ℚ]}` (where ζ is Riemann zeta).
+
+This follows from the absolute convergence of the Euler product.
+
+Cite: standard; Lang *Algebraic Number Theory* XIII.  Mathlib v4.30:
+Euler product for ζ_K packaged. -/
+def zeta_K_right_bound_postulate
+    [NumberField K] (_ε : ℝ) (_hε : 0 < _ε) :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.2b.phragmen.left-bound** (Functional-equation bound):
+On `Re s ≤ -ε`, via the functional equation `Λ_K(1-s) = Λ_K(s)`, the
+completed zeta `Λ_K(s)` is bounded by the right-half-plane bound applied
+to `1 - s`.
+
+Combined with Stirling-type bounds on the Γ-factor, gives a polynomial
+bound `|ζ_K(s)| ≤ |s|^{poly([K:ℚ])} · constant`.
+
+Cite: standard convexity argument; Lang XIII.  Mathlib v4.30: not packaged. -/
+def zeta_K_left_bound_postulate
+    [NumberField K] (rd_F : ℝ) (_h_rd : 1 ≤ rd_F)
+    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
+    True := sorry
+
 /-- **Sub-postulate D3.2b.phragmen** (Phragmén-Lindelöf interpolation):
 Given the functional equation Λ_K(1-s) = Λ_K(s), Phragmén-Lindelöf gives
 explicit growth bounds on `Λ_K(s)` in the critical strip, hence on
 `dedekindZeta_residue K` via the residue formula.
+
+ASSEMBLY (modulo the three sub-sub-postulates above):
+1. By `zeta_K_right_bound_postulate`: |ζ_K(1+ε+it)| bounded.
+2. By `zeta_K_left_bound_postulate`: |ζ_K(-ε+it)| bounded (via FE).
+3. By `phragmen_lindelof_max_principle_postulate`: interpolated bound
+   in the critical strip.
+4. Residue at s = 1: `Res ζ_K(s)|_{s=1} = lim (s-1)·ζ_K(s) ≤
+   M_right · ε` for s near 1.
 
 Cite: Louboutin 2000 §3 (uses Stechkin-style partial-sum bounds);
 Akhtari-Vaaler-Widmer for refined constants.  Multi-month. -/
