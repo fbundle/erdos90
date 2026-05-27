@@ -168,3 +168,17 @@ PROVED Lean: direct citation of Mathlib's `Polynomial.natDegree_cyclotomic`. -/
 theorem natDegree_cyclotomic_eq_totient (n : ℕ) (R : Type*) [Ring R] [Nontrivial R] :
     (Polynomial.cyclotomic n R).natDegree = Nat.totient n :=
   Polynomial.natDegree_cyclotomic n R
+
+/-- `φ(1) = 1`.  PROVED Lean: `Nat.totient_one` (Mathlib). -/
+theorem totient_one_eq_one : Nat.totient 1 = 1 := Nat.totient_one
+
+/-- `φ(2) = 1`.  PROVED Lean: `Nat.totient_two` (Mathlib). -/
+theorem totient_two_eq_one : Nat.totient 2 = 1 := Nat.totient_two
+
+/-- `φ(3) = 2`.  Direct from `Nat.totient_prime` applied to p = 3. -/
+theorem totient_three_eq_two : Nat.totient 3 = 2 :=
+  Nat.totient_prime (by decide)
+
+/-- `φ(5) = 4`.  Direct from `Nat.totient_prime` applied to p = 5. -/
+theorem totient_five_eq_four : Nat.totient 5 = 4 :=
+  Nat.totient_prime (by decide)
