@@ -126,6 +126,86 @@ theorem dedekindZeta_at_zero (K : Type*) [Field K] [NumberField K] :
 -- (Special case of Stark; follows from the FE applied at s = 0.)
 ```
 
+## Decomposition of the FE proof
+
+The functional equation for ζ_K decomposes into the following named
+sub-postulates, each tracking one step of the analytic chain:
+
+### Step 1: Multi-D Poisson summation
+
+```
+theorem multi_dim_poisson_postulate :
+  for Schwartz `f : ℝ^n → ℂ`, ∑_{x ∈ ℤ^n} f(x) = ∑_{ξ ∈ ℤ^n} f̂(ξ).
+```
+
+Status: Mathlib has 1D Poisson via `Real.tsum_eq_tsum_fourierIntegral_of_summable`;
+need n-dim generalization with reasonable hypotheses.
+
+### Step 2: Theta function `θ_K` via Schwartz on the mixed embedding
+
+```
+theorem theta_K_modular_postulate :
+  θ_K(1/t) = sqrt|discr K| · t^{n/2} · θ_K(t).
+```
+
+Status: requires applying multi-D Poisson to the integer lattice
+inside the mixed embedding `mixedSpace K = ℝ^{r_1} × ℂ^{r_2}`.
+
+### Step 3: Mellin transform of `θ_K - 1`
+
+```
+theorem theta_K_mellin_eq_completed_zeta_postulate :
+  Mellin (θ_K - 1) (s) = (gamma factors) · ζ_K(s) for Re s > 1.
+```
+
+Status: pure analytic manipulation, requires Step 2 + standard Mellin
+transform results on Gamma function.
+
+### Step 4: `WeakFEPair` instance from steps 1–3
+
+```
+theorem dedekindZeta_weak_fe_pair_postulate :
+  ∃ (W : WeakFEPair), W.f = θ_K - 1 ∧ W.g = θ_K - 1 ∧ W.k = n/2 ∧ W.ε = 1.
+```
+
+Then `WeakFEPair.functional_equation` finishes the proof of FE.
+-/
+
+/-! ### Decomposition: 4 named sub-postulates -/
+
+/-- **D3.2b.zeta-FE.poisson** (multi-dim Poisson):
+For `f : ℝ^n → ℂ` Schwartz, `∑_{x ∈ ℤ^n} f(x) = ∑_{ξ ∈ ℤ^n} f̂(ξ)`.
+
+Status: Mathlib has 1D Poisson; n-dim generalization needed. -/
+def multi_dim_poisson_postulate : True := sorry
+
+/-- **D3.2b.zeta-FE.theta** (θ_K modular transformation):
+`θ_K(1/t) = √|discr K| · t^{n/2} · θ_K(t)`.
+
+Cite: Hecke 1917; Tate's thesis 1950.  Proof: apply multi-dim Poisson
+to the lattice `mixedEmbedding (𝓞 K) ⊆ mixedSpace K`. -/
+def theta_K_modular_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-- **D3.2b.zeta-FE.mellin** (Mellin = completed zeta):
+For `Re s > 1`, `Mellin (θ_K - 1)(s) = (Γ-factors)(s) · dedekindZeta K s`.
+
+Status: pure analytic manipulation modulo `theta_K_modular_postulate`. -/
+def theta_K_mellin_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-- **D3.2b.zeta-FE.fe-pair** (assemble WeakFEPair):
+Build a `WeakFEPair` (Mathlib `AbstractFuncEq.WeakFEPair`) with
+`f = g = θ_K - 1`, `k = n/2`, `ε = 1`.  Apply
+`WeakFEPair.functional_equation` to get the FE for `completedDedekindZeta`.
+
+Status: Lean engineering modulo Steps 1-3. -/
+def dedekindZeta_weak_fe_pair_postulate
+    (K : Type*) [Field K] [NumberField K] : True := sorry
+
+/-! End decomposition.
+```
+
 ## References
 
 - `assets/loeffler_formalizing_lfunctions.pdf` — Loeffler–Stoll's template
@@ -135,7 +215,9 @@ theorem dedekindZeta_at_zero (K : Type*) [Field K] [NumberField K] :
 - `MultiDimPoisson.lean` and `NumberFieldTheta.lean` (this directory) for
   the prerequisite layers
 
-This file is intentionally documentation-only.
+Originally this file was documentation-only; the four decomposition
+sub-postulates above (`multi_dim_poisson_postulate`,
+`theta_K_modular_postulate`, `theta_K_mellin_postulate`,
+`dedekindZeta_weak_fe_pair_postulate`) are now actual labelled `def`s
+tracking each step of the FE chain.
 -/
-
--- No Lean declarations in this file.  All content is documentation.
