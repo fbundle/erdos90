@@ -429,6 +429,26 @@ theorem real_mul_rpow {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) (a : ℝ) :
     (x * y) ^ a = x ^ a * y ^ a :=
   Real.mul_rpow hx hy
 
+/-! ### Real.log laws -/
+
+/-- `log (x · y) = log x + log y` for x > 0. -/
+theorem real_log_mul {x y : ℝ} (hx : x ≠ 0) (hy : y ≠ 0) :
+    Real.log (x * y) = Real.log x + Real.log y :=
+  Real.log_mul hx hy
+
+/-- `log (x^n) = n · log x` for natural n. -/
+theorem real_log_pow (x : ℝ) (n : ℕ) : Real.log (x ^ n) = n * Real.log x :=
+  Real.log_pow x n
+
+/-- `log (1/x) = -log x`. -/
+theorem real_log_inv (x : ℝ) : Real.log (x⁻¹) = -Real.log x :=
+  Real.log_inv x
+
+/-- `log (x/y) = log x - log y` for x ≠ 0, y ≠ 0. -/
+theorem real_log_div {x y : ℝ} (hx : x ≠ 0) (hy : y ≠ 0) :
+    Real.log (x / y) = Real.log x - Real.log y :=
+  Real.log_div hx hy
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
