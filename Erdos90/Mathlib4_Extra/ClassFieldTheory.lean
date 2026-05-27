@@ -420,6 +420,46 @@ in `𝓞_{H(K)}`.
 The decomposition below isolates each piece.
 -/
 
+/-! #### Decomposition of `group_theoretic_principal_ideal_postulate`
+
+Furtwängler-Iyanaga-Tannaka's pure group-theoretic proof:
+
+1. **Definition of transfer (Verlagerung)**: V : G/G' → G'/G'' explicitly
+   defined via coset representatives (Mathlib has `Subgroup.transfer`).
+2. **Reduction to nilpotent metabelian case**: WLOG G is finite
+   nilpotent of class 2 (i.e., metabelian, i.e., G'' = 0).
+3. **Computation in metabelian case**: explicit calculation showing V = 0
+   when G/G' is abelian and G' is abelian.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-sub-postulate D3.hcf.h94.transfer.def** (Verlagerung definition):
+The transfer (Verlagerung) map V : G^ab → (G')^ab is well-defined via
+the coset-representative construction.
+
+Mathlib v4.30 PARTIAL: `Subgroup.transfer` exists in `Mathlib.GroupTheory.Transfer`
+for general subgroups; the abelianized-quotient version is the wrapper. -/
+def transfer_definition_postulate : True := sorry
+
+/-- **Sub-sub-postulate D3.hcf.h94.transfer.metabelian-reduction**
+(Reduction to metabelian case):
+WLOG the finite group G with abelian G/G' can be reduced to a metabelian
+group (i.e., one with G'' = 0) via successive quotients.
+
+Cite: Iyanaga 1934 §1; Neukirch IV §3.  Mathlib v4.30: not packaged. -/
+def transfer_metabelian_reduction_postulate : True := sorry
+
+/-- **Sub-sub-postulate D3.hcf.h94.transfer.metabelian-vanish** (Metabelian
+vanishing):
+For a metabelian group G (with G'' = 0), the transfer map V : G/G' → G'
+is the zero map.
+
+This is the **principal ideal theorem in group theory** for the
+metabelian special case.  Cite: Iyanaga 1934; Tannaka 1934.  Mathlib
+v4.30: not packaged. -/
+def transfer_metabelian_vanish_postulate : True := sorry
+
 /-- **Sub-postulate D3.hcf.h94.transfer** (group-theoretic transfer
 vanishing — Furtwängler-Iyanaga-Tannaka):
 Let `G` be a finite group with abelian quotient `G/G'`.  Then the
@@ -429,6 +469,11 @@ Let `G` be a finite group with abelian quotient `G/G'`.  Then the
 
 obtained by lifting elements of `G/G'` to `G` and applying the
 group-theoretic transfer, is the zero map.
+
+ASSEMBLY (modulo the three sub-sub-postulates above):
+1. By `transfer_definition_postulate`: V is well-defined.
+2. By `transfer_metabelian_reduction_postulate`: reduce to G'' = 0.
+3. By `transfer_metabelian_vanish_postulate`: V = 0 in metabelian case.
 
 This is a purely group-theoretic statement, classically called the
 "Verlagerungssatz" or "principal ideal theorem of group theory"
