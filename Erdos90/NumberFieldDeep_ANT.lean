@@ -73,6 +73,12 @@ noncomputable def D_val : ℕ := Finset.prod T_set (fun q => q)
 /-- The root discriminant rd_{K/F} = √(4D). Constant across the tower. -/
 noncomputable def rd_KF : ℝ := Real.sqrt (4 * (D_val : ℝ))
 
+/-- Sanity: T_set has 13 elements. -/
+theorem T_set_card : T_set.card = 13 := by decide
+
+/-- Sanity: S_set has 22 elements. -/
+theorem S_set_card : S_set.card = 22 := by decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
