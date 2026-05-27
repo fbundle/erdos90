@@ -359,6 +359,18 @@ theorem nat_prime_ne_zero {p : ℕ} (hp : p.Prime) : p ≠ 0 := hp.ne_zero
 /-- A prime is not 1. -/
 theorem nat_prime_ne_one {p : ℕ} (hp : p.Prime) : p ≠ 1 := hp.ne_one
 
+/-! ### padicValNat sanity wrappers -/
+
+/-- `padicValNat p 1 = 0` for any p. -/
+theorem padicValNat_one (p : ℕ) : padicValNat p 1 = 0 := padicValNat_one_right p
+
+/-- `padicValNat p 0 = 0` for any p. -/
+theorem padicValNat_zero (p : ℕ) : padicValNat p 0 = 0 := padicValNat_zero_right p
+
+/-- `padicValNat p p = 1` for prime p. -/
+theorem padicValNat_p_self {p : ℕ} [Fact p.Prime] : padicValNat p p = 1 :=
+  padicValNat_self
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
