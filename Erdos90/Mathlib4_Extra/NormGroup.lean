@@ -134,6 +134,23 @@ def index_eq_finrank_postulate
     [IsGalois K L] [IsAbelianGalois K L] :
     (NormGroup K L).index = Module.finrank K L := sorry
 
+/-- Trivial-extension corollary: `(NormGroup K K).index = 1 = Module.finrank K K`.
+
+PROVED Lean: when L = K, the norm map is the identity, so `NormGroup K K = ⊤`
+(the trivial subgroup of index 1).  And `Module.finrank K K = 1`. -/
+theorem index_eq_finrank_of_self
+    (K : Type u) [Field K] [NumberField K] :
+    (NormGroup K K).index = Module.finrank K K := by
+  -- NormGroup K K = range of Units.map (Algebra.norm K K) = ⊤
+  -- since Algebra.norm K K acts as identity on K (Algebra.norm_apply_self).
+  have h_top : NormGroup K K = ⊤ :=
+    MonoidHom.range_eq_top.mpr fun x => ⟨x, by
+      apply Units.ext
+      show (Algebra.norm K (S := K)) (x : K) = x
+      rw [Algebra.norm_self]; rfl⟩
+  rw [h_top]
+  simp [Subgroup.index_top, Module.finrank_self]
+
 /-- **Postulate** (Hasse Norm Theorem):
 
 For an abelian finite extension `L/K` of number fields, an element `x ∈ K^*`
