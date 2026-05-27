@@ -324,6 +324,24 @@ theorem real_sqrt_mul {x : ℝ} (hx : 0 ≤ x) (y : ℝ) :
     Real.sqrt (x * y) = Real.sqrt x * Real.sqrt y :=
   Real.sqrt_mul hx y
 
+/-! ### Nat.Coprime sanity wrappers -/
+
+/-- Coprime is symmetric. -/
+theorem nat_coprime_symm {m n : ℕ} : m.Coprime n ↔ n.Coprime m :=
+  Nat.coprime_comm
+
+/-- `1` is coprime to everything. -/
+theorem nat_coprime_one_left (n : ℕ) : (1 : ℕ).Coprime n := Nat.coprime_one_left n
+
+/-- Everything is coprime to `1`. -/
+theorem nat_coprime_one_right (n : ℕ) : n.Coprime 1 := Nat.coprime_one_right n
+
+/-- Coprimality is decidable. -/
+theorem nat_coprime_three_five : (3 : ℕ).Coprime 5 := by decide
+
+/-- Distinct primes are coprime. -/
+theorem nat_coprime_seven_eleven : (7 : ℕ).Coprime 11 := by decide
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
