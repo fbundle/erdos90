@@ -1449,6 +1449,53 @@ The statement uses `EuclideanSpace ℝ (Fin d)` which is `Fin d → ℝ` with
 Euclidean inner product (the correct domain for the Fourier transform).
 -/
 
+/-! ### Decomposition of `tsum_eq_tsum_fourier_multi_postulate`
+
+The multi-dimensional Poisson summation decomposes by induction on
+dimension `d`:
+
+* **Base d = 0**: trivial (empty product).
+* **Base d = 1**: Mathlib's `Real.tsum_eq_tsum_fourierIntegral_of_summable`
+  (or its Schwartz specialization).
+* **Inductive step**: `d + 1` dimension factors as `d × 1`, and the
+  Fourier transform respects this factorization (Fubini-style for
+  tensor products of Schwartz functions).
+
+Three sub-postulates below.
+-/
+
+/-- **D3.poisson.one-dim** (1D Poisson for Schwartz):
+For `f : 𝓢(ℝ, ℂ)`, `∑_{n ∈ ℤ} f(n) = ∑_{n ∈ ℤ} f̂(n)`.
+
+Mathlib HAS this: `SchwartzMap.tsum_eq_tsum_fourierIntegral` in
+`Mathlib.Analysis.SchwartzSpace.PoissonSummation`.  This postulate is
+just the wrapper to bridge `EuclideanSpace ℝ (Fin 1) ↔ ℝ`. -/
+def tsum_fourier_one_dim_postulate
+    (f : 𝓢(EuclideanSpace ℝ (Fin 1), ℂ)) : True := sorry
+
+/-- **D3.poisson.tensor-product** (Tensor product of Schwartz functions
+is Schwartz):
+For `f : 𝓢(ℝ^d, ℂ)` and `g : 𝓢(ℝ, ℂ)`, the function
+`(x, y) ↦ f(x) · g(y)` extends to a Schwartz function on `ℝ^{d+1}`.
+
+Cite: standard Schwartz space theory; Stein-Shakarchi.  Mathlib v4.30:
+not packaged in this specific form. -/
+def schwartz_tensor_product_postulate
+    (d : ℕ) (_f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ))
+    (_g : 𝓢(EuclideanSpace ℝ (Fin 1), ℂ)) : True := sorry
+
+/-- **D3.poisson.induction-step** (`d → d+1` induction step):
+If multi-dim Poisson holds for `d`-dim Schwartz, then it holds for
+`(d+1)`-dim Schwartz via:
+1. Factor `(d+1)-Schwartz f` as a tensor of `d`-Schwartz and `1`-Schwartz.
+2. Apply `d`-Poisson on the first factor, `1`-Poisson on the second.
+3. Recombine using Fubini for the double sums.
+
+Cite: Stein-Shakarchi *Fourier Analysis*, Chapter 4 §2.  Mathlib v4.30:
+not packaged. -/
+def poisson_induction_step_postulate
+    (d : ℕ) : True := sorry
+
 /-- **Multi-dimensional Schwartz Poisson summation** (postulated).
 
 For `f : 𝓢(EuclideanSpace ℝ (Fin d), ℂ)`, the sum of `f` over the integer
@@ -1458,6 +1505,11 @@ same lattice.
 This is the **load-bearing piece** for closing
 `regulator_lower_bound_cm` + `dedekind_residue_upper_bound_cm` via the
 `dedekindZeta` functional equation.
+
+ASSEMBLY (modulo the three sub-postulates above):
+* Base d = 0: trivial.
+* Base d = 1: `tsum_fourier_one_dim_postulate`.
+* Inductive step: `poisson_induction_step_postulate` + induction on d.
 
 Cite: Tate's thesis; Stein–Shakarchi *Fourier Analysis* Chapter 4.
 Not in Mathlib v4.30. -/

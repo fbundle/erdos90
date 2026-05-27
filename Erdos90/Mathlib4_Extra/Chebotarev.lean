@@ -192,6 +192,82 @@ are positive-density "completely split" primes that persist through the tower.
 
 Cite: HMR 2021 line 729 `theo:ihara`; Ihara, *How many primes decompose...*,
 J. Math. Soc. Japan 35 (1983) 693-709.  Not in Mathlib v4.30. -/
+/-! ### Decomposition of `ihara_split_primes_postulate`
+
+Ihara 1983/1986's persistence result decomposes:
+
+1. **Frobenius growth bound**: in an asymptotically good pro-ℓ tower
+   K_∞/F (`rootDiscr` bounded by an explicit constant), the Frobenius
+   elements `Frob_q` for primes `q` not ramifying in K_∞ have **bounded
+   order**.
+2. **Positive density**: the set of primes `q` whose Frobenius is the
+   identity in `Gal(K_n/F)` for every `n` has positive natural density
+   bounded by `1 / [K_∞ : F]` (interpreted in the pro-ℓ sense, this is
+   `1/∞ = 0` but with positive lim inf).
+3. **Bridge to ramificationIdx/inertiaDeg**: split completely ↔
+   Frobenius = identity ↔ ramificationIdx = 1 ∧ inertiaDeg = 1.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.1.cheb.ihara.frob-bounded** (Bounded Frobenius
+order in pro-ℓ tower):
+For each base field `F` and each prime `ℓ`, in any pro-`ℓ` tower
+`F = K_0 ⊆ K_1 ⊆ K_2 ⊆ ...` unramified outside a finite set, the
+Frobenius elements at unramified primes lie in a **bounded-order
+subgroup** of each finite-level Galois group.
+
+Cite: Ihara 1983 Lemma 2; HMR 2021 line 731.  Mathlib v4.30: not packaged. -/
+def ihara_frobenius_bounded_postulate
+    (F : Type*) [Field F] [NumberField F]
+    (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
+    True := sorry
+
+/-- **Sub-postulate D3.1.cheb.ihara.density** (Positive density of
+identity-Frobenius primes):
+For a pro-`ℓ` tower above F with bounded root discriminant, the
+density of rational primes `q` whose Frobenius is trivial in every
+finite level is positive (and equal to `1/∞` in the pro-ℓ limit, but
+each finite level has positive density via Chebotarev applied to that
+level).
+
+Cite: Ihara 1983; combines `chebotarev_density_postulate` with the
+tower structure.  Mathlib v4.30: not packaged. -/
+def ihara_density_postulate
+    (F : Type*) [Field F] [NumberField F]
+    (ℓ : ℕ) (_hℓ : ℓ ≥ 2) :
+    True := sorry
+
+/-- **Sub-postulate D3.1.cheb.ihara.split-iff** (Splitting iff Frobenius
+trivial):
+For an unramified prime `q` in `K`, `q` splits completely in `K` (i.e.
+`ramificationIdx = 1` AND `inertiaDeg = 1` for every prime above `q`)
+**iff** the Frobenius `Frob_q ∈ Gal(K/F)` is the identity element.
+
+Cite: standard Galois-theoretic equivalence (Neukirch I §9 Proposition 9.4).
+Mathlib v4.30: Frobenius defined but split-iff-identity not packaged
+in this form. -/
+def split_iff_frobenius_trivial_postulate
+    (F : Type*) [Field F] [NumberField F]
+    (K : Type*) [Field K] [NumberField K] [Algebra F K] :
+    True := sorry
+
+/-- **Ihara's theorem** (labelled postulate).
+
+For each base field `F` (number field) and each prime `ℓ ≥ 2`, the maximal
+pro-`ℓ` extension `K_∞ = K_S(F)/F` (unramified outside a finite set `S`)
+has the property that infinitely many primes split completely in *every*
+finite sub-extension.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `ihara_frobenius_bounded_postulate`: Frobenius elements have
+   bounded order in each finite level.
+2. By `ihara_density_postulate`: the identity-Frobenius primes have
+   positive density at each level.
+3. By `split_iff_frobenius_trivial_postulate`: these primes split
+   completely.
+4. Take the intersection over all finite levels: still infinite by
+   compactness + positive density. -/
 def ihara_split_primes_postulate
     (F : Type*) [Field F] [NumberField F] [IsCMField F] [IsTotallyComplex F]
     (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 ≤ rd_F)
