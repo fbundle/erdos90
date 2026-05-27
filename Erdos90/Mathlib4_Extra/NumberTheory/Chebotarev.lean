@@ -138,11 +138,127 @@ Cite: Artin 1923 (functoriality); Neukirch VII §10 Lemma 10.5.  Mathlib
 v4.30: not packaged. -/
 def monomial_L_eq_hecke_L_postulate : True := sorry
 
+/-! ##### Tate's thesis (1950): 6-step chain for Hecke L-function continuation
+
+Tate's thesis proves meromorphic continuation + functional equation of
+Hecke L-functions by adelic Fourier analysis.  The standard chain:
+
+  **Step 1** (Schwartz-Bruhat space on adeles): define
+  `S(𝔸_K) = ⊗'_v S(K_v)` as the restricted tensor product of local
+  Schwartz-Bruhat spaces over all places `v` of `K`.
+
+  **Step 2** (local zeta integral): for each place `v`, the local zeta
+  integral `Z_v(f_v, s, χ_v) = ∫_{K_v^*} f_v(x) χ_v(x) |x|_v^s d^*x`
+  converges for `Re(s) > 0` (archimedean) or `Re(s) > 1` (non-arch),
+  and admits explicit local L-factor extraction.
+
+  **Step 3** (global zeta integral): for `f ∈ S(𝔸_K)` and Hecke
+  character `χ`, the global zeta integral
+  `Z(f, s, χ) = ∫_{𝔸_K^*} f(x) χ(x) |x|^s d^*x`
+  converges absolutely for `Re(s) > 1`.
+
+  **Step 4** (adelic Poisson summation): for `f ∈ S(𝔸_K)`,
+  `∑_{γ ∈ K} f(γ) = ∑_{γ ∈ K} f̂(γ)` where `f̂` is the adelic
+  Fourier transform.
+
+  **Step 5** (functional equation): splitting the global integral by
+  `|x| ≷ 1` and applying Poisson to the `≤ 1` piece yields
+  `Z(f, s, χ) = Z(f̂, 1-s, χ^{-1})` (modulo elementary boundary terms).
+
+  **Step 6** (meromorphic continuation + L-extraction): rearranging,
+  `L(s, χ)` (defined as `Z(f₀, s, χ)/ (local factor at f₀)` for a
+  test function `f₀`) extends meromorphically to all of `ℂ`.  Only
+  the trivial character `χ = 1` produces a pole, simple and at
+  `s = 1` (from `∫_{|x| ≤ 1} f(0) d^*x` divergence).
+
+Each step is its own postulate; none are in Mathlib v4.30.  Adeles,
+ideles, Schwartz-Bruhat spaces, and adelic Fourier transforms are all
+absent.
+-/
+
+/-- **Sub-sub-sub-postulate** (Tate Step 1 — Schwartz-Bruhat adeles):
+For a number field `K`, the restricted tensor product
+`S(𝔸_K) = ⊗'_v S(K_v)` of local Schwartz-Bruhat spaces is a
+well-defined topological vector space (the global Schwartz-Bruhat
+space on the adeles).
+
+Cite: Tate 1950 §2; Weil, *Basic Number Theory*, V §4.  Mathlib v4.30:
+adeles not packaged. -/
+def tate_schwartz_bruhat_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate** (Tate Step 2 — local zeta integral):
+For each place `v` of `K`, each `f_v ∈ S(K_v)`, and each quasi-character
+`χ_v : K_v^* → ℂ^*`, the local zeta integral
+`Z_v(f_v, s, χ_v) = ∫_{K_v^*} f_v(x) χ_v(x) |x|_v^s d^*x`
+converges in a right half-plane and admits an explicit local L-factor
+`L_v(s, χ_v)` such that `Z_v(f_v, s, χ_v) / L_v(s, χ_v)` extends to
+an entire function of `s`.
+
+Cite: Tate 1950 §2.4-2.5.  Mathlib v4.30: not packaged. -/
+def tate_local_zeta_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate** (Tate Step 3 — global zeta integral):
+For `f ∈ S(𝔸_K)` and a Hecke character `χ : 𝔸_K^*/K^* → ℂ^*`, the
+global zeta integral
+`Z(f, s, χ) = ∫_{𝔸_K^*} f(x) χ(x) |x|^s d^*x`
+converges absolutely for `Re(s) > 1`, and factors as a product of
+local zeta integrals.
+
+Cite: Tate 1950 §4.1.  Mathlib v4.30: not packaged. -/
+def tate_global_zeta_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate** (Tate Step 4 — adelic Poisson summation):
+For each `f ∈ S(𝔸_K)`,
+`∑_{γ ∈ K} f(γ) = ∑_{γ ∈ K} f̂(γ)`,
+where `f̂` is the adelic Fourier transform of `f` (with respect to a
+self-dual additive character of `𝔸_K/K`).
+
+Cite: Tate 1950 §4.2 (riemann-roch for adeles); Weil, *Basic Number
+Theory*, V §4.  Mathlib v4.30: classical Poisson summation packaged
+in `Mathlib/Analysis/Fourier/PoissonSummation.lean` but adelic version
+not. -/
+def tate_adelic_poisson_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate** (Tate Step 5 — global functional equation):
+From the adelic Poisson summation (Step 4) applied to the split
+`Z(f, s, χ) = ∫_{|x| ≥ 1} + ∫_{|x| ≤ 1}` of the global zeta integral,
+one obtains the global functional equation
+`Z(f, s, χ) = Z(f̂, 1-s, χ^{-1})`
+(modulo boundary terms that vanish for non-trivial `χ` and give a
+simple pole at `s = 1` for trivial `χ`).
+
+Cite: Tate 1950 §4.4.  Mathlib v4.30: not packaged. -/
+def tate_functional_equation_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate** (Tate Step 6 — meromorphic continuation
+assembly): combining Steps 1-5, for any Hecke character `χ` of `K`,
+the Hecke L-function `L(s, χ)` (defined as a product of local
+L-factors over finite places) extends to a meromorphic function on
+all of `ℂ`.  Non-trivial `χ` give entire `L`; trivial `χ` gives `ζ_K`
+with a unique simple pole at `s = 1`.
+
+Cite: Tate 1950 §4.4-4.5.  Mathlib v4.30: not packaged. -/
+def tate_meromorphic_assembly_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
 /-- **Sub-sub-postulate D3.1.cheb.artinL.merom.hecke-cont** (Hecke L
 meromorphic continuation):
 Each Hecke L-function L(s, ψ) for a Hecke character ψ extends to a
 meromorphic function on all of ℂ.  The trivial character gives the
 Dedekind zeta ζ_K with simple pole at s = 1.
+
+ASSEMBLY (Tate's thesis 1950, 6-step adelic chain):
+- Step 1 (`tate_schwartz_bruhat_postulate`): build `S(𝔸_K)`.
+- Step 2 (`tate_local_zeta_postulate`): local zeta = local L · entire.
+- Step 3 (`tate_global_zeta_postulate`): global zeta converges for `Re(s) > 1`.
+- Step 4 (`tate_adelic_poisson_postulate`): `∑ f = ∑ f̂` on `𝔸_K/K`.
+- Step 5 (`tate_functional_equation_postulate`): `Z(f, s, χ) = Z(f̂, 1-s, χ^{-1})`.
+- Step 6 (`tate_meromorphic_assembly_postulate`): `L(s, χ)` is meromorphic on ℂ.
 
 Cite: Tate's thesis 1950.  Mathlib v4.30: Dirichlet L-functions
 packaged (`DirichletCharacter.completedLFunction_one_sub`); Hecke
