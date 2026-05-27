@@ -147,3 +147,17 @@ PROVED Lean: direct citation of Mathlib's `Polynomial.cyclotomic_prime`. -/
 theorem cyclotomic_prime_polynomial_eq (R : Type*) [Ring R] (p : ℕ) [Fact p.Prime] :
     Polynomial.cyclotomic p R = ∑ i ∈ Finset.range p, Polynomial.X ^ i :=
   Polynomial.cyclotomic_prime R p
+
+/-- **Cyclotomic polynomial irreducibility** over ℚ.
+
+PROVED Lean: direct citation of Mathlib's
+`Polynomial.cyclotomic.irreducible_rat`.  For any `n > 0`, the
+cyclotomic polynomial `Φ_n` is irreducible in `ℚ[X]`. -/
+theorem cyclotomic_irreducible_rat {n : ℕ} (hpos : 0 < n) :
+    Irreducible (Polynomial.cyclotomic n ℚ) :=
+  Polynomial.cyclotomic.irreducible_rat hpos
+
+/-- **Cyclotomic polynomial irreducibility** over ℤ. -/
+theorem cyclotomic_irreducible_int {n : ℕ} (hpos : 0 < n) :
+    Irreducible (Polynomial.cyclotomic n ℤ) :=
+  Polynomial.cyclotomic.irreducible hpos
