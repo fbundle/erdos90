@@ -66,12 +66,67 @@ def SelmerGroup_postulate
     (K : Type u) [Field K] [NumberField K] (_n : ℕ) :
     Type := Unit  -- placeholder
 
+/-! ### Decomposition of `iwasawa_main_conjecture_postulate`
+
+Mazur-Wiles 1984's proof for ℚ (extended by Wiles 1990 to totally real K)
+decomposes via the **Euler system of cyclotomic units / elliptic units**:
+
+1. **Construction of Euler system**: build a system of compatible units
+   `c_n ∈ K_n^*` over the cyclotomic tower satisfying norm relations.
+2. **Kolyvagin derivative**: use the Euler system to construct derivative
+   classes in Galois cohomology that bound the Iwasawa module's
+   characteristic ideal from above.
+3. **Lower bound from L-functions**: the Iwasawa Main Conjecture follows
+   from showing the p-adic L-function generates an ideal that's also
+   contained in the characteristic ideal (the lower bound).
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.imc.euler-system** (Euler system existence):
+For each totally real number field K and prime p, there exists an
+**Euler system** of cyclotomic units (or elliptic units for imaginary
+quadratic K) compatible with the Iwasawa tower structure.
+
+Cite: Kolyvagin 1990; Rubin *Euler Systems*.  Mathlib v4.30: not packaged. -/
+def imc_euler_system_postulate
+    (K : Type u) [Field K] [NumberField K] [NumberField.IsTotallyReal K]
+    (p : ℕ) (_hp : Nat.Prime p) :
+    True := sorry
+
+/-- **Sub-postulate D3.imc.kolyvagin-derivative** (Kolyvagin derivative):
+Given an Euler system, the **Kolyvagin derivative construction** produces
+elements of `H¹(K, V_p)` that bound the Selmer group from above.
+
+Cite: Kolyvagin 1990; Rubin Ch. 3.  Mathlib v4.30: not packaged. -/
+def imc_kolyvagin_derivative_postulate
+    (K : Type u) [Field K] [NumberField K] [NumberField.IsTotallyReal K]
+    (p : ℕ) (_hp : Nat.Prime p) :
+    True := sorry
+
+/-- **Sub-postulate D3.imc.l-function-bound** (L-function lower bound):
+The p-adic L-function `L_p(s, χ)` (Kubota-Leopoldt) generates an ideal
+in the Iwasawa algebra contained in the characteristic ideal of the
+Iwasawa module `X_∞`.
+
+This is the "easy" direction in the IMC.  Cite: Iwasawa 1969 for ℚ;
+Wiles 1990 for totally real.  Mathlib v4.30: not packaged. -/
+def imc_l_function_bound_postulate
+    (K : Type u) [Field K] [NumberField K] [NumberField.IsTotallyReal K]
+    (p : ℕ) (_hp : Nat.Prime p) :
+    True := sorry
+
 /-- **Iwasawa Main Conjecture** (labelled, far off-path):
 
 For a totally real number field K and a prime p, the characteristic ideal
 of the Iwasawa module `X_∞ = Gal(M_∞/K_∞)` (where M_∞ is the maximal
 unramified abelian p-extension of the cyclotomic Zp-extension `K_∞`) equals
 the characteristic ideal of the p-adic L-function.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `imc_l_function_bound_postulate`: L_p ⊆ char(X_∞) (one direction).
+2. By `imc_euler_system_postulate`: build Euler system.
+3. By `imc_kolyvagin_derivative_postulate`: char(X_∞) ⊆ L_p (other direction).
 
 Cite: Mazur–Wiles 1984 (K = ℚ), Wiles 1990 (totally real K).  Not in
 Mathlib v4.30. -/

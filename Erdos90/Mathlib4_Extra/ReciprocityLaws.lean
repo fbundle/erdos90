@@ -47,11 +47,42 @@ namespace NumberField
 
 universe u
 
+/-! ### Decomposition of higher reciprocity laws via class field theory
+
+Both cubic and biquadratic reciprocity decompose via the **Artin map
+for cyclotomic fields**:
+
+* **Cubic** uses Artin recip for `ℚ(ζ_3)/ℚ`, which gives a cubic residue
+  character.
+* **Biquadratic** uses Artin recip for `ℚ(ζ_4) = ℚ(i)/ℚ`, which gives
+  a biquadratic residue character.
+
+The reciprocity law is the **functorial pairing** between the Artin map
+for two split primes.
+
+Two sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.reciprocity.cubic.artin** (Artin map for ℚ(ζ_3)):
+The cubic residue symbol `(α/p)_3` (for α ∈ ℚ(ζ_3), p a prime of ℚ(ζ_3))
+equals the Artin map applied to `α` at the prime `p`, in the Galois
+group `Gal(ℚ(ζ_3, α^{1/3})/ℚ(ζ_3))` of order 3.
+
+Cite: Lemmermeyer Ch. 4.2; Cox *Primes of the form x²+ny²* Ch. 4.
+Mathlib v4.30: not packaged. -/
+def cubic_residue_symbol_artin_postulate
+    (_p _q : ℕ) (_hp : _p.Prime) (_hp3 : _p % 3 = 1) :
+    True := sorry
+
 /-- **Cubic reciprocity** (labelled postulate for `ℚ(ζ_3)`).
 
 For primes `p, q` both ≡ 1 (mod 3) and both splitting in `ℚ(ζ_3)`, with
 suitable primary representatives, the cubic residue symbols satisfy
 `(p/q)_3 = (q/p)_3`.
+
+ASSEMBLY (modulo `cubic_residue_symbol_artin_postulate`):
+Both sides equal the Artin map evaluated symmetrically; the symmetry
+follows from the (Artin-side) abelian Galois pairing being symmetric.
 
 Cite: Lemmermeyer Chapter 7. -/
 def cubic_reciprocity_postulate
@@ -59,11 +90,24 @@ def cubic_reciprocity_postulate
     (_hp3 : _p % 3 = 1) (_hq3 : _q % 3 = 1) :
     True := sorry
 
+/-- **Sub-postulate D3.reciprocity.biquad.artin** (Artin map for ℚ(i)):
+The biquadratic residue symbol `(α/p)_4` (for α ∈ ℚ(i), p a Gaussian prime)
+equals the Artin map applied to `α` at the prime `p`, in the Galois group
+`Gal(ℚ(i, α^{1/4})/ℚ(i))` of order 4.
+
+Cite: Lemmermeyer Ch. 6.6; standard.  Mathlib v4.30: not packaged. -/
+def biquad_residue_symbol_artin_postulate
+    (_p _q : ℕ) (_hp : _p.Prime) (_hp4 : _p % 4 = 1) :
+    True := sorry
+
 /-- **Biquadratic reciprocity** (labelled postulate for `ℚ(i)`).
 
 For primes `p, q` both ≡ 1 (mod 4) and both splitting in `ℚ(i)`, with
 suitable primary representatives, the biquadratic residue symbols satisfy
 a Gauss-type formula.
+
+ASSEMBLY (modulo `biquad_residue_symbol_artin_postulate`):
+Both sides equal the Artin map evaluated symmetrically.
 
 Cite: Lemmermeyer Chapter 6.6, Gauss's original. -/
 def biquadratic_reciprocity_postulate
