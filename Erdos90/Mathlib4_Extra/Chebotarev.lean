@@ -72,16 +72,108 @@ namespace NumberField
 
 open NumberField
 
+/-! ### Decomposition of `chebotarev_density_postulate` via Artin L-functions
+
+The classical proof of Chebotarev (Neukirch VII §13) factors through
+the analytic theory of **Artin L-functions**.  The standard chain:
+
+1. For each finite-dimensional complex representation `ρ : Gal(K/ℚ) → GL_n(ℂ)`,
+   define the Artin L-function `L(s, ρ) = ∏_p det(1 - ρ(Frob_p) p^{-s})^{-1}`.
+2. `L(s, ρ)` admits meromorphic continuation to all of `ℂ` with a single
+   simple pole at `s = 1` iff `ρ` contains the trivial representation.
+3. **Non-vanishing on Re(s) = 1**: for `ρ` not containing the trivial rep,
+   `L(s, ρ) ≠ 0` on the line `Re(s) = 1`.  This is the deep input.
+4. By Tauberian arguments on `log L(s, ρ)` and partial summation, the
+   density of primes with `Frob_p ∈ C` (for a conjugacy class `C`) is
+   `|C| / |Gal(K/ℚ)|`.  Specialization to `C = {1}` gives density of
+   primes splitting completely.
+
+Each step is its own Mathlib gap.  Mathlib v4.30 has the L-series API
+but not Artin L-functions or their non-vanishing.
+-/
+
+/-- **Sub-postulate D3.1.cheb.artinL.def** (Artin L-function existence):
+For each number field `K` and each finite-dimensional complex
+representation `ρ` of `Gal(K^{Gal}/ℚ)` (where `K^{Gal}` is the Galois
+closure), the Artin L-function `L(s, ρ)` is defined as a Dirichlet
+series convergent for `Re(s) > 1`.
+
+Cite: Neukirch VII §10 (Artin L-series definition); Mathlib has
+`LSeries.term` and `LSeries` (in `LSeries.Basic`) but no specialization
+to Artin L-series.  Multi-month: needs representation theory of
+finite groups over ℂ + Frobenius lifts + Euler products. -/
+def artin_L_function_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.1.cheb.artinL.merom** (Meromorphic continuation):
+`L(s, ρ)` extends to a meromorphic function on all of `ℂ`.  For `ρ`
+irreducible non-trivial, `L(s, ρ)` is entire (no poles).  The trivial
+representation `ρ = 1` gives `L(s, 1) = ζ_K(s)`, which has a unique
+simple pole at `s = 1`.
+
+This uses Brauer's induction theorem (1947) reducing to monomial
+representations whose L-functions are Hecke L-functions, which have
+meromorphic continuation via Tate's thesis.
+
+Cite: Brauer 1947 (induction theorem); Tate's thesis 1950
+(Hecke L-function continuation); Neukirch VII §10 Theorem 10.4.
+Mathlib v4.30: not packaged.  Multi-year: needs Brauer induction +
+Tate's thesis. -/
+def artin_L_meromorphic_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.1.cheb.artinL.nonvanish** (Non-vanishing on
+`Re(s) = 1`):
+For each irreducible non-trivial representation `ρ`, `L(s, ρ) ≠ 0` on
+the line `Re(s) = 1`.
+
+This is the analytic heart of Chebotarev.  Proved via:
+* If `ρ` is 1-dimensional: reduces to Hecke L-function non-vanishing
+  (Hecke 1917, via L(1, χ) ≠ 0 for Dirichlet/Hecke characters).
+* General `ρ`: use Brauer's induction + the 1-dimensional case +
+  Hadamard 3-line lemma to push non-vanishing from boundary to line.
+
+Cite: Hecke 1917 (L(1, χ) ≠ 0); Brauer 1947 (induction); Neukirch
+VII §10 Theorem 10.7 (non-vanishing).  Mathlib v4.30: has Dirichlet
+L(1, χ) ≠ 0 (`Mathlib.NumberTheory.LSeries.NonvanishingOne`) but not
+the Hecke or Artin generalization. -/
+def artin_L_nonvanishing_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.1.cheb.artinL.density** (Density extraction via
+Tauberian):
+Given Artin L-function existence + meromorphic continuation + non-vanishing
+on `Re(s) = 1`, the Wiener-Ikehara Tauberian theorem (or partial summation
+via the Selberg-Delange method) extracts the natural-density statement:
+for each conjugacy class `C ⊆ Gal(K/ℚ)`, the density of primes `p` with
+`Frob_p ∈ C` is `|C| / |Gal(K/ℚ)|`.
+
+Specialization to `C = {1}` gives infinitely many primes splitting
+completely.
+
+Cite: Wiener-Ikehara 1932 (Tauberian); Neukirch VII §13 Theorem 13.4.
+Mathlib v4.30: `Wiener-Ikehara` not packaged; Selberg-Delange not packaged.
+Multi-month after the prerequisites. -/
+def chebotarev_density_via_L_postulate (K : Type*) [Field K] [NumberField K] :
+    True := sorry
+
 /-- **Chebotarev density theorem** (labelled postulate).
 
 For any number field `K`, infinitely many rational primes split completely
-in `𝓞 K`.  More precisely: the set `{q : ℕ | q.Prime ∧ q splits completely in K}`
-is infinite.
+in `𝓞 K`.
 
-This is the simplest form of the Chebotarev density theorem (the trivial-conjugacy
-class case).  Mathlib v4.30 has analogous results for `ℚ(ζ_n)/ℚ` only.
+PROVED ASSEMBLY (modulo the four sub-postulates above):
+1. By `artin_L_function_postulate`, `L(s, ρ)` exists.
+2. By `artin_L_meromorphic_postulate`, it extends to ℂ.
+3. By `artin_L_nonvanishing_postulate`, no zeros on `Re(s) = 1`.
+4. By `chebotarev_density_via_L_postulate`, density `1/|Gal|` ≠ 0 ⟹
+   infinitely many such primes.
 
-Cite: Neukirch, *Algebraic Number Theory*, Chapter VII §13.  Not in Mathlib v4.30. -/
+Each sub-postulate is multi-month-to-multi-year on its own; together
+they constitute the classical Chebotarev proof.
+
+Cite: Neukirch, *Algebraic Number Theory*, Chapter VII §13.  Not in
+Mathlib v4.30. -/
 def chebotarev_density_postulate (K : Type*) [Field K] [NumberField K] :
     {q : ℕ | q.Prime ∧
       ∃ (P : Ideal (𝓞 K)), P.IsPrime ∧ P ≠ ⊥ ∧

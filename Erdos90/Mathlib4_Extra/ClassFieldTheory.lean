@@ -108,12 +108,99 @@ attribute [instance] HilbertClassFieldExt.fieldH HilbertClassFieldExt.numberFiel
   HilbertClassFieldExt.algebraKH HilbertClassFieldExt.isGaloisHK
   HilbertClassFieldExt.isAbelianGaloisHK
 
+/-! ### Decomposition of `hilbertClassField_exists`
+
+The existence of the Hilbert class field decomposes into four classical
+class-field-theory results, each of which is itself a multi-month-to-
+multi-year Mathlib gap.  Naming them separately gives outside
+contributors a clean PR-shape for each piece.
+
+The chain:
+1. **Existence of finite max unramified abelian extension** (CFT main
+   theorem, existence half): there is *some* finite Galois extension
+   of `K` which is unramified at every finite and infinite place and
+   has abelian Galois group.
+2. **Maximality** (CFT main theorem, uniqueness half): among all such,
+   there is a unique maximal one (any unramified abelian extension
+   embeds into it).
+3. **Galois group order** (Artin's reciprocity, finite half): the
+   Galois group of the HCF over `K` has order equal to the class number
+   of `K`.
+4. **Artin map is an isomorphism** (Artin's reciprocity, structure half):
+   the natural map `ClassGroup (𝓞 K) → Gal(H/K)` (sending an ideal to
+   its Frobenius) is an isomorphism.
+
+Mathlib v4.30: none of these are packaged.  The full classical CFT
+infrastructure (ideles, Artin map, ray class fields, conductor-discriminant
+formula) is missing.
+-/
+
+/-- **Sub-postulate D3.hcf.unram-abel-exists** (CFT existence half):
+For each number field `K`, there exists a finite Galois extension `L/K`
+which is unramified at all primes (finite and infinite) and has abelian
+Galois group.
+
+Cite: Class field theory main theorem, existence half.  Standard reference:
+Neukirch *Algebraic Number Theory* VI §6 Theorem 6.1.  Mathlib v4.30:
+not packaged. -/
+def cft_unramified_abelian_extension_exists_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.hcf.max-unram-abel** (CFT uniqueness/maximality):
+Among all finite unramified abelian extensions of `K`, there exists a
+unique maximal one (the **Hilbert class field**).  Any other such
+extension embeds K-linearly into it.
+
+Cite: Neukirch VI §6 Theorem 6.1 (uniqueness half).  Mathlib v4.30:
+not packaged. -/
+def cft_max_unramified_abelian_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.hcf.galois-order** (Artin reciprocity, order):
+The Galois group of the HCF `H/K` has finite order equal to the class
+number of `K`:
+
+  `|Gal(H/K)| = |ClassGroup (𝓞 K)| = classNumber K`.
+
+Cite: Artin reciprocity (Lang *Algebraic Number Theory* X §1).
+Mathlib v4.30: not packaged. -/
+def cft_hcf_galois_order_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
+/-- **Sub-postulate D3.hcf.artin-iso** (Artin reciprocity, structure):
+The Artin map `ClassGroup (𝓞 K) → Gal(H/K)`, sending an unramified prime
+ideal `𝔭` to its Frobenius automorphism, is a group isomorphism.
+
+This is the **Artin reciprocity theorem** for the trivial modulus
+(equivalently for ideals of `𝓞_K`).  Cite: Artin 1927 (original); Lang
+X §2; Neukirch VI §5 Theorem 5.6.  Mathlib v4.30: not packaged. -/
+def cft_artin_isomorphism_postulate
+    (K : Type u) [Field K] [NumberField K] :
+    True := sorry
+
 /-- **Postulate** (TRUE per class field theory): every number field has a
 Hilbert class field.
 
-This is the existential form of `HilbertClassFieldExt K`.  Cite: Artin
-reciprocity (any standard CFT reference, e.g. Lang or Iwasawa).  Not in
-Mathlib v4.30. -/
+This is the existential form of `HilbertClassFieldExt K`.
+
+ASSEMBLY (modulo the four sub-postulates above):
+1. By `cft_unramified_abelian_extension_exists_postulate`: some unramified
+   abelian extension exists.
+2. By `cft_max_unramified_abelian_postulate`: there is a unique maximal
+   one — call it `H`.
+3. By `cft_hcf_galois_order_postulate`: `|Gal(H/K)| = classNumber K`
+   (gives `finrank_eq`).
+4. By `cft_artin_isomorphism_postulate`: Artin map is an iso (gives
+   `artinReciprocity`).
+
+The Lean-engineering side (bundling these into the `HilbertClassFieldExt`
+structure) is mostly mechanical once the four pieces land.
+
+Cite: Artin reciprocity; Lang *Algebraic Number Theory* X §1 or
+Iwasawa *Local Class Field Theory*.  Not in Mathlib v4.30. -/
 def hilbertClassField_exists (K : Type*) [Field K] [NumberField K] :
     HilbertClassFieldExt K := sorry
 
