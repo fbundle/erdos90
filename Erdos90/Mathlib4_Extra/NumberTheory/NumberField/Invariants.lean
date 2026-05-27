@@ -71,4 +71,19 @@ theorem torsionOrder_rat_eq_two : NumberField.Units.torsionOrder ℚ = 2 :=
   NumberField.Units.torsionOrder_eq_two_of_odd_finrank
     (by simp [Module.finrank_self])
 
+/-- `nrRealPlaces ℚ = 1` (ℚ has the single real archimedean place).
+
+PROVED Lean: combine Mathlib's instance `IsTotallyReal ℚ` with
+`IsTotallyReal.finrank`. -/
+theorem nrRealPlaces_rat_eq_one : NumberField.InfinitePlace.nrRealPlaces ℚ = 1 := by
+  have h := NumberField.IsTotallyReal.finrank (K := ℚ)
+  rw [Module.finrank_self] at h
+  exact h.symm
+
+/-- `nrComplexPlaces ℚ = 0` (ℚ has no complex archimedean places).
+
+PROVED Lean: ℚ is totally real (`IsTotallyReal ℚ` Mathlib instance). -/
+theorem nrComplexPlaces_rat_eq_zero : NumberField.InfinitePlace.nrComplexPlaces ℚ = 0 :=
+  NumberField.IsTotallyReal.nrComplexPlaces_eq_zero ℚ
+
 end NumberField
