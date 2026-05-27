@@ -778,14 +778,36 @@ then follows from Schwartz decay (as in `summable_2d_schwartz_proved`).
 Cite: Stein–Shakarchi Ch. 4 (Fourier preserves Schwartz, multidim version).
 Not in Mathlib v4.30 for `ℝ × ℝ`.
 
-**Attack route**: would follow from a 2-D Schwartz function
-`partial2DSchwartz f : 𝓢(ℝ × ℝ, ℂ)` such that
-`partial2DSchwartz f (m, n) = (partialFourier f n)(m)` (the intermediate
-2-D Fourier as a Schwartz function on ℝ × ℝ).  Constructing this requires
-"partial Fourier preserves Schwartz on ℝ × ℝ" which is not directly in
-Mathlib v4.30 — would need ~150-200 LOC building on `fourier2DSchwartz`
-+ inversion-style arguments per fiber.  Once available, summability
-follows immediately from `summable_2d_schwartz_proved`. -/
+**Attack routes** (now that `partial_fourier_is_Schwartz_proved` and
+its helpers are PROVED):
+
+Route A — Direct bound via IBP + 2-D Schwartz seminorm:
+Apply Mathlib's `pow_mul_norm_iteratedFDeriv_fourier_le` (k=0 case) to
+`g := f.rightPartial m`:
+  `|n|^K · |𝓕(g)(n)| ≤ 2^K · ∑_{p2 ≤ K} ∫ |∂^{p2}_y f(m, y)| dy`.
+For 2-D Schwartz f, `(1+|m|)^L · (1+|y|)^2 · |∂^{p2}_y f(m, y)|` is
+bounded uniformly by a Schwartz seminorm of f (via direction-restricted
+2-D seminorm), giving `(1+|m|)^L · ∫ |∂^{p2}_y f(m, y)| dy ≤ C_L`.
+Combined: `(1+|m|)^L · |n|^K · |partialFourier f n m| ≤ C(L, K, f)`.
+For L, K ≥ 2 (with `(1+|n|)^K` instead of `|n|^K`), summability on
+ℤ × ℤ follows via `summable_of_isBigO` against
+`(m, n) ↦ 1 / ((1+|m|)^2 · (1+|n|)^2)`.
+Lean implementation: ~200 LOC.  Subtle point: extracting the
+y-only-direction seminorm bound from Mathlib's `iteratedFDeriv ℝ k f` on
+ℝ × ℝ requires care (Mathlib's `iteratedFDeriv` is direction-mixed; need
+the specialization to the y unit vector).
+
+Route B — Construct `partial2DSchwartz f : 𝓢(ℝ × ℝ, ℂ)`:
+Need a 2-D Schwartz function with values `partial2DSchwartz f (m, n) =
+(partialFourier f n)(m)`.  Then `summable_2d_schwartz_proved` gives
+summability immediately.  Construction is the hard part — requires a
+"partial Fourier in 2nd variable preserves Schwartz on ℝ × ℝ"
+endomorphism, which isn't a direct Mathlib lemma.  Could be built from
+SchwartzMap.fourierTransformCLM + ad-hoc transport.  ~200-300 LOC.
+
+Both routes need Mathlib infrastructure either not in v4.30 or not in
+the right shape for direct use.  This remains the last sorry in
+PoissonProd.lean as of 2026-05-27 session. -/
 def summable_partialFourier_2d_postulate (f : 𝓢(ℝ × ℝ, ℂ)) :
     Summable (Function.uncurry
       fun m n : ℤ => (partialFourier f n : ℝ → ℂ) m) := sorry
