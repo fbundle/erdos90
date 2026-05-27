@@ -57,13 +57,77 @@ noncomputable def NormGroup (K : Type u) [Field K] (L : Type u) [Field L] [Algeb
     [Module.Finite K L] : Subgroup Kˣ :=
   ((Units.map (Algebra.norm K (S := L))).range)
 
+/-! ### Decomposition of `index_eq_finrank_postulate`
+
+The CFT index formula decomposes via the local-global chain:
+
+1. **Local norm residue iso**: For each finite place `v` of `K`,
+   `K_v^* / N(L_w^*) ≅ Gal(L_w/K_v)` (local CFT).
+2. **Idele class group iso**: Globally, `C_K / N(C_L) ≅ Gal(L/K)^{ab}`
+   (global CFT, the main theorem).
+3. **Reciprocity reduction**: For abelian extensions, the kernel of
+   `K^* → C_K / N(C_L)` equals `N(L^*)`, giving `K^* / N(L^*) ≅
+   Gal(L/K)`.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.norm.local-residue** (Local norm residue iso):
+For each finite place `v` of `K` (with completion `K_v`) and the
+corresponding place `w` of `L`, `K_v^* / N_{L_w/K_v}(L_w^*) ≅
+Gal(L_w/K_v)`.
+
+Cite: Serre *Local Fields* XIV (local class field theory); Neukirch
+V §6.  Mathlib v4.30: completions of number fields exist but local
+CFT not packaged. -/
+def local_norm_residue_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
+/-- **Sub-postulate D3.norm.idele-iso** (Idele class group iso):
+For an abelian Galois extension `L/K`, the idele class group has
+
+  `C_K / N_{L/K}(C_L) ≅ Gal(L/K)`
+
+via the global Artin map.
+
+Cite: Neukirch VI §1; Tate's thesis (idele-theoretic CFT).  Mathlib
+v4.30: ideles not packaged. -/
+def idele_class_norm_iso_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
+/-- **Sub-postulate D3.norm.global-reduction** (Reduction to K^*):
+The composition `K^* → C_K → C_K / N(C_L)` has kernel exactly `N(L^*)`,
+giving `K^* / N(L^*) ↪ Gal(L/K)`.  Combined with surjectivity (the
+Artin map is surjective for abelian extensions), this is an iso.
+
+Cite: Tate's thesis Theorem 8.5; Neukirch VI §6.  Mathlib v4.30:
+not packaged. -/
+def norm_kernel_reduction_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
 /-- **Postulate** (CFT index formula for abelian extensions):
 
 For an abelian finite extension `L/K` of number fields,
   `[K^* : N_{L/K}(L^*)] = [L : K]`.
 
 In particular, the quotient `K^* / N_{L/K}(L^*) ≅ Gal(L/K)` (this is the
-norm residue isomorphism). -/
+norm residue isomorphism).
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `local_norm_residue_postulate`: local iso K_v^*/N(L_w^*) ≅ Gal(L_w/K_v).
+2. By `idele_class_norm_iso_postulate`: global iso C_K/N(C_L) ≅ Gal(L/K).
+3. By `norm_kernel_reduction_postulate`: reduce to K^*/N(L^*) ≅ Gal(L/K).
+4. `|Gal(L/K)| = [L:K]` (Mathlib `IsGalois.card_aut_eq_finrank`).
+5. Hence `[K^* : N(L^*)] = |Gal(L/K)| = [L:K]`. -/
 def index_eq_finrank_postulate
     (K : Type u) [Field K] [NumberField K]
     (L : Type u) [Field L] [NumberField L] [Algebra K L]

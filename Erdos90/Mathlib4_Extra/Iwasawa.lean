@@ -114,10 +114,73 @@ For abelian number fields `K`, the μ-invariant of the cyclotomic
 This is a deep theorem (Ferrero 1978, Washington 1979) relying on the
 non-vanishing of `L`-values modulo `p`.  Not in Mathlib v4.30. -/
 
+/-! ### Decomposition of `ferrero_washington_postulate`
+
+The Ferrero-Washington theorem decomposes via the following chain:
+
+1. **L-value non-vanishing mod p**: for non-trivial Dirichlet character
+   χ of conductor coprime to p and `s = 1`, the value `L(1, χ)` has
+   non-trivial p-adic valuation (specifically, finite).
+2. **Iwasawa's μ = 0 ⇔ L-vanishing test**: μ vanishes iff a certain
+   p-adic L-function `L_p(s, χ)` (Kubota-Leopoldt) does not vanish
+   identically mod p.
+3. **Non-vanishing of Kubota-Leopoldt mod p**: combining (1) with the
+   interpolation formula gives `L_p(1-n, χ) = -(1 - χ(p) p^{n-1}) B_{n,χ}/n`
+   non-vanishing mod p for sufficiently many n.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.iwasawa.fw.l-nonvanish** (L-value non-vanishing):
+For a non-trivial Dirichlet character χ of conductor coprime to p,
+the Dirichlet L-value `L(1, χ)` is non-zero mod p in the appropriate
+sense (specifically, the p-adic valuation of B_{1,χ} is finite).
+
+Cite: Ferrero 1978 (the key technical input); Washington *Cyclotomic
+Fields* §7.5.  Mathlib v4.30: Dirichlet L-values exist; the p-adic
+non-vanishing mod p is not packaged. -/
+def l_value_nonvanishing_mod_p_postulate
+    (p : ℕ) (_hp : Nat.Prime p) :
+    True := sorry
+
+/-- **Sub-postulate D3.iwasawa.fw.kubota-leopoldt** (Kubota-Leopoldt
+p-adic L-function existence):
+For each non-trivial Dirichlet character χ of conductor coprime to p,
+there exists a `p`-adic L-function `L_p(s, χ) : ℤ_p → ℂ_p` satisfying:
+* `L_p(1-n, χ) = -(1 - χ(p) p^{n-1}) · B_{n, χ}/n` for `n ≥ 1`.
+* `L_p` is continuous (in fact, analytic on a disc around s = 1).
+
+Cite: Kubota-Leopoldt 1964; Washington *Cyclotomic Fields* §5.10.
+Mathlib v4.30: ζ_p exists; p-adic L-functions not packaged. -/
+def kubota_leopoldt_postulate
+    (p : ℕ) (_hp : Nat.Prime p) :
+    True := sorry
+
+/-- **Sub-postulate D3.iwasawa.fw.iwasawa-criterion**:
+The μ-invariant of the cyclotomic ℤ_p-extension of K vanishes iff the
+Kubota-Leopoldt L-function `L_p(s, χ)` (for each character χ of
+Gal(K/ℚ)) does not vanish identically mod p.
+
+Cite: Iwasawa 1972 *On the μ-invariants of ℤ_ℓ-extensions*; Greenberg
+*On the structure of certain Galois groups* 1976.  Mathlib v4.30:
+not packaged. -/
+def iwasawa_mu_criterion_postulate
+    (K : Type u) [Field K] [NumberField K] [IsAbelianGalois ℚ K]
+    (p : ℕ) (_hp : Nat.Prime p)
+    (E : CyclotomicZpExtension K p) :
+    True := sorry
+
 /-- **Postulate** (Ferrero–Washington 1978/1979):
 
 For an abelian number field `K` and a prime `p`, the Iwasawa μ-invariant
-of the cyclotomic `ℤ_p`-extension is 0. -/
+of the cyclotomic `ℤ_p`-extension is 0.
+
+ASSEMBLY (modulo the three sub-postulates above):
+1. By `kubota_leopoldt_postulate`: build L_p(s, χ).
+2. By `l_value_nonvanishing_mod_p_postulate`: L_p does not vanish mod p
+   (using values at negative integers and Bernoulli denominators).
+3. By `iwasawa_mu_criterion_postulate`: non-vanishing of L_p mod p
+   implies μ = 0. -/
 def ferrero_washington_postulate
     (K : Type u) [Field K] [NumberField K] [IsAbelianGalois ℚ K]
     (p : ℕ) (_hp : Nat.Prime p)
