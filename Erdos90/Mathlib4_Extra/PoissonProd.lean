@@ -1465,13 +1465,13 @@ Three sub-postulates below.
 -/
 
 /-- **D3.poisson.one-dim** (1D Poisson for Schwartz):
-For `f : 𝓢(ℝ, ℂ)`, `∑_{n ∈ ℤ} f(n) = ∑_{n ∈ ℤ} f̂(n)`.
+For `f : 𝓢(ℝ, ℂ)`, `∑_{n ∈ ℤ} f(n) = ∑_{n ∈ ℤ} f̂(n) · fourier n (x : UnitAddCircle)`.
 
-Mathlib HAS this: `SchwartzMap.tsum_eq_tsum_fourierIntegral` in
-`Mathlib.Analysis.SchwartzSpace.PoissonSummation`.  This postulate is
-just the wrapper to bridge `EuclideanSpace ℝ (Fin 1) ↔ ℝ`. -/
-def tsum_fourier_one_dim_postulate
-    (f : 𝓢(EuclideanSpace ℝ (Fin 1), ℂ)) : True := sorry
+PROVED Lean: direct citation of Mathlib's `SchwartzMap.tsum_eq_tsum_fourier`
+in `Mathlib/Analysis/Fourier/PoissonSummation.lean`. -/
+theorem tsum_fourier_one_dim_postulate (f : 𝓢(ℝ, ℂ)) (x : ℝ) :
+    ∑' n : ℤ, f (x + n) = ∑' n : ℤ, 𝓕 f n * fourier n (x : UnitAddCircle) :=
+  SchwartzMap.tsum_eq_tsum_fourier f x
 
 /-- **D3.poisson.tensor-product** (Tensor product of Schwartz functions
 is Schwartz):
