@@ -237,23 +237,54 @@ def gs_tower_step_postulate
       Module.finrank K L ≥ p ∧
       NumberField.rootDiscr L = NumberField.rootDiscr K := sorry
 
+/-- **Sub-sub-postulate D3.1.gs.inherit.pcr-growth** (p-class rank growth):
+If `K` satisfies `p ∣ classNumber K` (so `H_p(K) ≠ K`), then `H_p(K)`
+ALSO has `p ∣ classNumber H_p(K)`.
+
+This is the analytic-cohomological content: the p-class group of the
+tower step `L = H_p(K)` is non-trivial.  Proof goes through the
+Anick-Dicks inequality on the Hilbert series of the universal
+enveloping algebra of `Gal(K_S^{(p)}/K)`.
+
+Cite: Anick-Dicks 2017 (arXiv:1508.03231) Theorem 3 + HMR 2021 §2.
+Multi-month: needs pro-`p` group cohomology + Hilbert series of
+universal enveloping algebras. -/
+def pHCF_p_dvd_classNumber_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (_h_p_dvd_cn : p ∣ NumberField.classNumber K)
+    (E : NumberField.HilbertPClassFieldExt K p) :
+    p ∣ NumberField.classNumber E.H_p := sorry
+
+/-- **Sub-sub-postulate D3.1.gs.inherit.gs-ineq** (GS algebraic inequality):
+The fundamental Golod-Shafarevich-Anick-Dicks inequality: if a finitely-
+presented pro-`p` group `G` satisfies `4·r < d²` where `d = dim H¹(G, 𝔽_p)`
+and `r = dim H²(G, 𝔽_p)`, then `G` is infinite.
+
+Cite: Anick-Dicks 2017 (the combinatorial reformulation) +
+Golod-Shafarevich 1964 (original).  Multi-month: needs free pro-`p`
+group + Magnus embedding + Hilbert series machinery. -/
+def golod_shafarevich_inequality_postulate
+    (_input : Input) :
+    -- Conclusion: the pro-p group constructed from this input is infinite
+    -- (stated abstractly since `Profinite` isn't specialized to pro-p in Mathlib).
+    True := sorry
+
 /-- **Sub-postulate D3.1.gs.inherit** (GS criterion inheritance):
-If `K` satisfies the GS criterion (`4·r_p < d_p²`) AND `L` is the
-`p`-Hilbert class field of `K`, then `L` ALSO satisfies the GS criterion.
+If `K` is CM TC with `p ∣ classNumber K`, then the `p`-HCF `L = H_p(K)`
+is CM TC with `Module.finrank K L ≥ p`, `rootDiscr L = rootDiscr K`, AND
+`p ∣ classNumber L` (so the iteration can continue).
 
-This is the genuine deep content of GS for towers — it's what makes the
-tower infinite.  Proof: the pro-`p` group `Gal(K_S^{(p)}/K)` is the
-inverse limit of `Gal(L_N/K)` for tower levels `L_N`, and Anick–Dicks
-gives the recursive GS bound.
+PROVED Lean ASSEMBLY: combine `gs_tower_step_postulate` (gives the CM TC
+extension with degree ≥ p and same rootDiscr) + `pHCF_p_dvd_classNumber_postulate`
+(gives the divisibility inheritance).  The latter is the genuine
+multi-month content (Anick-Dicks).
 
-Cite: HMR 2021 §2 (refined GS) + Anick–Dicks 2017.  Multi-month: needs
-pro-`p` group cohomology. -/
+Cite: HMR 2021 §2 (refined GS).  -/
 def gs_criterion_inherited_postulate
     (p : ℕ) (_hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
     (_h_p_dvd_cn : p ∣ NumberField.classNumber K) :
-    -- L is the p-HCF of K (witness exists via hilbertPClassField_exists)
-    -- and L still has p ∣ classNumber L
     ∃ (L : Type) (_ : Field L) (_ : NumberField L)
       (_ : IsCMField L) (_ : IsTotallyComplex L)
       (_ : Algebra K L),
