@@ -627,3 +627,17 @@ theorem odd_thirtyone : Odd (31 : ℕ) := by decide
 theorem odd_thirtyseven : Odd (37 : ℕ) := by decide
 theorem odd_fortyone : Odd (41 : ℕ) := by decide
 theorem odd_fortythree : Odd (43 : ℕ) := by decide
+
+/-! ### Power-of-prime sanity checks -/
+
+/-- `2^2 = 4`. -/
+theorem pow_two_two : (2 : ℕ) ^ 2 = 4 := by decide
+
+/-- `3^2 = 9`. -/
+theorem pow_three_two : (3 : ℕ) ^ 2 = 9 := by decide
+
+/-- `5^3 = 125` (matches |discr ℚ(ζ_5)|). -/
+theorem pow_five_three : (5 : ℕ) ^ 3 = 125 := by decide
+
+/-- `2^10 = 1024`. -/
+theorem pow_two_ten : (2 : ℕ) ^ 10 = 1024 := by decide
