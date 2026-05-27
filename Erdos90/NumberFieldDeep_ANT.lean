@@ -98,6 +98,13 @@ theorem T_set_all_odd (q : ℕ) (hq : q ∈ T_set) : Odd q := by
 theorem T_set_all_prime (q : ℕ) (hq : q ∈ T_set) : q.Prime := by
   fin_cases hq <;> decide
 
+/-- All 22 elements of `S_set` are prime.
+
+Proven via `native_decide` (compiled decidability) since the 22-element
+fin_cases overflows the regular `decide` stack. -/
+theorem S_set_all_prime (q : ℕ) (hq : q ∈ S_set) : q.Prime := by
+  fin_cases hq <;> native_decide
+
 /-- `T_set` and `S_set` overlap on the first 9 odd primes (3, 5, …, 29).
 The remaining elements of `S_set` (47, 71, 79, …) are split primes
 for the cyclotomic / Q tower construction. -/
