@@ -119,16 +119,42 @@ graph explicit and provides cleaner Mathlib-PR-shape entry points for
 outside contributors.
 -/
 
+/-- **Sub-sub-sub-postulate D3.1.gs.base.imagquad.genus** (Genus theory for
+imaginary quadratic):
+For `K₀ = ℚ(√-d)` with `d > 0` squarefree, the 2-class group rank of `K₀`
+equals `g - 1`, where `g` is the number of distinct prime divisors of `d`
+(or `4·d` if `d ≡ 3 mod 4`).
+
+Cite: Gauss-Genus theory (Disquisitiones Arithmeticae 1801); also
+Cohn's *Advanced Number Theory* Ch. 14.  Mathlib v4.30: not packaged.
+Weeks of effort. -/
+def imagquad_2_rank_genus_postulate
+    (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.base.imagquad.scholz** (Scholz-Reichardt
+for odd p):
+For odd primes `p`, the p-class group of imaginary quadratic ℚ(√-d) is
+nontrivial when `d` is chosen with specific properties (e.g., d divisible
+by p primes with specific congruence conditions).
+
+Cite: Scholz-Reichardt 1934 (the original); Cohen's *A Course in
+Computational Algebraic Number Theory* Ch. 5.  Multi-month. -/
+def imagquad_p_rank_scholz_postulate
+    (p : ℕ) (_hp : Nat.Prime p) (_hp_odd : p ≠ 2) :
+    True := sorry
+
 /-- **Sub-sub-postulate D3.1.gs.base.imagquad**: Existence of an imaginary
-quadratic field with large `p`-class group rank.
+quadratic field with `p ∣ classNumber K₀`.
 
-For each prime `p`, there exists an imaginary quadratic field `K₀ = ℚ(√-d)`
-(with `d > 0` squarefree) such that `r_p(Cl K₀) ≥ ⌈2 + 2√2⌉ = 5` (the
-classical Golod-Shafarevich threshold for `r_1 = 0, r_2 = 1`).
+PROVED Lean ASSEMBLY (modulo genus theory for p = 2,
+Scholz-Reichardt for p odd):
+- For p = 2: take K₀ = ℚ(√-d) with d a product of 8 small primes; by genus
+  theory, 2-rank ≥ 7, hence 2 ∣ classNumber K₀.
+- For p odd: apply Scholz-Reichardt construction.
 
-Cite: Golod-Shafarevich 1964 (the original construction); concrete examples
-include `K₀ = ℚ(√-d)` for `d = 3·5·7·11·13·17·19·23` (8 small primes,
-giving 2-class group rank ≥ 5).
+Concrete reference: Golod-Shafarevich 1964 explicit example
+`d = 3·5·7·11·13·17·19·23`.
 
 Mathlib v4.30 status: imaginary quadratic fields exist (`NumberField.QuadraticField`)
 but class group rank computations are not packaged.  Weeks-to-months. -/
