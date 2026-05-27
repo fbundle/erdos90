@@ -832,6 +832,30 @@ theorem HilbertPClassFieldExt.identity_finrank_eq_p_part
   show Module.finrank K K = _
   rw [Module.finrank_self, h, padicValNat.one, pow_zero]
 
+/-- For the identity p-HCF case with totally real `F`, the p-HCF is
+totally real (since H_p = F).
+
+PROVED Lean instance of `pHCF_totally_real_postulate` for the
+trivial-class-number case. -/
+theorem HilbertPClassFieldExt.identity_totally_real
+    (F : Type u) [Field F] [NumberField F]
+    (p : ℕ) (h : NumberField.classNumber F = 1)
+    (h_tot_real : NumberField.InfinitePlace.nrComplexPlaces F = 0) :
+    NumberField.InfinitePlace.nrComplexPlaces
+        (HilbertPClassFieldExt.identity F p h).H_p = 0 := h_tot_real
+
+/-- For the identity HCF case with totally real `F`, the HCF is totally
+real (since H = F).
+
+PROVED Lean instance of `hcf_totally_real_postulate` for the
+trivial-class-number case. -/
+theorem HilbertClassFieldExt.identity_totally_real
+    (F : Type u) [Field F] [NumberField F]
+    (h : NumberField.classNumber F = 1)
+    (h_tot_real : NumberField.InfinitePlace.nrComplexPlaces F = 0) :
+    NumberField.InfinitePlace.nrComplexPlaces
+        (HilbertClassFieldExt.identity F h).H = 0 := h_tot_real
+
 /-- Concrete p-HCF for `ℚ` (any prime p). -/
 noncomputable def HilbertPClassFieldExt.rat (p : ℕ) :
     HilbertPClassFieldExt.{0, 0} ℚ p :=

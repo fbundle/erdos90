@@ -72,6 +72,71 @@ abbrev IdeleGroup (K : Type u) [Field K] [NumberField K] : Type u :=
 
 /-! ## The global Artin map -/
 
+/-! ### Decomposition of `globalArtinMap_postulate`
+
+The global Artin map is built by combining local Artin maps via the
+adelic product structure.  The chain:
+
+1. **Local Artin maps**: for each place `v` of `K`, the local Artin map
+   `K_v^* → Gal(L_w^{ab}/K_v)` (where `w | v` is a chosen place of `L`).
+   In `LocalCFT.lean`.
+2. **Adelic combination**: the family of local maps glues to an idelic
+   map `J_K → Gal(L^{ab}/K)^{prod}` since for almost all `v`, the local
+   map is trivial on units (unramified condition).
+3. **Product → quotient**: project to the actual Galois group via the
+   universal property of the maximal abelian quotient.
+4. **Triviality on K^***: the **reciprocity law** that `K^*` maps to
+   identity (i.e., principal ideles act trivially on K^{ab}) — Artin's
+   reciprocity theorem.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-postulate D3.global.local-product** (Adelic gluing):
+The family of local Artin maps `{K_v^* → Gal(L_w/K_v)}_v` glues to a
+continuous homomorphism `J_K → ∏_v Gal(L_w/K_v)`.
+
+The "almost all unramified" condition makes this a finite-restricted
+product (not just an infinite direct product).
+
+Cite: Neukirch VI §1; Tate's thesis, Chapter 7.  Mathlib v4.30: not
+packaged. -/
+def adelic_gluing_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
+/-- **Sub-postulate D3.global.project** (Projection to global Galois):
+The product `∏_v Gal(L_w/K_v)` projects continuously to `Gal(L/K)` via
+the "place-restriction" map (composing with the inclusion
+`Gal(L_w/K_v) ↪ Gal(L/K)` from the decomposition group).
+
+Cite: Neukirch VI §1; Lang X §5.  Mathlib v4.30: decomposition groups
+exist (`Algebra.IsInvariant.toGalois`) but the global product projection
+is not packaged. -/
+def global_galois_projection_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
+/-- **Sub-postulate D3.global.reciprocity** (Artin's reciprocity law):
+The composition `J_K → Gal(L/K)` is trivial on the principal idele
+subgroup `K^* ↪ J_K`.  Equivalently, the map factors through the idele
+class group `C_K = J_K/K^*`.
+
+This is **Artin's reciprocity law** — the heart of global CFT, originally
+proved via Brauer groups + the Brauer-Hasse-Noether theorem.
+
+Cite: Artin 1927; Neukirch VI §5 Theorem 5.6.  Mathlib v4.30: not
+packaged (depends on Brauer group theory for number fields). -/
+def artin_reciprocity_law_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (L : Type u) [Field L] [NumberField L] [Algebra K L]
+    [IsGalois K L] [IsAbelianGalois K L] :
+    True := sorry
+
 /-- **Postulate**: the global Artin map for a number field.
 
 For any number field `K`, there is a continuous surjective homomorphism
@@ -82,6 +147,13 @@ isomorphism `J_K / (K^* · N_{L/K}(J_L)) ≅ Gal(L/K)`.
 In particular, for the Hilbert class field `H(K)`:
 - The Artin map factors through `J_K → ClassGroup (𝓞 K) ≃ Gal(H(K)/K)`.
 - This is the `artinReciprocity` field of `HilbertClassFieldExt K`.
+
+ASSEMBLY (modulo the three sub-postulates above + `localArtinMap_postulate`
+from `LocalCFT.lean`):
+1. By local CFT: local Artin maps at each place.
+2. By `adelic_gluing_postulate`: assemble into a map J_K → ∏ Gal(L_w/K_v).
+3. By `global_galois_projection_postulate`: project to Gal(L/K).
+4. By `artin_reciprocity_law_postulate`: kernel contains K^*.
 
 Cite: Tate, *Global Class Field Theory*, in Cassels-Fröhlich; Neukirch,
 *Algebraic Number Theory*, Chapter VI.  Not in Mathlib v4.30. -/

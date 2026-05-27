@@ -27,13 +27,9 @@ as of commit `632c0e137c250062615317de8e04ca0364dc1d0d`
 
 - you are an AI, therefore time estimate doesn't make sense. A human (me) works for 6 hours less than an AI works for 5 minutes
 
-- the main theorem must be put in `Erdos90/Main.lean`
+- the main theorem must be put in `Erdos90/Main.lean`, all necessary definitions for the main theorem must be put in `Erdos90/Defs.lean`
 
-- all necessary definitions for the main theorem must be put in `Erdos90/Defs.lean`
-
-- you can find the original paper and chain of thoughts in `assets`
-
-- you can find the git repo of `mathlib4` and `formal-conjectures` in `vendor/`
+- you can find the original paper and chain of thoughts in `assets`, the git repo of `mathlib4` and `formal-conjectures` in `vendor/`, feel free to git pull for latest updates
 
 - if you need any online resource, please let me know - only end your response by either fully proved theorem or help needed
 

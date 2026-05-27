@@ -1,1 +1,1 @@
-/loop if any goal can be closed now, close it, then keep expanding the dependency tree of the main theorem into basic statements and prove them, don worry about the number of sorries, it's about the DEPTH 
+/loop if any goal can be closed now, close it, then keep expanding the dependency tree of the main theorem into basic statements and prove them, don worry about the number of sorries, it's about the DEPTH - before that if CLAUDE.md is too long, trim it
