@@ -1801,6 +1801,170 @@ already provided above (`tsum_2d_schwartz_poisson` and ancillary lemmas)
 is the foundation for Step A.
 -/
 
+/-! ## Step A — 2-D Jacobi theta modular transformation (PROVED via product)
+
+We give a direct proof of the 2-D modular transformation
+  `∑'_(m,n) cexp(-π·a·(m²+n²)) = (1/a) · ∑'_(m,n) cexp(-π·(m²+n²)/a)`
+for `Re(a) > 0`, NOT by going through `tsum_2d_schwartz_poisson` and the
+2-D Gaussian Schwartz construction (which would require building
+`g_t : 𝓢(ℝ × ℝ, ℂ)` from scratch), but instead by the product factorization
+  `cexp(-π·a·(m²+n²)) = cexp(-π·a·m²) · cexp(-π·a·n²)`
+combined with Mathlib's 1-D theta `Complex.tsum_exp_neg_mul_int_sq` applied
+twice and `Summable.tsum_mul_tsum`.
+
+This is much simpler than the Schwartz route for the 2-D case; the Schwartz
+construction is only needed for the d-D generalization (`MultiDimPoisson.lean`).
+-/
+
+/-- IsBigO decay bound for the 1-D Gaussian on `ℤ`:
+`cexp(-π·a·n²) =O[cofinite] |n|^(-2)` for `Re(a) > 0`.
+
+PROVED via Mathlib's `cexp_neg_quadratic_isLittleO_abs_rpow_cocompact`
+composed with `Int.tendsto_coe_cofinite`. -/
+theorem cexp_neg_pi_mul_int_sq_isBigO {a : ℂ} (ha : 0 < a.re) :
+    (fun n : ℤ => Complex.exp (-Real.pi * a * ((n : ℂ)) ^ 2)) =O[Filter.cofinite]
+      (fun n : ℤ => |(n : ℝ)| ^ (-(2 : ℝ))) := by
+  -- Negative real part: (-π·a).re < 0.
+  have h_re_neg : (-Real.pi * a).re < 0 := by
+    rw [Complex.mul_re]
+    have h_re : ((-Real.pi : ℂ)).re = -Real.pi := by push_cast; simp
+    have h_im : ((-Real.pi : ℂ)).im = 0 := by push_cast; simp
+    rw [h_re, h_im]
+    have hpi := Real.pi_pos
+    nlinarith [ha]
+  -- Function on ℝ decays as |x|^(-2).
+  have h_decay : (fun x : ℝ => Complex.exp (-Real.pi * a * (x : ℂ) ^ 2)) =O[Filter.cocompact ℝ]
+      (fun x : ℝ => |x| ^ (-(2 : ℝ))) := by
+    have h_little := cexp_neg_quadratic_isLittleO_abs_rpow_cocompact h_re_neg 0 (-(2 : ℝ))
+    refine h_little.isBigO.congr_left ?_
+    intro x; simp
+  -- Compose with integer inclusion to get cofinite decay on ℤ.
+  have := h_decay.comp_tendsto (Int.tendsto_coe_cofinite)
+  refine this.congr ?_ ?_
+  · intro n; push_cast; rfl
+  · intro n; rfl
+
+theorem summable_cexp_neg_pi_mul_int_sq {a : ℂ} (ha : 0 < a.re) :
+    Summable (fun n : ℤ => Complex.exp (-Real.pi * a * (n : ℂ) ^ 2)) := by
+  have h_abs_summ : Summable (fun n : ℤ => |(n : ℝ)| ^ (-(2 : ℝ))) :=
+    summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2)
+  exact summable_of_isBigO h_abs_summ (cexp_neg_pi_mul_int_sq_isBigO ha)
+
+/-- Absolute summability of the 1-D Gaussian on `ℤ`. -/
+theorem summable_norm_cexp_neg_pi_mul_int_sq {a : ℂ} (ha : 0 < a.re) :
+    Summable (fun n : ℤ => ‖Complex.exp (-Real.pi * a * (n : ℂ) ^ 2)‖) := by
+  have h_abs_summ : Summable (fun n : ℤ => |(n : ℝ)| ^ (-(2 : ℝ))) :=
+    summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2)
+  exact summable_of_isBigO h_abs_summ (cexp_neg_pi_mul_int_sq_isBigO ha).norm_left
+
+/-- Product summability of `(m, n) ↦ cexp(-π·a·m²) · cexp(-π·a·n²)` on `ℤ × ℤ`. -/
+theorem summable_cexp_neg_pi_mul_int_sq_prod {a : ℂ} (ha : 0 < a.re) :
+    Summable (fun p : ℤ × ℤ =>
+      Complex.exp (-Real.pi * a * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi * a * (p.2 : ℂ) ^ 2)) := by
+  -- Use ℝ-valued product summability of norms, then transfer.
+  have h := summable_norm_cexp_neg_pi_mul_int_sq ha
+  have h_prod_norm : Summable (fun p : ℤ × ℤ =>
+      ‖Complex.exp (-Real.pi * a * (p.1 : ℂ) ^ 2)‖ *
+        ‖Complex.exp (-Real.pi * a * (p.2 : ℂ) ^ 2)‖) :=
+    Summable.mul_of_nonneg h h (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)
+  -- Bound ‖f p.1 · g p.2‖ = ‖f p.1‖ · ‖g p.2‖ (equality for ℂ).
+  refine h_prod_norm.of_norm_bounded_eventually (g := fun p : ℤ × ℤ =>
+      ‖Complex.exp (-Real.pi * a * (p.1 : ℂ) ^ 2)‖ *
+        ‖Complex.exp (-Real.pi * a * (p.2 : ℂ) ^ 2)‖) ?_
+  refine Filter.Eventually.of_forall (fun p => ?_)
+  rw [norm_mul]
+
+/-- Factorize the 2-D Gaussian: `cexp(-π·a·(m² + n²)) = cexp(-π·a·m²) · cexp(-π·a·n²)`. -/
+theorem cexp_neg_pi_mul_sum_sq (a : ℂ) (m n : ℂ) :
+    Complex.exp (-Real.pi * a * (m ^ 2 + n ^ 2)) =
+      Complex.exp (-Real.pi * a * m ^ 2) * Complex.exp (-Real.pi * a * n ^ 2) := by
+  rw [← Complex.exp_add]
+  congr 1
+  ring
+
+/-- **2-D Jacobi theta modular transformation** (PROVED):
+For `Re(a) > 0`,
+  `∑' p : ℤ × ℤ, cexp(-π·a·(p.1² + p.2²)) = (1/a) · ∑' p : ℤ × ℤ, cexp(-π·(p.1² + p.2²)/a)`.
+
+Derived from Mathlib's 1-D `Complex.tsum_exp_neg_mul_int_sq` applied twice plus the
+product factorization and `Summable.tsum_mul_tsum`. -/
+theorem tsum_cexp_neg_pi_mul_int_sq_2d {a : ℂ} (ha : 0 < a.re) :
+    (∑' p : ℤ × ℤ, Complex.exp (-Real.pi * a * ((p.1 : ℂ) ^ 2 + (p.2 : ℂ) ^ 2))) =
+      (1 / a) *
+        ∑' p : ℤ × ℤ, Complex.exp (-Real.pi / a * ((p.1 : ℂ) ^ 2 + (p.2 : ℂ) ^ 2)) := by
+  have ha_ne : a ≠ 0 := fun h => by simp [h] at ha
+  -- 1/a has positive real part too
+  have h_inv_re : 0 < (a⁻¹).re := by
+    rw [Complex.inv_re]
+    exact div_pos ha (Complex.normSq_pos.mpr ha_ne)
+  -- Step 1: factorize LHS as product of two 1-D sums.
+  -- ∑' p, cexp(-π·a·(p.1² + p.2²)) = ∑' p, cexp(-π·a·p.1²) · cexp(-π·a·p.2²)
+  --                                = (∑' n, cexp(-π·a·n²)) · (∑' n, cexp(-π·a·n²))
+  have h_summ_a := summable_cexp_neg_pi_mul_int_sq ha
+  have h_summ_a_prod := summable_cexp_neg_pi_mul_int_sq_prod ha
+  have h_factor_LHS_step1 :
+      (∑' p : ℤ × ℤ, Complex.exp (-Real.pi * a * ((p.1 : ℂ) ^ 2 + (p.2 : ℂ) ^ 2))) =
+      ∑' p : ℤ × ℤ,
+        Complex.exp (-Real.pi * a * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi * a * (p.2 : ℂ) ^ 2) := by
+    refine tsum_congr (fun p => ?_)
+    exact cexp_neg_pi_mul_sum_sq a (p.1 : ℂ) (p.2 : ℂ)
+  have h_factor_LHS_step2 :
+      (∑' p : ℤ × ℤ,
+        Complex.exp (-Real.pi * a * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi * a * (p.2 : ℂ) ^ 2)) =
+      (∑' n : ℤ, Complex.exp (-Real.pi * a * (n : ℂ) ^ 2)) *
+      (∑' n : ℤ, Complex.exp (-Real.pi * a * (n : ℂ) ^ 2)) :=
+    (h_summ_a.tsum_mul_tsum h_summ_a h_summ_a_prod).symm
+  rw [h_factor_LHS_step1, h_factor_LHS_step2]
+  -- Step 2: apply 1-D theta to each factor.
+  rw [Complex.tsum_exp_neg_mul_int_sq ha]
+  -- Step 3: factorize RHS similarly.
+  -- First, convert `-Real.pi / a * x²` ↔ `-Real.pi * a⁻¹ * x²` for use in
+  -- summability lemmas.
+  have h_pi_div_eq : ∀ z : ℂ, -Real.pi / a * z = -Real.pi * a⁻¹ * z := by
+    intro z; field_simp
+  have h_summ_inv_a : Summable (fun n : ℤ =>
+      Complex.exp (-Real.pi / a * (n : ℂ) ^ 2)) := by
+    have := summable_cexp_neg_pi_mul_int_sq h_inv_re
+    refine this.congr (fun n => ?_)
+    rw [h_pi_div_eq]
+  have h_summ_inv_a_prod : Summable (fun p : ℤ × ℤ =>
+      Complex.exp (-Real.pi / a * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi / a * (p.2 : ℂ) ^ 2)) := by
+    have := summable_cexp_neg_pi_mul_int_sq_prod h_inv_re
+    refine this.congr (fun p => ?_)
+    rw [h_pi_div_eq ((p.1 : ℂ) ^ 2), h_pi_div_eq ((p.2 : ℂ) ^ 2)]
+  have h_factor_RHS_step1 :
+      (∑' p : ℤ × ℤ,
+        Complex.exp (-Real.pi / a * ((p.1 : ℂ) ^ 2 + (p.2 : ℂ) ^ 2))) =
+      ∑' p : ℤ × ℤ,
+        Complex.exp (-Real.pi / a * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi / a * (p.2 : ℂ) ^ 2) := by
+    refine tsum_congr (fun p => ?_)
+    rw [← Complex.exp_add]
+    congr 1
+    ring
+  have h_factor_RHS_step2 :
+      (∑' p : ℤ × ℤ,
+        Complex.exp (-Real.pi / a * (p.1 : ℂ) ^ 2) *
+        Complex.exp (-Real.pi / a * (p.2 : ℂ) ^ 2)) =
+      (∑' n : ℤ, Complex.exp (-Real.pi / a * (n : ℂ) ^ 2)) *
+      (∑' n : ℤ, Complex.exp (-Real.pi / a * (n : ℂ) ^ 2)) :=
+    (h_summ_inv_a.tsum_mul_tsum h_summ_inv_a h_summ_inv_a_prod).symm
+  rw [h_factor_RHS_step1, h_factor_RHS_step2]
+  -- Step 4: algebraic simplification.
+  -- Goal: (1/a^(1/2) · S) · (1/a^(1/2) · S) = (1/a) · (S · S)
+  -- where S = ∑' cexp(-π/a · n²).
+  set S : ℂ := ∑' n : ℤ, Complex.exp (-Real.pi / a * (n : ℂ) ^ 2) with hS_def
+  have h_sqrt_sq : a ^ (1 / 2 : ℂ) * a ^ (1 / 2 : ℂ) = a := by
+    rw [← Complex.cpow_add _ _ ha_ne]
+    rw [show (1 / 2 + 1 / 2 : ℂ) = 1 from by ring, Complex.cpow_one]
+  calc (1 / a ^ (1 / 2 : ℂ) * S) * (1 / a ^ (1 / 2 : ℂ) * S)
+      = (1 / (a ^ (1 / 2 : ℂ) * a ^ (1 / 2 : ℂ))) * (S * S) := by ring
+    _ = (1 / a) * (S * S) := by rw [h_sqrt_sq]
+
 /-! ## Schwartz seminorm bound on partial Schwartz
 
 The `rightPartial` of a 2-D Schwartz function has Schwartz seminorms
