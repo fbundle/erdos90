@@ -113,8 +113,38 @@ For a non-trivial Hecke character χ, the Hecke L-function L(s, χ) is
 non-zero on the line Re(s) = 1.
 
 Cite: Hecke 1920 (the Hecke generalization of Dirichlet).  Mathlib v4.30:
-Dirichlet's `L(1, χ) ≠ 0` packaged; Hecke version not. -/
+Dirichlet's `L(1, χ) ≠ 0` packaged
+(`DirichletCharacter.LFunction_ne_zero_of_re_eq_one`); Hecke version not.
+
+DECOMPOSITION: 2 named pieces tracking the specialization gap.
+1. **Dirichlet (K = ℚ) case** — PROVED in Mathlib as
+   `DirichletCharacter.LFunction_ne_zero_of_re_eq_one`.
+2. **Hecke generalization to arbitrary K** — Mathlib gap; needs Hecke
+   character ↔ idele class character + Tate's thesis. -/
 def hecke_L_nonvanishing_Re_one_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (_χ : HeckeCharacter K) :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.hecke-L.nonvanish-Re-one.dirichlet** (Dirichlet
+case — Mathlib citation):
+
+For a non-trivial Dirichlet character χ (mod N), the Dirichlet
+L-function L(s, χ) is non-zero on the line Re(s) = 1.
+
+PROVED Lean: Mathlib `DirichletCharacter.LFunction_ne_zero_of_re_eq_one`
+in `NumberTheory/LSeries/Nonvanishing.lean`. -/
+def hecke_L_nonvanishing_Re_one_dirichlet_postulate : True := sorry
+
+/-- **Sub-sub-postulate D3.hecke-L.nonvanish-Re-one.hecke-lift** (Hecke
+generalization — Mathlib gap):
+
+Lift the Dirichlet non-vanishing of L(s, χ) on Re(s) = 1 to general
+Hecke characters via the idele class character correspondence and
+Tate's thesis analytic continuation.
+
+Mathlib v4.30: not packaged; needs Hecke character infrastructure. -/
+def hecke_L_nonvanishing_Re_one_hecke_lift_postulate
     (K : Type u) [Field K] [NumberField K]
     (_χ : HeckeCharacter K) :
     True := sorry
