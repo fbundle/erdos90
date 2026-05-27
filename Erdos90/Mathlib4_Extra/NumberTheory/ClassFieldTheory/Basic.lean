@@ -1584,6 +1584,21 @@ theorem cyclotomic_five_isSeparable
     Algebra.IsSeparable ℚ K :=
   IsCyclotomicExtension.isSeparable {5} ℚ K
 
+/-- `ℚ(ζ_3)/ℚ` is an abelian Galois extension.
+
+PROVED Lean: direct citation of Mathlib's
+`IsCyclotomicExtension.isAbelianGalois`. -/
+theorem cyclotomic_three_isAbelianGalois
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    IsAbelianGalois ℚ K :=
+  IsCyclotomicExtension.isAbelianGalois {3} ℚ K
+
+/-- `ℚ(ζ_5)/ℚ` is an abelian Galois extension. -/
+theorem cyclotomic_five_isAbelianGalois
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    IsAbelianGalois ℚ K :=
+  IsCyclotomicExtension.isAbelianGalois {5} ℚ K
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
