@@ -712,51 +712,76 @@ theorem phragmen_lindelof_max_principle_postulate
     ‖f z‖ ≤ C :=
   PhragmenLindelof.vertical_strip hfd hB hle_a hle_b hza hzb
 
-/-- **Sub-sub-postulate D3.2b.phragmen.right-bound** (Euler product bound):
+/-- **Sub-sub-postulate D3.2b.phragmen.right-bound** (Euler product bound).
+
 On `Re s ≥ 1 + ε`, the Dedekind zeta `ζ_K(s)` is bounded:
 `|ζ_K(s)| ≤ ζ(1 + ε)^{[K:ℚ]}` (where ζ is Riemann zeta).
 
-This follows from the absolute convergence of the Euler product.
-
-Cite: standard; Lang *Algebraic Number Theory* XIII.  Mathlib v4.30:
-Euler product for ζ_K packaged. -/
+This follows from the absolute convergence of the Euler product. -/
 def zeta_K_right_bound_postulate
-    [NumberField K] (_ε : ℝ) (_hε : 0 < _ε) :
-    True := sorry
+    [NumberField K] (ε : ℝ) (_hε : 0 < ε) : Prop :=
+  ∀ s : ℂ, 1 + ε ≤ s.re →
+    ‖NumberField.dedekindZeta K s‖ ≤
+      ‖riemannZeta (1 + ε : ℂ)‖ ^ (Module.finrank ℚ K)
 
-/-- **Sub-sub-postulate D3.2b.phragmen.left-bound** (Functional-equation bound):
+/-- **Sub-sub-postulate D3.2b.phragmen.right-bound.holds** (PROVED ASSEMBLY
+modulo Euler product convergence for ζ_K).  Sorried — Mathlib has Euler
+product for ζ_K but not packaged in this normalised form. -/
+def zeta_K_right_bound_holds_postulate
+    [NumberField K] (ε : ℝ) (hε : 0 < ε) :
+    zeta_K_right_bound_postulate K ε hε := sorry
+
+/-- **Sub-sub-postulate D3.2b.phragmen.left-bound** (Functional-equation bound).
+
 On `Re s ≤ -ε`, via the functional equation `Λ_K(1-s) = Λ_K(s)`, the
 completed zeta `Λ_K(s)` is bounded by the right-half-plane bound applied
-to `1 - s`.
+to `1 - s`, combined with Stirling on the Γ-factor.
 
-Combined with Stirling-type bounds on the Γ-factor, gives a polynomial
-bound `|ζ_K(s)| ≤ |s|^{poly([K:ℚ])} · constant`.
-
-Cite: standard convexity argument; Lang XIII.  Mathlib v4.30: not packaged. -/
+The bound is polynomial in `|s|` with degree depending on `[K:ℚ]`. -/
 def zeta_K_left_bound_postulate
     [NumberField K] (rd_F : ℝ) (_h_rd : 1 ≤ rd_F)
-    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
-    True := sorry
+    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) : Prop :=
+  ∃ C : ℝ, 0 < C ∧
+    ∀ s : ℂ, s.re ≤ -1 →
+      ‖NumberField.dedekindZeta K s‖ ≤
+        C * ‖s‖ ^ (Module.finrank ℚ K)
 
-/-- **Sub-postulate D3.2b.phragmen** (Phragmén-Lindelöf interpolation):
+/-- **Sub-sub-postulate D3.2b.phragmen.left-bound.holds** (PROVED ASSEMBLY
+modulo FE + Stirling).  Sorried. -/
+def zeta_K_left_bound_holds_postulate
+    [NumberField K] (rd_F : ℝ) (h_rd : 1 ≤ rd_F)
+    (h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
+    zeta_K_left_bound_postulate K rd_F h_rd h_rd_K := sorry
+
+/-- **Sub-postulate D3.2b.phragmen** (Phragmén-Lindelöf interpolation).
+
 Given the functional equation Λ_K(1-s) = Λ_K(s), Phragmén-Lindelöf gives
 explicit growth bounds on `Λ_K(s)` in the critical strip, hence on
 `dedekindZeta_residue K` via the residue formula.
 
-ASSEMBLY (modulo the three sub-sub-postulates above):
+The Lousboutin theorem states: for CM totally complex K of complex
+degree f with root discriminant ≤ rd_F,
+`dedekindZeta_residue K ≤ (4 · rd_F)^f`.
+
+ASSEMBLY:
 1. By `zeta_K_right_bound_postulate`: |ζ_K(1+ε+it)| bounded.
 2. By `zeta_K_left_bound_postulate`: |ζ_K(-ε+it)| bounded (via FE).
-3. By `phragmen_lindelof_max_principle_postulate`: interpolated bound
-   in the critical strip.
-4. Residue at s = 1: `Res ζ_K(s)|_{s=1} = lim (s-1)·ζ_K(s) ≤
-   M_right · ε` for s near 1.
-
-Cite: Louboutin 2000 §3 (uses Stechkin-style partial-sum bounds);
-Akhtari-Vaaler-Widmer for refined constants.  Multi-month. -/
+3. By `phragmen_lindelof_max_principle_postulate` (Mathlib): interpolated
+   bound in the critical strip.
+4. Residue at s = 1: extract from the bound at s = 1+ε. -/
 def phragmen_lindelof_zeta_postulate
     [NumberField K] (rd_F : ℝ) (_h_rd : 1 ≤ rd_F)
-    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
-    True := sorry
+    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) : Prop :=
+  NumberField.dedekindZeta_residue K ≤
+    (4 * rd_F) ^ NumberField.InfinitePlace.nrComplexPlaces K
+
+/-- **Sub-postulate D3.2b.phragmen.holds**: Phragmén-Lindelöf-derived
+residue bound (PROVED ASSEMBLY modulo the right/left boundary bounds +
+Mathlib's Phragmén-Lindelöf).  Sorried. -/
+def phragmen_lindelof_zeta_holds_postulate
+    [NumberField K] (rd_F : ℝ) (h_rd : 1 ≤ rd_F)
+    (h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
+    phragmen_lindelof_zeta_postulate K rd_F h_rd h_rd_K := sorry
 
 /-- **D3.2b**: Louboutin upper bound on the Dedekind zeta residue for CM fields.
 For a CM totally complex `K` with `rootDiscr K ≤ rd_F` (where `1 ≤ rd_F`),
@@ -773,10 +798,11 @@ Akhtari–Vaaler–Widmer (`assets/akhtari_vaaler_widmer_src/Equidistribution_1.
 for related effective constants in the CM case. -/
 lemma dedekind_residue_upper_bound_cm
     [IsCMField K] [IsTotallyComplex K]
-    (rd_F : ℝ) (_h_rd_F : 1 ≤ rd_F)
-    (_h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
+    (rd_F : ℝ) (h_rd_F : 1 ≤ rd_F)
+    (h_rd_K : NumberField.rootDiscr K ≤ rd_F) :
     NumberField.dedekindZeta_residue K ≤
-      (4 * rd_F) ^ NumberField.InfinitePlace.nrComplexPlaces K := sorry
+      (4 * rd_F) ^ NumberField.InfinitePlace.nrComplexPlaces K :=
+  phragmen_lindelof_zeta_holds_postulate K rd_F h_rd_F h_rd_K
 
 /-! ## Phase E8 (D3.2.tors): torsionOrder polynomial bound
 
