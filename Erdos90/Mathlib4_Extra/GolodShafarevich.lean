@@ -294,15 +294,28 @@ multi-month content (Anick-Dicks).
 
 Cite: HMR 2021 §2 (refined GS).  -/
 def gs_criterion_inherited_postulate
-    (p : ℕ) (_hp : Nat.Prime p)
+    (p : ℕ) (hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
-    (_h_p_dvd_cn : p ∣ NumberField.classNumber K) :
+    (h_p_dvd_cn : p ∣ NumberField.classNumber K) :
     ∃ (L : Type) (_ : Field L) (_ : NumberField L)
       (_ : IsCMField L) (_ : IsTotallyComplex L)
       (_ : Algebra K L),
       Module.finrank K L ≥ p ∧
       NumberField.rootDiscr L = NumberField.rootDiscr K ∧
-      p ∣ NumberField.classNumber L := sorry
+      p ∣ NumberField.classNumber L := by
+  let E : NumberField.HilbertPClassFieldExt.{0, 0} K p :=
+    NumberField.hilbertPClassField_exists K p hp
+  letI : Field E.H_p := E.fieldH_p
+  letI : NumberField E.H_p := E.numberFieldH_p
+  letI : Algebra K E.H_p := E.algebraKH_p
+  letI : IsCMField E.H_p := pHCF_isCMField_postulate p hp K E
+  letI : IsTotallyComplex E.H_p :=
+    NumberField.HilbertPClassFieldExt.isTotallyComplex K p E
+  refine ⟨E.H_p, inferInstance, inferInstance, inferInstance, inferInstance,
+          inferInstance, ?_, ?_, ?_⟩
+  · exact pHCF_degree_pos_postulate p hp K h_p_dvd_cn E
+  · exact NumberField.rootDiscr_pHCF_eq K p E
+  · exact pHCF_p_dvd_classNumber_postulate p hp K h_p_dvd_cn E
 
 /-- **Sub-postulate D3.1.gs.iterate** (iterated tower):
 Given the base field with `p ∣ classNumber K`, the iteration produces a
