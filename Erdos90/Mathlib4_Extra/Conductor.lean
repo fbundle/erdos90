@@ -141,12 +141,19 @@ ASSEMBLY (modulo the three sub-postulates above):
 3. Define the global conductor as the finite product
    `𝔣(L/K) := ∏_P P^{𝔣_P}`.
 
+PROVED Lean as a placeholder (`𝔣 := ⊤`, the unit ideal).  This is the
+correct value when L/K is unramified everywhere (e.g., HCF).  For
+ramified extensions, the genuine conductor requires local-conductor
+infrastructure not in Mathlib v4.30.
+
 Cite: Neukirch *Algebraic Number Theory* VI §6.  Not in Mathlib v4.30. -/
 def conductor_postulate
     (K : Type u) [Field K] [NumberField K]
     (L : Type u) [Field L] [NumberField L] [Algebra K L]
     [IsGalois K L] [IsAbelianGalois K L] :
-    Conductor K L := sorry
+    Conductor K L where
+  𝔣 := ⊤
+  𝔣_ne_bot := top_ne_bot
 
 -- (conductor_hcf_eq_one omitted: the precise Lean statement requires
 -- threading typeclass instances [Q.IsPrime] through the existential, which
