@@ -211,3 +211,11 @@ PROVED Lean: direct citation of Mathlib's `Nat.totient_two_mul_of_even`. -/
 theorem totient_two_mul_of_even_eq {n : ℕ} (hn : Even n) :
     Nat.totient (2 * n) = 2 * Nat.totient n :=
   Nat.totient_two_mul_of_even hn
+
+/-- **Totient is positive for positive n**: `0 < φ(n)` if `0 < n`. -/
+theorem totient_pos {n : ℕ} (hn : 0 < n) : 0 < Nat.totient n :=
+  Nat.totient_pos.mpr hn
+
+/-- **Totient is at most n−1 for prime n** — and equality iff n is prime. -/
+theorem totient_lt_self {n : ℕ} (h : 2 ≤ n) : Nat.totient n < n :=
+  Nat.totient_lt n h
