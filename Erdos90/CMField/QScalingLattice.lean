@@ -50,6 +50,7 @@ noncomputable def qScaledCMMinkowskiLattice (f : ℕ)
     AddSubgroup (Fin f → ℂ) :=
   (Submodule.span ℤ (Set.range (qScaledTransportedBasis K f hf Q hQ))).toAddSubgroup
 
+omit [IsCMField K] in
 /-- Membership in the scaled lattice: `v` is in `qScaledCMMinkowskiLattice` iff
 `v = Q⁻² • Φ(a)` for some `a ∈ 𝓞 K`. -/
 lemma mem_qScaledCMMinkowskiLattice_iff (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f)
@@ -105,6 +106,7 @@ lemma mem_qScaledCMMinkowskiLattice_iff (f : ℕ) (hf : InfinitePlace.nrComplexP
       push_cast; ring
     rw [hreal2, ha]
 
+omit [IsCMField K] in
 /-- The Q²-scaled lattice is countable. -/
 lemma qScaledCMMinkowskiLattice_countable (f : ℕ)
     (hf : InfinitePlace.nrComplexPlaces K = f) (Q : ℕ) (hQ : Q > 0) :
@@ -119,6 +121,7 @@ noncomputable def qScaledFundamentalDomain (f : ℕ)
     Set (Fin f → ℂ) :=
   ZSpan.fundamentalDomain (qScaledTransportedBasis K f hf Q hQ)
 
+omit [IsCMField K] in
 lemma qScaledIsAddFundamentalDomain (f : ℕ)
     (hf : InfinitePlace.nrComplexPlaces K = f) (Q : ℕ) (hQ : Q > 0) :
     IsAddFundamentalDomain (qScaledCMMinkowskiLattice K f hf Q hQ)
@@ -126,12 +129,14 @@ lemma qScaledIsAddFundamentalDomain (f : ℕ)
   dsimp [qScaledCMMinkowskiLattice, qScaledFundamentalDomain]
   exact ZSpan.isAddFundamentalDomain' (qScaledTransportedBasis K f hf Q hQ) volume
 
+omit [IsCMField K] in
 lemma qScaledFundamentalDomain_bounded (f : ℕ)
     (hf : InfinitePlace.nrComplexPlaces K = f) (Q : ℕ) (hQ : Q > 0) :
     Bornology.IsBounded (qScaledFundamentalDomain K f hf Q hQ) := by
   dsimp [qScaledFundamentalDomain]
   exact ZSpan.fundamentalDomain_isBounded _
 
+omit [IsCMField K] in
 lemma qScaledFundamentalDomain_volume_lt_top (f : ℕ)
     (hf : InfinitePlace.nrComplexPlaces K = f) (Q : ℕ) (hQ : Q > 0) :
     volume (qScaledFundamentalDomain K f hf Q hQ) < ∞ := by
@@ -145,6 +150,7 @@ lemma qScaledFundamentalDomain_volume_lt_top (f : ℕ)
   haveI : ProperSpace (Fin f → ℂ) := FiniteDimensional.proper ℝ (Fin f → ℂ)
   exact measure_closedBall_lt_top
 
+omit [IsCMField K] in
 lemma qScaledFundamentalDomain_volume_pos (f : ℕ)
     (hf : InfinitePlace.nrComplexPlaces K = f) (Q : ℕ) (hQ : Q > 0) :
     volume (qScaledFundamentalDomain K f hf Q hQ) > 0 := by
@@ -154,6 +160,7 @@ lemma qScaledFundamentalDomain_volume_pos (f : ℕ)
       (μ := volume)
   exact pos_iff_ne_zero.mpr h_ne_zero
 
+omit [IsCMField K] in
 /-- Separation for the Q²-scaled lattice: every nonzero element has some coordinate
 of modulus ≥ Q⁻². -/
 lemma qScaledLattice_separation (f : ℕ) (hf1 : f ≥ 1)
@@ -188,7 +195,6 @@ lemma qScaledLattice_separation (f : ℕ) (hf1 : f ≥ 1)
   rw [Pi.smul_apply, smul_eq_mul, norm_mul]
   have h_norm_inv : ‖((Q : ℂ)^2)⁻¹‖ = ((Q : ℝ)^2)⁻¹ := by
     rw [norm_inv]
-    push_cast
     simp
   rw [h_norm_inv]
   have hQ_inv_sq_pos : (0 : ℝ) < ((Q : ℝ)^2)⁻¹ := by
@@ -201,6 +207,7 @@ lemma qScaledLattice_separation (f : ℕ) (hf1 : f ≥ 1)
         apply mul_le_mul_of_nonneg_left hi_one (le_of_lt hQ_inv_sq_pos)
     _ = ((Q : ℝ)^2)⁻¹ := by ring
 
+omit [IsCMField K] in
 /-- Projection injectivity for the Q²-scaled lattice: a lattice vector that
 vanishes at the first coordinate is zero. -/
 lemma qScaledLattice_first_coord_injective (f : ℕ) (hf1 : f ≥ 1)
