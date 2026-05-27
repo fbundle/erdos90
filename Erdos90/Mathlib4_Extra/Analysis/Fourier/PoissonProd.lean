@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Khanh Nguyen
 -/
 import Mathlib
-import Erdos90.Mathlib4_Extra.SeparablePoisson2D
+import Erdos90.Mathlib4_Extra.Analysis.Fourier.SeparablePoisson2D
 
 /-!
 # Multi-dimensional Schwartz Poisson summation — statement + partial PROVED pieces

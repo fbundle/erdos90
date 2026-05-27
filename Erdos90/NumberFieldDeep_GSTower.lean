@@ -5,8 +5,8 @@ import Erdos90.NumberFieldDeep_CM
 import Erdos90.CMField.CyclotomicSplitPrimes
 import Erdos90.CMField.QScaling
 import Erdos90.CMField.QScalingLattice
-import Erdos90.Mathlib4_Extra.ClassNumberBound
-import Erdos90.Mathlib4_Extra.GolodShafarevich
+import Erdos90.Mathlib4_Extra.NumberTheory.NumberField.ClassNumberBound
+import Erdos90.Mathlib4_Extra.NumberTheory.GolodShafarevich
 
 open Real Filter NumberField InfinitePlace Set MeasureTheory MeasureTheory.Measure
 open scoped ENNReal NNReal Topology Complex Pointwise BigOperators
@@ -131,7 +131,7 @@ Cite:
 - Standard CM lift (tensor with `ℚ(i)` over the totally real subfield).
 
 PROVED (Phase D5+, 2026-05-27) Lean code via `gs_unramified_tower_with_bounded_rd`
-from `Erdos90.Mathlib4_Extra.GolodShafarevich`, which in turn uses the labelled
+from `Erdos90.Mathlib4_Extra.NumberTheory.GolodShafarevich`, which in turn uses the labelled
 postulate `gs_cm_tower_infinite_postulate`.  The structural decomposition shifts
 the Mathlib gap from this monolithic `gs_cm_tower` to the more clearly-shaped
 `gs_cm_tower_infinite_postulate` (which states what GS+CFT collectively give). -/
@@ -145,7 +145,7 @@ def gs_cm_tower (ℓ : ℕ) (hℓ : ℓ ≥ 2) :
           (_ : InfinitePlace.nrRealPlaces K = 0),
           NumberField.rootDiscr K ≤ rd_F := by
   -- Use the labelled postulate gs_unramified_tower_with_bounded_rd
-  -- (in Erdos90.Mathlib4_Extra.GolodShafarevich) which fixes rd_F = ℓ.
+  -- (in Erdos90.Mathlib4_Extra.NumberTheory.GolodShafarevich) which fixes rd_F = ℓ.
   have htower :=
     NumberField.gs_unramified_tower_with_bounded_rd 2 Nat.prime_two ℓ hℓ
   refine ⟨(ℓ : ℝ), ?_, ?_, ?_⟩

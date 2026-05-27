@@ -1,6 +1,6 @@
 import Mathlib
 import Erdos90.CMField.Basic
-import Erdos90.Mathlib4_Extra.FractionalIdealCount
+import Erdos90.Mathlib4_Extra.RingTheory.FractionalIdeal.Count
 
 open NumberField FractionalIdeal IsDedekindDomain
 open scoped nonZeroDivisors
@@ -73,7 +73,7 @@ private lemma spanSingleton_yval_eq {m : ℕ} (sp : SplitPrimeData K m)
   rw [FractionalIdeal.spanSingleton_mul_spanSingleton,
       FractionalIdeal.spanSingleton_mul_spanSingleton]
 
--- Membership characterizations are now in `Erdos90.Mathlib4_Extra.FractionalIdealCount`.
+-- Membership characterizations are now in `Erdos90.Mathlib4_Extra.RingTheory.FractionalIdeal.Count`.
 
 /-- **Q²-scaling integrality lemma.** Suppose `K` is a CM field with split prime
 data `sp : SplitPrimeData K m`. If `α ∈ K^×` satisfies the fractional-ideal

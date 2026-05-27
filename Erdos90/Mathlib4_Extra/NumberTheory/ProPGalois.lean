@@ -3,8 +3,8 @@ Copyright (c) 2026 Khanh Nguyen. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Khanh Nguyen
 -/
-import Erdos90.Mathlib4_Extra.GolodShafarevich
-import Erdos90.Mathlib4_Extra.RayClassField
+import Erdos90.Mathlib4_Extra.NumberTheory.GolodShafarevich
+import Erdos90.Mathlib4_Extra.NumberTheory.ClassFieldTheory.RayClassField
 
 /-!
 # Pro-`p` Galois groups — Mathlib-PR-shape stub

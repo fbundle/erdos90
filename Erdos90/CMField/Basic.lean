@@ -1,5 +1,5 @@
 import Mathlib
-import Erdos90.Mathlib4_Extra.FractionalIdealRingEquiv
+import Erdos90.Mathlib4_Extra.RingTheory.FractionalIdeal.RingEquiv
 
 open Real Set NumberField Function
 open scoped Complex Pointwise nonZeroDivisors
@@ -88,7 +88,7 @@ variable (K : Type*) [Field K] [NumberField K]
 /-- `ringEquivOfRingEquiv` applied to a coefficient ideal equals
     `(Ideal.map c I : FractionalIdeal ...)`.
     Backwards-compatibility shim; the canonical version lives in
-    `Erdos90.Mathlib4_Extra.FractionalIdealCount`. -/
+    `Erdos90.Mathlib4_Extra.RingTheory.FractionalIdeal.Count`. -/
 lemma ringEquivOfRingEquiv_coeIdeal (c : (𝓞 K) ≃+* (𝓞 K)) (I : Ideal (𝓞 K)) :
     FractionalIdeal.ringEquivOfRingEquiv K K c (I : FractionalIdeal (𝓞 K)⁰ K) =
     (Ideal.map (c : (𝓞 K) →+* (𝓞 K)) I : FractionalIdeal (𝓞 K)⁰ K) :=

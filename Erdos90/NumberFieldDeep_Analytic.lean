@@ -1,5 +1,5 @@
 import Mathlib
-import Erdos90.Mathlib4_Extra.Analytic
+import Erdos90.Mathlib4_Extra.Analysis.Analytic
 
 open Real
 
@@ -13,7 +13,7 @@ and the class-group pigeonhole bound (§5).  All proved; no sorries.
 
 The three core lemmas (`log_two_mul_le`, `exp_sub_mul_eq_rpow_div_exp`,
 `card_ratio_ineq`) are Mathlib candidates and now live in
-`Erdos90.Mathlib4_Extra.Analytic`.  This file re-exports them at the top
+`Erdos90.Mathlib4_Extra.Analysis.Analytic`.  This file re-exports them at the top
 level for backwards compatibility with existing call sites.
 -/
 

@@ -3,7 +3,7 @@ Copyright (c) 2026 Khanh Nguyen. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Khanh Nguyen
 -/
-import Erdos90.Mathlib4_Extra.LocalCFT
+import Erdos90.Mathlib4_Extra.NumberTheory.ClassFieldTheory.LocalCFT
 
 /-!
 # Reciprocity laws — Mathlib-PR-shape stub

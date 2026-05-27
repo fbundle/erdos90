@@ -94,17 +94,54 @@ These files contain decomposition/scaffolding for the broader CFT landscape but 
 
 `brd_tower_data` → `brd_cm_tower_postulate` (PROVED body) → `gs_tower_levels` → `GSTowerData.getTowerLevel` → `prop_3_2_to_3_6_via_deep` → `exists_admissible_family` → `erdos_unit_distance_false`
 
-### Postulate layout in `Mathlib4_Extra/`
+### Postulate layout in `Mathlib4_Extra/` (mirrors Mathlib directory structure)
 
-- `GolodShafarevich.lean` — GS criterion + decomposed sub-postulates (genus theory, Scholz-Reichardt, CM-lift, p-HCF degree/CM/iso/descent, GS inequality, iteration, base-field).
-- `ClassFieldTheory.lean` — HCF + p-HCF structures with Artin reciprocity + `hilbertClassField_exists`/`hilbertPClassField_exists` postulates + proved corollaries (`rootDiscr_hcf_eq`, `card_gal_hcf_eq_classNumber`, `isTotallyComplex`).
-- `RayClassField.lean` — `MaxProPExt`, `RayClassField` structures (HMR's S-restricted setting).
-- `Chebotarev.lean` — Chebotarev density + Ihara split-primes postulates.
-- `UnramifiedDiscriminant.lean` — `rootDiscr_eq_of_unramifiedTower` (PROVED), tower discriminant formula (PROVED).
-- `ClassNumberBound.lean` — Brauer–Siegel chain (E1–E12): `classNumber_le_card_ideals_of_norm_le_minkowski` (proved), `minkBound_le_pow_rootDiscr` (proved), `classNumber_eq_residue_formula` (proved), `regulator_lower_bound_cm` (proved modulo Friedman), `dedekind_residue_upper_bound_cm` (sorry, decomposed into FE + Phragmén-Lindelöf), `torsionOrder_bound` (proved), `nat_le_four_mul_totient_sq` (partially proved).
-- `DedekindZetaFE.lean` — Dedekind ζ functional equation infrastructure (in progress).
-- `NumberFieldTheta.lean`, `HeckeCharacters.lean`, `LocalCFT.lean`, `GlobalCFT.lean`, `Conductor.lean`, `NormGroup.lean`, `Iwasawa.lean`, `LubinTate.lean`, `ProPGalois.lean`, `BrauerGroup.lean`, `HilbertSymbol.lean`, `StarkConjectures.lean`, `Stickelberger.lean`, `ReciprocityLaws.lean`, `TameRamification.lean`, `SelmerGroup.lean` — assorted CFT/L-function stubs for the dependency tree.
-- `Analytic.lean`, `FractionalIdealCount.lean`, `FractionalIdealRingEquiv.lean`, `SeparablePoisson2D.lean`, `PoissonProd.lean` — Mathlib-candidate lemmas, all proved (modulo specific PoissonProd sorries).
+```
+Erdos90/Mathlib4_Extra/
+├── Analysis/
+│   ├── Analytic.lean
+│   └── Fourier/
+│       ├── PoissonProd.lean
+│       ├── SeparablePoisson2D.lean
+│       └── MultiDimPoisson.lean
+├── NumberTheory/
+│   ├── Chebotarev.lean
+│   ├── GolodShafarevich.lean
+│   ├── ProPGalois.lean
+│   ├── ClassFieldTheory/
+│   │   ├── Basic.lean            (HilbertClassFieldExt + HilbertPClassFieldExt)
+│   │   ├── LocalCFT.lean
+│   │   ├── GlobalCFT.lean
+│   │   ├── RayClassField.lean    (MaxProPExt, HMR's S-restricted)
+│   │   ├── Conductor.lean
+│   │   ├── NormGroup.lean
+│   │   ├── HilbertSymbol.lean
+│   │   ├── LubinTate.lean
+│   │   ├── ReciprocityLaws.lean
+│   │   ├── HCFFrobenius.lean
+│   │   └── BrauerGroup.lean
+│   ├── Cyclotomic/
+│   │   ├── Iwasawa.lean
+│   │   └── Stickelberger.lean
+│   ├── LSeries/
+│   │   ├── DedekindZetaFE.lean
+│   │   ├── HeckeCharacters.lean
+│   │   └── StarkConjectures.lean
+│   └── NumberField/
+│       ├── ClassNumberBound.lean (Brauer-Siegel chain E1-E13)
+│       ├── Invariants.lean
+│       ├── Theta.lean
+│       └── Discriminant/
+│           ├── UnramifiedDiscriminant.lean  (rootDiscr_eq_of_unramifiedTower PROVED)
+│           └── TameRamification.lean
+├── RingTheory/
+│   └── FractionalIdeal/
+│       ├── Count.lean
+│       └── RingEquiv.lean
+└── RepresentationTheory/
+    ├── GaloisCohomology.lean
+    └── SelmerGroup.lean
+```
 
 ## Important types and notations
 
