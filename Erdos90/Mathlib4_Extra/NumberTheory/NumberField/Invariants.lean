@@ -161,3 +161,10 @@ theorem cyclotomic_irreducible_rat {n : ℕ} (hpos : 0 < n) :
 theorem cyclotomic_irreducible_int {n : ℕ} (hpos : 0 < n) :
     Irreducible (Polynomial.cyclotomic n ℤ) :=
   Polynomial.cyclotomic.irreducible hpos
+
+/-- **Cyclotomic polynomial degree**: `deg Φ_n = φ(n)`.
+
+PROVED Lean: direct citation of Mathlib's `Polynomial.natDegree_cyclotomic`. -/
+theorem natDegree_cyclotomic_eq_totient (n : ℕ) (R : Type*) [Ring R] [Nontrivial R] :
+    (Polynomial.cyclotomic n R).natDegree = Nat.totient n :=
+  Polynomial.natDegree_cyclotomic n R
