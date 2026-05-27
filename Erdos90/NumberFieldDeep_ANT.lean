@@ -214,6 +214,30 @@ theorem S_set_diff_T_set_card : (S_set \ T_set).card = 13 := by decide
 /-- `31 ∈ T_set \ S_set` (smallest element of T not in S). -/
 theorem T_diff_S_thirty_one_mem : 31 ∈ T_set \ S_set := by decide
 
+/-- **Sawin Theorem main proof, line ~274 of `assets/sawin_src/erdos-lower-bound.tex`**:
+exactly 7 elements of `T_set` are `≡ 3 (mod 4)`.  These are
+`{3, 7, 11, 19, 23, 31, 43}`.  Sawin's construction requires this
+count to be odd (here 7) so that `Q = ℚ(√D)` with `D = ∏ T_set`
+satisfies the discriminant-class condition.  Decidable. -/
+theorem T_set_card_three_mod_four :
+    (T_set.filter (fun q => q % 4 = 3)).card = 7 := by decide
+
+/-- The 7 elements of `T_set` that are `≡ 3 (mod 4)` are exactly
+`{3, 7, 11, 19, 23, 31, 43}`. -/
+theorem T_set_three_mod_four_eq :
+    T_set.filter (fun q => q % 4 = 3) = ({3, 7, 11, 19, 23, 31, 43} : Finset ℕ) := by
+  decide
+
+/-- **Sawin infinitude criterion**, line ~274 of
+`assets/sawin_src/erdos-lower-bound.tex`: `#T + #S + 1 = 36 = (#T - 1)² / 4`.
+
+Sawin invokes this to satisfy condition (infinitude-criterion) of
+his Lemma `group-infinite`(4), which is what makes the pro-2 tower
+infinite.  Concretely: `13 + 22 + 1 = 36 = 12² / 4`. -/
+theorem sawin_infinitude_criterion :
+    T_set.card + S_set.card + 1 = (T_set.card - 1) ^ 2 / 4 := by
+  rw [T_set_card, S_set_card]; decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
