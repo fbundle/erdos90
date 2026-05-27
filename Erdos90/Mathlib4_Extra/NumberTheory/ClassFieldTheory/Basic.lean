@@ -1259,6 +1259,20 @@ theorem HilbertPClassFieldExt.identity_finrank_eq_p_part
   show Module.finrank K K = _
   rw [Module.finrank_self, h, padicValNat_one_right, pow_zero]
 
+/-- For the identity p-HCF case (classNumber K = 1), the Galois group
+`Gal(H_p/K) ≃ {1}` (trivial), so `Nat.card = 1`.
+
+PROVED Lean: combines `identity_finrank_eq_p_part` with
+`IsGalois.card_aut_eq_finrank`. -/
+theorem HilbertPClassFieldExt.identity_card_aut_eq_one
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (h : NumberField.classNumber K = 1) :
+    Nat.card ((HilbertPClassFieldExt.identity K p h).H_p ≃ₐ[K]
+      (HilbertPClassFieldExt.identity K p h).H_p) = 1 := by
+  rw [IsGalois.card_aut_eq_finrank,
+    HilbertPClassFieldExt.identity_finrank_eq_p_part K p h, h]
+  simp
+
 /-- For the identity p-HCF case with totally real `F`, the p-HCF is
 totally real (since H_p = F).
 
