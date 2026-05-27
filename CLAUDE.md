@@ -164,10 +164,19 @@ In `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
      ourselves.
 
   Applies for both small Nat lemmas and structural results like CFT/cohomology.
-  Recent example: `splitPrimes_persist_*` postulates were closeable by finding
-  `Ideal.ramificationIdx_algebra_tower'` already in Mathlib.  Earlier examples:
-  `cm_complex_conj_order_two_postulate` via `IsCMField.orderOf_complexConj`,
-  `transfer_definition_postulate` via `MonoidHom.transfer`.
+  **Major wins so far** (all PROVED via Mathlib citation, were previously sorried):
+  * `card_ideals_norm_le_eventually_O_N` ← the "Mathlib gap" of the Brauer-Siegel
+    chain (sharp O(N) bound on ideal count) is in Mathlib v4.30 as
+    `Ideal.tendsto_norm_le_div_atTop₀` (Loeffler-Stoll work)
+  * `minkowski_discr_lower_bound_postulate` via `NumberField.abs_discr_ge'`
+  * `splitPrimes_persist_{ramificationIdx,inertiaDeg}_postulate` via
+    `Ideal.{ramificationIdx,inertiaDeg}_algebra_tower'`
+  * `cm_complex_conj_order_two_postulate` via `IsCMField.orderOf_complexConj`
+  * `cm_fixed_field_postulate` via `Algebra.IsQuadraticExtension.finrank_eq_two`
+  * `cm_fixed_field_totally_real_postulate` via `IsTotallyReal.nrComplexPlaces_eq_zero`
+  * `transfer_definition_postulate` via `MonoidHom.transfer`
+  * `pHCF_degree_pos_postulate` (assembly via `padicValNat` lemmas)
+  * `p_HCF_finrank_divides_classNumber_postulate` via `pow_padicValNat_dvd`
 - **Decompose deeper, not wider**: when a sorry is multi-month/year work, the highest-leverage move is *naming* its sub-postulates with literature citations, not trying to close it.  Same math content, vastly improved legibility and PR-shape.
 - **Never pack false statements as structure fields**: a sorried `False` is worse than a sorried `True`.  If a numeric inequality depends on external parameters, lift it to an explicit hypothesis at the boundary.
 - **Architectural sorries can be threaded**: if a statement is true-in-practice but not from local hypotheses, push the needed hypothesis through the signature chain to the point where it's provable.
