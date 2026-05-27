@@ -613,3 +613,17 @@ theorem odd_three : Odd (3 : ℕ) := by decide
 
 /-- `5` is odd. -/
 theorem odd_five : Odd (5 : ℕ) := by decide
+
+/-! ### Odd primes — concrete checks for T_set -/
+
+theorem odd_seven : Odd (7 : ℕ) := by decide
+theorem odd_eleven : Odd (11 : ℕ) := by decide
+theorem odd_thirteen : Odd (13 : ℕ) := by decide
+theorem odd_seventeen : Odd (17 : ℕ) := by decide
+theorem odd_nineteen : Odd (19 : ℕ) := by decide
+theorem odd_twentythree : Odd (23 : ℕ) := by decide
+theorem odd_twentynine : Odd (29 : ℕ) := by decide
+theorem odd_thirtyone : Odd (31 : ℕ) := by decide
+theorem odd_thirtyseven : Odd (37 : ℕ) := by decide
+theorem odd_fortyone : Odd (41 : ℕ) := by decide
+theorem odd_fortythree : Odd (43 : ℕ) := by decide
