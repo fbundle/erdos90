@@ -182,3 +182,18 @@ theorem totient_three_eq_two : Nat.totient 3 = 2 :=
 /-- `φ(5) = 4`.  Direct from `Nat.totient_prime` applied to p = 5. -/
 theorem totient_five_eq_four : Nat.totient 5 = 4 :=
   Nat.totient_prime (by decide)
+
+/-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
+when `gcd(m, n) = 1`.
+
+PROVED Lean: direct citation of Mathlib's `Nat.totient_mul`. -/
+theorem totient_mul_of_coprime {m n : ℕ} (h : m.Coprime n) :
+    Nat.totient (m * n) = Nat.totient m * Nat.totient n :=
+  Nat.totient_mul h
+
+/-- **Totient on prime powers**: `φ(p^n) = p^(n-1) · (p-1)` for `p` prime, `n > 0`.
+
+PROVED Lean: direct citation of Mathlib's `Nat.totient_prime_pow`. -/
+theorem totient_prime_pow_eq {p : ℕ} (hp : p.Prime) {n : ℕ} (hn : 0 < n) :
+    Nat.totient (p ^ n) = p ^ (n - 1) * (p - 1) :=
+  Nat.totient_prime_pow hp hn
