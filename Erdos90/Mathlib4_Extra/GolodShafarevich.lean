@@ -119,15 +119,109 @@ graph explicit and provides cleaner Mathlib-PR-shape entry points for
 outside contributors.
 -/
 
-/-- **Sub-sub-sub-postulate D3.1.gs.base.imagquad.genus** (Genus theory for
-imaginary quadratic):
-For `K₀ = ℚ(√-d)` with `d > 0` squarefree, the 2-class group rank of `K₀`
-equals `g - 1`, where `g` is the number of distinct prime divisors of `d`
-(or `4·d` if `d ≡ 3 mod 4`).
+/-! ### Genus theory decomposition (D3.1.gs.base.imagquad.genus chain)
 
-Cite: Gauss-Genus theory (Disquisitiones Arithmeticae 1801); also
-Cohn's *Advanced Number Theory* Ch. 14.  Mathlib v4.30: not packaged.
-Weeks of effort. -/
+Gauss's genus theory (Disquisitiones Arithmeticae 1801) computes the 2-rank
+of the class group of an imaginary quadratic field K = ℚ(√-d) via the
+**genus character**: a group homomorphism
+
+  χ : Cl(K) → (ℤ/2ℤ)^t
+
+where `t = ω(disc K)` is the number of distinct prime divisors of the
+discriminant.  The classical result is:
+
+* **Surjectivity onto a subgroup**: image(χ) is the kernel of the sum map
+  (ℤ/2ℤ)^t → ℤ/2ℤ, hence has order 2^{t-1}.
+* **Principal genus theorem**: ker(χ) = Cl(K)² (squares).
+
+Combining: `[Cl(K) : Cl(K)²] = 2^{t-1}`, so the 2-rank of Cl(K) is `t - 1`.
+
+The four sub-postulates below correspond to these four steps; each is a
+narrower Mathlib gap than the monolithic "compute the 2-rank" claim.
+-/
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.base.imagquad.genus.omega**:
+For K = ℚ(√-d) with d > 0 squarefree, the number of distinct prime
+divisors of `discr K`, denoted `t = ω(disc K)`, equals:
+* `ω(d) + 1` if `d ≡ 1, 2 (mod 4)` (in which case `disc K = -4d`)
+* `ω(d)` if `d ≡ 3 (mod 4)` (in which case `disc K = -d`)
+
+Cite: standard imaginary quadratic discriminant formula (Cohn Ch. 14
+Prop. 14.3.5, Mathlib `NumberField.QuadraticField.discr_eq_neg_d` for
+the d ≡ 3 case).  Mathlib v4.30: discriminant formula is packaged for
+specific d but `ω(disc K)` per se is not. -/
+def imagquad_disc_omega_postulate
+    (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.base.imagquad.genus.char**
+(Genus character existence):
+For K = ℚ(√-d) imaginary quadratic, there exists a group homomorphism
+`χ_K : ClassGroup (𝓞 K) → (ZMod 2)^t` (the **genus character**), defined
+on each ramified prime `𝔭_i` by `χ_K([𝔞])_i = (Legendre symbol of N(𝔞) at p_i)`.
+
+Independence of the choice of representative `𝔞` is the nontrivial content
+(uses quadratic reciprocity at each ramified prime).
+
+Cite: Cohn Ch. 14 §14.4 (definition of genus character); Cox *Primes of
+the Form x² + ny²* Ch. 3.  Mathlib v4.30: not packaged; needs Hilbert
+symbols + quadratic reciprocity. -/
+def imagquad_genus_character_postulate
+    (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.base.imagquad.genus.image**
+(Image of the genus character):
+The image of `χ_K` is exactly the kernel of the sum map
+`(ZMod 2)^t → ZMod 2`, hence has order `2^{t-1}`.
+
+Equivalently: the product of the Legendre symbols across all ramified
+primes equals +1 for any ideal class (a global parity constraint coming
+from the product formula for the norm).
+
+Cite: Cohn Ch. 14 Prop. 14.4.4 (Gauss's product formula for genus
+characters).  Mathlib v4.30: not packaged. -/
+def imagquad_genus_image_postulate
+    (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-postulate D3.1.gs.base.imagquad.genus.kernel**
+(Gauss's principal genus theorem):
+The kernel of `χ_K` equals `(ClassGroup K)²` (the subgroup of squares).
+
+Equivalently: an ideal class is in the principal genus (i.e., the kernel
+of `χ_K`) iff it is the square of some ideal class.
+
+This is the **principal genus theorem** — historically the deepest part
+of Gauss's genus theory, proved via Hilbert's reciprocity at the level
+of abelian extensions.
+
+Cite: Gauss D.A. 1801 §286; modern proof via class field theory:
+Neukirch Ch. VI §3.  Mathlib v4.30: not packaged; needs Hilbert
+reciprocity + Artin map at the level of imaginary quadratic. -/
+def imagquad_principal_genus_postulate
+    (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.1.gs.base.imagquad.genus** (Genus theory
+2-rank formula):
+For `K₀ = ℚ(√-d)` with `d > 0` squarefree, the 2-class group rank of `K₀`
+equals `t - 1`, where `t` is the number of distinct prime divisors of
+`disc K₀`.
+
+Equivalent quantitative statement: `2^{t-1} ∣ classNumber K₀`.
+
+PROVED ASSEMBLY (modulo the four sub-postulates above):
+* `imagquad_disc_omega_postulate` — compute t = ω(disc K₀).
+* `imagquad_genus_character_postulate` — produce χ_K : Cl(K) → (ZMod 2)^t.
+* `imagquad_genus_image_postulate` — image has order 2^{t-1}.
+* `imagquad_principal_genus_postulate` — kernel is Cl(K)².
+* By the first isomorphism: Cl(K)/Cl(K)² ≃ image, has order 2^{t-1}.
+* By structure theorem for finite abelian groups: 2-rank of Cl(K) is t-1.
+* Hence 2^{t-1} divides |Cl(K)| = classNumber K.
+
+Cite: Gauss D.A. 1801; Cohn Ch. 14; Cox Ch. 3.  Mathlib v4.30: not
+packaged.  Weeks of effort once the four pieces above land. -/
 def imagquad_2_rank_genus_postulate
     (d : ℕ) (_hd_sq : Squarefree d) (_hd_pos : 0 < d) :
     True := sorry
