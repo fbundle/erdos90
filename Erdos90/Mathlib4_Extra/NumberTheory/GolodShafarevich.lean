@@ -779,12 +779,43 @@ kernel of order coprime to p.
 
 Cite: standard CFT functoriality (Galois correspondence + Artin recip
 naturality).  Mathlib v4.30: needs both `hilbertClassField_exists` and
-`hilbertPClassField_exists` in compatible form. -/
+`hilbertPClassField_exists` in compatible form.
+
+DECOMPOSITION: 3 named pieces tracking the embedding chain.
+1. **K → H_p(K)**: structure field of `HilbertPClassFieldExt`
+   (i.e. `algebraKH_p`).  Already PROVED Lean.
+2. **H_p(K) → H(K)**: maximal-quotient identification — needs the
+   CFT statement that H_p is the **maximal** p-quotient of H.
+3. **Compatibility**: the composition `K → H_p(K) → H(K)` equals the
+   structure field `algebraKH` of `HilbertClassFieldExt`. -/
 def pHCF_subfield_of_HCF_postulate
     (p : ℕ) (_hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K]
     (E : NumberField.HilbertPClassFieldExt K p)
     (E_full : NumberField.HilbertClassFieldExt K) :
+    True := sorry
+
+/-- **Sub-sub-sub-sub-sub-postulate D3.1.gs.inherit.cft-iso.subfield.K-Hp**
+(K embeds in H_p): the algebra map K → H_p is a structure field of
+`HilbertPClassFieldExt`.
+
+PROVED Lean: direct field projection. -/
+theorem pHCF_subfield_K_to_Hp_postulate
+    (K : Type) [Field K] [NumberField K]
+    (p : ℕ) (E : NumberField.HilbertPClassFieldExt K p) :
+    Nonempty (K →ₐ[K] E.H_p) :=
+  ⟨Algebra.ofId K E.H_p⟩
+
+/-- **Sub-sub-sub-sub-sub-postulate D3.1.gs.inherit.cft-iso.subfield.Hp-H**
+(H_p embeds in H): the maximal-quotient statement.  H_p is the maximal
+abelian p-quotient of H, so as fields, H_p sits inside H.
+
+Mathlib gap: needs CFT identification of H_p with a sub-extension of H. -/
+def pHCF_subfield_Hp_to_H_postulate
+    (p : ℕ) (_hp : Nat.Prime p)
+    (K : Type) [Field K] [NumberField K]
+    (_E : NumberField.HilbertPClassFieldExt K p)
+    (_E_full : NumberField.HilbertClassFieldExt K) :
     True := sorry
 
 /-- **Sub-sub-sub-postulate D3.1.gs.inherit.pcr-growth.cft-iso** (CFT iso):
