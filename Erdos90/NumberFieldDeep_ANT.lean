@@ -475,6 +475,30 @@ theorem sawin_kplus1_product_eq :
 theorem sawin_kplus1_product_pos : 0 < sawin_kplus1_product := by
   rw [sawin_kplus1_product_eq]; decide
 
+/-- **Factorization of `sawin_kplus1_product` by ramified/inert split**.
+
+The 22-prime product factors as `ramified_part · inert_part`, where:
+- `ramified_part = ∏_{p ∈ {2,3,5,7,11,13,17,19,23,29}} (k(p)+1) = 2561796357120`
+  (`= 51·32·22·18·15·14·13·12·11·11`).
+- `inert_part    = ∏_{p ∈ {47,71,79,97,101,107,109,139,151,163,167,179}} (k(p)+1)
+                 = 39652687872`
+  (`= 9·8⁶·7⁵`).
+
+This factorization shows where each prime's contribution sits in Sawin's
+`M_K` numerator. -/
+theorem sawin_kplus1_product_ramified_part :
+    Finset.prod ({2, 3, 5, 7, 11, 13, 17, 19, 23, 29} : Finset ℕ)
+      (fun p => sawin_k p + 1) = 2561796357120 := by native_decide
+
+theorem sawin_kplus1_product_inert_part :
+    Finset.prod
+      ({47, 71, 79, 97, 101, 107, 109, 139, 151, 163, 167, 179} : Finset ℕ)
+      (fun p => sawin_k p + 1) = 39652687872 := by native_decide
+
+theorem sawin_kplus1_product_factors :
+    (2561796357120 : ℕ) * 39652687872 = 101582111340506004848640 := by
+  decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
