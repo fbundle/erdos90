@@ -129,6 +129,12 @@ In `vendor/mathlib4/Mathlib/NumberTheory/NumberField/`:
 
 ## Working principles
 
+- **Search-first protocol** (per user 2026-05-27): before writing a new lemma,
+  `grep -rn "<name>"` in `vendor/mathlib4/` and `vendor/ClassFieldTheory/` to see
+  if it already exists.  If yes, cite it (in code + CITATION.md).  If no, write
+  it ourselves.  This applies for both small Nat lemmas and structural results
+  like CFT/cohomology.  Recent example: `splitPrimes_persist_*` postulates were
+  closeable by finding `Ideal.ramificationIdx_algebra_tower'` already in Mathlib.
 - **Decompose deeper, not wider**: when a sorry is multi-month/year work, the highest-leverage move is *naming* its sub-postulates with literature citations, not trying to close it.  Same math content, vastly improved legibility and PR-shape.
 - **Never pack false statements as structure fields**: a sorried `False` is worse than a sorried `True`.  If a numeric inequality depends on external parameters, lift it to an explicit hypothesis at the boundary.
 - **Architectural sorries can be threaded**: if a statement is true-in-practice but not from local hypotheses, push the needed hypothesis through the signature chain to the point where it's provable.
