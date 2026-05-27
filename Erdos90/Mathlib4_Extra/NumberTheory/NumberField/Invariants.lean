@@ -378,6 +378,20 @@ theorem module_finrank_self_eq_one (K : Type*) [CommSemiring K] :
     Module.finrank K K = 1 :=
   CommSemiring.finrank_self K
 
+/-! ### Int sanity wrappers -/
+
+/-- `|(-3 : ℤ)| = 3`. -/
+theorem int_natAbs_neg_three : (-(3 : ℤ)).natAbs = 3 := by decide
+
+/-- `|125| = 125`. -/
+theorem int_natAbs_125 : ((125 : ℤ)).natAbs = 125 := by decide
+
+/-- `|1| = 1`. -/
+theorem int_natAbs_one : ((1 : ℤ)).natAbs = 1 := by decide
+
+/-- `(-3 : ℤ) ≠ 0`. -/
+theorem int_neg_three_ne_zero : (-(3 : ℤ)) ≠ 0 := by decide
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
