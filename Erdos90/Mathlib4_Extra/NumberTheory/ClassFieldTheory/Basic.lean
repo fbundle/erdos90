@@ -1570,6 +1570,20 @@ theorem cyclotomic_five_isTotallyComplex
     NumberField.IsTotallyComplex K :=
   IsCyclotomicExtension.Rat.isTotallyComplex (n := 5) K (by decide)
 
+/-- `ℚ(ζ_3)/ℚ` is a separable extension.
+
+PROVED Lean: direct citation of Mathlib's `IsCyclotomicExtension.isSeparable`. -/
+theorem cyclotomic_three_isSeparable
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    Algebra.IsSeparable ℚ K :=
+  IsCyclotomicExtension.isSeparable {3} ℚ K
+
+/-- `ℚ(ζ_5)/ℚ` is a separable extension. -/
+theorem cyclotomic_five_isSeparable
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    Algebra.IsSeparable ℚ K :=
+  IsCyclotomicExtension.isSeparable {5} ℚ K
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
