@@ -1082,6 +1082,63 @@ Two sub-postulates below; the proved assembly closes the parent
 modulo them.
 -/
 
+/-! ##### Anick-Dicks 2017 abstract algebraic kernel — PROVED Lean lemma
+
+The Anick-Dicks 2017 (arXiv:1508.03231v2, `assets/anick_dicks_gs.pdf`) proof
+of the graded Golod-Shafarevich inequality is built around a single
+abstract algebraic fact: for an exact sequence `A → B → C` of modules
+over a ring with rank-nullity, the dimension/rank of the middle term
+is bounded by the sum of the dimensions of the outer terms.
+
+This is the dimension-inequality step in their proof: from the Koszul
+resolution truncated to the middle three terms (their Eq. 4), they
+conclude `dim ⊕_X B_{n-deg(x)} ≤ dim ⊕_R B_{n-deg(r)} + dim B_n` by
+exactly this lemma.
+
+Mathlib has the short-exact-sequence version (`free_shortExact_rank_add`,
+which gives equality for free modules); we extract the inequality
+version for plain 3-term exact sequences.
+-/
+
+/-- **Anick-Dicks 2017 abstract algebraic kernel** (PROVED Lean theorem):
+For an exact sequence `A →f B →g C` of modules over a ring `R` with
+rank-nullity (e.g. any field), the rank of `B` is bounded by the sum
+of the ranks of `A` and `C`:
+
+```
+  rank B ≤ rank A + rank C.
+```
+
+Proof: by exactness, `ker g = range f`.  Rank-nullity on `g` gives
+`rank B = rank (range g) + rank (ker g) = rank (range g) + rank (range f)`.
+Then `rank (range f) ≤ rank A` (image bounded by source) and
+`rank (range g) ≤ rank C` (image is a submodule of target).
+
+Cite: Anick-Dicks 2017 Theorem 1.1, "because K is a field, the
+K-dimension of the inner term is at most the sum of the K-dimensions
+of the two outer terms".  Mathlib v4.30: not packaged in this exact
+form; closest is `free_shortExact_rank_add` for short exact sequences
+of free modules. -/
+theorem rank_le_rank_source_add_rank_target_of_exact
+    {R : Type u} {A B C : Type v}
+    [Ring R] [AddCommGroup A] [AddCommGroup B] [AddCommGroup C]
+    [Module R A] [Module R B] [Module R C]
+    [HasRankNullity.{v} R]
+    (f : A →ₗ[R] B) (g : B →ₗ[R] C)
+    (h : Function.Exact f g) :
+    Module.rank R B ≤ Module.rank R A + Module.rank R C := by
+  have h_eq : LinearMap.ker g = LinearMap.range f := LinearMap.exact_iff.mp h
+  have h_rn := LinearMap.rank_range_add_rank_ker g
+  rw [h_eq] at h_rn
+  have h_f : Module.rank R (LinearMap.range f) ≤ Module.rank R A :=
+    rank_range_le f
+  have h_g : Module.rank R (LinearMap.range g) ≤ Module.rank R C :=
+    Submodule.rank_le _
+  calc Module.rank R B
+      = Module.rank R (LinearMap.range g) + Module.rank R (LinearMap.range f) := h_rn.symm
+    _ ≤ Module.rank R C + Module.rank R A := add_le_add h_g h_f
+    _ = Module.rank R A + Module.rank R C := add_comm _ _
+
 /-! ##### Anick-Dicks 2017 Koszul-resolution 5-step proof of the
 Magnus-Hilbert series inequality
 
@@ -1104,34 +1161,32 @@ assembles them.
   Hilbert series `H_{F_i}(t)` and the differentials respect the
   grading.
 
-  **Step 3** (Euler-characteristic Hilbert identity): the alternating
-  sum of Hilbert series of the resolution equals `1` (the H-series of
-  `𝔽_p`):
+  **Step 3** (3-term middle exact sequence, Eq 4 of Anick-Dicks):
+  truncating Eq 3 to the middle three terms gives an exact sequence of
+  K-vector spaces
   ```
-    H_G(t) · ∑_{i ≥ 0} (-1)^i · (rank-poly of F_i)(t) = 1
+    ⊕_R B_{n-deg(r)} →∂_n ⊕_X B_{n-deg(x)} →π_n B_n
   ```
-  Truncating after `F_2`:
-  ```
-    H_G(t) · (1 - d·t + ∑ t^{n_i} - Δ_{≥3}(t)) = 1
-  ```
-  where `Δ_{≥3}(t)` is the contribution of `F_3, F_4, …`.
+  exact at the middle term (`Im ∂_n = Ker π_n`).
 
-  **Step 4** (higher-term positivity): `Δ_{≥3}(t)` has non-negative
-  Hilbert-series coefficients (it is itself the Hilbert series of a
-  graded `𝔽_p`-vector space), hence subtracting it from `P(t)` only
-  makes things smaller.
+  **Step 4** (dim inequality from 3-term exact, PROVED Lean):
+  For any 3-term exact sequence `A → B → C` of K-vector spaces,
+  `dim B ≤ dim A + dim C`.  PROVED as
+  `rank_le_rank_source_add_rank_target_of_exact` above.
 
-  **Step 5** (assembly: coefficientwise inequality): rearranging steps 3
-  and 4,
+  **Step 5** (Hilbert-series translation): applying Step 4 to Step 3
+  with `A = ⊕_R B_{n-deg(r)}`, `B = ⊕_X B_{n-deg(x)}`, `C = B_n` yields
+  the dimension inequality
+  `Σ_x b_{n-deg(x)} ≤ Σ_r b_{n-deg(r)} + b_n`,
+  equivalently in Hilbert series:
   ```
-    H_G(t) · P(t) = 1 + H_G(t) · Δ_{≥3}(t) ≥ 1
+    (1 - h(X) + h(R)) · H(B) ⪰ 1   (coefficientwise)
   ```
-  coefficientwise, since both factors on the right have non-negative
-  coefficients.
+  This is the Anick-Dicks form (their Eq 10) of the GS inequality.
 
-Each step is its own sub-postulate.  None are in Mathlib v4.30; closing
-them requires the pro-`p` group + Hilbert series + free resolution
-infrastructure.
+Steps 1, 2, 3, 5 remain `True := sorry` (require pro-`p` group + free
+resolution + Hilbert series infrastructure absent from Mathlib v4.30).
+Step 4 is now a PROVED Lean theorem.
 -/
 
 /-- **Sub-sub-sub-sub-sub-postulate** (Step 1 of Anick-Dicks Koszul proof):
@@ -1165,46 +1220,57 @@ def koszul_resolution_graded_postulate
     True := sorry
 
 /-- **Sub-sub-sub-sub-sub-postulate** (Step 3 of Anick-Dicks Koszul proof):
-Taking Euler characteristic of Hilbert series along the Step-1
-resolution yields the identity
+Truncating Step 2's 5-term exact sequence to the middle three terms
+gives an exact sequence of K-vector spaces (their Eq. 4):
 ```
-  H_G(t) · ( 1 - d·t + ∑ t^{n_i} - Δ_{≥3}(t) ) = 1
+  ⊕_R B_{n-deg(r)} →∂_n ⊕_X B_{n-deg(x)} →π_n B_n
 ```
-in `ℤ⟦t⟧`, where `Δ_{≥3}(t) := ∑_{i ≥ 3} (-1)^i · rank-poly(F_i)(t)`.
+with `Im ∂_n = Ker π_n`.
 
-Cite: Anick-Dicks 2017 §3, additivity of Hilbert series.  Mathlib v4.30:
-not packaged. -/
-def koszul_euler_identity_postulate
+Cite: Anick-Dicks 2017 §1, Eq (4).  Mathlib v4.30: needs graded
+augmentation grouping in `𝔽_p⟦G⟧`. -/
+def koszul_truncated_three_term_postulate
     (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
     True := sorry
 
-/-- **Sub-sub-sub-sub-sub-postulate** (Step 4 of Anick-Dicks Koszul proof):
-The correction series `Δ_{≥3}(t)` from Step 3 has non-negative
-coefficients: it is itself the Hilbert series of a graded `𝔽_p`-vector
-space (the "higher syzygies").
+/-- **Step 4 of Anick-Dicks Koszul proof** (PROVED via
+`rank_le_rank_source_add_rank_target_of_exact`):
+For any exact sequence `A → B → C` of K-vector spaces over a field K,
+`dim_K B ≤ dim_K A + dim_K C`.
 
-Cite: Anick-Dicks 2017 §3.  Mathlib v4.30: not packaged. -/
-def koszul_higher_terms_nonneg_postulate
-    (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
-    True := sorry
+This is the rank inequality `Σ b_{n-deg(x)} ≤ Σ b_{n-deg(r)} + b_n` of
+Anick-Dicks 2017 Theorem 1.1, applied with `A = ⊕_R B_{n-deg(r)}`,
+`B = ⊕_X B_{n-deg(x)}`, `C = B_n`.
 
-/-- **Sub-sub-sub-sub-sub-postulate** (Step 5 of Anick-Dicks Koszul proof,
-inequality assembly): combining Steps 3 + 4, we get
+PROVED Lean above as `rank_le_rank_source_add_rank_target_of_exact`. -/
+theorem koszul_dim_inequality_proved
+    {R : Type u} {A B C : Type v}
+    [Ring R] [AddCommGroup A] [AddCommGroup B] [AddCommGroup C]
+    [Module R A] [Module R B] [Module R C] [HasRankNullity.{v} R]
+    (f : A →ₗ[R] B) (g : B →ₗ[R] C) (h : Function.Exact f g) :
+    Module.rank R B ≤ Module.rank R A + Module.rank R C :=
+  rank_le_rank_source_add_rank_target_of_exact f g h
+
+/-- **Sub-sub-sub-sub-sub-postulate** (Step 5 of Anick-Dicks Koszul proof
+— Hilbert series translation):
+Combining Step 3 (3-term exact sequence at each degree `n`) with Step 4
+(`koszul_dim_inequality_proved` PROVED), we get the coefficientwise
+dimension inequality:
 ```
-  H_G(t) · P(t) = 1 + H_G(t) · Δ_{≥3}(t) ≥ 1
+  Σ_{x ∈ X} b_{n-deg(x)} ≤ Σ_{r ∈ R} b_{n-deg(r)} + b_n,  ∀ n.
 ```
-coefficientwise, since `H_G(t)` and `Δ_{≥3}(t)` both have non-negative
-coefficients (the former because `𝔽_p⟦G⟧` is a graded `𝔽_p`-algebra,
-the latter by Step 4).
+In Hilbert-series language with `H(B) = Σ b_n t^n`, `h(X) = Σ x_n t^n`,
+`h(R) = Σ r_n t^n`:
+```
+  h(X) · H(B) ⪯ h(R) · H(B) + H(B),
+```
+equivalently `(1 - h(X) + h(R)) · H(B) ⪰ 1` (using `b_0 = 1` for the
+constant term and the dim inequality for `n ≥ 1`).  This is the
+Anick-Dicks form (their Eq. 10) of the GS inequality.
 
-This step is *algebraically trivial* once Steps 1–4 are in hand: it is
-the formal-power-series rearrangement
-`H · (P - Δ) = 1 ⇒ H · P = 1 + H · Δ ≥ 1`.  In a future where the prior
-four steps are formalized, this assembly would be a Lean lemma, not a
-postulate.
-
-Cite: Anick-Dicks 2017 §3, conclusion of the algebraic argument. -/
-def koszul_inequality_assembly_postulate
+Cite: Anick-Dicks 2017 §4, Eq (8)-(10).  Mathlib v4.30: needs Hilbert
+series infrastructure. -/
+def koszul_hilbert_translation_postulate
     (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
     True := sorry
 
@@ -1213,21 +1279,22 @@ For a finitely-presented pro-p group G with d generators and r relations
 of weights (n_1,…,n_r), the Magnus embedding gives the formal power
 series inequality `H_G(t) · P(t) ≥ 1` (coefficientwise).
 
-ASSEMBLY (Anick-Dicks 2017 §3, 5-step Koszul-resolution chain):
+ASSEMBLY (Anick-Dicks 2017 §3-4, 5-step Koszul-resolution chain):
 - Step 1 (`koszul_resolution_exists_postulate`): build the graded free
-  resolution `⋯ → F_2 → F_1 → F_0 → 𝔽_p → 0` with `F_1` of rank `d`,
-  `F_2` having a rank-`r` summand in weights `n_i`.
+  resolution `0 → Ker∂ → ⊕_R B → ⊕_X B → B → 𝔽_p → 0`.
 - Step 2 (`koszul_resolution_graded_postulate`): the resolution is
-  graded-compatible, so each `F_i` has a Hilbert series.
-- Step 3 (`koszul_euler_identity_postulate`): Euler characteristic gives
-  `H_G(t) · (P(t) - Δ_{≥3}(t)) = 1`.
-- Step 4 (`koszul_higher_terms_nonneg_postulate`): `Δ_{≥3}(t) ≥ 0`
-  coefficientwise.
-- Step 5 (`koszul_inequality_assembly_postulate`): rearrange to
-  `H_G(t) · P(t) ≥ 1`.
+  graded-compatible, so degree-`n` components form a 5-term exact
+  sequence of K-vector spaces.
+- Step 3 (`koszul_truncated_three_term_postulate`): the middle three
+  terms `⊕_R B_{n-deg(r)} → ⊕_X B_{n-deg(x)} → B_n` are exact.
+- Step 4 (`koszul_dim_inequality_proved`, **PROVED LEAN**): for an
+  exact sequence `A → B → C` of K-vector spaces, `dim B ≤ dim A + dim C`.
+- Step 5 (`koszul_hilbert_translation_postulate`): translate to Hilbert
+  series, getting `(1 - h(X) + h(R)) · H(B) ⪰ 1` coefficientwise.
 
-Cite: Anick-Dicks 2017 §3.  Mathlib v4.30: needs Hilbert series +
-Magnus embedding (not packaged). -/
+Cite: Anick-Dicks 2017 (`assets/anick_dicks_gs.pdf`), Theorem 1.1 +
+Eq. (10).  Mathlib v4.30: needs Hilbert series + Magnus embedding
+(not packaged). -/
 def magnus_hilbert_series_inequality_postulate
     (p : ℕ) (_hp : Nat.Prime p) (_input : Input) :
     True := sorry
