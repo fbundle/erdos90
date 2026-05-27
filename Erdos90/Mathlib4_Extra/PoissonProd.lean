@@ -680,6 +680,36 @@ theorem integrable_partial_fourier_integrand (f : 𝓢(ℝ × ℝ, ℂ)) (n : �
       (MeasureTheory.ae_of_all _ h_exp_bd)
   exact h_2d_int.integral_prod_left
 
+/-- The 1-D Fourier of the partial-Fourier integrand equals
+`(fourier2DSchwartz f).leftPartial n` evaluated at `w`.
+
+PROVED via `iterated_fourier_eq_2d_integral` + `fourier2DSchwartz_apply`. -/
+theorem fourier_partial_fourier_integrand_eq (f : 𝓢(ℝ × ℝ, ℂ)) (n : ℝ) (w : ℝ) :
+    𝓕 (fun x : ℝ => ∫ y : ℝ,
+        Complex.exp (-(2 * Real.pi * (n * y)) * Complex.I) *
+          (f : ℝ × ℝ → ℂ) (x, y)) w =
+      ((fourier2DSchwartz f).leftPartial n : 𝓢(ℝ, ℂ)) w := by
+  -- Unfold 𝓕 to the integral
+  rw [fourier_eq' _ w]
+  -- 𝓕(I)(w) = ∫ x, exp(-2π·⟨x, w⟩·I) • I(x)
+  --        = ∫ x, exp(-2π·x·w·I) • (∫ y, exp(-2π·n·y·I) · f(x, y) dy)
+  -- By iterated_fourier_eq_2d_integral, this equals fourier2D f w n.
+  -- And by fourier2DSchwartz_apply, (fourier2DSchwartz f).leftPartial n w = fourier2D f w n.
+  rw [leftPartial_apply, fourier2DSchwartz_apply]
+  -- Now goal: ∫ x, exp(-2π·⟨x, w⟩·I) • (∫ y, exp(-2π·n·y·I) · f(x, y) dy) = fourier2D f w n
+  unfold fourier2D
+  rw [iterated_fourier_eq_2d_integral f w n]
+  -- Goal: ∫ x, exp(-2π·⟨x, w⟩·I) • (...) = ∫ x, exp(-(2π·(w·x))·I) · (...)
+  refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
+  simp only [smul_eq_mul]
+  -- Match the outer exponentials
+  have h_inner : (inner ℝ x w : ℝ) = x * w := by
+    simp [RCLike.inner_apply, mul_comm]
+  rw [h_inner]
+  congr 1
+  push_cast
+  ring
+
 /-! ## Towards full 2-D Schwartz Poisson summation
 
 We can now restate the row-Poisson chain in terms of `partialFourier`,
