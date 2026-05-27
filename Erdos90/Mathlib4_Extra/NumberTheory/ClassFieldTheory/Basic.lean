@@ -735,33 +735,58 @@ This is because:
 Steps 1 and 3 are in Mathlib; step 2 is the genuine gap.
 -/
 
-/-- **Sub-postulate D3.pHCF.galois-eq-sylow** (p-Sylow Artin recip iso):
-`Gal(H_p(K)/K) ≃ Sylow_p (ClassGroup (𝓞 K))`.
+/-- **Sub-postulate D3.pHCF.galois-eq-sylow-card** (p-Sylow Artin recip,
+order version):
+`Nat.card (Gal H_p(K)/K) = Nat.card (Sylow p (ClassGroup (𝓞 K)))`.
+
+This is the order-level consequence of the Artin reciprocity iso
+`Gal(H_p/K) ≃ Sylow_p Cl(K)`.  Strictly weaker than the full iso but
+sufficient for the order chain.
 
 Cite: standard CFT (Lang X §2 + Sylow). -/
-def pHCF_galois_iso_sylow_p_classGroup_postulate
+def pHCF_galois_card_eq_sylow_p_classGroup_postulate
     (K : Type u) [Field K] [NumberField K]
-    (p : ℕ) (_hp : Nat.Prime p) (_E : HilbertPClassFieldExt K p) :
-    True := sorry
+    (p : ℕ) (_hp : Nat.Prime p) (E : HilbertPClassFieldExt K p)
+    (P : Sylow p (ClassGroup (𝓞 K))) :
+    Nat.card (E.H_p ≃ₐ[K] E.H_p) = Nat.card P := sorry
 
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
 
-Cite: standard CFT; p-Sylow correspondence under Artin reciprocity.
-Lang *Algebraic Number Theory* X §2 (Artin map) + Sylow theorems.  Not
-in Mathlib v4.30 (depends on `hilbertPClassField_exists` + Artin recip).
-
-ASSEMBLY modulo `pHCF_galois_iso_sylow_p_classGroup_postulate`:
-1. card_aut_eq_finrank: |Gal(H_p/K)| = [H_p:K] (Mathlib).
-2. The iso: |Gal(H_p/K)| = |Sylow_p Cl(K)| (sub-postulate).
-3. Sylow.card_eq_multiplicity: |Sylow_p Cl(K)| = p^padicValNat p (h_K)
-   (Mathlib). -/
-def p_HCF_finrank_eq_p_part_postulate
+PROVED Lean ASSEMBLY (modulo
+`pHCF_galois_card_eq_sylow_p_classGroup_postulate`):
+1. `card_aut_eq_finrank`: |Gal(H_p/K)| = [H_p:K] (Mathlib).
+2. The sub-postulate: |Gal(H_p/K)| = |Sylow_p Cl(K)| .
+3. `Sylow.card_eq_multiplicity` + `Nat.factorization_def`:
+   |Sylow_p Cl(K)| = p^padicValNat p (Nat.card Cl(K)) (Mathlib).
+4. `Nat.card Cl(K) = classNumber K` (definitional). -/
+theorem p_HCF_finrank_eq_p_part_postulate
     (K : Type u) [Field K] [NumberField K]
-    (p : ℕ) (_hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
-    Module.finrank K E.H_p = p ^ (padicValNat p (NumberField.classNumber K)) :=
-  sorry
+    (p : ℕ) (hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
+    Module.finrank K E.H_p = p ^ (padicValNat p (NumberField.classNumber K)) := by
+  -- Get FD instance and Sylow representative
+  haveI : FiniteDimensional K E.H_p :=
+    HilbertPClassFieldExt.finiteDimensional_of_prime K p hp E
+  haveI : Fact p.Prime := ⟨hp⟩
+  let P : Sylow p (ClassGroup (𝓞 K)) := default
+  -- Step 1: finrank = card Gal
+  have h1 : Module.finrank K E.H_p = Nat.card (E.H_p ≃ₐ[K] E.H_p) :=
+    Eq.symm (IsGalois.card_aut_eq_finrank K E.H_p)
+  -- Step 2: card Gal = card Sylow
+  have h2 := pHCF_galois_card_eq_sylow_p_classGroup_postulate K p hp E P
+  -- Step 3: card Sylow = p^factorization
+  have h3 : Nat.card P = p ^ Nat.factorization
+      (Nat.card (ClassGroup (𝓞 K))) p :=
+    P.card_eq_multiplicity
+  -- Step 4: factorization = padicValNat (for prime p)
+  have h4 : Nat.factorization (Nat.card (ClassGroup (𝓞 K))) p =
+      padicValNat p (Nat.card (ClassGroup (𝓞 K))) :=
+    Nat.factorization_def _ hp
+  -- Step 5: Nat.card Cl(K) = classNumber K (definitional via Fintype.card)
+  have h5 : Nat.card (ClassGroup (𝓞 K)) = NumberField.classNumber K := by
+    rw [NumberField.classNumber, Nat.card_eq_fintype_card]
+  rw [h1, h2, h3, h4, h5]
 
 /-- `[H_p(K) : K]` divides `classNumber K`.
 
