@@ -375,25 +375,43 @@ Two sub-postulates below.
 -/
 
 /-- **Sub-postulate D3.1.cheb.persist.ram** (ramificationIdx going-down):
-For a tower `ℤ ⊆ 𝓞 K' ⊆ 𝓞 K` and a prime `P' = P ∩ 𝓞 K'`, if
-`ramificationIdx ((q : ℤ)) P = 1`, then `ramificationIdx ((q : ℤ)) P' = 1`.
+For a tower of Dedekind domains with prime ideal tower `p ⊆ P ⊆ I`, if
+`ramificationIdx p I = 1`, then `ramificationIdx p P = 1`.
 
-PROVED in Mathlib (modulo typeclass plumbing) via
-`Ideal.ramificationIdx_algebra_tower` (in
-`Mathlib.NumberTheory.RamificationInertia.Ramification`). -/
-def splitPrimes_persist_ramificationIdx_postulate
-    (q : ℕ) (_hq : Nat.Prime q) :
-    True := sorry
+PROVED Lean via the tower formula `ramificationIdx p I = ramificationIdx p P *
+ramificationIdx P I` (Mathlib's `Ideal.ramificationIdx_algebra_tower'`)
++ `Nat.eq_one_of_mul_eq_one_right`. -/
+theorem splitPrimes_persist_ramificationIdx_postulate
+    {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
+    [Algebra R S] [Algebra S T] [Algebra R T] [IsScalarTower R S T]
+    [IsDedekindDomain S] [IsDedekindDomain T] [IsDomain R]
+    [Module.IsTorsionFree R S] [Module.IsTorsionFree S T]
+    (p : Ideal R) (P : Ideal S) (I : Ideal T)
+    [I.IsPrime] [I.LiesOver P] [P.LiesOver p]
+    (h_split : Ideal.ramificationIdx p I = 1) :
+    Ideal.ramificationIdx p P = 1 := by
+  have h_tower := Ideal.ramificationIdx_algebra_tower' (S := S) p P I
+  -- ramificationIdx p I = ramificationIdx p P * ramificationIdx P I
+  rw [h_split] at h_tower
+  exact Nat.eq_one_of_mul_eq_one_right h_tower.symm
 
 /-- **Sub-postulate D3.1.cheb.persist.iner** (inertiaDeg going-down):
 Same as above but for `inertiaDeg`: if it equals 1 in the larger field,
 it equals 1 in the smaller field.
 
-PROVED in Mathlib via `Ideal.inertiaDeg_algebra_tower` (in
-`Mathlib.NumberTheory.RamificationInertia.Inertia`). -/
-def splitPrimes_persist_inertiaDeg_postulate
-    (q : ℕ) (_hq : Nat.Prime q) :
-    True := sorry
+PROVED Lean via `Ideal.inertiaDeg_algebra_tower` (Mathlib) +
+`Nat.eq_one_of_mul_eq_one_right`. -/
+theorem splitPrimes_persist_inertiaDeg_postulate
+    {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
+    [Algebra R S] [Algebra S T] [Algebra R T] [IsScalarTower R S T]
+    (p : Ideal R) (P : Ideal S) (I : Ideal T)
+    [p.IsMaximal] [P.IsMaximal] [P.LiesOver p] [I.LiesOver P]
+    (h_split : Ideal.inertiaDeg p I = 1) :
+    Ideal.inertiaDeg p P = 1 := by
+  have h_tower : Ideal.inertiaDeg p I = Ideal.inertiaDeg p P * Ideal.inertiaDeg P I :=
+    Ideal.inertiaDeg_algebra_tower p P I
+  rw [h_split] at h_tower
+  exact Nat.eq_one_of_mul_eq_one_right h_tower.symm
 
 /-- **Sub-postulate D3.1.cheb.persist** (split-prime persistence):
 A prime that splits completely in a finite Galois extension `K/ℚ` also
