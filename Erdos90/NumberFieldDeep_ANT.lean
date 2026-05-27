@@ -127,6 +127,23 @@ theorem D_val_pos : 0 < D_val := by
 /-- `D_val ≠ 0`. -/
 theorem D_val_ne_zero : D_val ≠ 0 := D_val_pos.ne'
 
+/-- `rd_KF > 0` (positive root discriminant). -/
+theorem rd_KF_pos : 0 < rd_KF := by
+  unfold rd_KF
+  apply Real.sqrt_pos.mpr
+  have h : (0 : ℝ) < (D_val : ℝ) := by exact_mod_cast D_val_pos
+  linarith
+
+/-- `rd_KF ≠ 0`. -/
+theorem rd_KF_ne_zero : rd_KF ≠ 0 := rd_KF_pos.ne'
+
+/-- `rd_KF² = 4 · D_val`. -/
+theorem rd_KF_sq : rd_KF ^ 2 = 4 * (D_val : ℝ) := by
+  unfold rd_KF
+  rw [Real.sq_sqrt]
+  have h : (0 : ℝ) < (D_val : ℝ) := by exact_mod_cast D_val_pos
+  linarith
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
