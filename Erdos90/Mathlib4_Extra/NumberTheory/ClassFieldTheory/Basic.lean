@@ -1465,6 +1465,18 @@ theorem cyclotomic_five_discr
   have h := IsCyclotomicExtension.Rat.discr_prime (p := 5) (K := K)
   simpa using h
 
+/-- `|discr ℚ(ζ_3)| = 3`. -/
+theorem cyclotomic_three_absDiscr
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    (NumberField.discr K).natAbs = 3 := by
+  rw [cyclotomic_three_discr K]; decide
+
+/-- `|discr ℚ(ζ_5)| = 125`. -/
+theorem cyclotomic_five_absDiscr
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    (NumberField.discr K).natAbs = 125 := by
+  rw [cyclotomic_five_discr K]; decide
+
 /-- `nrRealPlaces ℚ(ζ_3) = 0` (cyclotomic extensions for n > 2 are
 totally complex).
 
