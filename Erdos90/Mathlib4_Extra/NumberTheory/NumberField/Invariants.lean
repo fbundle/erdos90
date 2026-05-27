@@ -57,4 +57,10 @@ universe u
 /-- For ℚ, the root discriminant is exactly 1. -/
 theorem rootDiscr_rat_eq_one : rootDiscr ℚ = 1 := NumberField.rootDiscr_rat
 
+/-- `classNumber ℚ = 1` (since `ℤ` is a PID).
+
+PROVED Lean: direct citation of Mathlib's `Rat.classNumber_eq`. -/
+theorem classNumber_rat_eq_one : NumberField.classNumber ℚ = 1 :=
+  Rat.classNumber_eq
+
 end NumberField
