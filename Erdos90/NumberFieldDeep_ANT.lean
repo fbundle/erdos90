@@ -351,6 +351,55 @@ theorem sawin_k_thirty_seven : sawin_k 37 = 0 := by decide
 theorem sawin_k_forty_one : sawin_k 41 = 0 := by decide
 theorem sawin_k_forty_three : sawin_k 43 = 0 := by decide
 
+/-! ##### Kronecker-symbol checks for Sawin's inert-prime claim
+
+Sawin's proof of Theorem main verifies (via a Sage script) that for
+each of the 12 inert-in-Q primes `p ∈ {47, 71, …, 179}`:
+`kronecker(D_val, p) = -1`, equivalently `D_val` is a non-square
+mod `p`, equivalently `p` is inert in `Q = ℚ(√D_val)`.
+
+For `p` odd and coprime to `D_val`, the Kronecker symbol equals the
+Jacobi symbol.  Mathlib's `jacobiSym` is computable via quadratic
+reciprocity, so each of these 12 facts is reachable by `native_decide`.
+
+All 12 PROVED via `native_decide` after substituting `D_val`'s
+explicit value. -/
+theorem sawin_jacobi_inert_47 :
+    jacobiSym (D_val : ℤ) 47 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_71 :
+    jacobiSym (D_val : ℤ) 71 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_79 :
+    jacobiSym (D_val : ℤ) 79 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_97 :
+    jacobiSym (D_val : ℤ) 97 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_101 :
+    jacobiSym (D_val : ℤ) 101 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_107 :
+    jacobiSym (D_val : ℤ) 107 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_109 :
+    jacobiSym (D_val : ℤ) 109 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_139 :
+    jacobiSym (D_val : ℤ) 139 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_151 :
+    jacobiSym (D_val : ℤ) 151 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_163 :
+    jacobiSym (D_val : ℤ) 163 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_167 :
+    jacobiSym (D_val : ℤ) 167 = -1 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_inert_179 :
+    jacobiSym (D_val : ℤ) 179 = -1 := by rw [D_val_eq]; native_decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
