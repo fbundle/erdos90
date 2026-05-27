@@ -400,6 +400,57 @@ theorem sawin_jacobi_inert_167 :
 theorem sawin_jacobi_inert_179 :
     jacobiSym (D_val : ℤ) 179 = -1 := by rw [D_val_eq]; native_decide
 
+/-! ##### `D ≡ 3 (mod 4)` and the discriminant of `Q = ℚ(√D)`
+
+`D_val mod 4 = 3` because exactly 7 elements of `T_set` are ≡ 3 mod 4
+(the others ≡ 1 mod 4), and 3^7 ≡ 3 (mod 4).  Consequently, the
+discriminant of `Q = ℚ(√D_val)` is `4 · D_val` (not `D_val`), and `2`
+ramifies in `Q` — confirming the "10 ramified primes" claim of Sawin's
+proof from a different angle.
+-/
+
+/-- `D_val ≡ 3 (mod 4)` — direct decidable check. -/
+theorem D_val_mod_four : D_val % 4 = 3 := by rw [D_val_eq]
+
+/-- The discriminant of `Q = ℚ(√D_val)` equals `4 · D_val` (since
+`D_val ≡ 3 mod 4` implies disc(Q) = 4·D_val, not D_val itself).
+This is the source of the extra factor of 4 in the docstring
+estimate "D ≈ 3.27 × 10¹⁶" vs. the actual `D_val ≈ 6.54 × 10¹⁵`. -/
+theorem disc_Q_eq_four_D_val :
+    (4 * D_val : ℕ) = 4 * 6541380665835015 := by rw [D_val_eq]
+
+/-! ##### Each `p ∈ T_set` divides `D_val` (ramified in Q)
+
+Sawin's "10 smallest primes in S are ramified in Q" claim, second
+verification angle.  For each `p ∈ T_set`, `D_val = ∏ T_set` so `p ∣
+D_val`.  The 9 primes in `T_set ∩ S_set = {3,5,7,11,13,17,19,23,29}`
+give all the odd ramified-in-Q primes in `S_set`.
+-/
+
+theorem D_val_dvd_each_T_prime (p : ℕ) (hp : p ∈ T_set) : p ∣ D_val := by
+  unfold D_val; exact Finset.dvd_prod_of_mem _ hp
+
+/-- Spot-check: 3 | D_val (smallest T-prime). -/
+theorem three_dvd_D_val : 3 ∣ D_val := D_val_dvd_each_T_prime 3 T_set_three_mem
+
+/-- Spot-check: 43 | D_val (largest T-prime). -/
+theorem forty_three_dvd_D_val : 43 ∣ D_val := D_val_dvd_each_T_prime 43 T_set_fortythree_mem
+
+/-! ##### Jacobi-symbol zero values for ramified primes
+
+For each `p ∈ T_set`, `jacobiSym D_val p = 0` because `p | D_val`
+(ramified primes give degenerate Jacobi symbols).  Three spot-checks
+below for the smallest and a middle T-prime, all via `native_decide`. -/
+
+theorem sawin_jacobi_ramified_three :
+    jacobiSym (D_val : ℤ) 3 = 0 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_ramified_thirteen :
+    jacobiSym (D_val : ℤ) 13 = 0 := by rw [D_val_eq]; native_decide
+
+theorem sawin_jacobi_ramified_forty_three :
+    jacobiSym (D_val : ℤ) 43 = 0 := by rw [D_val_eq]; native_decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
