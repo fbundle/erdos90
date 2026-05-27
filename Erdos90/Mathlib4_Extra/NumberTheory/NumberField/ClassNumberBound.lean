@@ -485,6 +485,21 @@ theorem stark_completed_zeta_at_zero_riemann_postulate :
     riemannZeta 0 = -1 / 2 :=
   riemannZeta_zero
 
+/-- **Sanity check** (PROVED — K = ℚ residue is 1):
+
+For K = ℚ, the Riemann zeta function has residue 1 at s = 1:
+`(s - 1) · ζ(s) → 1` as s → 1.
+
+This matches `dedekindZeta_residue_def` for K = ℚ (where r₁ = 1, r₂ = 0,
+classNumber = 1, regulator = 1, torsionOrder = 2, discr = 1, giving
+residue = (2·1·1)/(2·1) = 1).
+
+PROVED Lean: direct citation of Mathlib's `riemannZeta_residue_one`. -/
+theorem stark_dirichlet_residue_one_riemann :
+    Filter.Tendsto (fun s : ℂ ↦ (s - 1) * riemannZeta s)
+        (nhdsWithin 1 {1}ᶜ) (nhds 1) :=
+  riemannZeta_residue_one
+
 /-- **Sub-sub-postulate D3.2c.friedman.stark.dirichlet-form** (Dirichlet
 class number formula, residue at `s = 1`):
 
