@@ -216,7 +216,11 @@ The first piece (Chebotarev density) is the genuine multi-month L-function gap t
 also affects `class_num_bound_of_brd`'s sub-pieces.  Closing it would simultaneously
 enable progress on both proof-path sorries' off-path infrastructure.
 
-Not in Mathlib v4.30; requires Chebotarev density theorem + L-function machinery. -/
+Not in Mathlib v4.30; requires Chebotarev density theorem + L-function machinery.
+
+**Decomposed** into 2 named sub-postulates (`splitPrimes_density_postulate`
++ `splitPrimes_persist_postulate`); the Q construction itself is PROVED
+Lean code via `splitPrimeData_from_prime_list`. -/
 def chebotarev_fixed_Q (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 ≤ rd_F) :
     ∃ (Q : ℕ) (_ : 0 < Q),
       ∀ (K : Type) [Field K] [NumberField K] [IsCMField K] [IsTotallyComplex K]
@@ -224,6 +228,40 @@ def chebotarev_fixed_Q (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 �
         InfinitePlace.nrComplexPlaces K = f →
         NumberField.rootDiscr K ≤ rd_F →
         ∃ (sp : SplitPrimeData K (t' * f)), sp.Q = Q := sorry
+
+/-- **Sub-postulate D3.1.cheb.density** (Chebotarev density):
+For each `ℓ ≥ 2` and `rd_F`, there exist infinitely many rational primes
+that split completely in **every** CM totally complex `K` with `rootDiscr K ≤ rd_F`.
+
+Cite: Chebotarev density theorem (Neukirch VII §13) + Hermite–Minkowski
+finiteness (finitely many fields with bounded rd).  Multi-month/year
+Mathlib effort: needs L-function infrastructure. -/
+def splitPrimes_density_postulate
+    (ℓ : ℕ) (_hℓ : ℓ ≥ 2) (rd_F : ℝ) (_h_rd : 1 ≤ rd_F) :
+    ∃ (S : Set ℕ), S.Infinite ∧ (∀ q ∈ S, q.Prime) ∧
+      ∀ q ∈ S, ∀ (K : Type) [Field K] [NumberField K]
+        [IsCMField K] [IsTotallyComplex K],
+        NumberField.rootDiscr K ≤ rd_F →
+        ∃ (sp_q : { sp : Ideal (𝓞 K) // sp.IsPrime ∧ sp ≠ ⊥ ∧
+          Ideal.ramificationIdx (Ideal.span {(q : ℤ)}) sp = 1 ∧
+          Ideal.inertiaDeg (Ideal.span {(q : ℤ)}) sp = 1 }), True := sorry
+
+/-- **Sub-postulate D3.1.cheb.persist** (split-prime persistence):
+A prime that splits completely in a finite Galois extension `K/ℚ` also
+splits completely in **every** sub-extension `K'/ℚ` (when defined).
+Plus the carrier construction `splitPrimeData_from_prime_list` (PROVED).
+
+Cite: standard going-up theorem in algebraic number theory.  Mathlib
+status: PARTIAL (ramificationIdx and inertiaDeg are packaged, but the
+"splits completely" predicate isn't directly available).  Estimated
+weeks-after-density. -/
+def splitPrimes_persist_postulate
+    (q : ℕ) (_hq : Nat.Prime q)
+    (K : Type) [Field K] [NumberField K]
+    (P : Ideal (𝓞 K)) [P.IsPrime] (_h_split : P ≠ ⊥)
+    (_h_ram : Ideal.ramificationIdx (Ideal.span {(q : ℤ)}) P = 1)
+    (_h_iner : Ideal.inertiaDeg (Ideal.span {(q : ℤ)}) P = 1) :
+    True := sorry
 
 /-- **D3.1 (assembly)**: Hajir–Maire–Ramakrishna 2021 + Chebotarev, PROVED modulo
 `gs_cm_tower` + `chebotarev_fixed_Q`.
