@@ -161,6 +161,10 @@ theorem rd_KF_ge_two : 2 ≤ rd_KF := by
   have h : (1 : ℝ) ≤ (D_val : ℝ) := by exact_mod_cast D_val_pos
   linarith
 
+/-- `log rd_KF > 0` (since rd_KF ≥ 2 > 1). -/
+theorem log_rd_KF_pos : 0 < Real.log rd_KF :=
+  Real.log_pos (by linarith [rd_KF_ge_two])
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
