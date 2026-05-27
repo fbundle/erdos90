@@ -238,6 +238,40 @@ theorem sawin_infinitude_criterion :
     T_set.card + S_set.card + 1 = (T_set.card - 1) ^ 2 / 4 := by
   rw [T_set_card, S_set_card]; decide
 
+/-- **Explicit intersection** `T ∩ S = {3,5,7,11,13,17,19,23,29}`.
+
+These are the 9 primes that play a dual role in Sawin's construction:
+they sit in both `T_set` (defining `Q = ℚ(√∏T)`) and `S_set` (the
+prime set for the cyclotomic / Q tower).  Decidable. -/
+theorem T_set_inter_S_set_eq :
+    T_set ∩ S_set = ({3, 5, 7, 11, 13, 17, 19, 23, 29} : Finset ℕ) := by
+  decide
+
+/-- **Ramified primes in Q** (line ~274 of Sawin): the 10 smallest
+elements of `S_set` are exactly the primes that ramify in
+`Q = ℚ(√D)` (where `D = ∏ T_set`).  These are `S ∩ ({2} ∪ T) =
+{2, 3, 5, 7, 11, 13, 17, 19, 23, 29}` — namely `{2}` plus the first
+9 elements of T_set.
+
+Sawin's argument depends on each S-prime being either inert or
+ramified in Q.  The 10 here are the ramified ones; the 12 remaining
+elements of S are the inert ones (next theorem).  Decidable. -/
+theorem S_set_inter_two_union_T_set :
+    S_set ∩ (insert 2 T_set) =
+      ({2, 3, 5, 7, 11, 13, 17, 19, 23, 29} : Finset ℕ) := by
+  decide
+
+/-- **Inert primes in Q** (line ~274 of Sawin): the 12 largest
+elements of `S_set` are exactly the primes that are inert in
+`Q = ℚ(√D)` — namely `S \ ({2} ∪ T) =
+{47, 71, 79, 97, 101, 107, 109, 139, 151, 163, 167, 179}`.
+
+Decidable. -/
+theorem S_set_diff_two_union_T_set :
+    S_set \ (insert 2 T_set) =
+      ({47, 71, 79, 97, 101, 107, 109, 139, 151, 163, 167, 179} : Finset ℕ) := by
+  decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
