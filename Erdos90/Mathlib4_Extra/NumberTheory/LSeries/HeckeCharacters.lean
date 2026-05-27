@@ -132,9 +132,13 @@ case — Mathlib citation):
 For a non-trivial Dirichlet character χ (mod N), the Dirichlet
 L-function L(s, χ) is non-zero on the line Re(s) = 1.
 
-PROVED Lean: Mathlib `DirichletCharacter.LFunction_ne_zero_of_re_eq_one`
-in `NumberTheory/LSeries/Nonvanishing.lean`. -/
-def hecke_L_nonvanishing_Re_one_dirichlet_postulate : True := sorry
+PROVED Lean: direct citation of Mathlib's
+`DirichletCharacter.LFunction_ne_zero_of_re_eq_one`. -/
+theorem hecke_L_nonvanishing_Re_one_dirichlet_postulate
+    {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) {s : ℂ}
+    (hs : s.re = 1) (hχs : χ ≠ 1 ∨ s ≠ 1) :
+    DirichletCharacter.LFunction χ s ≠ 0 :=
+  DirichletCharacter.LFunction_ne_zero_of_re_eq_one χ hs hχs
 
 /-- **Sub-sub-postulate D3.hecke-L.nonvanish-Re-one.hecke-lift** (Hecke
 generalization — Mathlib gap):
