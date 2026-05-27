@@ -921,6 +921,17 @@ theorem pSubgroup_eq_sylow_of_card_eq_of_commGroup
   haveI : Finite Q := Subtype.finite
   exact Subgroup.eq_of_le_of_card_ge h_le h_card.ge
 
+/-- **Companion (PROVED)**: the p-Sylow of a finite commutative group
+is normal.
+
+PROVED Lean: in any abelian group, every subgroup is normal via
+`Subgroup.normal_of_isMulCommutative`.  Stated explicitly for ease
+of reference. -/
+theorem sylow_normal_of_commGroup
+    {G : Type*} [CommGroup G] [Finite G] {p : ℕ} [Fact p.Prime]
+    (P : Sylow p G) : P.Normal :=
+  ⟨fun _ h _ => by simpa [mul_comm] using h⟩
+
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
