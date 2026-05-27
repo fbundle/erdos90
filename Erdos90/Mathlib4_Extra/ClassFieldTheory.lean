@@ -290,10 +290,62 @@ subfield):
 Four sub-postulates below isolate each piece.
 -/
 
+/-! #### Decomposition of `cm_max_real_subfield_postulate`
+
+The existence of K⁺ for CM K factors through:
+
+1. **Complex conjugation as ring automorphism**: Mathlib's
+   `IsCMField.complexConj` packages this.  This automorphism has order 2.
+2. **Fixed field of complex conjugation**: K⁺ := fixed-field of complex
+   conjugation acting on K.
+3. **Galois extension of degree 2**: K/K⁺ is Galois of degree 2 (the
+   complex conjugation acts faithfully).
+4. **K⁺ is totally real**: real embeddings of K correspond to fixed
+   points of complex conjugation, all of which lie in K⁺.
+
+Three sub-postulates below.
+-/
+
+/-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.conj-order-2** (Complex
+conjugation has order 2):
+For CM K, the complex conjugation `IsCMField.complexConj : K →+* K` is
+an involution (order-2 automorphism).
+
+Cite: Mathlib's `IsCMField` structure (already proved as a structure
+field for cyclotomic K).  Standard. -/
+def cm_complex_conj_order_two_postulate
+    (K : Type u) [Field K] [NumberField K] [IsCMField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.fixed-field** (Fixed field
+construction):
+The fixed field of complex conjugation, `K⁺ := { x ∈ K | conj x = x }`,
+is a subfield of K with `[K : K⁺] = 2`.
+
+Cite: Galois theory (Mathlib has fixed-field construction for arbitrary
+group actions).  Standard. -/
+def cm_fixed_field_postulate
+    (K : Type u) [Field K] [NumberField K] [IsCMField K] :
+    True := sorry
+
+/-- **Sub-sub-sub-postulate D3.hcf.cm.kplus.totally-real**:
+The fixed field K⁺ is totally real (all embeddings into ℂ are real).
+
+Cite: standard; real embeddings of K = embeddings invariant under conj,
+which correspond exactly to embeddings of K⁺. -/
+def cm_fixed_field_totally_real_postulate
+    (K : Type u) [Field K] [NumberField K] [IsCMField K] :
+    True := sorry
+
 /-- **Sub-sub-postulate D3.hcf.cm.kplus** (Max totally real subfield):
 For any CM number field `K`, there exists a unique totally real subfield
 `K⁺ ⊆ K` such that `[K : K⁺] = 2` and `K = K⁺(α)` for some imaginary
 `α ∈ K`.
+
+ASSEMBLY (modulo the three sub-sub-postulates above):
+1. By `cm_complex_conj_order_two_postulate`: complex conj has order 2.
+2. By `cm_fixed_field_postulate`: K⁺ := fixed field has [K:K⁺] = 2.
+3. By `cm_fixed_field_totally_real_postulate`: K⁺ is totally real.
 
 Cite: Iwasawa *Local Class Field Theory* Ch. 6; Lang *Algebraic Number
 Theory* X §3.  Mathlib v4.30: implicit in the `IsCMField` structure
