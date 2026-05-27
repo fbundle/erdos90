@@ -118,3 +118,20 @@ Mathlib v4.30.  This sanity assembly is therefore left as
 documentation — the K = ℚ invariant-toolkit closures above are the
 individual citation wins. -/
 example : True := trivial  -- placeholder; see note above
+
+/-- **Cyclotomic polynomial** sanity: `Φ_3(X) = X² + X + 1`.
+
+PROVED Lean: direct citation of Mathlib's `Polynomial.cyclotomic_three`. -/
+theorem cyclotomic_three_polynomial_eq (R : Type*) [Ring R] :
+    Polynomial.cyclotomic 3 R = Polynomial.X ^ 2 + Polynomial.X + 1 :=
+  Polynomial.cyclotomic_three R
+
+/-- **Cyclotomic polynomial** sanity: `Φ_2(X) = X + 1`. -/
+theorem cyclotomic_two_polynomial_eq (R : Type*) [Ring R] :
+    Polynomial.cyclotomic 2 R = Polynomial.X + 1 :=
+  Polynomial.cyclotomic_two R
+
+/-- **Cyclotomic polynomial** sanity: `Φ_1(X) = X - 1`. -/
+theorem cyclotomic_one_polynomial_eq (R : Type*) [Ring R] :
+    Polynomial.cyclotomic 1 R = Polynomial.X - 1 :=
+  Polynomial.cyclotomic_one R
