@@ -899,6 +899,28 @@ theorem pSubgroup_le_unique_sylow_of_commGroup
   have : R = P := Subsingleton.elim _ _
   rwa [this] at hR
 
+/-- **Companion (PROVED)**: in a finite commutative group, a p-subgroup
+with cardinality equal to the Sylow cardinality IS the Sylow.
+
+PROVED Lean: by `pSubgroup_le_unique_sylow_of_commGroup` the p-subgroup
+is contained in the Sylow; same finite cardinality on both sides
+collapses ≤ to =.
+
+This is the **closure assembly** of the "image = Sylow" claim: given
+that the Artin image (a) is a p-subgroup of Cl(K), and (b) has
+cardinality `p^padicValNat p h_K`, we conclude it equals the unique
+Sylow_p. -/
+theorem pSubgroup_eq_sylow_of_card_eq_of_commGroup
+    {G : Type*} [CommGroup G] [Finite G] {p : ℕ} [Fact p.Prime]
+    {Q : Subgroup G} (hQ : IsPGroup p Q) (P : Sylow p G)
+    (h_card : Nat.card Q = Nat.card P) :
+    Q = (P : Subgroup G) := by
+  have h_le : Q ≤ (P : Subgroup G) := pSubgroup_le_unique_sylow_of_commGroup hQ P
+  -- Equality of finite subgroups follows from inclusion + same cardinality
+  haveI : Finite (P : Subgroup G) := Subtype.finite
+  haveI : Finite Q := Subtype.finite
+  exact Subgroup.eq_of_le_of_card_ge h_le h_card.ge
+
 /-- **Postulate** (p-Sylow Artin reciprocity, order form):
 `[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
 `p ^ padicValNat p (classNumber K)`.
