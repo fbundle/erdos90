@@ -1139,6 +1139,7 @@ theorem rank_le_rank_source_add_rank_target_of_exact
     _ ≤ Module.rank R C + Module.rank R A := add_le_add h_g h_f
     _ = Module.rank R A + Module.rank R C := add_comm _ _
 
+
 /-! ##### Anick-Dicks 2017 Koszul-resolution 5-step proof of the
 Magnus-Hilbert series inequality
 

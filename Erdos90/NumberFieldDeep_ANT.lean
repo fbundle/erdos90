@@ -495,10 +495,6 @@ theorem sawin_kplus1_product_inert_part :
       ({47, 71, 79, 97, 101, 107, 109, 139, 151, 163, 167, 179} : Finset ℕ)
       (fun p => sawin_k p + 1) = 39652687872 := by native_decide
 
-theorem sawin_kplus1_product_factors :
-    (2561796357120 : ℕ) * 39652687872 = 101582111340506004848640 := by
-  decide
-
 end SawinParameters
 
 /-! ### CM field from totally real tower level
