@@ -98,6 +98,17 @@ theorem T_set_all_odd (q : ℕ) (hq : q ∈ T_set) : Odd q := by
 theorem T_set_all_prime (q : ℕ) (hq : q ∈ T_set) : q.Prime := by
   fin_cases hq <;> decide
 
+/-- `T_set` and `S_set` overlap on the first 9 odd primes (3, 5, …, 29).
+The remaining elements of `S_set` (47, 71, 79, …) are split primes
+for the cyclotomic / Q tower construction. -/
+theorem T_set_three_mem : 3 ∈ T_set := by decide
+
+theorem T_set_fortythree_mem : 43 ∈ T_set := by decide
+
+theorem S_set_two_mem : 2 ∈ S_set := by decide
+
+theorem S_set_oneSevenNine_mem : 179 ∈ S_set := by decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
