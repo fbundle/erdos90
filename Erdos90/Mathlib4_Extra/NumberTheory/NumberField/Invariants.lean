@@ -91,4 +91,13 @@ theorem nrComplexPlaces_rat_eq_zero : NumberField.InfinitePlace.nrComplexPlaces 
 PROVED Lean: direct citation of Mathlib's `NumberField.discr_rat`. -/
 theorem discr_rat_eq_one : NumberField.discr ℚ = 1 := NumberField.discr_rat
 
+/-- `Units.rank ℚ = 0` (unit rank of ℚ; only unit group is ±1, finite).
+
+PROVED Lean: by `rank K = #InfinitePlace K - 1` (Mathlib's definition)
++ `#InfinitePlace ℚ = nrRealPlaces ℚ + nrComplexPlaces ℚ = 1 + 0 = 1`. -/
+theorem units_rank_rat_eq_zero : NumberField.Units.rank ℚ = 0 := by
+  unfold NumberField.Units.rank
+  rw [NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces,
+    nrRealPlaces_rat_eq_one, nrComplexPlaces_rat_eq_zero]
+
 end NumberField
