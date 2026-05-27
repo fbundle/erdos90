@@ -1236,7 +1236,7 @@ theorem HilbertPClassFieldExt.identity_finrank_eq_p_part
     Module.finrank K (HilbertPClassFieldExt.identity K p h).H_p
       = p ^ (padicValNat p (NumberField.classNumber K)) := by
   show Module.finrank K K = _
-  rw [Module.finrank_self, h, padicValNat.one, pow_zero]
+  rw [Module.finrank_self, h, padicValNat_one_right, pow_zero]
 
 /-- For the identity p-HCF case with totally real `F`, the p-HCF is
 totally real (since H_p = F).
