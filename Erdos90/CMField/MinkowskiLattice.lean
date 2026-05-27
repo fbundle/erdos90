@@ -229,34 +229,6 @@ lemma cmSeparation_exists (f : ℕ) (_hf1 : f ≥ 1) (hf : InfinitePlace.nrCompl
     exact hw
   refine ⟨idx, le_trans hD₀_inv_le_one hnorm⟩
 
-/-- Fundamental domain for the CM Minkowski lattice. -/
-noncomputable def cmFundamentalDomain (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    Set (Fin f → ℂ) :=
-  ZSpan.fundamentalDomain (cmTransportedBasis K f hf)
-
-lemma cmIsAddFundamentalDomain (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    IsAddFundamentalDomain (cmMinkowskiLattice K f hf)
-      (cmFundamentalDomain K f hf) volume := by
-  dsimp [cmMinkowskiLattice, cmFundamentalDomain]
-  exact ZSpan.isAddFundamentalDomain' (cmTransportedBasis K f hf) volume
-
-lemma cmFundamentalDomain_finite_volume (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    volume (cmFundamentalDomain K f hf) < ∞ := by
-  dsimp [cmFundamentalDomain]
-  have h_bounded : Bornology.IsBounded (ZSpan.fundamentalDomain (cmTransportedBasis K f hf)) :=
-    ZSpan.fundamentalDomain_isBounded _
-  rcases h_bounded.subset_closedBall (0 : Fin f → ℂ) with ⟨R, hR⟩
-  apply lt_of_le_of_lt (measure_mono hR)
-  haveI : FiniteDimensional ℝ (Fin f → ℂ) := inferInstance
-  haveI : ProperSpace (Fin f → ℂ) := FiniteDimensional.proper ℝ (Fin f → ℂ)
-  exact measure_closedBall_lt_top
-
-lemma cmMinkowskiLattice_countable (f : ℕ) (hf : InfinitePlace.nrComplexPlaces K = f) :
-    Countable (cmMinkowskiLattice K f hf) := by
-  dsimp [cmMinkowskiLattice]
-  change Countable (Submodule.span ℤ (Set.range (cmTransportedBasis K f hf)))
-  infer_instance
-
 lemma cmSeparation (f : ℕ) (hf1 : f ≥ 1) (hf : InfinitePlace.nrComplexPlaces K = f)
     (D₀ : ℝ) (hD₀ : D₀ > 0) (hD₀_ge_one : D₀ ≥ 1) :
     ∀ v ∈ cmMinkowskiLattice K f hf, v ≠ 0 →

@@ -334,12 +334,6 @@ structure CMClassGroupData (f : ℕ) (t log_H : ℝ) (Λ : AddSubgroup (Fin f �
 relied on the old unscaled `mem_iff`.  Membership of Φ(α/c(α)) in the Q-scaled lattice
 now goes through `h_div_conj_mem_Λ` directly. -/
 
-/-- Complex conjugation induces an automorphism of the ideal class group of a CM field.
-    Uses `ClassGroup.mulEquiv` (available in Mathlib v4.29.1). -/
-noncomputable def classGroupComplexConj (K : Type) [Field K] [NumberField K] [IsCMField K] :
-    ClassGroup (𝓞 K) ≃* ClassGroup (𝓞 K) :=
-  ClassGroup.mulEquiv (IsCMField.ringOfIntegersComplexConj K).toRingEquiv
-
 /-- **CM class-group data existence** (sorry'd).
 
     This is the single number-theoretic sorry for Proposition 2.2.

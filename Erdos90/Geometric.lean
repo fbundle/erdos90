@@ -26,9 +26,6 @@ These are assembled in `admissible_family_to_planar_set` (Theorem 2.3).
 
 noncomputable section
 
-/-- Area of a radius-R disc in ℂ ≅ ℝ². -/
-def discArea (R : ℝ) : ℝ := π * R ^ 2
-
 lemma rho_formula {R : ℝ} (hR : R > 1/2) : rho R = (2/π) * Real.arccos (1/(2*R)) - Real.sqrt (4*R^2 - 1) / (2*π*R^2) := by
   unfold rho
   split_ifs with h
@@ -136,10 +133,6 @@ The first-coordinate projection π₁: ℂ^f → ℂ is injective on any subset 
 a single Λ-coset.  Follows from `hΛ_inj` (any nonzero lattice element has
 nonzero first coordinate, since the complex embedding K → ℂ is injective).
 -/
-
-lemma first_coord_mod_one (A : AdmissibleFamily) (u : Fin A.f → ℂ) (hu : u ∈ A.U) :
-    ‖u (fin0 A.hf)‖ = 1 :=
-  A.hU_mod u hu (fin0 A.hf)
 
 lemma projection_injective (A : AdmissibleFamily) {a : Fin A.f → ℂ} (X : Set (Fin A.f → ℂ))
     (hX : X ⊆ shift a A.Λ.carrier) :

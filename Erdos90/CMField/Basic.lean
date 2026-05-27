@@ -30,11 +30,6 @@ noncomputable def conjIdeal : Ideal (𝓞 K) → Ideal (𝓞 K) :=
   Ideal.map ((IsCMField.ringOfIntegersComplexConj K).toRingHom)
 
 @[simp]
-lemma conjIdeal_mul (I J : Ideal (𝓞 K)) :
-    conjIdeal K (I * J) = (conjIdeal K I) * (conjIdeal K J) := by
-  simp [conjIdeal, Ideal.map_mul]
-
-@[simp]
 lemma conjIdeal_conjIdeal (I : Ideal (𝓞 K)) :
     conjIdeal K (conjIdeal K I) = I := by
   dsimp [conjIdeal]
@@ -181,10 +176,6 @@ def SplitPrimeData.conj_toHeightOneSpectrum {m : ℕ} (sp : SplitPrimeData K m)
 def conjHeightOneSpectrum (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :
     IsDedekindDomain.HeightOneSpectrum (𝓞 K) :=
   ⟨conjIdeal K v.asIdeal, conjIdeal_isPrime K v.isPrime, conjIdeal_ne_bot K v.ne_bot⟩
-
-@[simp]
-lemma conjHeightOneSpectrum_asIdeal (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :
-    (conjHeightOneSpectrum K v).asIdeal = conjIdeal K v.asIdeal := rfl
 
 /-- For a nonzero element `a : 𝓞 K`, `count` of `conjIdeal K 𝔓` in the conjugate principal
     ideal `c(a)` equals `count` of `𝔓` in the original principal ideal `(a)`.
