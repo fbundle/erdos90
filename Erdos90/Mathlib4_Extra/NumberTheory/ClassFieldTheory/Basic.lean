@@ -1406,6 +1406,27 @@ theorem cyclotomic_five_finrank
   norm_num at h
   exact h
 
+/-- `discr ℚ(ζ_3) = -3`.
+
+PROVED Lean: direct citation of Mathlib's `IsCyclotomicExtension.Rat.discr_prime`
+for `p = 3`: `(-1)^((3-1)/2) · 3^(3-2) = -1 · 3 = -3`. -/
+theorem cyclotomic_three_discr
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {3} ℚ K] :
+    NumberField.discr K = -3 := by
+  haveI : Fact (Nat.Prime 3) := ⟨by decide⟩
+  have h := IsCyclotomicExtension.Rat.discr_prime (p := 3) (K := K)
+  simpa using h
+
+/-- `discr ℚ(ζ_5) = 125`.
+
+PROVED Lean: `(-1)^((5-1)/2) · 5^(5-2) = 1 · 125 = 125`. -/
+theorem cyclotomic_five_discr
+    (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
+    NumberField.discr K = 125 := by
+  haveI : Fact (Nat.Prime 5) := ⟨by decide⟩
+  have h := IsCyclotomicExtension.Rat.discr_prime (p := 5) (K := K)
+  simpa using h
+
 /-- Concrete sanity check for `ℚ(ζ_5)`: HCF has Galois group cardinality 1. -/
 theorem card_gal_hcf_cyclotomic_five_eq_one
     (K : Type) [Field K] [NumberField K] [IsCyclotomicExtension {5} ℚ K] :
