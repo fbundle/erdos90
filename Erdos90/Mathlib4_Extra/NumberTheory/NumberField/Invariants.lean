@@ -183,6 +183,24 @@ theorem totient_three_eq_two : Nat.totient 3 = 2 :=
 theorem totient_five_eq_four : Nat.totient 5 = 4 :=
   Nat.totient_prime (by decide)
 
+/-- `φ(7) = 6`. -/
+theorem totient_seven_eq_six : Nat.totient 7 = 6 :=
+  Nat.totient_prime (by decide)
+
+/-- `φ(11) = 10`. -/
+theorem totient_eleven_eq_ten : Nat.totient 11 = 10 :=
+  Nat.totient_prime (by decide)
+
+/-- `φ(13) = 12`. -/
+theorem totient_thirteen_eq_twelve : Nat.totient 13 = 12 :=
+  Nat.totient_prime (by decide)
+
+/-- `φ(4) = 2` (a non-prime example). -/
+theorem totient_four_eq_two : Nat.totient 4 = 2 := by decide
+
+/-- `φ(6) = 2` (a non-prime example, φ(2·3) = φ(2)·φ(3) = 1·2). -/
+theorem totient_six_eq_two : Nat.totient 6 = 2 := by decide
+
 /-- **Multiplicativity of totient on coprime arguments**: `φ(m·n) = φ(m)·φ(n)`
 when `gcd(m, n) = 1`.
 
