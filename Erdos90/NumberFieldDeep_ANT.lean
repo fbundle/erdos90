@@ -451,6 +451,30 @@ theorem sawin_jacobi_ramified_thirteen :
 theorem sawin_jacobi_ramified_forty_three :
     jacobiSym (D_val : ℤ) 43 = 0 := by rw [D_val_eq]; native_decide
 
+/-! ##### The Sawin "k+1" product `∏_{p ∈ S} (k(p) + 1)`
+
+The numerator of Sawin's `M` factor (Lemma `ideal-from-primes`) contains
+`∏_{p ∈ S_set} (k(p)+1)^{d/(e(p) f(p))}`.  For Sawin's specific choice
+of `Q = ℚ(√D_val)`:
+- 10 ramified primes have `e(p) = 2, f(p) = 1`, so `e·f = 2`.
+- 12 inert primes have `e(p) = 1, f(p) = 2`, so `e·f = 2`.
+
+Uniformly `e(p)·f(p) = 2` across `S_set`, so the exponent simplifies to
+`d/2`, and the numerator becomes `(∏_{p∈S_set} (k(p)+1))^{d/2}`.
+
+The integer base `∏_{p∈S_set} (k(p)+1) = 101582111340506004848640` is
+computed below as a Lean theorem, via `native_decide`. -/
+def sawin_kplus1_product : ℕ := Finset.prod S_set (fun p => sawin_k p + 1)
+
+theorem sawin_kplus1_product_eq :
+    sawin_kplus1_product = 101582111340506004848640 := by
+  unfold sawin_kplus1_product S_set
+  native_decide
+
+/-- Sanity: the product is positive (since each factor `≥ 1`). -/
+theorem sawin_kplus1_product_pos : 0 < sawin_kplus1_product := by
+  rw [sawin_kplus1_product_eq]; decide
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
