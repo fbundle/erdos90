@@ -342,22 +342,26 @@ theorem cm_fixed_field_totally_real_postulate
   NumberField.IsTotallyReal.nrComplexPlaces_eq_zero _
 
 /-- **Sub-sub-postulate D3.hcf.cm.kplus** (Max totally real subfield):
-For any CM number field `K`, there exists a unique totally real subfield
-`K⁺ ⊆ K` such that `[K : K⁺] = 2` and `K = K⁺(α)` for some imaginary
-`α ∈ K`.
+For any CM number field `K`, the maximal totally real subfield `K⁺` of `K`
+(provided by `NumberField.maximalRealSubfield`) is totally real and `[K : K⁺] = 2`.
 
-ASSEMBLY (modulo the three sub-sub-postulates above):
+PROVED Lean ASSEMBLY (via Mathlib `NumberField.maximalRealSubfield` +
+`Algebra.IsQuadraticExtension.finrank_eq_two` +
+`NumberField.IsTotallyReal.nrComplexPlaces_eq_zero`):
+
 1. By `cm_complex_conj_order_two_postulate`: complex conj has order 2.
-2. By `cm_fixed_field_postulate`: K⁺ := fixed field has [K:K⁺] = 2.
+2. By `cm_fixed_field_postulate`: K⁺ has [K:K⁺] = 2.
 3. By `cm_fixed_field_totally_real_postulate`: K⁺ is totally real.
 
+Conjunction of (2) and (3) is what `cm_max_real_subfield_postulate` claims.
+
 Cite: Iwasawa *Local Class Field Theory* Ch. 6; Lang *Algebraic Number
-Theory* X §3.  Mathlib v4.30: implicit in the `IsCMField` structure
-(via `IsCMField.complexConj`); explicit `maximalRealSubfield` not
-packaged as a named subfield. -/
-def cm_max_real_subfield_postulate
+Theory* X §3. -/
+theorem cm_max_real_subfield_postulate
     (K : Type u) [Field K] [NumberField K] [IsCMField K] :
-    True := sorry
+    Module.finrank (NumberField.maximalRealSubfield K) K = 2 ∧
+    NumberField.InfinitePlace.nrComplexPlaces (NumberField.maximalRealSubfield K) = 0 :=
+  ⟨cm_fixed_field_postulate K, cm_fixed_field_totally_real_postulate K⟩
 
 /-- **Sub-sub-postulate D3.hcf.cm.hcf-real-stays-real** (HCF of totally
 real is totally real):
