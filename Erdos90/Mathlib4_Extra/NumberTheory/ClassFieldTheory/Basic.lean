@@ -686,6 +686,12 @@ theorem rootDiscr_pHCF_eq (K : Type u) [Field K] [NumberField K]
     rootDiscr E.H_p = rootDiscr K :=
   rootDiscr_eq_of_unramifiedTower K E.H_p E.unramified
 
+-- (HilbertPClassFieldExt.finiteDimensional instance omitted:
+-- requires either an additional `[Module.Finite K H_p]` structure
+-- field or a `(hp : Nat.Prime p)` hypothesis on the instance.
+-- See `HilbertClassFieldExt.finiteDimensional` for the analogous
+-- HCF instance which uses the `finrank_eq` field directly.)
+
 /-- The `p`-HCF of a totally complex number field is itself totally complex. -/
 instance HilbertPClassFieldExt.isTotallyComplex
     (K : Type u) [Field K] [NumberField K] [IsTotallyComplex K]
