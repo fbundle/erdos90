@@ -101,8 +101,40 @@ extends to an entire function (no poles).  The trivial character gives
 the Dedekind zeta function ζ_K with its simple pole at s = 1.
 
 Cite: Hecke 1917; Tate's thesis 1950.  Mathlib v4.30: Dirichlet L-series
-continuation packaged; Hecke version not. -/
+continuation packaged (`DirichletCharacter.differentiable_LFunction`);
+Hecke version not.
+
+DECOMPOSITION: 2 named pieces — Dirichlet specialization (PROVED in
+Mathlib) + Hecke generalization (Tate's thesis, Mathlib gap). -/
 def hecke_L_analytic_continuation_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (_χ : HeckeCharacter K) :
+    True := sorry
+
+/-- **Sub-sub-postulate D3.hecke-L.analytic-cont.dirichlet** (Dirichlet
+case — Mathlib citation):
+
+For a non-trivial Dirichlet character `χ` mod `N`, the Dirichlet
+L-function `LFunction χ` is differentiable on all of ℂ (an entire
+function).
+
+PROVED Lean: direct citation of Mathlib's
+`DirichletCharacter.differentiable_LFunction`. -/
+theorem hecke_L_analytic_continuation_dirichlet_postulate
+    {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N} (hχ : χ ≠ 1) :
+    Differentiable ℂ (DirichletCharacter.LFunction χ) :=
+  DirichletCharacter.differentiable_LFunction hχ
+
+/-- **Sub-sub-postulate D3.hecke-L.analytic-cont.hecke-lift** (Hecke
+generalization — Mathlib gap):
+
+Lift the Dirichlet-case analytic continuation to general Hecke
+characters via Tate's thesis (Mellin transform of theta + functional
+equation).
+
+Mathlib v4.30: not packaged; needs Hecke character infrastructure +
+Tate's thesis. -/
+def hecke_L_analytic_continuation_hecke_lift_postulate
     (K : Type u) [Field K] [NumberField K]
     (_χ : HeckeCharacter K) :
     True := sorry
