@@ -116,6 +116,17 @@ theorem S_set_two_mem : 2 ∈ S_set := by decide
 
 theorem S_set_oneSevenNine_mem : 179 ∈ S_set := by decide
 
+/-- `2 ∉ T_set` (T excludes 2 — needs odd primes only). -/
+theorem T_set_two_notMem : 2 ∉ T_set := by decide
+
+/-- `D_val` is positive (product of positive primes). -/
+theorem D_val_pos : 0 < D_val := by
+  rw [D_val_eq]
+  decide
+
+/-- `D_val ≠ 0`. -/
+theorem D_val_ne_zero : D_val ≠ 0 := D_val_pos.ne'
+
 end SawinParameters
 
 /-! ### CM field from totally real tower level
