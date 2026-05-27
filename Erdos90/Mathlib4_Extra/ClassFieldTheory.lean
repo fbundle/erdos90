@@ -403,6 +403,45 @@ def p_HCF_finrank_divides_classNumber_postulate
     (p : ℕ) (E : HilbertPClassFieldExt K p) :
     Module.finrank K E.H_p ∣ NumberField.classNumber K := sorry
 
+/-- **Stronger postulate** (p-Sylow Artin reciprocity):
+`[H_p(K) : K]` equals the **p-part** of `classNumber K`, i.e.,
+`p ^ padicValNat p (classNumber K)`.
+
+This is Artin reciprocity restricted to the p-Sylow subgroup of the
+class group, giving an isomorphism `Gal(H_p(K)/K) ≃ Sylow_p(Cl(K))`.
+The order equality follows.
+
+Cite: standard CFT; p-Sylow correspondence under Artin reciprocity.
+Lang *Algebraic Number Theory* X §2 (Artin map) + Sylow theorems.  Not
+in Mathlib v4.30 (depends on `hilbertPClassField_exists` + Artin recip). -/
+def p_HCF_finrank_eq_p_part_postulate
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (_hp : Nat.Prime p) (E : HilbertPClassFieldExt K p) :
+    Module.finrank K E.H_p = p ^ (padicValNat p (NumberField.classNumber K)) :=
+  sorry
+
+/-- If `p ∣ classNumber K`, then `[H_p(K) : K] ≥ p`.
+
+PROVED Lean modulo `p_HCF_finrank_eq_p_part_postulate`.
+
+This is exactly the statement of `pHCF_degree_pos_postulate` in
+`GolodShafarevich.lean`, now reduced to the cleaner equality postulate. -/
+theorem p_HCF_finrank_ge_p_of_p_dvd_classNumber
+    (K : Type u) [Field K] [NumberField K]
+    (p : ℕ) (hp : Nat.Prime p)
+    (h_p_dvd : p ∣ NumberField.classNumber K)
+    (E : HilbertPClassFieldExt K p) :
+    p ≤ Module.finrank K E.H_p := by
+  letI : Fact p.Prime := ⟨hp⟩
+  rw [p_HCF_finrank_eq_p_part_postulate K p hp E]
+  have h_one_le :
+      1 ≤ padicValNat p (NumberField.classNumber K) :=
+    one_le_padicValNat_of_dvd
+      (NumberField.classNumber_pos K).ne' h_p_dvd
+  calc p = p ^ 1 := (pow_one p).symm
+    _ ≤ p ^ (padicValNat p (NumberField.classNumber K)) :=
+        Nat.pow_le_pow_right hp.one_lt.le h_one_le
+
 /-- If `p ∤ classNumber K`, then the p-HCF of K equals K itself.
 
 PROVED Lean modulo `p_HCF_finrank_divides_classNumber_postulate`. -/

@@ -462,17 +462,23 @@ def gs_base_field_postulate
 /-- **Sub-sub-postulate D3.1.gs.step.degree** (p-HCF degree positivity):
 If `p ∣ classNumber K`, then `[H_p(K) : K] ≥ p`.
 
-Cite: standard CFT — `[H_p(K) : K]` equals the p-part of classNumber K.
-If p divides classNumber K, then the p-part is at least p.
+PROVED Lean (was sorried; now reduced to the equality version of the
+divisibility postulate via Mathlib's `padicValNat` API).
 
-Closing this requires the EQUALITY (not just divisibility) in
-`p_HCF_finrank_divides_classNumber_postulate` from ClassFieldTheory.lean. -/
+Assembly: by `p_HCF_finrank_eq_p_part_postulate`, `[H_p : K] = p^k`
+where `k = padicValNat p (classNumber K)`.  By Mathlib's
+`one_le_padicValNat_of_dvd`, `p ∣ classNumber K ⟹ k ≥ 1`.  Hence
+`[H_p : K] = p^k ≥ p^1 = p`.
+
+The genuine Mathlib gap is now `p_HCF_finrank_eq_p_part_postulate`
+(p-Sylow Artin reciprocity), one level deeper. -/
 def pHCF_degree_pos_postulate
-    (p : ℕ) (_hp : Nat.Prime p)
+    (p : ℕ) (hp : Nat.Prime p)
     (K : Type) [Field K] [NumberField K]
-    (_h_p_dvd_cn : p ∣ NumberField.classNumber K)
+    (h_p_dvd_cn : p ∣ NumberField.classNumber K)
     (E : NumberField.HilbertPClassFieldExt K p) :
-    Module.finrank K E.H_p ≥ p := sorry
+    Module.finrank K E.H_p ≥ p :=
+  NumberField.p_HCF_finrank_ge_p_of_p_dvd_classNumber K p hp h_p_dvd_cn E
 
 /-- **Sub-sub-postulate D3.1.gs.step.cm** (p-HCF preserves CM):
 If `K` is CM, then the p-Hilbert class field `H_p(K)` is also CM.
