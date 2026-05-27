@@ -1,4 +1,5 @@
 import Mathlib
+import Erdos90.Mathlib4_Extra.NumberTheory.NumberField.Theta
 
 /-!
 # Functional equation for `dedekindZeta` (Mathlib-PR documentation)
@@ -376,3 +377,90 @@ sub-postulates above (`multi_dim_poisson_postulate`,
 `dedekindZeta_weak_fe_pair_postulate`) are now actual labelled `def`s
 tracking each step of the FE chain.
 -/
+
+/-! ## C3 — Concrete `completedDedekindZeta` and FE (sorried)
+
+We now lift the docstring code-block into actual Lean declarations,
+using Mathlib's `Complex.Gammaℝ` and `Complex.Gammaℂ` (Deligne's
+notation) for the gamma factors. -/
+
+namespace NumberField
+
+open Complex NumberField NumberField.InfinitePlace
+
+/-- The **completed Dedekind zeta** of a number field `K`:
+```
+Λ_K(s) := |disc K|^(s/2) · Γ_ℝ(s)^{r₁} · Γ_ℂ(s)^{r₂} · ζ_K(s)
+```
+where `Γ_ℝ(s) := π^(-s/2) · Γ(s/2)` and `Γ_ℂ(s) := 2(2π)^(-s) · Γ(s)`.
+
+Definition matches `Mathlib/Analysis/SpecialFunctions/Gamma/Deligne.lean`
++ `Lang ANT Ch. XIII` + `AbstractFuncEq.lean`'s normalization. -/
+noncomputable def completedDedekindZeta (K : Type*) [Field K] [NumberField K]
+    (s : ℂ) : ℂ :=
+  ((|((NumberField.discr K : ℤ) : ℝ)| : ℝ) : ℂ) ^ (s / 2) *
+    Gammaℝ s ^ (NumberField.InfinitePlace.nrRealPlaces K) *
+    Gammaℂ s ^ (NumberField.InfinitePlace.nrComplexPlaces K) *
+    NumberField.dedekindZeta K s
+
+/-- **C3.fe — Functional equation for `completedDedekindZeta`** (postulate).
+
+`Λ_K(1 - s) = Λ_K(s)` (self-dual, no root number).
+
+Derived from:
+- `theta_K_modular_postulate` (the θ_K modular transformation, C2 output).
+- `theta_K_mellin_postulate` (the Mellin = completed zeta identity).
+- `dedekindZeta_weak_fe_pair_postulate` (the `WeakFEPair` assembly).
+
+Once the three above are closed, this follows mechanically from
+`AbstractFuncEq.WeakFEPair.functional_equation`. -/
+theorem completedDedekindZeta_one_sub (K : Type*) [Field K] [NumberField K]
+    (s : ℂ) :
+    completedDedekindZeta K (1 - s) = completedDedekindZeta K s := by
+  sorry
+
+/-- **C3.zeta-at-zero — Stark's formula for ζ_K(0)** (postulate).
+
+Once the FE is in hand, the special value `ζ_K(0) = −h_K · R_K / w_K`
+follows by combining the FE with the class number formula at `s = 1`. -/
+theorem dedekindZeta_at_zero (K : Type*) [Field K] [NumberField K] :
+    NumberField.dedekindZeta K 0 =
+      -(NumberField.classNumber K *
+        NumberField.Units.regulator K) / NumberField.Units.torsionOrder K := by
+  sorry
+
+/-! ### Decomposition of `completedDedekindZeta_one_sub`
+
+The proof of the FE goes through a `WeakFEPair` instance, which packages
+the symmetric self-duality of the Mellin transform of `θ_K − 1` with
+appropriate growth + functional equation hypotheses.
+
+Below: the explicit chain of named lemmas needed.  All sorried. -/
+
+/-- **C3.fe.mellin-pole-extraction**: the Mellin transform of `θ_K(t) − 1`
+on `(0, ∞)` represents `(Gamma factors) · ζ_K(s)` for `Re s > 1`. -/
+theorem theta_K_mellin_eq_completedZeta_postulate
+    (K : Type*) [Field K] [NumberField K] {s : ℂ} (hs : 1 < s.re) :
+    mellin (fun t : ℝ => numberFieldTheta K t - 1) s =
+      completedDedekindZeta K (2 * s) /
+        ((|((NumberField.discr K : ℤ) : ℝ)| : ℝ) : ℂ) ^ s :=
+  sorry
+
+/-- **C3.fe.weak-fe-pair-instance**: extract the FE for `completedDedekindZeta`
+from the modular transformation of `θ_K` via `WeakFEPair`.
+
+Concretely: build an `AbstractFuncEq.WeakFEPair ℂ` with `f = g = θ_K − 1`,
+`k = n/2` (where `n = [K:ℚ]`), `ε = 1`.  The `h_feq` field is the
+modular relation `θ_K(1/t) = √|d_K| · t^{n/2} · θ_K(t)`. -/
+theorem completedDedekindZeta_FE_from_theta_modular_postulate
+    (K : Type*) [Field K] [NumberField K]
+    (_h_theta : ∀ (t : ℝ), 0 < t →
+      numberFieldTheta K (1 / t) =
+        ((Real.sqrt |(NumberField.discr K : ℝ)| : ℝ) : ℂ) *
+          ((t ^ ((Module.finrank ℚ K : ℝ) / 2) : ℝ) : ℂ) *
+          numberFieldTheta K t)
+    (s : ℂ) :
+    completedDedekindZeta K (1 - s) = completedDedekindZeta K s :=
+  sorry
+
+end NumberField
